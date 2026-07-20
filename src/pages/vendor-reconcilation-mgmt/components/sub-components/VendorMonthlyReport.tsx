@@ -20,7 +20,7 @@ import {
   useCancelOrderProductMutation,
   useOpenDisputeMutation,
   useRespondDisputeMutation,
-  useBulkApproveOrderProductsMutation,
+  // useBulkApproveOrderProductsMutation,
   useGetReconciliationStatsQuery,
   useBulkMarkOrderAsCompletedMutation,
   useFinalizeClosedOrdersMutation,
@@ -210,7 +210,7 @@ export const VendorMonthlyReport = () => {
   const [showCloseAllOrdersModal, setShowCloseAllOrdersModal] = useState(false);
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [disputedCount, setDisputedCount] = useState(0);
+  const [_disputedCount, setDisputedCount] = useState(0);
 
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
@@ -292,7 +292,7 @@ export const VendorMonthlyReport = () => {
   const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkMarkOrderAsCompleted] = useBulkMarkOrderAsCompletedMutation();
-  const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
+  // const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
   const [finalizeClosedOrders, { isLoading: isClosingAllOrders }] =
     useFinalizeClosedOrdersMutation();
   // only fetched while the confirmation modal is actually open - no point
@@ -704,21 +704,21 @@ export const VendorMonthlyReport = () => {
     setSelectedItems(disputedOrders);
   };
 
-  const handleBulkApprove = async () => {
-    try {
-      await bulkApproveOrderProducts({
-        approveAllDisputed: true,
-      }).unwrap();
+  // const handleBulkApprove = async () => {
+  //   try {
+  //     await bulkApproveOrderProducts({
+  //       approveAllDisputed: true,
+  //     }).unwrap();
 
-      toast.success(t("order_approved"));
-      setSelectedItems(new Set());
-      refetchOrders();
-      refetchReconciliationStats();
-    } catch (error: any) {
-      const errorMessage = error?.data?.message || error?.message;
-      toast.error(errorMessage || t("approve_failed"));
-    }
-  };
+  //     toast.success(t("order_approved"));
+  //     setSelectedItems(new Set());
+  //     refetchOrders();
+  //     refetchReconciliationStats();
+  //   } catch (error: any) {
+  //     const errorMessage = error?.data?.message || error?.message;
+  //     toast.error(errorMessage || t("approve_failed"));
+  //   }
+  // };
 
   const handleBulkMarkOrderCompleted = async () => {
     try {
