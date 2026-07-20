@@ -285,11 +285,11 @@ export default function DmoAuthorityWebsiteIdsSelector({
 
           {renderSection(t("select_associated_websites"), associatedWebsites)}
 
-          {isSuperadmin &&
+          {/* {isSuperadmin &&
             renderSection(
               t("select_unassociated_websites"),
               unAssociatedWebsites,
-            )}
+            )} */}
 
           {errors.websiteVisibilityIds && (
             <p className="text-sm text-red-500">
