@@ -99,7 +99,7 @@ export const AdminDisputeResponseModal = ({
   };
 
   return (
-    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl">
+    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl" height="" >
       <div
         className={`${bgPrimary} rounded-lg  w-full max-h-[90vh] overflow-y-auto p-4`}
       >
