@@ -373,7 +373,7 @@ export function useEventWizardState({
       3: buildDateTimePayload,
       4: buildRegistrationPayload,
       6: buildMessagingPayload,
-      7: () => ({ images: eventImages }),
+      5: () => ({ images: eventImages }),
     }),
     [
       buildBasicInfoPayload,
@@ -413,7 +413,7 @@ export function useEventWizardState({
 
   // ─── Effects: Mark media dirty when images change ────────────────────
   useEffect(() => {
-    if (images.length) handleMarkDirty(7);
+    if (images.length) handleMarkDirty(5);
   }, [images, handleMarkDirty]);
 
   // ─── Effects: Reset state when wizard opens in create mode ───────────
@@ -758,7 +758,7 @@ export function useEventWizardState({
   const handlePublish = useCallback(async () => {
     setIsPublishBtnClicked(true);
     let allValid = true;
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 6; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -784,6 +784,8 @@ export function useEventWizardState({
     await saveDraft(true, processed);
     setIsPublishing(false);
     onClose();
+    refetch?.();
+    eventDataRefetch?.();
   }, [
     validateStep,
     saveDraft,

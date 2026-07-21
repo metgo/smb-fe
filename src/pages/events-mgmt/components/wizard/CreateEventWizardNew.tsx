@@ -68,7 +68,7 @@ export default function CreateEventWizardNew({
   const isBusy = wizard.isEventCreating || wizard.isEventUpdating;
 
   return (
-    <ModalWrapper onClose={wizard.handleClose} showSpinner={isBusy}>
+    <ModalWrapper onClose={onClose} showSpinner={isBusy}>
       {/* ── Header ────────────────────────────────────────────────────── */}
       <div
         className={clsx(
@@ -291,7 +291,7 @@ export default function CreateEventWizardNew({
 
       {/* ── Unsaved changes dialog ────────────────────────────────────── */}
       <ConfirmDialog
-        open={wizard.showClosePopup}
+        open={false}
         title={tc("unsaved_changes")}
         message={tc("close_without_saving")}
         confirmText={tc("close")}

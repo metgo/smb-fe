@@ -38,7 +38,7 @@ export default function DmoAuthorityWebsiteIdsSelector({
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark } = useThemeClasses();
   const { dmoId } = useAppSelector((state) => state.auth);
-  const { isSuperadmin, isDMO, isAuthority } = useUserRoles();
+  const { isDMO, isAuthority } = useUserRoles();
 
   // Auto-select DMO user's own DMO on mount
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function DmoAuthorityWebsiteIdsSelector({
     (item) => item?._id === selectedDmoId,
   );
 
-  const { associatedWebsites, unAssociatedWebsites } = useMemo(() => {
+  const { associatedWebsites } = useMemo(() => {
     const result = {
       associatedWebsites: [] as IWebsite[],
       unAssociatedWebsites: [] as IWebsite[],
@@ -274,22 +274,22 @@ export default function DmoAuthorityWebsiteIdsSelector({
       {/* Websites */}
       {(selectedDmoId || selectedAuthorityId) && (
         <div className="space-y-4">
-          <label
+          {/* <label
             className={`block text-sm mb-2 ${
               isDark ? "text-gray-300" : "text-gray-800"
             }`}
           >
             {t("website_visibility")}
             <span className="text-red-500 ml-1">*</span>
-          </label>
+          </label> */}
 
           {renderSection(t("select_associated_websites"), associatedWebsites)}
 
-          {isSuperadmin &&
+          {/* {isSuperadmin &&
             renderSection(
               t("select_unassociated_websites"),
               unAssociatedWebsites,
-            )}
+            )} */}
 
           {errors.websiteVisibilityIds && (
             <p className="text-sm text-red-500">

@@ -191,12 +191,13 @@ export default function EventDetailsPage() {
     const commonProps = { t, eventDetails };
     const eventImages = eventDetails?.images ?? [];
     const mediaProps = {
-      images: eventImages.map((img: IImage) => ({
-        previewUrl: img.image,
+      images: eventImages.map((img: any) => ({
+        image: img.image,
+        isPrimary: img.isPrimary,
       })),
       primaryImageIndex: Math.max(
         0,
-        eventImages.findIndex((img: IImage) => img.isPrimary),
+        eventImages.findIndex((img: any) => img.isPrimary),
       ),
     };
 
@@ -324,7 +325,10 @@ export default function EventDetailsPage() {
       <div className="details-top shrink-0">
         <DetailTitleSection
           {...eventDetails}
-          imageSrc={eventDetails?.images?.[0]?.image}
+          imageSrc={
+            eventDetails?.images?.find((img: any) => img.isPrimary)?.image ||
+            eventDetails?.images?.[0]?.image
+          }
         />
         <PageStats
           stats={singleEventStats}
