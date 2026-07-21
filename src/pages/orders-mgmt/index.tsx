@@ -22,7 +22,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
+import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { envKeys } from "@/lib/envKeys";
@@ -56,7 +56,6 @@ import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import { formatOrderDate } from "@/helpers";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { formatILS } from "@/helpers/formatter";
-import { setDmo, setAuthority } from "@/features/authSlice";
 
 const limit = 20;
 
@@ -90,7 +89,6 @@ export default function OrdersMgmtPage() {
   const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
-  const dispatch = useAppDispatch();
   const { isSuperadmin, isTraveller } = useUserRoles();
   const { isDark, isRTL, language } = useThemeClasses();
   const { dmosAuthorities } = useCommon();
@@ -289,6 +287,7 @@ export default function OrdersMgmtPage() {
         dmoId: dmoId || "all",
         authorityId: "all",
       }));
+
     }
   }, [dmoId]);
 
@@ -296,6 +295,7 @@ export default function OrdersMgmtPage() {
     if (authorityId !== lastGlobalAuthorityId.current) {
       lastGlobalAuthorityId.current = authorityId;
       setFilters((prev) => ({ ...prev, authorityId: authorityId || "all" }));
+
     }
   }, [authorityId]);
 
@@ -753,38 +753,38 @@ export default function OrdersMgmtPage() {
 
   const getPaymentStatusBadge = (status: TPaymentStatus) => {
     const badges: Record<string, { bg: string; text: string; label: string }> =
-      {
-        PENDING: {
-          bg: "bg-orange-100 dark:bg-orange-900/30",
-          text: "text-orange-800 dark:text-orange-400",
-          label: t("pending"),
-        },
-        SUCCESS: {
-          bg: "bg-emerald-100 dark:bg-emerald-900/30",
-          text: "text-emerald-800 dark:text-emerald-400",
-          label: t("success"),
-        },
-        FAILURE: {
-          bg: "bg-red-100 dark:bg-red-900/30",
-          text: "text-red-800 dark:text-red-400",
-          label: t("failed"),
-        },
-        FAILED: {
-          bg: "bg-red-100 dark:bg-red-900/30",
-          text: "text-red-800 dark:text-red-400",
-          label: t("failed"),
-        },
-        REFUNDED: {
-          bg: "bg-blue-100 dark:bg-blue-900/30",
-          text: "text-blue-800 dark:text-blue-400",
-          label: t("refunded"),
-        },
-        PARTIALLY_REFUNDED: {
-          bg: "bg-orange-100 dark:bg-orange-900/30",
-          text: "text-orange-800 dark:text-orange-400",
-          label: t("partially_refunded"),
-        },
-      };
+    {
+      PENDING: {
+        bg: "bg-orange-100 dark:bg-orange-900/30",
+        text: "text-orange-800 dark:text-orange-400",
+        label: t("pending"),
+      },
+      SUCCESS: {
+        bg: "bg-emerald-100 dark:bg-emerald-900/30",
+        text: "text-emerald-800 dark:text-emerald-400",
+        label: t("success"),
+      },
+      FAILURE: {
+        bg: "bg-red-100 dark:bg-red-900/30",
+        text: "text-red-800 dark:text-red-400",
+        label: t("failed"),
+      },
+      FAILED: {
+        bg: "bg-red-100 dark:bg-red-900/30",
+        text: "text-red-800 dark:text-red-400",
+        label: t("failed"),
+      },
+      REFUNDED: {
+        bg: "bg-blue-100 dark:bg-blue-900/30",
+        text: "text-blue-800 dark:text-blue-400",
+        label: t("refunded"),
+      },
+      PARTIALLY_REFUNDED: {
+        bg: "bg-orange-100 dark:bg-orange-900/30",
+        text: "text-orange-800 dark:text-orange-400",
+        label: t("partially_refunded"),
+      },
+    };
     const badge = badges[status];
     if (!badge)
       return <span className="text-xs text-gray-500">{status ?? "-"}</span>;
@@ -890,11 +890,10 @@ export default function OrdersMgmtPage() {
             {canViewOrders && (
               <button
                 onClick={getVideoStream}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
-                  isDark
-                    ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                    : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-                }`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${isDark
+                  ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+                  }`}
               >
                 <Camera className="w-4 h-4" />
               </button>
