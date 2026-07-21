@@ -13,8 +13,6 @@ import {
   FileText,
   Users,
   Truck,
-  // LanguagesIcon,
-  // LanguagesIcon,
 } from "lucide-react";
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";

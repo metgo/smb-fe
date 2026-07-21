@@ -8,15 +8,15 @@ export const tripQueryApi = createApi({
   tagTypes: ["Trips"],
 
   endpoints: (builder) => ({
-    getAllTrips: builder.query<any, any>({
+    getAllTrips: builder.query<ITripsRes, any>({
       query: (params) => ({
         url: endpoints.trips,
         method: "GET",
         params,
       }),
     }),
-    getTripById: builder.query<any, { tripId: string | null }>({
-      query: ({ tripId }) => ({
+    getTripById: builder.query<ITripDetailsRes, string>({
+      query: (tripId) => ({
         url: `${endpoints.trips}/${tripId}`,
         method: "GET",
       }),
@@ -30,7 +30,7 @@ export const tripQueryApi = createApi({
     }),
 
     // Stations
-    getAllStations: builder.query<any, any>({
+    getAllStations: builder.query<ITripStationsRes, any>({
       query: (params) => ({
         url: endpoints.stations,
         method: "GET",

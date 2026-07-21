@@ -501,3 +501,24 @@ input[type="number"] {
 .dark .rte-content hr {
   border-top-color: #374151;
 }
+
+/* Custom Info window setup */
+
+.gm-style-iw-tc,
+.gm-style-iw-ch,
+.gm-style-iw-chr {
+  display: none !important;
+}
+
+.gm-style-iw-d {
+  overflow: hidden !important;
+}
+
+.gm-style .gm-style-iw-c {
+  padding: 0 !important;
+  top: 25px !important;
+}
+
+.custom-info-window {
+  z-index: auto !important;
+}

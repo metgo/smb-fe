@@ -46,6 +46,8 @@ import {
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
   EventSessionMgmtPage,
+  TripsMgmtPage,
+  TripDetailsPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -555,6 +557,8 @@ function App() {
             { path: routes.articleDetails, element: <ArticleDetails /> },
 
             { path: routes.documentMgmt, element: <DocumentsManagement /> },
+            { path: routes.tripsMgmt, element: <TripsMgmtPage /> },
+            { path: routes.tripDetails, element: <TripDetailsPage /> },
 
             { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
             { path: routes.eventDetails, element: <EventDetailsPage /> },

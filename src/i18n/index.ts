@@ -22,6 +22,7 @@ i18n
       "businesses",
       "products",
       "poi",
+      "trips",
       "tour",
       "content",
       "reconciliation",

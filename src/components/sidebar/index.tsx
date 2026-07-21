@@ -182,10 +182,10 @@ export default function Sidebar() {
       : []),
     {
       id: "trips",
-      path: routes.trips,
+      path: routes.tripsMgmt,
       label: t("trips") || "Trips",
       icon: Map,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "fun-days",

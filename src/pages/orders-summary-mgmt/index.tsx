@@ -13,7 +13,7 @@ import {
   Building2,
 } from "lucide-react";
 
-import { useAppSelector } from "@/hooks/hooks";
+import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { PageHeader, PageStats, ShowColumns } from "@/components/shared";
 import {
@@ -33,6 +33,7 @@ import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "../orders-mgmt/components/OrdersModal";
 import { formatILS } from "@/helpers/formatter";
+import { setDmo, setAuthority } from "@/features/authSlice";
 
 const limit = 20;
 
@@ -57,6 +58,7 @@ export default function OrdersSummaryMgmtPage() {
   const { t: tc } = useTranslation("common");
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
   const { isDark, isRTL, language } = useThemeClasses();
+  const dispatch = useAppDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
   const [searchTermSummary, setSearchTermSummary] = useState("");
@@ -71,6 +73,8 @@ export default function OrdersSummaryMgmtPage() {
     startDate: "",
     endDate: "",
     month: "all",
+    dmoId: dmoId || "all",
+    authorityId: authorityId || "all",
   });
 
   const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
@@ -88,8 +92,11 @@ export default function OrdersSummaryMgmtPage() {
     const params: any = {
       page: pageSummary,
       limit,
-      dmoId,
-      authorityId,
+      dmoId: summaryFilters.dmoId !== "all" ? summaryFilters.dmoId : undefined,
+      authorityId:
+        summaryFilters.authorityId !== "all"
+          ? summaryFilters.authorityId
+          : undefined,
     };
 
     if (searchTermSummary) params.search = searchTermSummary;
@@ -182,6 +189,8 @@ export default function OrdersSummaryMgmtPage() {
     startDate: "",
     endDate: "",
     month: "all",
+    dmoId: "all",
+    authorityId: "all",
   };
 
   const [columnVisibility, setColumnVisibility] =
@@ -210,6 +219,7 @@ export default function OrdersSummaryMgmtPage() {
       { Field: "Total Amount", Value: row.totalAmount },
       { Field: "Total Credit Card", Value: row.totalAmountPaidByCreditCard },
       { Field: "Total Delivery Fee", Value: row.totalDeliveryFee },
+
       {},
     ];
 
@@ -274,6 +284,20 @@ export default function OrdersSummaryMgmtPage() {
       ),
     },
     {
+      key: "dmoName",
+      label: t("dmos"),
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.dmoName || "-"}</div>,
+    },
+    {
+      key: "authorityName",
+      label: t("authorities"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.authorityName || "-"}</div>
+      ),
+    },
+    {
       key: "businessAddressCity",
       label: t("business_address_city"),
       sortable: true,
@@ -297,6 +321,7 @@ export default function OrdersSummaryMgmtPage() {
         <div className="text-sm">{row.totalNoOfOrders}</div>
       ),
     },
+
     {
       key: "totalAmount",
       label: t("total_amount"),
@@ -584,7 +609,11 @@ export default function OrdersSummaryMgmtPage() {
                 summaryFilters.month !== "all") && (
                 <div className="min-w-55 mt-10">
                   <button
-                    onClick={() => setSummaryFilters(defaultSummaryFilters)}
+                    onClick={() => {
+                      setSummaryFilters(defaultSummaryFilters);
+                      dispatch(setDmo(""));
+                      dispatch(setAuthority(""));
+                    }}
                     className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                   >
                     {t("clear_all")}

@@ -353,7 +353,7 @@ export function useContentData({
   const tabCounts = {
     Businesses: businessData?.totalData ?? 0,
     Products: productData?.totalData ?? 0,
-    Trips: tripData?.totalData ?? 0,
+    Trips: 0,
     Events: eventData?.totalData ?? 0,
     POI: poiData?.totalData ?? combinedPOIs.length,
   };
