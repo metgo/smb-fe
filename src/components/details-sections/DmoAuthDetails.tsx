@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { Building2, Globe, Landmark } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -16,6 +17,7 @@ const DmoAuthDetails: React.FC<DmoAuthDetailsProps> = ({
   authorityId,
   associatedWebsiteIds,
 }) => {
+  const { t } = useTranslation("common");
   const { isDark, textTertiary, textPrimary, borderColor, bgSecondary } =
     useThemeClasses();
   const { dmosAuthorities, allWebsites } = useCommon();
@@ -42,7 +44,7 @@ const DmoAuthDetails: React.FC<DmoAuthDetailsProps> = ({
             className={clsx("text-xs flex items-center gap-1", textTertiary)}
           >
             <Landmark className="w-3 h-3" />
-            DMO
+            {t("select_dmo")}
           </span>
           <div className="flex items-center gap-2 mt-1">
             <ImageWithFallback
@@ -63,7 +65,7 @@ const DmoAuthDetails: React.FC<DmoAuthDetailsProps> = ({
             className={clsx("text-xs flex items-center gap-1", textTertiary)}
           >
             <Building2 className="w-3 h-3" />
-            Authority
+            {t("select_authority")}
           </span>
           <div className="flex items-center gap-2 mt-1">
             <ImageWithFallback
@@ -84,7 +86,7 @@ const DmoAuthDetails: React.FC<DmoAuthDetailsProps> = ({
             className={clsx("text-xs flex items-center gap-1", textTertiary)}
           >
             <Globe className="w-3 h-3" />
-            Website Visibility
+            {t("website_visibility")}
           </span>
           <div className="flex flex-wrap gap-2 mt-2">
             {selectedWebsites.map((website) => (
