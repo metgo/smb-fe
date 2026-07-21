@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 
 import { getLngWiseStr } from "@/helpers";
-import { ConnectedWebsites } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
+import DmoAuthDetails from "@/components/details-sections/DmoAuthDetails";
 import { useTranslation } from "react-i18next";
 
 interface EventInfoDetailsProps {
@@ -85,14 +85,12 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
         isDark={isDark}
         preWrap={true} // preserves line breaks
       />
-      {/* Website Connections */}
-      {eventDetails?.associatedWebsites &&
-        eventDetails?.associatedWebsites?.length > 0 && (
-          <ConnectedWebsites
-            t={t}
-            associatedWebsites={eventDetails?.associatedWebsites}
-          />
-        )}
+
+      <DmoAuthDetails
+        dmoId={eventDetails?.dmoId}
+        authorityId={eventDetails?.authorityId}
+        associatedWebsiteIds={eventDetails?.associatedWebsiteIds}
+      />
 
       {/* Internal Notes */}
       {eventDetails?.internalNotes && (
