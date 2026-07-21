@@ -141,7 +141,8 @@ export default function ProductDetailsPage() {
     const mediaProps = {
       logoImage: null,
       images: productImages.map((img: IImage) => ({
-        previewUrl: img.image,
+        image: img.image,
+        isPrimary: img.isPrimary,
       })),
       primaryImageIndex: Math.max(
         0,
@@ -267,7 +268,10 @@ export default function ProductDetailsPage() {
       <div className="details-top shrink-0">
         <DetailTitleSection
           {...product}
-          imageSrc={product?.images?.[0]?.image}
+          imageSrc={
+            product?.images?.find((img: IImage) => img.isPrimary)?.image ||
+            product?.images?.[0]?.image
+          }
         />
         <PageStats
           stats={salesStats}

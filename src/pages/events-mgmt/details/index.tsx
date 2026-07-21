@@ -325,7 +325,10 @@ export default function EventDetailsPage() {
       <div className="details-top shrink-0">
         <DetailTitleSection
           {...eventDetails}
-          imageSrc={eventDetails?.images?.[0]?.image}
+          imageSrc={
+            eventDetails?.images?.find((img: any) => img.isPrimary)?.image ||
+            eventDetails?.images?.[0]?.image
+          }
         />
         <PageStats
           stats={singleEventStats}
