@@ -969,12 +969,10 @@ export const VendorMonthlyReport = () => {
           className="flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
         >
-          
-          {order.status !== "canceled" 
-            && order.reconciliationStatus !== "approved" 
-                        && order.reconciliationStatus !== "disputed" 
-
-            && order.reconciliationStatus !== "rejected" &&
+          {order.status !== "canceled" &&
+            order.reconciliationStatus !== "approved" &&
+            order.reconciliationStatus !== "disputed" &&
+            order.reconciliationStatus !== "rejected" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -984,18 +982,19 @@ export const VendorMonthlyReport = () => {
                 <AlertTriangle className="w-4 h-4" />
               </button>
             )}
-          {order.reconciliationStatus === "disputed" &&
-            adminView && (
-              <button
-                onClick={() => handleApproveDispute(order)}
-                className="p-1.5 rounded-full text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                title={t("approve")}
-              >
-                <CheckCircle className="w-5 h-5" />
-              </button>
-            )}
+          {order.reconciliationStatus === "disputed" && adminView && (
+            <button
+              onClick={() => handleApproveDispute(order)}
+              className="p-1.5 rounded-full text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              title={t("approve")}
+            >
+              <CheckCircle className="w-5 h-5" />
+            </button>
+          )}
           {order.status !== "canceled" &&
-            order.reconciliationStatus !== "disputed" &&  order.reconciliationStatus !== "approved" &&  order.reconciliationStatus !== "rejected" &&
+            order.reconciliationStatus !== "disputed" &&
+            order.reconciliationStatus !== "approved" &&
+            order.reconciliationStatus !== "rejected" &&
             order.status !== "completed" && (
               <button
                 onClick={() => handleCancelOrder(order)}
