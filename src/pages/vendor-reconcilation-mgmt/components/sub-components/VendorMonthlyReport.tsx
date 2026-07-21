@@ -56,12 +56,12 @@ interface OrderProduct {
     platformFee: number;
     disputeId?: string;
     reconciliationStatus?:
-      | "pending"
-      | "approved"
-      | "canceled"
-      | "disputed"
-      | "rejected"
-      | "closed";
+    | "pending"
+    | "approved"
+    | "canceled"
+    | "disputed"
+    | "rejected"
+    | "closed";
   };
   customerInformation: {
     name: string;
@@ -421,11 +421,17 @@ export const VendorMonthlyReport = () => {
   // Auto-open order details modal when orderProductId is in URL
   useEffect(() => {
     const orderProductId = searchParams.get("orderProductId");
-    if (orderProductId) {
-      setDetailsOrderId(orderProductId);
+    const disputeId = searchParams.get("disputeId");
+    if (!orderProductId) return;
+
+    setDetailsOrderId(orderProductId);
+
+    if (disputeId && adminView) {
+      setShowAdminDisputeModal(true);
+    } else {
       setShowOrderDetails(true);
     }
-  }, [searchParams]);
+  }, [searchParams, adminView]);
 
   useEffect(() => {
     if (orderProductsData?.data) {
@@ -552,7 +558,7 @@ export const VendorMonthlyReport = () => {
             gcsURL: string;
           };
 
-          await uploadWithProgress(file, signedUrl, () => {});
+          await uploadWithProgress(file, signedUrl, () => { });
           attachmentUrls.push(gcsURL);
         }
       }
@@ -680,6 +686,8 @@ export const VendorMonthlyReport = () => {
     setDetailsOrderId(null);
     // Clear orderProductId from URL
     searchParams.delete("orderProductId");
+    searchParams.delete("disputeId");
+
     navigate(`${window.location.pathname}?${searchParams.toString()}`, {
       replace: true,
     });
@@ -1131,14 +1139,14 @@ export const VendorMonthlyReport = () => {
             {(stats.orderProductPending > 0 ||
               stats.orderProductProcessing > 0 ||
               stats.orderProductShipped > 0) && (
-              <button
-                onClick={handleBulkMarkOrderCompleted}
-                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
-              >
-                <CheckCircle className="w-4 h-4" />
-                {t("approve_pending_orders")}
-              </button>
-            )}
+                <button
+                  onClick={handleBulkMarkOrderCompleted}
+                  className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {t("approve_pending_orders")}
+                </button>
+              )}
 
             <ExportOrdersButton
               orders={orders}
@@ -1410,6 +1418,7 @@ export const VendorMonthlyReport = () => {
             setShowAdminDisputeModal(false);
             setSelectedOrder(null);
             setDetailsOrderId(null);
+            closeDetails()
           }}
           onResolve={handleAdminResolveDispute}
         />

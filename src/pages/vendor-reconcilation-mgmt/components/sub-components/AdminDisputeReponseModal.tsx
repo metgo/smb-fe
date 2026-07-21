@@ -37,6 +37,10 @@ export const AdminDisputeResponseModal = ({
   const [resolutionAction, setResolutionAction] = useState("");
   const [errors, setErrors] = useState<{ action?: string }>({});
 
+  const isResolved =
+    order.reconciliationStatus === "approved" ||
+    order.reconciliationStatus === "rejected";
+
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
   const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
   const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
@@ -119,9 +123,20 @@ export const AdminDisputeResponseModal = ({
         <div className="p-6 space-y-6">
           {/* Status Badge */}
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
-              {t("awaiting_response")}
-            </span>
+            {isResolved ? (
+              <span
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${order.reconciliationStatus === "approved"
+                  ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400"
+                  : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"
+                  }`}
+              >
+                {t(order.reconciliationStatus)}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                {t("awaiting_response")}
+              </span>
+            )}
           </div>
 
           {/* Order Details */}
@@ -311,115 +326,134 @@ export const AdminDisputeResponseModal = ({
               {t("dispute_resolution")}
             </h3>
 
-            {/* Response to Vendor */}
-            <div className="mb-6">
-              <label
-                className={`block text-sm font-medium ${textPrimary} mb-2`}
-              >
-                {t("custom_response")}
-              </label>
-              <textarea
-                value={responseToVendor}
-                onChange={(e) => {
-                  setResponseToVendor(e.target.value);
-                }}
-                placeholder={t("custom_response_placeholder")}
-                rows={3}
-                className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
-              />
-              <p className={`text-xs ${textTertiary} mt-1`}>
-                {t("custom_response_helper")}
-              </p>
-            </div>
-
-            {/* Resolution Action */}
-            <div className="mb-4">
-              <label
-                className={`block text-sm font-medium ${textPrimary} mb-3`}
-              >
-                {t("decision")} <span className="text-red-500">*</span>
-              </label>
-              <div className="space-y-2">
-                <label
-                  className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                    resolutionAction === "accept"
-                      ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                      : `border-gray-300 dark:border-gray-600`
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="resolution"
-                    value="accept"
-                    checked={resolutionAction === "accept"}
-                    onChange={(e) => {
-                      setResolutionAction(e.target.value);
-                      setErrors({ ...errors, action: undefined });
-                    }}
-                    className="mt-0.5"
-                  />
-                  <div className="flex-1">
-                    <div
-                      className={`text-sm font-semibold text-green-600 dark:text-green-400`}
-                    >
-                      {t("approve_dispute")}
-                    </div>
-                    <div className={`text-xs ${textTertiary} mt-1`}>
-                      {t("approve_full_refund")}
-                    </div>
-                  </div>
-                </label>
-
-                <label
-                  className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                    resolutionAction === "reject"
-                      ? "border-red-500 bg-red-50 dark:bg-red-900/20"
-                      : `border-gray-300 dark:border-gray-600`
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="resolution"
-                    value="reject"
-                    checked={resolutionAction === "reject"}
-                    onChange={(e) => {
-                      setResolutionAction(e.target.value);
-                      setErrors({ ...errors, action: undefined });
-                    }}
-                    className="mt-0.5"
-                  />
-                  <div className="flex-1">
-                    <div
-                      className={`text-sm font-semibold text-red-600 dark:text-red-400`}
-                    >
-                      {t("reject_dispute")}
-                    </div>
-                    <div className={`text-xs ${textTertiary} mt-1`}>
-                      {t("reject_keep_payment")}
-                    </div>
-                  </div>
-                </label>
+            {isResolved ? (
+              <div className={`${bgSecondary} rounded-lg p-4`}>
+                <p className={textSecondary}>
+                  {t("dispute_already")}{" "}
+                  <span
+                    className={
+                      order.reconciliationStatus === "approved"
+                        ? "text-green-600 dark:text-green-400 font-semibold"
+                        : "text-red-600 dark:text-red-400 font-semibold"
+                    }
+                  >
+                    {order.reconciliationStatus}
+                  </span>
+                </p>
               </div>
-              {errors.action && (
-                <p className="text-red-500 text-xs mt-1">{errors.action}</p>
-              )}
-            </div>
+            ) : (
+              <>
+                {/* Response to Vendor */}
+                <div className="mb-6">
+                  <label
+                    className={`block text-sm font-medium ${textPrimary} mb-2`}
+                  >
+                    {t("custom_response")}
+                  </label>
+                  <textarea
+                    value={responseToVendor}
+                    onChange={(e) => {
+                      setResponseToVendor(e.target.value);
+                    }}
+                    placeholder={t("custom_response_placeholder")}
+                    rows={3}
+                    className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+                  />
+                  <p className={`text-xs ${textTertiary} mt-1`}>
+                    {t("custom_response_helper")}
+                  </p>
+                </div>
 
-            {/* Internal Notes (Optional) */}
-            <div className="mt-6 pt-6 border-t">
-              <label
-                className={`block text-sm font-medium ${textPrimary} mb-2`}
-              >
-                {t("internal_notes")}
-              </label>
-              <textarea
-                value={internalNotes}
-                onChange={(e) => setInternalNotes(e.target.value)}
-                placeholder={t("internal_notes_placeholder")}
-                rows={2}
-                className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
-              />
-            </div>
+                {/* Resolution Action */}
+                <div className="mb-4">
+                  <label
+                    className={`block text-sm font-medium ${textPrimary} mb-3`}
+                  >
+                    {t("decision")} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="space-y-2">
+                    <label
+                      className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${resolutionAction === "accept"
+                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                        : `border-gray-300 dark:border-gray-600`
+                        }`}
+                    >
+                      <input
+                        type="radio"
+                        name="resolution"
+                        value="accept"
+                        checked={resolutionAction === "accept"}
+                        onChange={(e) => {
+                          setResolutionAction(e.target.value);
+                          setErrors({ ...errors, action: undefined });
+                        }}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <div
+                          className={`text-sm font-semibold text-green-600 dark:text-green-400`}
+                        >
+                          {t("approve_dispute")}
+                        </div>
+                        <div className={`text-xs ${textTertiary} mt-1`}>
+                          {t("approve_full_refund")}
+                        </div>
+                      </div>
+                    </label>
+
+                    <label
+                      className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${resolutionAction === "reject"
+                        ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                        : `border-gray-300 dark:border-gray-600`
+                        }`}
+                    >
+                      <input
+                        type="radio"
+                        name="resolution"
+                        value="reject"
+                        checked={resolutionAction === "reject"}
+                        onChange={(e) => {
+                          setResolutionAction(e.target.value);
+                          setErrors({ ...errors, action: undefined });
+                        }}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <div
+                          className={`text-sm font-semibold text-red-600 dark:text-red-400`}
+                        >
+                          {t("reject_dispute")}
+                        </div>
+                        <div className={`text-xs ${textTertiary} mt-1`}>
+                          {t("reject_keep_payment")}
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                  {errors.action && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.action}
+                    </p>
+                  )}
+                </div>
+
+                {/* Internal Notes (Optional) */}
+                <div className="mt-6 pt-6 border-t">
+                  <label
+                    className={`block text-sm font-medium ${textPrimary} mb-2`}
+                  >
+                    {t("internal_notes")}
+                  </label>
+                  <textarea
+                    value={internalNotes}
+                    onChange={(e) => setInternalNotes(e.target.value)}
+                    placeholder={t("internal_notes_placeholder")}
+                    rows={2}
+                    className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -434,36 +468,38 @@ export const AdminDisputeResponseModal = ({
           >
             {t("cancel_btn")}
           </button>
-          <div className="flex gap-3">
-            <button
-              onClick={handleSubmit}
-              disabled={isLoading || resolutionAction !== "reject"}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
-                resolutionAction === "reject"
+
+          {!isResolved && (
+            <div className="flex gap-3">
+              <button
+                onClick={handleSubmit}
+                disabled={isLoading || resolutionAction !== "reject"}
+                className={`px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${resolutionAction === "reject"
                   ? "bg-red-600 hover:bg-red-700 text-white"
                   : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-              }`}
-            >
-              {isLoading && resolutionAction === "reject" && (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              )}
-              {t("reject_dispute")}
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={isLoading || resolutionAction !== "accept"}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
-                resolutionAction === "accept"
+                  }`}
+              >
+                {isLoading && resolutionAction === "reject" && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                )}
+                {t("reject_dispute")}
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isLoading || resolutionAction !== "accept"}
+                className={`px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${resolutionAction === "accept"
                   ? "bg-green-600 hover:bg-green-700 text-white"
                   : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-              }`}
-            >
-              {isLoading && resolutionAction === "accept" && (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              )}
-              {t("approve_dispute")}
-            </button>
-          </div>
+                  }`}
+              >
+                {isLoading && resolutionAction === "accept" && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                )}
+                {t("approve_dispute")}
+              </button>
+            </div>
+          )}
+
         </div>
       </div>
     </ModalWrapper>

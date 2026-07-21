@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface OrderDetailsModalProps {
   order: MonthlyOrder;
@@ -25,6 +26,7 @@ export default function OrderDetailsModal({
   loading,
 }: OrderDetailsModalProps) {
   const { t } = useTranslation("reconciliation");
+  const { isDark } = useThemeClasses()
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const { userRole } = useAppSelector((state) => state.auth);
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
@@ -86,6 +88,25 @@ export default function OrderDetailsModal({
                       {order.productCategory || "-"}
                     </span>
                   </div>
+
+                </div>
+                <div>
+                  <span className={textSecondary}>
+                    {["approved", "rejected"].includes(order.reconciliationStatus) && (
+                      <>
+                        Your dispute has been{" "}
+                        <span
+                          className={
+                            order.reconciliationStatus === "approved"
+                              ? isDark ? "text-green-400" : "text-green-600"
+                              : isDark ? "text-red-400" : "text-red-600"
+                          }
+                        >
+                          {order.reconciliationStatus}
+                        </span>
+                      </>
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
@@ -117,15 +138,14 @@ export default function OrderDetailsModal({
                 <div className={`${textTertiary} mb-1`}>{t("status")}</div>
                 <div className="mt-1">
                   <span
-                    className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      order.status === "pending"
-                        ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400"
-                        : order.status === "approved"
-                          ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400"
-                          : order.status === "disputed"
-                            ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400"
-                            : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"
-                    }`}
+                    className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${order.status === "pending"
+                      ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400"
+                      : order.status === "approved"
+                        ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400"
+                        : order.status === "disputed"
+                          ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400"
+                          : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"
+                      }`}
                   >
                     {t(order.status)}
                   </span>

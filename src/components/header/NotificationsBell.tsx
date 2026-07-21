@@ -142,7 +142,7 @@ const NotificationsBell = () => {
             <XCircle className="w-4 h-4 text-red-500" />
           </span>
         );
-         case "DISPUTE":
+      case "DISPUTE":
         return (
           <span className={`${base} bg-red-100 dark:bg-red-900/40`}>
             <Siren className="w-4 h-4 text-red-500" />
@@ -338,8 +338,9 @@ const NotificationsBell = () => {
                       // For DISPUTE, use orderProductId as the query parameter
                       const paramName =
                         itemType === "DISPUTE" ? "orderProductId" : queryParam;
+                      const disputeId = itemType === "DISPUTE" && "disputeId";
                       navigate(
-                        `${itemEndpoint[itemType]}?${paramName}=${notification.orderProductId}`,
+                        `${itemEndpoint[itemType]}?${paramName}=${notification.orderProductId}&${disputeId}=${notification.itemId}`,
                       );
                     }
                   };
@@ -639,20 +640,20 @@ const NotificationsBell = () => {
         notificationId={viewChangesState.notificationId}
         changeData={
           changesData &&
-          Array.isArray(changesData.changes) &&
-          changesData.changes.length > 0
+            Array.isArray(changesData.changes) &&
+            changesData.changes.length > 0
             ? {
-                changeId: changesData._id || undefined,
-                changes: changesData.changes || [],
-                summary: changesData.summary || "",
-                changesCount: changesData.changesCount || 0,
-                changedBy: changesData.changedBy || {
-                  firstName: "",
-                  email: "",
-                },
-                changedAt: changesData.changedAt || new Date(),
-                status: changesData.status || "PENDING",
-              }
+              changeId: changesData._id || undefined,
+              changes: changesData.changes || [],
+              summary: changesData.summary || "",
+              changesCount: changesData.changesCount || 0,
+              changedBy: changesData.changedBy || {
+                firstName: "",
+                email: "",
+              },
+              changedAt: changesData.changedAt || new Date(),
+              status: changesData.status || "PENDING",
+            }
             : undefined
         }
         isLoading={changesLoading}

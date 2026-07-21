@@ -11,6 +11,7 @@
   "filters": "Filters",
   "status": "Status",
   "all_statuses": "All Statuses",
+  "dispute_already": "Dispute Already",
   "pending": "Pending",
   "approved": "Approved",
   "disputed": "Disputed",

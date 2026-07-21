@@ -11,6 +11,7 @@
   "filters": "מסננים",
   "status": "סטטוס",
   "all_statuses": "כל הסטטוסים",
+  "dispute_already": "תלונה כבר",
   "pending": "ממתין",
   "approved": "אושר",
   "disputed": "מוטל בספק",
