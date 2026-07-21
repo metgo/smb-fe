@@ -784,6 +784,7 @@ export function useEventWizardState({
     await saveDraft(true, processed);
     setIsPublishing(false);
     onClose();
+    refetch?.();
     eventDataRefetch?.();
   }, [
     validateStep,
