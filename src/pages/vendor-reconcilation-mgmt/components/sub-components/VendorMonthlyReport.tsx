@@ -62,7 +62,7 @@ interface OrderProduct {
     | "disputed"
     | "rejected"
     | "closed";
-    rejectedReason?: string;
+    vendorFacingResponse?: string;
   };
   customerInformation: {
     name: string;
@@ -106,6 +106,7 @@ function mapOrderProductList(d: any) {
     productImage: d.product?.image?.image || "",
     productCategory: "",
     customerName,
+    vendorFacingResponse: d?.orderInformation?.vendorFacingResponse || "",
     customerEmail: d.customer?.email || "",
     customerPhone: d.customer?.phone || "",
     purchaseDate: d.createdAt || "",
@@ -161,7 +162,7 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
     unitPrice: d?.orderInformation?.unitPrice || 0,
     totalPrice: d?.orderInformation?.total || 0,
     platformFee: d?.orderInformation?.platformFee || 0,
-    rejectedReason: d?.orderInformation?.rejectedReason || "",
+    vendorFacingResponse: d?.orderInformation?.vendorFacingResponse || "",
 
     netToVendor:
       (d?.orderInformation?.total || 0) - (d?.orderInformation?.platformFee || 0),

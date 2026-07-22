@@ -1,9 +1,10 @@
-import { Package, User, CreditCard, Truck } from "lucide-react";
+import { Package, User, CreditCard, Truck, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { UserRole } from "@/enums/user.types";
 
 interface OrderDetailsModalProps {
   order: MonthlyOrder;
@@ -91,9 +92,9 @@ export default function OrderDetailsModal({
                   </div>
 
                 </div>
-                <div>
+                <div className="flex flex-col">
                   <span className={textSecondary}>
-                    {["approved", "rejected"].includes(order.reconciliationStatus) && (
+                    {["approved", "rejected"].includes(order.reconciliationStatus) && userRole === UserRole.TRAVELLER && (
                       <>
                         Your dispute has been{" "}
                         <span
@@ -109,15 +110,16 @@ export default function OrderDetailsModal({
                     )}
                   </span>
                   <span className={textSecondary}>
-                    {order.reconciliationStatus === "rejected" && (
+                    {order.reconciliationStatus === "rejected" && order?.vendorFacingResponse && userRole === UserRole.TRAVELLER && (
                       <>
-                        <span
-                          className={
-                            order.reconciliationStatus === "rejected"
-                              && isDark ? "text-red-400" : "text-red-600"
-                          }
-                        >
-                          {order.rejectedReason}
+                        <span className="text-red-400 text-sm flex items-center gap-2">
+                          <div>
+                            <Info className="h-4 w-4" />
+                          </div>
+                          <div>
+                            {order.vendorFacingResponse}
+
+                          </div>
                         </span>
                       </>
                     )}
