@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -10,38 +10,49 @@ import {
   Grid3x3,
   Clock,
   MapPin,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  CalendarRange,
   Loader,
+  Ticket,
+  LayoutList,
+  Eye,
+  PenBox,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import {
   BulkActionBar,
   ConfirmDialog,
   GridCard,
+  ImageWithFallback,
   ReordableDataTable,
 } from "@/components/shared";
-import { extractCenterAddressText, extractEventDates } from "@/helpers";
+import {
+  extractCenterAddressText,
+  extractEventDates,
+  getLngWiseStr,
+} from "@/helpers";
 import {
   useDeleteEventMutation,
   useUpdateEventMutation,
 } from "@/store/api/eventMutationApi";
 import { EventCardSkeleton } from "@/components/skeletons";
-import QuickSnapEventDetails from "./QuickSnapEventDetails";
-import CreateEventWizard from "./CreateEventWizard";
+import CreateEventWizardNew from "./wizard/CreateEventWizardNew";
 import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import EmptyState from "@/components/shared/EmptyState";
 import { StatusPill } from "@/components/pills";
+import { ActionIconButtons } from "@/components/btns";
+import TicketsModal from "./TicketsModal";
+import { routes } from "@/lib/routes";
+import { useCommon } from "@/hooks/useCommon";
 
 interface EventsWithViewModeProps {
-  events: any[];
+  events: IEventListRes[];
   viewMode: string;
   isLoading: boolean;
+  hasMore: boolean;
+  fetchNextPage: () => void;
   eventTypeFilter: string;
   registrationFilter: string;
   statusFilter: string;
@@ -89,20 +100,33 @@ export default function EventsWithViewMode({
   viewMode,
   refetch,
   isLoading,
-  eventTypeFilter,
-  registrationFilter,
-  statusFilter,
+  hasMore,
+  fetchNextPage,
   searchQuery,
 }: EventsWithViewModeProps) {
+  const navigate = useNavigate();
+
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
 
-  const navigate = useNavigate();
-  const { bgSecondary, borderColor, textTertiary, textPrimary, language } =
-    useThemeClasses();
+  const { bgSecondary, borderColor, language, isDark } = useThemeClasses();
+  const { allWebsites } = useCommon();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
   const [updateEvent] = useUpdateEventMutation();
+
+  const [isTicketsModalOpen, setIsTicketsModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<{
+    eventId: string;
+    eventDays: IEventDayDescription[];
+    externalTicketLink: string;
+    isTicketLinkExist: boolean;
+  }>({
+    eventId: "",
+    eventDays: [],
+    externalTicketLink: "",
+    isTicketLinkExist: false,
+  });
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarViewMode, setCalendarViewMode] =
@@ -111,29 +135,22 @@ export default function EventsWithViewMode({
   const [editData, setEditData] = useState();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [showQuickViewModal, setShowQuickViewModal] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
-  const [clickedEventData, setClickedEventData] = useState<Event | null>(null);
 
-  const [displayedListCount, setDisplayedListCount] = useState(12);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
 
   const [getEventEditData] = useLazyGetEventByIdQuery();
 
-  const handleEditEvent = async () => {
+  const handleEditEvent = async (eventId: string) => {
     const toastId = toast.loading(tc("event_edit_data_fetching"));
-    if (clickedEventData) {
-      const eventDetails = await getEventEditData({
-        eventId: clickedEventData?._id,
-      }).unwrap();
+    if (eventId) {
+      const eventDetails = await getEventEditData({ eventId }).unwrap();
       if (eventDetails) {
         setIsEditModalOpen(true);
-        setClickedEventData(null);
-        setShowQuickViewModal(false);
         setEditData(eventDetails);
         toast.success(tc("event_details_fetched"), { id: toastId });
-        navigate(`?eventId=${clickedEventData?._id}`);
+        navigate(`?eventId=${eventId}`);
       }
     }
   };
@@ -214,10 +231,10 @@ export default function EventsWithViewMode({
   }, [currentDate]);
 
   // Handle events sets
-  const handleEventSelect = (event: Event) => {
-    setShowQuickViewModal(true);
-    setClickedEventData(event);
-    navigate(`?eventId=${event?._id}`, { replace: true });
+  const handleEventSelect = (event: IEventListRes) => {
+    navigate(`${routes.eventDetails}?eventId=${event?._id}`, {
+      replace: true,
+    });
   };
 
   const handleEventDelete = async (eventId: string) => {
@@ -225,6 +242,7 @@ export default function EventsWithViewMode({
     toast.success(tc("event_deleted_success"));
     refetch();
   };
+
   const toggleCheckBox = (itemId: string) => {
     const newSelected = new Set(selectedEvents);
     if (newSelected.has(itemId)) newSelected.delete(itemId);
@@ -277,19 +295,6 @@ export default function EventsWithViewMode({
               {day.getDate()}
             </div>
             <div className="space-y-1 text-xs">
-              {dayEvents.slice(0, 3).map((event) => {
-                const { ribbon } = getCategoryColor(event.category);
-                return (
-                  <div
-                    key={event._id}
-                    onClick={() => handleEventSelect(event)}
-                    className={`px-1 py-0.5 ${ribbon} text-white rounded truncate cursor-pointer`}
-                    title={event.name}
-                  >
-                    {event.name}
-                  </div>
-                );
-              })}
               {dayEvents?.length > 3 && (
                 <div className="text-gray-500">
                   +{dayEvents?.length - 3} {t("more")}
@@ -323,8 +328,8 @@ export default function EventsWithViewMode({
               <div className="text-xl">{day.getDate()}</div>
             </div>
             <div className="space-y-2">
-              {dayEvents.map((event) => {
-                const { ribbon } = getCategoryColor(event.category);
+              {dayEvents?.map((event, index) => {
+                const { ribbon } = getCategoryColor(event.status);
                 return (
                   <div
                     key={event._id}
@@ -333,7 +338,8 @@ export default function EventsWithViewMode({
                   >
                     <div className="font-medium truncate">{event.name}</div>
                     <div>
-                      {event.startTime} - {event.endTime}
+                      {event?.dayDescription?.[index]?.startTime} -{" "}
+                      {event?.dayDescription?.[index]?.endTime}
                     </div>
                   </div>
                 );
@@ -378,7 +384,7 @@ export default function EventsWithViewMode({
           </div>
         ) : (
           <div className="space-y-6">
-            {dayEvents.map((event) => {
+            {dayEvents.map((event, index) => {
               const priceLabel = getPriceLabel(event);
               const isFree = priceLabel === t("free");
 
@@ -394,11 +400,12 @@ export default function EventsWithViewMode({
                       <div className="space-y-2 text-gray-600 dark:text-gray-400">
                         <div className="flex items-center gap-2">
                           <Clock className="w-5 h-5" />
-                          {event.startTime} - {event.endTime}
+                          {event?.dayDescription?.[index]?.startTime} -{" "}
+                          {event?.dayDescription?.[index]?.endTime}
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin className="w-5 h-5" />
-                          {event.location}
+                          {event?.address?.location}
                         </div>
                       </div>
                     </div>
@@ -423,10 +430,23 @@ export default function EventsWithViewMode({
 
   // Grid View
   const GridView = () => {
-    if (isLoading) {
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+
+    useInfiniteScroll({
+      ref: scrollRef,
+      hasMore,
+      isLoading,
+      onLoadMore: fetchNextPage,
+    });
+
+    if (isLoading && (!displayedEvents || displayedEvents.length === 0)) {
       return (
-        <div className="flex justify-center items-center">
-          <Loader className="w-10 h-10 animate-spin text-teal-600" />{" "}
+        <div className="py-4 px-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+            {Array.from({ length: 7 }).map((_, index) => (
+              <EventCardSkeleton key={index} />
+            ))}
+          </div>
         </div>
       );
     }
@@ -435,92 +455,52 @@ export default function EventsWithViewMode({
     if (!displayedEvents || displayedEvents.length === 0) {
       return <EmptyState searchQuery={searchQuery} />;
     }
-    const displayed = events?.slice(0, displayedListCount);
-
-    if (events?.length === 0 && !isLoading) {
-      return (
-        <div className="text-center py-12">
-          <AlertCircle className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
-          <h3 className={`text-lg mb-2 ${textPrimary}`}>
-            {t("no_events_found")}
-          </h3>
-          <p className={textTertiary}>
-            {searchQuery ||
-            eventTypeFilter !== "all" ||
-            registrationFilter !== "all" ||
-            statusFilter !== "all"
-              ? t("no_events_found_desc")
-              : t("no_events_available")}
-          </p>
-        </div>
-      );
-    }
 
     return (
-      <div className="py-4 px-3">
+      <div ref={scrollRef} className="py-4 px-3 overflow-y-auto max-h-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-          {isLoading
-            ? Array.from({ length: 7 }).map((_, index) => (
-                <EventCardSkeleton key={index} />
-              ))
-            : displayed?.map((event) => (
-                <GridCard
-                  key={event._id}
-                  image={event?.images?.[0]?.image}
-                  imageAlt={event.name}
-                  imageHeight="h-36"
-                  fallbackIcon={Calendar}
-                  fallbackGradient="from-purple-400 to-pink-400"
-                  title={event.name}
-                  status={event?.status?.toLowerCase()}
-                  isChecked={selectedEvents?.has(event._id) ?? false}
-                  onCheckChange={() => toggleCheckBox(event._id)}
-                  onDelete={(e) => {
-                    e.stopPropagation();
-                    setIsConfirmOpen(true);
-                    setEventToDelete(event._id);
-                  }}
-                  onClick={() => handleEventSelect(event)}
-                  meta={[
-                    {
-                      icon: Calendar,
-                      label: extractEventDates(event?.dayDescription),
-                    },
-                    event?.address?.location && {
-                      icon: MapPin,
-                      label: extractCenterAddressText(event.address.location),
-                    },
-                  ]}
-                  footer={
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={
-                          event.isFree
-                            ? "text-emerald-600 font-medium text-xs"
-                            : "text-purple-600 font-medium text-xs"
-                        }
-                      >
-                        {event?.isFree ? t("free") : `₪ 0`}
-                      </span>
-                      {event.registrationRequired && (
-                        <span className="text-xs text-gray-500">
-                          {event.totalRegistrations}/{event.capacity}
-                        </span>
-                      )}
-                    </div>
-                  }
-                />
-              ))}
+          {displayedEvents?.map((event) => {
+            const imageUrl =
+              event?.images?.find((img) => img.isPrimary)?.image ||
+              event?.images?.[0]?.image ||
+              event?.image;
+            return (
+              <GridCard
+                key={event._id}
+                image={imageUrl}
+                imageAlt={event.name}
+                imageHeight="h-36"
+                fallbackIcon={Calendar}
+                fallbackGradient="from-purple-400 to-pink-400"
+                title={event.name}
+                status={event?.status?.toLowerCase()}
+                isChecked={selectedEvents?.has(event._id) ?? false}
+                onCheckChange={() => toggleCheckBox(event._id)}
+                onDelete={(e) => {
+                  e.stopPropagation();
+                  setIsConfirmOpen(true);
+                  setEventToDelete(event._id);
+                }}
+                onClick={() => handleEventSelect(event)}
+                meta={[
+                  {
+                    icon: Calendar,
+                    label: extractEventDates(event?.dayDescription),
+                  },
+                  {
+                    icon: MapPin,
+                    label:
+                      extractCenterAddressText(event?.address?.location) || "",
+                  },
+                ]}
+              />
+            );
+          })}
         </div>
 
-        {events?.length > displayedListCount && (
-          <div className="mt-10 text-center">
-            <button
-              onClick={() => setDisplayedListCount((prev) => prev + 12)}
-              className="px-8 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all"
-            >
-              {t("load_more")}
-            </button>
+        {isLoading && (
+          <div className="flex justify-center items-center py-6">
+            <Loader className="w-8 h-8 animate-spin text-teal-600" />
           </div>
         )}
       </div>
@@ -540,6 +520,8 @@ export default function EventsWithViewMode({
         }
         onRowClick={(item) => handleEventSelect(item)}
         storageKey="eventsTableColumnOrder"
+        hasMore={hasMore}
+        next={fetchNextPage}
         columns={[
           { key: "checkbox", label: "", width: "50px" },
           {
@@ -548,11 +530,13 @@ export default function EventsWithViewMode({
             sortable: true,
             render: (event) => (
               <div className="flex items-center gap-2">
-                {event.isMultiDay && (
-                  <CalendarRange className="w-4 h-4 text-teal-500 shrink-0" />
-                )}
                 <span className="text-sm line-clamp-2">
-                  {event.name || event.nameHe || event.nameAr}
+                  {getLngWiseStr(
+                    language,
+                    event.name,
+                    event.nameHe,
+                    event.nameAr,
+                  )}
                 </span>
               </div>
             ),
@@ -564,12 +548,36 @@ export default function EventsWithViewMode({
             render: (event) => extractEventDates(event?.dayDescription),
           },
           {
+            key: "associatedWebsites",
+            label: t("websites"),
+            sortable: true,
+            render: (event) => {
+              return (
+                <div className="flex items-center gap-2">
+                  {allWebsites
+                    ?.filter((item) =>
+                      event?.associatedWebsiteIds?.includes(item._id),
+                    )
+                    ?.map((website) => (
+                      <div key={website?._id}>
+                        <ImageWithFallback
+                          src={website.logo}
+                          alt={website.name}
+                          className="w-4 h-4"
+                        />
+                      </div>
+                    ))}
+                </div>
+              );
+            },
+          },
+          {
             key: "price",
             label: t("price"),
             sortable: true,
             render: (event) => {
-              const firstTicket = event?.tickets?.[0];
-              const lastTicket = event?.tickets?.[event?.tickets?.length - 1];
+              const firstTicket = event?.pricing?.[0];
+              const lastTicket = event?.pricing?.[event?.pricing?.length - 1];
               return (
                 <div>
                   {firstTicket?.type === "FREE" ? (
@@ -596,44 +604,87 @@ export default function EventsWithViewMode({
             },
           },
           {
-            key: "registration",
-            label: t("registration"),
-            render: (event) =>
-              event.registrationRequired ? (
-                <CheckCircle className="w-4 h-4 text-green-500 mx-auto" />
-              ) : (
-                <XCircle className="w-4 h-4 text-gray-400 mx-auto" />
-              ),
-          },
-          {
             key: "status",
             label: t("status"),
             sortable: true,
             render: (event) => <StatusPill status={event.status} />,
           },
           {
-            key: "registrations",
-            label: t("registrations"),
-            sortable: true,
-            render: (event) => (
-              <div className="text-right">
-                {event?.totalRegistrations?.toLocaleString()}
-                {event?.capacity > 0 && (
-                  <span className="text-xs text-gray-400 ml-1">
-                    / {event?.capacity?.toLocaleString()}
-                  </span>
-                )}
-              </div>
-            ),
+            key: "ticket_count",
+            label: t("tickets"),
+            render: (event) =>
+              event.hasExternalTicket ? (
+                <div>-</div>
+              ) : (
+                <div>{event?.ticketCount}</div>
+              ),
           },
           {
-            key: "revenue",
-            label: t("revenue"),
-            sortable: true,
+            key: "wrapper_count",
+            label: t("landing_pages"),
             render: (event) =>
-              event.revenue > 0
-                ? `₪${(event.revenue / 1000).toFixed(1)}K`
-                : "-",
+              event.hasExternalTicket ? (
+                <div>-</div>
+              ) : (
+                <div>{event?.wrapperCount}</div>
+              ),
+          },
+          {
+            key: "action",
+            label: t("actions"),
+            render: (event) => (
+              <ActionIconButtons
+                isDark={isDark}
+                actions={[
+                  {
+                    title: t("edit_event"),
+                    icon: PenBox,
+                    color: "blue",
+                    onClick: () => {
+                      handleEditEvent(event._id);
+                    },
+                  },
+                  {
+                    title: t("details"),
+                    icon: Eye,
+                    color: "green",
+                    onClick: () => {
+                      navigate(`${routes.eventDetails}?eventId=${event?._id}`, {
+                        replace: true,
+                      });
+                    },
+                  },
+                  {
+                    title: t("tickets"),
+                    icon: Ticket,
+                    color: "gray",
+                    onClick: () => {
+                      setSelectedEvent({
+                        eventId: event._id,
+                        eventDays: event.dayDescription,
+                        externalTicketLink: event.ticketBuyLink,
+                        isTicketLinkExist: event.hasExternalTicket,
+                      });
+                      setIsTicketsModalOpen(true);
+                    },
+                  },
+                  {
+                    title: event?.hasExternalTicket
+                      ? t("create_ticket_for_this_event")
+                      : t("create_landing_page"),
+                    icon: LayoutList,
+                    color: "yellow",
+                    onClick: () => {
+                      if (event?.hasExternalTicket) return;
+                      window.open(
+                        `${routes.eventSessionMgmt}?eventId=${event?._id}`,
+                        "_blank",
+                      );
+                    },
+                  },
+                ]}
+              />
+            ),
           },
         ]}
       />
@@ -681,126 +732,127 @@ export default function EventsWithViewMode({
   };
 
   return (
-    <div className="space-y-2">
-      <BulkActionBar
-        selectedItemCount={selectedEvents.size || 0}
-        handleBulkStatusChange={handleBulkStatusChange}
-        handleBulkDelete={handleBulkDelete}
-        hancleClearSelection={() => setSelectedEvents(new Set())}
-      />
+    <>
+      <div className="space-y-2">
+        <BulkActionBar
+          selectedItemCount={selectedEvents.size || 0}
+          handleBulkStatusChange={handleBulkStatusChange}
+          handleBulkDelete={handleBulkDelete}
+          hancleClearSelection={() => setSelectedEvents(new Set())}
+        />
 
-      {/* Controls */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        {viewMode === "calendar" && (
-          <div className="flex gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            {/* Calendar Views */}
-            {CALENDAR_MODES.map(({ key, label, icon: Icon }) => {
-              const isActive = calendarViewMode === key;
+        {/* Controls */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          {viewMode === "calendar" && (
+            <div className="flex gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+              {/* Calendar Views */}
+              {CALENDAR_MODES.map(({ key, label, icon: Icon }) => {
+                const isActive = calendarViewMode === key;
 
-              return (
-                <Button
-                  key={key}
-                  variant="ghost"
-                  onClick={() => setCalendarViewMode(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
+                return (
+                  <Button
+                    key={key}
+                    variant="ghost"
+                    onClick={() => setCalendarViewMode(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
                 ${
                   isActive
                     ? "bg-white dark:bg-gray-700 text-purple-600 shadow"
                     : "text-gray-600 dark:text-gray-300"
                 }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  {t(label)}
-                </Button>
-              );
-            })}
-          </div>
-        )}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {t(label)}
+                  </Button>
+                );
+              })}
+            </div>
+          )}
 
-        {viewMode.startsWith("calendar") && (
-          <div className="flex items-center gap-4">
-            <button
-              onClick={goPrevious}
-              className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <span className="font-semibold text-lg min-w-48 text-center">
-              {monthYear}
-            </span>
-            <button
-              onClick={goNext}
-              className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-            <button
-              onClick={goToday}
-              className="px-5 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50"
-            >
-              {t("today")}
-            </button>
-          </div>
+          {viewMode.startsWith("calendar") && (
+            <div className="flex items-center gap-4">
+              <button
+                onClick={goPrevious}
+                className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <span className="font-semibold text-lg min-w-48 text-center">
+                {monthYear}
+              </span>
+              <button
+                onClick={goNext}
+                className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+              <button
+                onClick={goToday}
+                className="px-5 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50"
+              >
+                {t("today")}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Main Content */}
+        <div
+          className={clsx(
+            bgSecondary,
+            borderColor,
+            "border flex-1 overflow-y-auto max-h-[calc(100vh-400px)] rounded-2xl",
+          )}
+        >
+          {calendarViewMode === "calendar-month" && viewMode === "calendar" && (
+            <MonthView />
+          )}
+          {calendarViewMode === "calendar-week" && viewMode === "calendar" && (
+            <WeekView />
+          )}
+          {calendarViewMode === "calendar-day" && viewMode === "calendar" && (
+            <DayView />
+          )}
+          {viewMode === "list" && <ListView />}
+          {viewMode === "grid" && <GridView />}
+        </div>
+
+        <ConfirmDialog
+          open={isConfirmOpen}
+          title={"delete_event"}
+          message="delete_event_confirm"
+          confirmText="delete"
+          loading={isDeleting}
+          variant="danger"
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setEventToDelete(null);
+          }}
+          onConfirm={() => {
+            if (!eventToDelete) return;
+            handleEventDelete(eventToDelete);
+            setIsConfirmOpen(false);
+            setEventToDelete(null);
+          }}
+        />
+
+        {isEditModalOpen && (
+          <CreateEventWizardNew
+            isOpen={isEditModalOpen}
+            editData={editData}
+            onClose={() => setIsEditModalOpen(false)}
+            refetch={refetch}
+          />
         )}
       </div>
 
-      {/* Main Content */}
-      <div
-        className={clsx(
-          bgSecondary,
-          borderColor,
-          "border flex-1 overflow-y-auto max-h-[calc(100vh-400px)] rounded-2xl",
-        )}
-      >
-        {calendarViewMode === "calendar-month" && viewMode === "calendar" && (
-          <MonthView />
-        )}
-        {calendarViewMode === "calendar-week" && viewMode === "calendar" && (
-          <WeekView />
-        )}
-        {calendarViewMode === "calendar-day" && viewMode === "calendar" && (
-          <DayView />
-        )}
-        {viewMode === "list" && <ListView />}
-        {viewMode === "grid" && <GridView />}
-      </div>
-
-      <ConfirmDialog
-        open={isConfirmOpen}
-        title={"delete_event"}
-        message="delete_event_confirm"
-        confirmText="delete"
-        loading={isDeleting}
-        variant="danger"
-        onCancel={() => {
-          setIsConfirmOpen(false);
-          setEventToDelete(null);
-        }}
-        onConfirm={() => {
-          if (!eventToDelete) return;
-          handleEventDelete(eventToDelete);
-          setIsConfirmOpen(false);
-          setEventToDelete(null);
-        }}
-      />
-
-      {showQuickViewModal && (
-        <QuickSnapEventDetails
-          setIsOpen={setShowQuickViewModal}
-          selectedEvent={clickedEventData}
-          setSelectedEvent={setClickedEventData}
-          handleEditEvent={handleEditEvent}
+      {isTicketsModalOpen && (
+        <TicketsModal
+          {...selectedEvent}
+          eventsRefetch={refetch}
+          setIsOpen={setIsTicketsModalOpen}
         />
       )}
-
-      {isEditModalOpen && (
-        <CreateEventWizard
-          isOpen={isEditModalOpen}
-          editData={editData}
-          onClose={() => setIsEditModalOpen(false)}
-          refetch={refetch}
-        />
-      )}
-    </div>
+    </>
   );
 }

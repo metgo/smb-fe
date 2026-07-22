@@ -12,9 +12,6 @@ interface DetailTitleSectionProps {
   nameHe: string;
   nameAr: string;
   impact: number;
-  images: {
-    image: string;
-  }[];
   createdAt: string;
   updatedAt: string;
   completionPercent: number;
@@ -26,7 +23,6 @@ const DetailTitleSection = ({
   nameAr,
   nameHe,
   impact,
-  images,
   createdAt,
   updatedAt,
   completionPercent,
@@ -45,7 +41,7 @@ const DetailTitleSection = ({
   return (
     <div className="flex items-center gap-3">
       <ImageWithFallback
-        src={imageSrc || images?.[0]?.image}
+        src={imageSrc}
         alt={name || nameHe || nameAr}
         className={clsx(
           "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover shrink-0 border",

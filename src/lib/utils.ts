@@ -9,10 +9,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const locales: { value: Language; label: string; flag?: string }[] = [
-  { value: "en", label: "English", flag: "/assets/images/gb.png" },
-  { value: "he", label: "עברית", flag: "/assets/images/il.png" },
-  { value: "ar", label: "العربية", flag: "/assets/images/sa.png" },
+  { value: "en", label: "English", flag: "🇺🇸" },
+  { value: "he", label: "עברית", flag: "🇮🇱" },
+  { value: "ar", label: "العربية", flag: "🇸🇦" },
 ];
+
+export const TICKET_TYPE_STYLES: Record<string, string> = {
+  free: "bg-green-500/20 text-green-600 dark:text-green-400",
+  vip: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+  donation: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
+  paid: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+};
 
 export const itemStatuses = [
   { value: "DRAFT", label: "draft" },
@@ -105,4 +112,21 @@ export const ROLE_TABS = [
   { id: UserRole.DMO, label: "DMOs", icon: Map },
   { id: UserRole.AUTHORITY, label: "Authorities", icon: Building2 },
   { id: UserRole.TRAVELLER, label: "Travellers", icon: User },
+];
+
+export const EMAIL_TEMPLATE_IMAGE_KEYS = [
+  { _id: "FOOTER1", name: "FOOTER1" },
+  { _id: "FOOTER2", name: "FOOTER2" },
+  { _id: "FOOTER3", name: "FOOTER3" },
+  { _id: "FOOTER4", name: "FOOTER4" },
+  { _id: "FOOTER5", name: "FOOTER5" },
+  { _id: "FOOTER_BADGE", name: "FOOTER_BADGE" },
+  { _id: "FOOTER_BANNER", name: "FOOTER_BANNER" },
+  { _id: "FOOTER_BANNER_MOBILE", name: "FOOTER_BANNER_MOBILE" },
+  { _id: "BANNER_IMG", name: "BANNER_IMG" },
+  { _id: "MOBILE_BANNER_IMG", name: "MOBILE_BANNER_IMG" },
+  {
+    _id: "FOOTER_BANNER_MINISITE_BANNER",
+    name: "FOOTER_BANNER_MINISITE_BANNER",
+  },
 ];

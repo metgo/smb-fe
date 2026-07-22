@@ -40,5 +40,7 @@
   "password": "أدخل كلمة المرور *",
   "next": "التالي",
   "welcome_user": "مرحباً {{firstName}} {{lastName}}",
-  "continue_with_google": "المتابعة باستخدام Google"
+  "continue_with_google": "المتابعة باستخدام Google",
+
+  "rate_limit_message": "تم تقييد حسابك مؤقتًا بسبب محاولات تسجيل الدخول الفاشلة المتعددة."
 }

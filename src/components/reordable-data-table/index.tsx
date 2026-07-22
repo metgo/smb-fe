@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { GripVertical, Loader2 } from "lucide-react";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 import { compareValues } from "@/helpers";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -95,6 +94,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
   // Horizontal scroll shadow
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [isScrolledX, setIsScrolledX] = useState(false);
 
   useEffect(() => {
@@ -105,6 +105,20 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
   }, []);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = scrollRef.current;
+    if (!sentinel || !container || !hasMore || isDataLoading) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) next?.();
+      },
+      { root: container, threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isDataLoading, next]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && !initialLoadRef.current) {
@@ -369,250 +383,240 @@ export default function ReordableDataTable<T extends Record<string, any>>({
         isDark ? "border-gray-800 bg-gray-900" : "border-gray-200 bg-white",
       )}
     >
-      <InfiniteScroll
-        dataLength={data?.length || 0}
-        next={next || (() => {})}
-        hasMore={hasMore || false}
-        scrollableTarget="scrollableDiv"
-        loader={null}
+      {/* Main Scrollable Container */}
+      <div
+        ref={scrollRef}
+        className="w-full overflow-auto"
+        style={{
+          maxHeight: "calc(100vh - 400px)",
+          scrollbarWidth: "none",
+        }}
       >
-        {/* Main Scrollable Container */}
-        <div
-          id="scrollableDiv"
-          ref={scrollRef}
-          className="w-full overflow-auto"
-          style={{
-            maxHeight: "calc(100vh - 400px)",
-            scrollbarWidth: "none",
-          }}
-        >
-          <table className="w-full border-collapse min-w-full">
-            {/* ── Sticky Header ── */}
-            <thead
-              className={clsx(
-                "sticky top-0 z-20 border-b",
-                isDark
-                  ? "bg-gray-900 border-gray-800"
-                  : "bg-gray-50 border-gray-200",
-              )}
-            >
-              <tr>
-                {columnOrder.map((colKey) => {
-                  const column = columns.find((c) => c.key === colKey);
-                  if (!column) return null;
+        <table className="w-full border-collapse min-w-full">
+          {/* ── Sticky Header ── */}
+          <thead
+            className={clsx(
+              "sticky top-0 z-20 border-b",
+              isDark
+                ? "bg-gray-900 border-gray-800"
+                : "bg-gray-50 border-gray-200",
+            )}
+          >
+            <tr>
+              {columnOrder.map((colKey) => {
+                const column = columns.find((c) => c.key === colKey);
+                if (!column) return null;
 
-                  const isPinned = PINNED_ALL.has(colKey);
-                  const isSortable = !isPinned && !!column.sortable;
-                  const isDraggable = !isPinned;
-                  const field = column.key as keyof T;
-                  const isDragging = draggedColumn === colKey;
-                  const isOver =
-                    dragOverColumn === colKey && draggedColumn !== colKey;
+                const isPinned = PINNED_ALL.has(colKey);
+                const isSortable = !isPinned && !!column.sortable;
+                const isDraggable = !isPinned;
+                const field = column.key as keyof T;
+                const isDragging = draggedColumn === colKey;
+                const isOver =
+                  dragOverColumn === colKey && draggedColumn !== colKey;
 
-                  // FIX: header pinned cells need z-index above body pinned cells
-                  const stickyStyle: React.CSSProperties = isPinned
-                    ? { ...getStickyStyle(colKey), zIndex: 40 }
-                    : {};
+                // FIX: header pinned cells need z-index above body pinned cells
+                const stickyStyle: React.CSSProperties = isPinned
+                  ? { ...getStickyStyle(colKey), zIndex: 40 }
+                  : {};
 
-                  return (
-                    <th
-                      key={colKey}
-                      ref={(el) => {
-                        thRefs.current[colKey] = el;
-                      }}
-                      style={{ width: column.width, ...stickyStyle }}
-                      draggable={isDraggable}
-                      onDragStart={() => handleDragStart(colKey)}
-                      onDragOver={(e) => handleDragOver(e, colKey)}
-                      onDrop={(e) => handleDrop(e, colKey)}
-                      onDragEnd={handleDragEnd}
-                      onClick={() => isSortable && handleSort(field)}
-                      className={clsx(
-                        "relative px-4 py-3",
-                        isRTL ? "text-right" : "text-left",
-                        "text-xs font-semibold tracking-widest",
-                        "transition-colors duration-150 select-none group",
-                        isDark ? "text-gray-400" : "text-gray-500",
-                        isSortable && "cursor-pointer",
-                        isDraggable && "cursor-grab active:cursor-grabbing",
-                        isDragging && "opacity-40",
-                        isOver && (isDark ? "bg-teal-900/30" : "bg-teal-50"),
-                        isSortable &&
-                          (isDark
-                            ? "hover:bg-gray-800 hover:text-gray-200"
-                            : "hover:bg-gray-100 hover:text-gray-700"),
-                        getStickyHeaderBgClass(colKey),
-                      )}
-                    >
-                      {isOver && (
-                        <span className="absolute inset-y-0 left-0 w-0.5 bg-teal-500 rounded-full" />
-                      )}
+                return (
+                  <th
+                    key={colKey}
+                    ref={(el) => {
+                      thRefs.current[colKey] = el;
+                    }}
+                    style={{ width: column.width, ...stickyStyle }}
+                    draggable={isDraggable}
+                    onDragStart={() => handleDragStart(colKey)}
+                    onDragOver={(e) => handleDragOver(e, colKey)}
+                    onDrop={(e) => handleDrop(e, colKey)}
+                    onDragEnd={handleDragEnd}
+                    onClick={() => isSortable && handleSort(field)}
+                    className={clsx(
+                      "relative px-4 py-3",
+                      isRTL ? "text-right" : "text-left",
+                      "text-xs font-semibold tracking-widest",
+                      "transition-colors duration-150 select-none group",
+                      isDark ? "text-gray-400" : "text-gray-500",
+                      isSortable && "cursor-pointer",
+                      isDraggable && "cursor-grab active:cursor-grabbing",
+                      isDragging && "opacity-40",
+                      isOver && (isDark ? "bg-teal-900/30" : "bg-teal-50"),
+                      isSortable &&
+                        (isDark
+                          ? "hover:bg-gray-800 hover:text-gray-200"
+                          : "hover:bg-gray-100 hover:text-gray-700"),
+                      getStickyHeaderBgClass(colKey),
+                    )}
+                  >
+                    {isOver && (
+                      <span className="absolute inset-y-0 left-0 w-0.5 bg-teal-500 rounded-full" />
+                    )}
 
-                      {colKey === "checkbox" ? (
-                        <Checkbox
-                          checked={someSelected ? "indeterminate" : allSelected}
-                          onCheckedChange={(v) => {
-                            if (v !== "indeterminate") toggleAll();
-                          }}
-                          className={clsx(
-                            "cursor-pointer transition-colors",
-                            isDark
-                              ? "border-gray-600 data-[state=checked]:bg-teal-500"
-                              : "border-gray-300 data-[state=checked]:bg-teal-600",
-                          )}
-                        />
-                      ) : (
-                        <div
-                          className={clsx(
-                            "flex items-center gap-1.5",
-                            isRTL && "flex-row-reverse",
-                          )}
-                        >
-                          {isDraggable && (
-                            <GripVertical className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-30 transition-opacity duration-150" />
-                          )}
-                          <span>{column.label}</span>
-                          {isSortable && (
-                            <SortIcon
-                              field={colKey}
-                              sortConfig={sortConfig as any}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-
-            {/* ── Body ── */}
-            <tbody
-              className={clsx(
-                "divide-y",
-                isDark ? "divide-gray-800" : "divide-gray-100",
-              )}
-            >
-              {(hasMore || isDataLoading) &&
-              (!sortedData || sortedData.length === 0) ? (
-                Array.from({ length: 12 }).map((_, i) => (
-                  <SkeletonRow key={i} cols={columnOrder.length} />
-                ))
-              ) : (!sortedData || sortedData.length === 0) &&
-                !(hasMore || isDataLoading) ? (
-                <tr>
-                  <td colSpan={columnOrder.length} className="h-full">
-                    <EmptyState
-                      message={t ? t("no_data") : "No data available"}
-                    />
-                  </td>
-                </tr>
-              ) : (
-                sortedData.map((item) => {
-                  const isSelected = Boolean(selectedItems?.has(item[rowKey]));
-
-                  return (
-                    <tr
-                      key={String(item[rowKey])}
-                      // FIX: only fire row navigation when clicking a non-pinned cell.
-                      // We guard this at the <td> level below instead of stopping
-                      // propagation there, so the tr handler is intentionally simple.
-                      onClick={() => onRowClick?.(item)}
-                      className={clsx(
-                        "group relative transition-colors duration-100",
-                        onRowClick && "cursor-pointer",
-                        isSelected
-                          ? isDark
-                            ? "bg-teal-900/20"
-                            : "bg-teal-50/60"
-                          : isDark
-                            ? "bg-gray-900 hover:bg-gray-800/60"
-                            : "bg-white hover:bg-gray-50",
-                      )}
-                    >
-                      {columnOrder.map((colKey) => {
-                        const column = columns.find((c) => c.key === colKey);
-                        if (!column) return <td key={colKey} />;
-
-                        const isPinned = PINNED_ALL.has(colKey);
-                        const isPinnedRight = PINNED_RIGHT.has(colKey);
-
-                        return (
-                          <td
-                            key={colKey}
-                            style={getStickyStyle(colKey)}
-                            // FIX: stop propagation on the <td> for checkbox AND
-                            // actions columns so neither triggers row navigation.
-                            // Buttons inside actions already call e.stopPropagation()
-                            // on their own onClick, but this catches clicks on the
-                            // cell padding around them.
-                            onClick={
-                              colKey === "checkbox" || isPinnedRight
-                                ? (e) => e.stopPropagation()
-                                : undefined
-                            }
-                            className={clsx(
-                              "px-4 py-3 text-sm align-middle",
-                              isDark ? "text-gray-300" : "text-gray-700",
-                              // FIX: pinned cells get a solid, state-aware background
-                              isPinned && getStickyBgClass(colKey, isSelected),
-                              // FIX: mirror the row hover on pinned cells so they
-                              // don't look disconnected while the cursor moves across
-                              isPinned && !isSelected && onRowClick
-                                ? isDark
-                                  ? "group-hover:bg-gray-800/60"
-                                  : "group-hover:bg-gray-50"
-                                : undefined,
-                            )}
-                          >
-                            {colKey === "checkbox" ? (
-                              <Checkbox
-                                checked={isSelected}
-                                onCheckedChange={() => toggleRow(item)}
-                                className={clsx(
-                                  "cursor-pointer border transition-colors",
-                                  isDark
-                                    ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
-                                    : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
-                                )}
-                              />
-                            ) : column.render ? (
-                              column.render(item)
-                            ) : (
-                              <span className="truncate max-w-xs block">
-                                {String(item[colKey as keyof T] ?? "—")}
-                              </span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })
-              )}
-              <tr>
-                <td
-                  colSpan={columnOrder.length}
-                  className="pt-2 text-center h-80"
-                >
-                  {hasMore || isDataLoading ? (
-                    <div className="flex items-center flex-col justify-center gap-3 pb-40">
-                      <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
-                      <div className="text-sm text-gray-400 dark:text-gray-500 font-medium tracking-wide">
-                        {tc("loading_text")}
+                    {colKey === "checkbox" ? (
+                      <Checkbox
+                        checked={someSelected ? "indeterminate" : allSelected}
+                        onCheckedChange={(v) => {
+                          if (v !== "indeterminate") toggleAll();
+                        }}
+                        className={clsx(
+                          "cursor-pointer transition-colors",
+                          isDark
+                            ? "border-gray-600 data-[state=checked]:bg-teal-500"
+                            : "border-gray-300 data-[state=checked]:bg-teal-600",
+                        )}
+                      />
+                    ) : (
+                      <div
+                        className={clsx(
+                          "flex items-center gap-1.5",
+                          isRTL && "flex-row-reverse",
+                        )}
+                      >
+                        {isDraggable && (
+                          <GripVertical className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-30 transition-opacity duration-150" />
+                        )}
+                        <span>{column.label}</span>
+                        {isSortable && (
+                          <SortIcon
+                            field={colKey}
+                            sortConfig={sortConfig as any}
+                          />
+                        )}
                       </div>
-                    </div>
-                  ) : (
-                    <div className={clsx(textSecondary, "pb-40")}>
-                      {tc("loading_end_text")}
-                    </div>
-                  )}
+                    )}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+
+          {/* ── Body ── */}
+          <tbody
+            className={clsx(
+              "divide-y",
+              isDark ? "divide-gray-800" : "divide-gray-100",
+            )}
+          >
+            {isDataLoading && (!sortedData || sortedData.length === 0) ? (
+              Array.from({ length: 12 }).map((_, i) => (
+                <SkeletonRow key={i} cols={columnOrder.length} />
+              ))
+            ) : (!sortedData || sortedData.length === 0) &&
+              !(hasMore || isDataLoading) ? (
+              <tr>
+                <td colSpan={columnOrder.length} className="h-full">
+                  <EmptyState
+                    message={t ? t("no_data") : "No data available"}
+                  />
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
-      </InfiniteScroll>
+            ) : (
+              sortedData.map((item) => {
+                const isSelected = Boolean(selectedItems?.has(item[rowKey]));
+
+                return (
+                  <tr
+                    key={String(item[rowKey])}
+                    // FIX: only fire row navigation when clicking a non-pinned cell.
+                    // We guard this at the <td> level below instead of stopping
+                    // propagation there, so the tr handler is intentionally simple.
+                    onClick={() => onRowClick?.(item)}
+                    className={clsx(
+                      "group relative transition-colors duration-100",
+                      onRowClick && "cursor-pointer",
+                      isSelected
+                        ? isDark
+                          ? "bg-teal-900/20"
+                          : "bg-teal-50/60"
+                        : isDark
+                          ? "bg-gray-900 hover:bg-gray-800/60"
+                          : "bg-white hover:bg-gray-50",
+                    )}
+                  >
+                    {columnOrder.map((colKey) => {
+                      const column = columns.find((c) => c.key === colKey);
+                      if (!column) return <td key={colKey} />;
+
+                      const isPinned = PINNED_ALL.has(colKey);
+                      const isPinnedRight = PINNED_RIGHT.has(colKey);
+
+                      return (
+                        <td
+                          key={colKey}
+                          style={getStickyStyle(colKey)}
+                          // FIX: stop propagation on the <td> for checkbox AND
+                          // actions columns so neither triggers row navigation.
+                          // Buttons inside actions already call e.stopPropagation()
+                          // on their own onClick, but this catches clicks on the
+                          // cell padding around them.
+                          onClick={
+                            colKey === "checkbox" || isPinnedRight
+                              ? (e) => e.stopPropagation()
+                              : undefined
+                          }
+                          className={clsx(
+                            "px-4 py-3 text-sm align-middle",
+                            isDark ? "text-gray-300" : "text-gray-700",
+                            // FIX: pinned cells get a solid, state-aware background
+                            isPinned && getStickyBgClass(colKey, isSelected),
+                            // FIX: mirror the row hover on pinned cells so they
+                            // don't look disconnected while the cursor moves across
+                            isPinned && !isSelected && onRowClick
+                              ? isDark
+                                ? "group-hover:bg-gray-800/60"
+                                : "group-hover:bg-gray-50"
+                              : undefined,
+                          )}
+                        >
+                          {colKey === "checkbox" ? (
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleRow(item)}
+                              className={clsx(
+                                "cursor-pointer border transition-colors",
+                                isDark
+                                  ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
+                                  : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
+                              )}
+                            />
+                          ) : column.render ? (
+                            column.render(item)
+                          ) : (
+                            <span className="truncate max-w-xs block">
+                              {String(item[colKey as keyof T] ?? "—")}
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
+            <tr>
+              <td colSpan={columnOrder.length} className="pt-2 text-center">
+                <div ref={sentinelRef} />
+                {isDataLoading ? (
+                  <div className="flex items-center flex-col justify-center gap-3 py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+                    <div className="text-sm text-gray-400 dark:text-gray-500 font-medium tracking-wide">
+                      {tc("loading_text")}
+                    </div>
+                  </div>
+                ) : !hasMore ? (
+                  <div className={clsx(textSecondary, "py-8")}>
+                    {tc("loading_end_text")}
+                  </div>
+                ) : (
+                  <div className="py-6" />
+                )}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

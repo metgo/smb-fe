@@ -8,6 +8,7 @@ import {
   FileText,
   Globe,
   ImageIcon,
+  LayoutList,
   MapPin,
   Monitor,
   Ticket,
@@ -46,6 +47,7 @@ export const miniSiteTabs = [
 ];
 export const eventTabs = [
   { id: "overview", label: "overview", icon: FileText },
+  { id: "sessions", label: "landing_pages", icon: LayoutList },
   { id: "attributes", label: "attributes", icon: Accessibility },
   { id: "date_time", label: "date_time", icon: Calendar },
   { id: "location", label: "location_map", icon: MapPin },
@@ -58,6 +60,15 @@ export const eventTabs = [
     icon: Bell,
   },
 ];
+
+export const getEventTabs = (hasExternalTicket?: boolean) => {
+  return eventTabs.filter((tab) => {
+    if (hasExternalTicket) {
+      return tab.id !== "sessions" && tab.id !== "registration";
+    }
+    return true;
+  });
+};
 
 export const productTabs = [
   { id: "overview", label: "overview", icon: FileText },
@@ -77,6 +88,13 @@ export const poiTabs = [
   { id: "accessibility", label: "attributes", icon: Accessibility },
   { id: "location", label: "location_map", icon: MapPin },
   { id: "media", label: "images", icon: ImageIcon },
+];
+
+export const tripTabs = [
+  { id: "overview", label: "overview", icon: FileText },
+  { id: "stations", label: "stations", icon: MapPin },
+  { id: "itenary", label: "step_itenary", icon: Clock },
+  { id: "media", label: "media", icon: ImageIcon },
 ];
 
 export const voucherTabs = [

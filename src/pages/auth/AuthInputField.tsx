@@ -8,6 +8,7 @@ interface AuthInputFieldProps {
   onChange: (v: any) => void;
   type?: string;
   placeholder: string;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const AuthInputField = ({
@@ -16,6 +17,7 @@ const AuthInputField = ({
   type = "text",
   placeholder,
   isRequired = false,
+  onKeyDown,
 }: AuthInputFieldProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -28,6 +30,7 @@ const AuthInputField = ({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         className={cn(
           "auth-input w-full px-4 py-3 sm:px-6 sm:py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/30",
           isPassword && "pe-12",

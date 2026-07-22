@@ -13,14 +13,8 @@ import {
   FileText,
   Users,
   Truck,
-  LanguagesIcon,
 } from "lucide-react";
-import {
-  TourProvider,
-  TourPortal,
-  useTour,
-  BUSINESS_WIZARD_TOUR_ID,
-} from "@/components/tour";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -49,6 +43,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 import {
   detectLanguage,
+  getLngWiseStr,
   modelTitle,
   parseAddress,
   removeNulls,
@@ -61,7 +56,7 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
-import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
+// import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
@@ -86,7 +81,7 @@ function CreateBusinessWizardInner({
   const { t: tr } = useTranslation("tour");
   const [selectedFormLanguage, _setSelectedFormLanguage] =
     useState<Language>("he");
-  const { textPrimary, isRTL, theme } = useThemeClasses();
+  const { textPrimary, isRTL, theme, language } = useThemeClasses();
 
   // ─── Tour ─────────────────────────────────────────────────────────────
   const { startTour } = useTour();
@@ -138,21 +133,7 @@ function CreateBusinessWizardInner({
     [],
   );
 
-  // Auto-start once (only in CREATE mode — edit users already know the wizard)
-  useEffect(() => {
-    if (opMode !== "CREATE") return;
-    const timer = setTimeout(() => {
-      startTour(buildTourSteps(), {
-        tourId: BUSINESS_WIZARD_TOUR_ID,
-        autoOnce: true,
-      });
-    }, 600);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
-  const [_detecedLanguage, setDetectedLanguage] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
@@ -164,17 +145,17 @@ function CreateBusinessWizardInner({
       name: 1,
       shortDescription: 1,
       description: 1,
-      busiEmail: 2,
-      phoneNumber: 2,
-      contactDetails: 2,
-      contactName: 2,
-      address: 3,
-      primaryCategoryId: 4,
-      tags: 4,
-      logo: 5,
-      images: 5,
-      openingHrs: 6,
-      socialMedia: 8,
+      busiEmail: 3,
+      phoneNumber: 3,
+      contactDetails: 3,
+      contactName: 3,
+      address: 4,
+      primaryCategoryId: 5,
+      tags: 5,
+      logo: 6,
+      images: 6,
+      openingHrs: 7,
+      socialMedia: 9,
     };
     return stepMap[field] ?? 1;
   };
@@ -267,47 +248,69 @@ function CreateBusinessWizardInner({
     // Step 8
     socialMedia: [],
   });
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
+  const nameForGen = getLngWiseStr(
+    language,
+    formData.name,
+    formData.nameHe,
+    formData.nameAr,
+  );
+  const descriptionForGen = getLngWiseStr(
+    language,
+    formData.fullDescription,
+    formData.fullDescriptionHe,
+    formData.fullDescriptionAr,
+  );
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
+
   const detectAndAssignLanguageFields = (data: any): any => {
-    const name = data.name?.trim() || "";
-    const shortDescription = data.shortDescription?.trim() || "";
-    const description = data.description?.trim() || "";
-
-    // Prioritize title, then short desc, then content for detection
-    const textToDetect = name || shortDescription || description;
-    if (!textToDetect) return data;
-
-    const detectedLang = detectLanguage(textToDetect);
-    setDetectedLanguage(detectedLang);
     const updated = { ...data };
 
-    if (detectedLang === "he") {
-      // Move to Hebrew fields
-      updated.nameHe = name || data.nameHe;
-      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
-      updated.descriptionHe = description || data.descriptionHe;
+    const fieldGroups = [
+      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
+      {
+        base: "shortDescription",
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      {
+        base: "description",
+        en: "description",
+        he: "descriptionHe",
+        ar: "descriptionAr",
+      },
+    ];
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    } else if (detectedLang === "ar") {
-      // Move to Arabic fields
-      updated.nameAr = name || data.nameAr;
-      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
-      updated.descriptionAr = description || data.descriptionAr;
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
+      if (!text) return;
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    }
-    // else: remains in English fields (default)
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
+
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
+        updated[he] = text;
+      } else if (detectedLang === "ar") {
+        updated[ar] = text;
+      } else {
+        updated[en] = text;
+      }
+    });
 
     return updated;
   };
+
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -363,6 +366,18 @@ function CreateBusinessWizardInner({
     reset: resetLogo,
   } = useFileUpload({
     initialUrl: opMode === IOpMode.EDIT ? editData?.logo?.image : undefined,
+    onLogoChange:
+      opMode === IOpMode.EDIT
+        ? (logoData) => {
+            const effectiveId = businessId || editData?._id;
+            if (effectiveId) {
+              updateBusiness({
+                businessId: effectiveId,
+                body: { logo: logoData },
+              });
+            }
+          }
+        : undefined,
   });
 
   const logoImage: IImageUpload | null = logoPreviewUrl
@@ -599,23 +614,22 @@ function CreateBusinessWizardInner({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    { number: 2, title: tc("translation"), icon: LanguagesIcon },
-
-    { number: 3, title: t("step_contact_ownership"), icon: Users },
-    { number: 4, title: t("step_location"), icon: MapPin },
-    { number: 5, title: t("step_attributes"), icon: Tag },
-    { number: 6, title: t("step_media"), icon: ImageIcon },
-    { number: 7, title: t("step_operating_hours"), icon: Clock },
-    { number: 8, title: t("step_delivery_policy"), icon: Truck },
-    { number: 9, title: t("step_online_info"), icon: Globe },
-    { number: 10, title: t("step_review_submit"), icon: CheckCircle },
+    // { number: 2, title: tc("translation"), icon: LanguagesIcon },
+    { number: 2, title: t("step_contact_ownership"), icon: Users },
+    { number: 3, title: t("step_location"), icon: MapPin },
+    { number: 4, title: t("step_attributes"), icon: Tag },
+    { number: 5, title: t("step_media"), icon: ImageIcon },
+    { number: 6, title: t("step_operating_hours"), icon: Clock },
+    { number: 7, title: t("step_delivery_policy"), icon: Truck },
+    { number: 8, title: t("step_online_info"), icon: Globe },
+    { number: 9, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   // Draft Save Payload per Step
   const stepPayloadMap = {
     // step 1:
     authorityId: selectedAuthorityId,
-    // dmoId: selectedDmoId,
+    dmoId: selectedDmoId,
     name: formData.name,
     nameAr: formData.nameAr,
     nameHe: formData.nameHe,
@@ -733,7 +747,7 @@ function CreateBusinessWizardInner({
           newErrors.fullDescription = t("required_field");
 
         break;
-      case 3: {
+      case 2: {
         if (formData.email?.trim() === "") {
           newErrors.email = t("required_field");
         }
@@ -748,13 +762,13 @@ function CreateBusinessWizardInner({
         break;
       }
 
-      case 4:
+      case 3:
         if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
 
-      case 5:
+      case 4:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
         }
@@ -822,6 +836,26 @@ function CreateBusinessWizardInner({
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.fullDescription || "").length > 500 ||
+      (formData.fullDescriptionHe || "").length > 500 ||
+      (formData.fullDescriptionAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     // Validate all steps
     let allValid = true;
     for (let i = 1; i <= 5; i++) {
@@ -928,17 +962,17 @@ function CreateBusinessWizardInner({
           />
         );
 
-      case 2:
-        return (
-          <BusinessTranslateButton
-            formData={formData}
-            onChange={handleChange}
-          />
-        );
+      // case 2:
+      //   return (
+      //     <BusinessTranslateButton
+      //       formData={formData}
+      //       onChange={handleChange}
+      //     />
+      //   );
 
-      case 3:
+      case 2:
         return <BusinessContactOwership {...commonProps} />;
-      case 4:
+      case 3:
         return (
           <BusinessLocation
             {...commonProps}
@@ -949,35 +983,31 @@ function CreateBusinessWizardInner({
           />
         );
 
-      case 5:
+      case 4:
         return (
           <Attributes
             selectedFormLanguage={selectedFormLanguage}
             editData={editData}
             {...commonProps}
-            name={formData.name || formData.nameHe || formData.nameAr}
-            description={
-              formData.fullDescriptionHe ||
-              formData.fullDescription ||
-              formData.fullDescriptionAr
-            }
             formData={formData}
             opMode={opMode}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
             setGroupTypesId={setGroupTypesId}
+            nameForGen={nameForGen}
+            descriptionForGen={descriptionForGen}
           />
         );
-      case 6:
+      case 5:
         return <Media {...mediaProps} business={editData} isBusiness={true} />;
-      case 7:
+      case 6:
         return <BusinessOpeningHours {...commonProps} />;
-      case 8:
+      case 7:
         return <DeliveryPolicyOption {...commonProps} />;
-      case 9:
+      case 8:
         return <BusinessOnlinePresence {...commonProps} />;
-      case 10:
+      case 9:
         return (
           <BusinessReviewSubmit
             {...commonProps}
@@ -1006,7 +1036,7 @@ function CreateBusinessWizardInner({
               className={`hidden sm:block text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
-              {steps[currentStep - 1].title}
+              {steps[currentStep - 1]?.title}
             </p>
 
             {lastSaved && (

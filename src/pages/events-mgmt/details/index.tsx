@@ -1,15 +1,24 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
-import { Calendar, DollarSign, Edit, Ticket, Users } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import {
+  Calendar,
+  ChevronDown,
+  DollarSign,
+  Edit,
+  LayoutList,
+  Ticket,
+  Users,
+} from "lucide-react";
 
 import {
   EventDateTimeDetails,
   EventInfoDetails,
   EventRegistrationDetails,
   EventScheduledNotificationDetails,
+  EventSessionDetails,
   EventTicketDetails,
 } from "./components";
 import { routes } from "@/lib/routes";
@@ -17,10 +26,10 @@ import {
   useGetAllTicketQuery,
   useGetEventByIdQuery,
   useGetEventsStatsQuery,
+  useGetSessionsByEventIdQuery,
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { CreateEventWizard } from "../components";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
@@ -30,7 +39,8 @@ import {
   MediaDetails,
 } from "@/components/details-sections";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
-import { eventTabs } from "@/constants/tabs";
+import { getEventTabs } from "@/constants/tabs";
+import { CreateEventWizardNew } from "../components";
 
 const findEventType = (type: string) => {
   switch (type) {
@@ -49,12 +59,30 @@ export default function EventDetailsPage() {
   const { t } = useTranslation("events");
 
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const eventId = searchParams.get("eventId") || "";
+  const tokenFromUrl = searchParams.get("token"); // QR code has token
+  const tabFromUrl = searchParams.get("tab") || "overview";
+  const isFromQRCode = !!tokenFromUrl; // Only from QR code if token exists
 
-  const { bgPrimary } = useThemeClasses();
+  const { bgPrimary, isRTL, isDark } = useThemeClasses();
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [hasExternalTicket, setHasExternalTicket] = useState<boolean>(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [activeTab, setActiveTabState] = useState(tabFromUrl);
   const [isEditOpen, setIsEditOpen] = useState(false);
+
+  // Handle tab change and update URL only if coming from QR code
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    if (isFromQRCode) {
+      const params = new URLSearchParams(searchParams);
+      params.set("tab", tab);
+      navigate(`?${params.toString()}`, { replace: true });
+    }
+  };
 
   const [eventDays, setEventDays] = useState<EventDay[]>([
     { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" },
@@ -66,9 +94,18 @@ export default function EventDetailsPage() {
     isLoading,
     isFetching,
   } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
+
   const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
-    eventId ? { eventId } : skipToken,
+    eventId && !hasExternalTicket ? { eventId } : skipToken,
   );
+  const {
+    data: sessions,
+    refetch: sessionRefetch,
+    isFetching: isSessionsLoading,
+  } = useGetSessionsByEventIdQuery(
+    eventId && !hasExternalTicket ? { eventId } : skipToken,
+  );
+
   const { data: eventStatsData, isLoading: isStatsLoading } =
     useGetEventsStatsQuery(eventId ? { eventId } : skipToken);
 
@@ -77,8 +114,19 @@ export default function EventDetailsPage() {
   useEffect(() => {
     if (eventDetails) {
       setEventDays(eventDetails?.dayDescription ?? []);
+      setHasExternalTicket(eventDetails?.hasExternalTicket);
     }
   }, [eventDetails]);
+
+  // Sync activeTab with URL tab parameter only if from QR code
+  useEffect(() => {
+    if (isFromQRCode) {
+      const tabParam = searchParams.get("tab");
+      if (tabParam && tabParam !== activeTab) {
+        setActiveTabState(tabParam);
+      }
+    }
+  }, [searchParams, isFromQRCode, activeTab]);
 
   const handleClose = () => {
     setIsEditOpen(false);
@@ -143,12 +191,13 @@ export default function EventDetailsPage() {
     const commonProps = { t, eventDetails };
     const eventImages = eventDetails?.images ?? [];
     const mediaProps = {
-      images: eventImages.map((img: IImage) => ({
-        previewUrl: img.image,
+      images: eventImages.map((img: any) => ({
+        image: img.image,
+        isPrimary: img.isPrimary,
       })),
       primaryImageIndex: Math.max(
         0,
-        eventImages.findIndex((img: IImage) => img.isPrimary),
+        eventImages.findIndex((img: any) => img.isPrimary),
       ),
     };
 
@@ -175,6 +224,8 @@ export default function EventDetailsPage() {
             eventId={eventId}
             refetch={ticketsRefetch}
             eventDays={eventDays}
+            hasExternalTicket={hasExternalTicket}
+            ticketBuyLink={eventDetails?.ticketBuyLink}
           />
         );
       case "schedual_notification":
@@ -188,11 +239,14 @@ export default function EventDetailsPage() {
           />
         );
       case "registration":
+        return <EventRegistrationDetails eventDetails={eventDetails} />;
+      case "sessions":
         return (
-          <EventRegistrationDetails
-            eventDetails={eventDetails}
-            registrantSearchQuery=""
-            setRegistrantSearchQuery={() => {}}
+          <EventSessionDetails
+            eventId={eventId}
+            isLoading={isSessionsLoading}
+            sessions={sessions}
+            refetch={sessionRefetch}
           />
         );
       default:
@@ -212,13 +266,58 @@ export default function EventDetailsPage() {
             handleStatusChange={onStatusChangeHandler}
             status={eventDetails?.status}
           />
-          <button
-            onClick={() => setIsEditOpen(true)}
-            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
-          >
-            <Edit className="w-4 h-4" />
-            {t("edit")}
-          </button>
+
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+              }`}
+            >
+              <span className="text-sm font-medium">{t("actions")}</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isDropdownOpen && (
+              <div
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                  isDark
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <button
+                  onClick={() => setIsEditOpen(true)}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                    isDark
+                      ? "text-indigo-400 hover:bg-gray-800"
+                      : "text-indigo-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <Edit className="w-4 h-4" />
+                  {t("edit")}
+                </button>
+
+                <button
+                  onClick={() =>
+                    navigate(`${routes.eventSessionMgmt}?eventId=${eventId}`)
+                  }
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <LayoutList className="w-4 h-4 shrink-0" />
+                  {t("create_landing_page")}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -226,7 +325,10 @@ export default function EventDetailsPage() {
       <div className="details-top shrink-0">
         <DetailTitleSection
           {...eventDetails}
-          imageSrc={eventDetails?.images?.[0]?.image}
+          imageSrc={
+            eventDetails?.images?.find((img: any) => img.isPrimary)?.image ||
+            eventDetails?.images?.[0]?.image
+          }
         />
         <PageStats
           stats={singleEventStats}
@@ -240,7 +342,7 @@ export default function EventDetailsPage() {
       <div className="flex flex-col flex-1 min-h-0 mt-2">
         <div className="shrink-0">
           <TabsSection
-            tabs={eventTabs}
+            tabs={getEventTabs(eventDetails?.hasExternalTicket)}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
@@ -257,7 +359,7 @@ export default function EventDetailsPage() {
 
       {/* Edit Modal */}
       {isEditOpen && (
-        <CreateEventWizard
+        <CreateEventWizardNew
           isOpen={isEditOpen}
           onClose={handleClose}
           editData={eventDetails}

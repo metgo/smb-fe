@@ -46,6 +46,14 @@ export const authApi = createApi({
         data: body,
       }),
     }),
+
+    resetLoginAttempt: builder.mutation<any, string>({
+      query: (userId) => ({
+        url: `${endpoints.resetLoginAttempts}/${userId}`,
+        method: "PATCH",
+      }),
+    }),
+
     forgotPassword: builder.mutation<any, ForgotPasswordStep3Payload>({
       query: (body) => ({
         url: endpoints.forgotPassword,
@@ -93,4 +101,5 @@ export const {
   useForgotPasswordMutation,
   useVerifyOtpMutation,
   useResetPasswordMutation,
+  useResetLoginAttemptMutation,
 } = authApi;

@@ -4,10 +4,10 @@ import { useEffect, useCallback, useMemo } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { FormFieldWrapper, SelectField } from "@/components/form-fields";
+import { FormFieldWrapper, ReactSelect } from "@/components/form-fields";
 import ImageWithFallback from "./ImageWithFallback";
 import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 type Props = {
   keyId: keyof IAssociatedWebsiteIds;
@@ -19,9 +19,16 @@ type Props = {
   dmoSectionRef: React.RefObject<HTMLDivElement | null>;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
-  websiteVisibilityIds: IWebsiteVisibilityIds;
-  setWebsiteVisibilityIds: (v: any) => void;
-  itemAssociatedWebsites: IAssociatedWebsiteIds[];
+  websiteVisibilityIds: IWebsiteVisibilityIds | string[];
+  setWebsiteVisibilityIds: (
+    v:
+      | IWebsiteVisibilityIds
+      | string[]
+      | ((
+          prev: IWebsiteVisibilityIds | string[],
+        ) => IWebsiteVisibilityIds | string[]),
+  ) => void;
+  itemAssociatedWebsites: IAssociatedWebsiteIds[] | string[];
 };
 
 export default function DmoAuthorityWebsiteSelector({
@@ -40,12 +47,22 @@ export default function DmoAuthorityWebsiteSelector({
 }: Props) {
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
-  const { isDark, selectInputClasses } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { isDark } = useThemeClasses();
+  const { dmoId } = useAppSelector((state) => state.auth);
+  const { isDMO, isAuthority } = useUserRoles();
+
+  // Auto-select DMO user's own DMO on mount
+  useEffect(() => {
+    if (isDMO && dmoId && !selectedDmoId) {
+      setSelectDmoId(dmoId);
+    }
+  }, [isDMO, dmoId, selectedDmoId, setSelectDmoId]);
 
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
   );
+
+  const isSimpleArray = Array.isArray(websiteVisibilityIds);
 
   const { associatedWebsites, unAssociatedWebsites } = useMemo(() => {
     const result = {
@@ -82,6 +99,8 @@ export default function DmoAuthorityWebsiteSelector({
    Initialize ALL IDs (once data arrives)
   -----------------------------*/
   useEffect(() => {
+    if (isSimpleArray) return;
+
     // Only skip if BOTH are empty (no data at all)
     if (!associatedWebsites.length && !unAssociatedWebsites.length) return;
 
@@ -89,39 +108,49 @@ export default function DmoAuthorityWebsiteSelector({
     const allWhitelistIds = unAssociatedWebsites?.map((w) => w?._id);
 
     const itemAssociatedIds = new Set(
-      itemAssociatedWebsites?.map((w) => w?.[keyId]) || [],
+      itemAssociatedWebsites
+        ?.map((w) => (typeof w === "string" ? w : w?.[keyId]))
+        .filter((id): id is string => Boolean(id)) || [],
     );
 
     const selectedBlacklistIds = isEdit
       ? Array.from(itemAssociatedIds).filter((id) =>
-          allBlacklistIds?.includes(id ?? ""),
+          allBlacklistIds?.includes(id),
         )
       : allBlacklistIds;
 
     const selectedWhitelistIds = Array.from(itemAssociatedIds).filter((id) =>
-      allWhitelistIds?.includes(id ?? ""),
+      allWhitelistIds?.includes(id),
     );
 
-    setWebsiteVisibilityIds((prev: IWebsiteVisibilityIds) => ({
-      ...prev,
+    setWebsiteVisibilityIds((prev) => ({
+      ...(prev as IWebsiteVisibilityIds),
       allBlacklistIds,
       selectedBlacklistIds,
       allWhitelistIds,
       selectedWhitelistIds,
     }));
-  }, [associatedWebsites, unAssociatedWebsites]);
+  }, [associatedWebsites, unAssociatedWebsites, isSimpleArray]);
 
   /* ----------------------------
    Helpers
   -----------------------------*/
   const toggleId = useCallback(
     (id: string, key: "selectedBlacklistIds" | "selectedWhitelistIds") => {
-      setWebsiteVisibilityIds((prev: IWebsiteVisibilityIds) => ({
-        ...prev,
-        [key]: prev[key].includes(id)
-          ? prev[key].filter((x) => x !== id)
-          : [...prev[key], id],
-      }));
+      setWebsiteVisibilityIds((prev) => {
+        if (Array.isArray(prev)) {
+          return prev.includes(id)
+            ? prev.filter((x) => x !== id)
+            : [...prev, id];
+        }
+
+        return {
+          ...prev,
+          [key]: prev[key].includes(id)
+            ? prev[key].filter((x) => x !== id)
+            : [...prev[key], id],
+        };
+      });
     },
     [setWebsiteVisibilityIds],
   );
@@ -130,8 +159,14 @@ export default function DmoAuthorityWebsiteSelector({
     (
       allKey: "allBlacklistIds" | "allWhitelistIds",
       selectedKey: "selectedBlacklistIds" | "selectedWhitelistIds",
+      allIds: string[],
     ) => {
-      setWebsiteVisibilityIds((prev: IWebsiteVisibilityIds) => {
+      setWebsiteVisibilityIds((prev) => {
+        if (Array.isArray(prev)) {
+          const isAllSelected = prev.length === allIds.length;
+          return isAllSelected ? [] : [...allIds];
+        }
+
         const isAllSelected = prev[selectedKey].length === prev[allKey].length;
 
         return {
@@ -154,9 +189,15 @@ export default function DmoAuthorityWebsiteSelector({
   ) => {
     if (!websites || websites?.length === 0) return null;
 
-    const allSelected =
-      websiteVisibilityIds[selectedKey].length ===
-      websiteVisibilityIds[allKey].length;
+    const allIds = websites.map((w) => w._id);
+    const selectedIds = isSimpleArray
+      ? (websiteVisibilityIds as string[])
+      : websiteVisibilityIds[selectedKey];
+
+    const allSelected = isSimpleArray
+      ? selectedIds.length === allIds.length
+      : websiteVisibilityIds[selectedKey].length ===
+        websiteVisibilityIds[allKey].length;
 
     return (
       <div>
@@ -181,7 +222,7 @@ export default function DmoAuthorityWebsiteSelector({
             <input
               type="checkbox"
               checked={allSelected}
-              onChange={() => toggleAll(allKey, selectedKey)}
+              onChange={() => toggleAll(allKey, selectedKey, allIds)}
               className={`rounded
                 ${
                   isDark
@@ -208,7 +249,7 @@ export default function DmoAuthorityWebsiteSelector({
             >
               <input
                 type="checkbox"
-                checked={websiteVisibilityIds[selectedKey].includes(item._id)}
+                checked={selectedIds.includes(item._id)}
                 onChange={() => toggleId(item._id, selectedKey)}
                 className={`rounded
                 ${
@@ -245,8 +286,8 @@ export default function DmoAuthorityWebsiteSelector({
             hint={t("your_geographic_location")}
             error={errors.dmoId}
           >
-            <SelectField
-              isDisabled={userRole === UserRole.AUTHORITY}
+            <ReactSelect
+              isDisabled={isAuthority}
               value={selectedDmoId}
               onChange={(v) => {
                 setSelectDmoId(v);
@@ -260,23 +301,22 @@ export default function DmoAuthorityWebsiteSelector({
                 }
               }}
               placeholder={t("select_dmo")}
-              options={
+              items={
                 dmosAuthorities?.map((d) => ({
-                  label: d.name,
-                  value: d._id,
+                  name: d.name,
+                  _id: d._id,
+                  logo: d.logoPath,
                 })) ?? []
               }
-              error={errors.dmoId}
-              selectInputClasses={selectInputClasses}
             />
           </FormFieldWrapper>
         </div>
 
         <div className="flex-1 w-full">
           <FormFieldWrapper required label={t("select_authority")}>
-            <SelectField
+            <ReactSelect
               value={selectedAuthorityId}
-              isDisabled={userRole === UserRole.AUTHORITY}
+              isDisabled={isAuthority}
               onChange={(v) => {
                 setSelectAuthorityId(v);
                 if (setErrors && v) {
@@ -288,14 +328,13 @@ export default function DmoAuthorityWebsiteSelector({
                 }
               }}
               placeholder={t("select_authority")}
-              options={
-                selectedDmos?.authorities?.map((a) => ({
-                  label: a.name,
-                  value: a._id,
+              items={
+                selectedDmos?.authorities?.map((a: any) => ({
+                  name: a.name,
+                  _id: a._id,
+                  logo: a.logoPath,
                 })) ?? []
               }
-              error={errors.authorityId}
-              selectInputClasses={selectInputClasses}
             />
           </FormFieldWrapper>
         </div>
@@ -304,13 +343,13 @@ export default function DmoAuthorityWebsiteSelector({
       {/* Websites */}
       {(selectedDmoId || selectedAuthorityId) && (
         <div className="space-y-4">
-          <label
+          {/* <label
             className={`block text-sm mb-2 ${
               isDark ? "text-gray-300" : "text-gray-800"
             }`}
           >
             {t("website_visibility")}
-          </label>
+          </label> */}
 
           {renderSection(
             t("select_associated_websites"),
@@ -319,12 +358,13 @@ export default function DmoAuthorityWebsiteSelector({
             "selectedBlacklistIds",
           )}
 
-          {renderSection(
-            t("select_unassociated_websites"),
-            unAssociatedWebsites,
-            "allWhitelistIds",
-            "selectedWhitelistIds",
-          )}
+          {/* {isSuperadmin &&
+            renderSection(
+              t("select_unassociated_websites"),
+              unAssociatedWebsites,
+              "allWhitelistIds",
+              "selectedWhitelistIds",
+            )} */}
         </div>
       )}
     </section>

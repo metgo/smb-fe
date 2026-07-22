@@ -6,6 +6,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { ConnectedWebsites } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
+import { getLngWiseStr } from "@/helpers";
 
 interface PoiInfoDetailsProps {
   t: (key: string) => string;
@@ -13,19 +14,19 @@ interface PoiInfoDetailsProps {
 }
 
 const PoiInfoDetails: FC<PoiInfoDetailsProps> = ({ t, poi }) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
   return (
     <div className="space-y-6">
       <DescriptionCard
         title={t("short_description")}
-        content={
-          poi?.shortDescriptionHe ||
-          poi?.shortDescription ||
-          poi?.shortDescriptionAr ||
-          "-"
-        }
+        content={getLngWiseStr(
+          language,
+          poi?.shortDescription,
+          poi?.shortDescriptionHe,
+          poi?.shortDescriptionAr,
+        )}
         icon={
           <FileText
             className={clsx(
@@ -39,9 +40,12 @@ const PoiInfoDetails: FC<PoiInfoDetailsProps> = ({ t, poi }) => {
       />
       <DescriptionCard
         title={t("full_description")}
-        content={
-          poi?.descriptionHe || poi?.description || poi?.descriptionAr || "-"
-        }
+        content={getLngWiseStr(
+          language,
+          poi?.description,
+          poi?.descriptionHe,
+          poi?.descriptionAr,
+        )}
         icon={
           <AlignLeft
             className={clsx(

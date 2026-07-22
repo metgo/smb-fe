@@ -3,8 +3,8 @@ import React, { useEffect, useRef } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
-  DmoAuthorityWebsiteSelector,
   SelectableChips,
+  DmoAuthorityWebsiteIdsSelector,
 } from "@/components/shared";
 import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
@@ -16,7 +16,7 @@ import { categoryIds } from "@/lib/utils";
 import { useCommon } from "@/hooks/useCommon";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { getLngWiseStr } from "@/helpers";
-import ProductContentForm from "@/pages/products-mgmt/components/sub-components/ProductContentForm";
+import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
 
 interface EventBasicInformationProps {
   formData: Record<string, any>;
@@ -38,16 +38,16 @@ interface EventBasicInformationProps {
   errors: Record<string, string>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
-  eventAssociatedWebsites?: IAssociatedWebsiteIds[];
   selectedBusinessId: string;
   setSelectedBusinessId: (id: string) => void;
   businesses: ISearchBusiness[];
   isBusinessLoading: boolean;
   searchBusiness: (key: string) => void;
+  selectAssociatedWebsiteIds: string[];
+  setSelectAssociatedWebsiteIds: (v: any) => void;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
-  eventId,
   markDirty,
   selectedDmoId,
   setSelectDmoId,
@@ -64,9 +64,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
   errors,
-  websiteVisibilityIds,
-  setWebsiteVisibilityIds,
-  eventAssociatedWebsites = [],
+  selectAssociatedWebsiteIds,
+  setSelectAssociatedWebsiteIds,
   selectedBusinessId,
   setSelectedBusinessId,
   businesses,
@@ -167,20 +166,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      <DmoAuthorityWebsiteSelector
-        keyId="_id"
-        errors={errors}
-        isEdit={!!eventId}
-        selectedDmoId={selectedDmoId}
-        setSelectDmoId={setSelectDmoId}
-        selectedAuthorityId={selectedAuthorityId}
-        setSelectAuthorityId={setSelectAuthorityId}
-        dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={websiteVisibilityIds}
-        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-        itemAssociatedWebsites={eventAssociatedWebsites}
-      />
-
       <FormFieldWrapper label={t("select_business")}>
         <ReactSelect
           value={selectedBusinessId}
@@ -196,12 +181,22 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           onSearch={searchBusiness}
         />
       </FormFieldWrapper>
+      <DmoAuthorityWebsiteIdsSelector
+        errors={errors}
+        selectedDmoId={selectedDmoId}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId}
+        setSelectAuthorityId={setSelectAuthorityId}
+        dmoSectionRef={dmoSectionRef}
+        selectedWebsiteIds={selectAssociatedWebsiteIds}
+        setSelectWebsiteIds={setSelectAssociatedWebsiteIds}
+      />
 
       <div className="font-semibold text-md text-gray-700">
         {t("step_1_basic_information")}
       </div>
 
-      <ProductContentForm formData={formData} onChange={onChange} />
+      <BusinessContentForm formData={formData} onChange={onChange} />
 
       <SelectableChips
         label="subcategories"

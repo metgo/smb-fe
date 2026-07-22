@@ -16,6 +16,7 @@
   "image_upload_failed": "Image upload failed",
   "image_deleted": "Image deleted successfully",
   "delete_failed": "Failed to delete image",
+  "max_images_limit": "You can upload up to {{count}} images only",
   "login_failed": "Login failed",
 
   "poi_delete_loading": "Deleting POIs...",
@@ -69,5 +70,13 @@
 
   "unsaved_changes": "Unsaved Changes",
   "close_without_saving": "You have unsaved changes. Are you sure you want to close without saving?",
-  "close": "Close"
+  "close": "Close",
+
+  "login_attempt_rest_success": "Login attempts have been reset successfully",
+
+  "trip_status_updated_success": "Trip status updated successfully",
+  "trip_status_updated_faild": "Failed to update trip status",
+  "trip_updated_success": "Trip updated successfully!",
+  "trip_created_success": "Trip created successfully!",
+  "trip_create_failed": "Failed to create Trip"
 }

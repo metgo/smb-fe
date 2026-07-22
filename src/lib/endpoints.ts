@@ -50,6 +50,7 @@ export const endpoints = {
   miniSites: "mini-sites",
   //products
   products: "/products",
+  contentManagementProducts: "/content-management-products",
   bulkProductsUpdate: "/bulk-products-update",
 
   //orders
@@ -67,20 +68,44 @@ export const endpoints = {
   cancleOrderProduct: "/cancel-order-product",
   updateOrderStatus: "/update-order-status",
 
+  // public
+  publicEventTicket: "/public/event-tickets",
+  publicSessionTicket: "/public/session-tickets",
+
   // events
   events: "/events",
   eventsStats: "/events-stats",
   upcomingEvents: "/upcoming-events",
+  contentManagementEvents: "/content-management-events",
 
+  // event sessions
+  tickets: "/tickets",
+  eventTickets: "/event-tickets",
+  eventSessions: "/event-sessions",
+  eventSessionPreviwLink: "/event-sessions/preview-link",
+  ticketsForEventSession: "/event-sessions/tickets-without-sessions",
+  eventSessionCapacityReport: "/event-sessions/capacity-report",
+  eventSessionReg: "/event-sessions/registrations",
+  eventSessionTargetAudience: "/event-sessions/target-audience",
+  eventSessionSendNotification: "/event-sessions/send-notification",
+  eventSessionSendHistory: "/event-sessions/send-history",
+  eventSessionSendHistoryDetails: "/event-sessions/send-history-detail",
+  eventSessionResendNotification: "/event-sessions/resend-notification",
+
+  // users
   users: "/users",
   userInfo: "/users/me",
   userAdmin: "/users/admin",
   createUser: "/users/create",
-  tickets: "/tickets",
+  resetLoginAttempts: "/users/reset-login-attempts",
 
   // Media
   mediaSignedUrl: "/media-signed-url",
   mediaFileDelete: "/media",
+
+  //document
+  docUpload: "doc-upload",
+  checkTemplateKey: "doc-upload/check-template-key",
 
   websites: "/site-settings/websites",
   socialmedia: "admin/social-media",
@@ -90,15 +115,23 @@ export const endpoints = {
 
   // Content
   contentConfig: "/site-filter-config",
+  contentConfigActivate: "/site-filter-config",
+  wizardGenerateTopics: "/site-filter-config/wizard/generate-topics",
+  wizardGenerateCategories: "/site-filter-config/wizard/generate-categories",
+  wizardAssignEntities: "/site-filter-config/wizard/assign-entities",
+  wizardTranslate: "/site-filter-config/wizard/translate",
 
   // Notifications
   notifications: "/notifications",
   notificationStats: "/notifications/stats",
+  notificationCount: "/notifications/count",
   notificationsBulkMarkRead: "/notifications/bulk/mark-read",
 
   // trips
   trips: "/trips",
   stations: "/stations",
+  bulkTripsDelete: "/trips/bulk-delete",
+  bulkTripsStatusUpdate: "/trips/bulk-status-update",
 
   //voucher
   vouchers: "/vouchers",

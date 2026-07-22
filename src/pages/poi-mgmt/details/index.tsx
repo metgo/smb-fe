@@ -132,7 +132,8 @@ export default function PoiDetailsPage() {
     const poiImages = poi?.images ?? [];
     const mediaProps = {
       images: poiImages.map((img: IImage) => ({
-        previewUrl: img.image,
+        image: img.image,
+        isPrimary: img.isPrimary,
       })),
       primaryImageIndex: Math.max(
         0,
@@ -216,7 +217,13 @@ export default function PoiDetailsPage() {
       </div>
 
       <div className="details-top shrink-0">
-        <DetailTitleSection {...poi} />
+        <DetailTitleSection
+          {...poi}
+          imageSrc={
+            poi?.images?.find((img: IImage) => img.isPrimary)?.image ||
+            poi?.images?.[0]?.image
+          }
+        />
         <PageStats
           stats={poiStats}
           isLoading={isDetailStatsLoading}

@@ -144,10 +144,10 @@ export default function Sidebar() {
       : []),
     {
       id: "trips",
-      path: routes.trips,
+      path: routes.tripsMgmt,
       label: t("trips") || "Trips",
       icon: Map,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "fun-days",
@@ -312,10 +312,10 @@ export default function Sidebar() {
         },
         {
           id: "documents",
-          path: routes.dashboard,
+          path: routes.documentMgmt,
           label: t("documents") || "Documents",
           icon: File,
-          isEnabled: false,
+          isEnabled: true,
         },
         ...(isSuperadmin
           ? [
@@ -510,6 +510,13 @@ export default function Sidebar() {
         <nav className="flex-1 overflow-y-auto py-4">
           {menuItems
             ?.filter((item) => !(item.id === "website_config" && !isSuperadmin))
+            ?.filter(
+              (item) =>
+                !(
+                  isTraveller &&
+                  (item.id === "local-economy" || item.id === "site-management")
+                ),
+            )
             ?.map((item) => ({
               ...item,
               subItems: item.subItems?.filter(

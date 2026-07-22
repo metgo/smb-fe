@@ -173,6 +173,8 @@
   "ticket_name": "اسم البطاقة",
   "ticket_type": "نوع البطاقة",
   "vip": "VIP",
+  "greeting_message": "رسالة الترحيب",
+  "greeting_message_placeholder": "أدخل رسالة الترحيب الخاصة بك",
   "marked_price": "السعر المحدد",
   "selling_price": "سعر البيع",
   "discount_amount": "قيمة الخصم",
@@ -242,6 +244,9 @@
   "quantity": "الكمية",
   "total": "الإجمالي",
   "registration_date": "تاريخ التسجيل",
+  "purchased_date": "تاريخ الشراء",
+  "payment_mode": "طريقة الدفع",
+  "amount": "المبلغ",
   "registration_attendance_trend": "اتجاه التسجيل والحضور",
   "show_daily_breakdown": "عرض التفصيل اليومي",
   "search_registrants_placeholder": "البحث عن المسجلين...",
@@ -312,5 +317,31 @@
   "notification": "إشعار",
   "event_notifications": "إشعارات الحدث",
   "no_images_uploaded": "لم يتم رفع أي صور",
-  "upload_image_info": "قم برفع الصور لإنشاء معرض صور للحدث"
+  "upload_image_info": "قم برفع الصور لإنشاء معرض صور للحدث",
+
+  "completed": "مكتمل",
+  "processing": "قيد المعالجة",
+
+  "cancel_order": "إلغاء الطلب",
+  "cancel_order_reason_prompt": "يرجى تقديم سبب لإلغاء هذا الطلب.",
+  "cancel_reason_placeholder": "أدخل سبب الإلغاء...",
+  "updating": "جارٍ التحديث...",
+  "confirm_cancel": "تأكيد الإلغاء",
+  "order_status_updated": "تم تحديث حالة الطلب إلى {{status}}",
+  "failed_to_update_order_status": "فشل تحديث حالة الطلب",
+
+  "actions": "الإجراءات",
+  "create_session": "إنشاء جلسة",
+  "create_landing_page": "إنشاء صفحة هبوط",
+
+  "i_have_an_eternal_ticket_purchase_link": "لدي رابط خارجي لشراء التذاكر",
+  "enter_your_ticket_purchase_link": "أدخل رابط شراء التذاكر الخاص بك",
+  "enter_your_link_placeholder": "أدخل عنوان الرابط",
+
+  "details": "التفاصيل",
+  "action": "الإجراء",
+  "submit": "إرسال",
+  "landing_pages": "صفحات الهبوط",
+  "image": "الصورة",
+  "create_ticket_for_this_event": "يرجى إنشاء تذكرة لهذا الحدث أولاً."
 }

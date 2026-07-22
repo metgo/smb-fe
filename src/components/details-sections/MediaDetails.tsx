@@ -5,46 +5,25 @@ import { Star, Image as ImageIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface MediaDetailsProps {
-  logoImage?: string | null;
-  images: Array<{ previewUrl: string }>;
-  primaryImageIndex?: number;
+  images: Array<ITripImage>;
 }
 
-const MediaDetails: React.FC<MediaDetailsProps> = ({
-  logoImage,
-  images,
-  primaryImageIndex = 0,
-}) => {
+const MediaDetails: React.FC<MediaDetailsProps> = ({ images }) => {
   const { t } = useTranslation("common");
   const { isDark, textTertiary } = useThemeClasses();
 
   return (
     <div className="space-y-6 min-h-150">
-      {logoImage && (
-        <div>
-          <div className={clsx(textTertiary, "font-bold mb-3")}>
-            {t("logo")}
-          </div>
-          <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
-            <ImageWithFallback
-              src={logoImage}
-              alt="Business logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      )}
-
       <div className={clsx(textTertiary, "font-bold mb-3")}>{t("images")}</div>
 
       {images?.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {images.map((img, idx) => (
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {images?.map((img, idx) => (
             <div
               key={idx}
               className={clsx(
                 "relative aspect-square rounded-xl overflow-hidden border transition-all duration-200",
-                idx === primaryImageIndex
+                img.isPrimary
                   ? isDark
                     ? "border-yellow-500/50 ring-2 ring-yellow-500/30"
                     : "border-yellow-400 ring-2 ring-yellow-400/30"
@@ -54,12 +33,12 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
               )}
             >
               <ImageWithFallback
-                src={img.previewUrl}
+                src={img.image}
                 alt={`Image ${idx + 1}`}
                 className="w-full h-full object-cover"
               />
 
-              {idx === primaryImageIndex && (
+              {img.isPrimary && (
                 <div className="absolute top-2 left-2 z-5">
                   <div className="px-3 py-1.5 rounded-lg backdrop-blur-sm flex items-center gap-1.5 shadow-lg bg-yellow-500 text-white font-semibold text-xs">
                     <Star className="w-3.5 h-3.5 fill-white" />

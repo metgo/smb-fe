@@ -18,7 +18,7 @@ import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
 import { toggleEditMode, toggleMobileSidebar } from "@/features/uiSlice";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { setLanguage, setTheme } from "@/features/settingsSlice";
+import { setTheme } from "@/features/settingsSlice";
 import {
   setAuthority,
   setDmo,
@@ -124,8 +124,11 @@ export default function Header() {
   }, []);
 
   const handleLanguageChange = (lng: Language) => {
-    dispatch(setLanguage(lng));
-    i18n.changeLanguage(lng);
+    // Redux `settings.language`/`isRTL` are updated via the i18n
+    // "languageChanged" listener once the bundle actually loads — see src/i18n/index.ts.
+    i18n.changeLanguage(lng).catch((error) => {
+      console.error("Failed to change language", error);
+    });
   };
 
   return (
@@ -231,9 +234,9 @@ export default function Header() {
                 >
                   <div className="relative">
                     <span className="text-lg absolute -top-3 left-2">
-                      {language === "en" && "🇬🇧"}
-                      {language === "he" && "🇮🇱"}
-                      {language === "ar" && "🇸🇦"}
+                      {language === "en" && locales[0]?.flag}
+                      {language === "he" && locales[1]?.flag}
+                      {language === "ar" && locales[2]?.flag}
                     </span>
                     <Languages size={20} />
                   </div>
@@ -262,13 +265,7 @@ export default function Header() {
                           textPrimary,
                         )}
                       >
-                        {lang.flag && (
-                          <img
-                            src={lang.flag}
-                            alt={lang.label}
-                            className="w-5 h-4 object-contain shrink-0"
-                          />
-                        )}
+                        <div>{lang.flag}</div>
                         <span>{lang.label}</span>
                       </button>
                     ))}

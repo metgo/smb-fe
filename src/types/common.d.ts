@@ -4,16 +4,17 @@ type Theme = "light" | "dark";
 type TViewMode = "list" | "grid";
 
 type TStatus =
-  | "draft"
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "closed"
-  | "archived";
+  "draft" | "pending" | "approved" | "rejected" | "closed" | "archived";
 
 type EventStatus = "draft" | "pending" | "approved";
 type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
 type TCampaign = "CASH_IN" | "CASH_BACK" | "MINI_SITE";
+
+type TGeoLocation = {
+  lat: string;
+  long: string;
+  _id: string;
+};
 
 interface IWizardStep {
   number: number;
@@ -40,6 +41,7 @@ interface IWebsite {
   dmoIds: string[];
   authorityIds: string[];
   isActive?: boolean;
+  purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
 }
 
 interface ITag {
@@ -162,28 +164,48 @@ type TNotifStatus = "ALL" | "READ" | "UNREAD";
 type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "POI";
 
 type TNotifType =
-  | "ALL"
-  | "INFO"
-  | "WARNING"
-  | "ACTION"
-  | "URGENT"
-  | "ERROR"
-  | "UNREAD";
+  "ALL" | "INFO" | "WARNING" | "ACTION" | "URGENT" | "ERROR" | "UNREAD";
 
 type TItemStatus =
-  | "PENDING"
-  | "APPROVED"
-  | "CLOSED"
-  | "REJECTED"
-  | "DRAFT"
-  | "ARCHIVED";
+  "PENDING" | "APPROVED" | "CLOSED" | "REJECTED" | "DRAFT" | "ARCHIVED";
 
 type TOrderStatus =
-  | "pending"
-  | "processing"
-  | "completed"
-  | "shipped"
-  | "canceled";
+  "pending" | "processing" | "completed" | "shipped" | "canceled";
 type TPaymentStatus = "PAID" | "UNPAID" | "PARTIAL" | "REFUNDED" | "SUCCESS";
 
 type TSortDirection = "asc" | "desc" | null;
+
+interface IActionIconButton {
+  title: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  color?: "blue" | "green" | "red" | "yellow" | "gray";
+  isLoading?: boolean;
+  disabled?: boolean;
+}
+
+interface IMetaData {
+  page: number;
+  limit: number;
+  data: number;
+  pageCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+interface IPagination {
+  meta: IMetaData;
+  totalData: number;
+}
+
+interface IDoucment {
+  _id: string;
+  title: string;
+  imageUrl: string;
+  templateKey: string;
+  externalApiId: string;
+}
+
+interface IDocumentRes extends IPagination {
+  data: Array<IDoucment>;
+}

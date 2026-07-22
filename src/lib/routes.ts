@@ -11,6 +11,8 @@ export const routes = {
   articleDetails: "/article-details",
   eventsMgmt: "/events-management",
   eventDetails: "/event-details",
+  documentMgmt: "/documents-management",
+  eventSessionMgmt: "/event-session-management",
 
   productsMgmt: "/products-management",
   productDetails: "/product-details",
@@ -25,7 +27,8 @@ export const routes = {
   pointOfInterest: "/point-of-interest",
   poiMgmt: "/poi-management",
   poiDetails: "/poi-details",
-  trips: "/trips",
+  tripsMgmt: "/trips-management",
+  tripDetails: "/trip-details",
   notificationMgmt: "/notifications-management",
 
   funDays: "/fun-days",
@@ -35,6 +38,7 @@ export const routes = {
   auth: "/authentication",
   miniSiteMgmt: "/mini-site-management",
   miniSiteDetails: "/mini-site-details",
+  noInternet: "/no-internet",
   miniSite: "/mini-site",
 
   profile: "/profile",
@@ -49,6 +53,9 @@ export const routes = {
   promotionMgmt: "/promotions-management",
 
   users: "/users",
+
+  publicTicket: "/verify-ticket",
+  publicSession: "/verify-session",
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
 };

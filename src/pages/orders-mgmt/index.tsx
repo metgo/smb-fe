@@ -26,8 +26,9 @@ import {
   Building2,
 } from "lucide-react";
 
-import { useAppSelector } from "@/hooks/hooks";
+import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCommon } from "@/hooks/useCommon";
 import { envKeys } from "@/lib/envKeys";
 import {
   BulkActionBar,
@@ -63,6 +64,7 @@ import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "./components/OrdersModal";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { formatILS } from "@/helpers/formatter";
+import { setDmo, setAuthority } from "@/features/authSlice";
 
 const limit = 20;
 
@@ -80,6 +82,8 @@ const defaultColumns = {
   createdAt: true,
   _id: false,
   website: true,
+  dmos: true,
+  authorities: true,
 };
 
 type ColumnVisibility = typeof defaultColumns;
@@ -95,8 +99,10 @@ export default function OrdersMgmtPage() {
   const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
+  const dispatch = useAppDispatch();
   const { isSuperadmin, isTraveller } = useUserRoles();
   const { isDark, isRTL, language } = useThemeClasses();
+  const { dmosAuthorities } = useCommon();
 
   // QR Token handling - detect from URL on first load
   const urlParams = new URLSearchParams(window.location.search);
@@ -152,6 +158,8 @@ export default function OrdersMgmtPage() {
     startDate: "",
     endDate: "",
     month: "all",
+    dmoId: dmoId || "all",
+    authorityId: authorityId || "all",
   });
   const [orderSummaryClick, setOrderSummaryClick] = useState<boolean>(() => {
     const stored = localStorage.getItem("orderSummaryClick");
@@ -231,8 +239,11 @@ export default function OrdersMgmtPage() {
     const params: any = {
       page: pageSummary,
       limit,
-      dmoId,
-      authorityId,
+      dmoId: summaryFilters.dmoId !== "all" ? summaryFilters.dmoId : undefined,
+      authorityId:
+        summaryFilters.authorityId !== "all"
+          ? summaryFilters.authorityId
+          : undefined,
     };
     // params.detailedView = true;
     if (searchTermSummary) params.search = searchTermSummary;
@@ -244,12 +255,10 @@ export default function OrdersMgmtPage() {
     // Month filter
     if (summaryFilters.month !== "all" && summaryFilters.month !== "custom") {
       const [month, year] = summaryFilters.month.split("-");
+      const lastDay = new Date(Number(year), Number(month), 0).getDate();
 
-      const firstDay = new Date(Number(year), Number(month) - 1, 1);
-      const lastDay = new Date(Number(year), Number(month), 0);
-
-      params.startDate = firstDay.toISOString().split("T")[0];
-      params.endDate = lastDay.toISOString().split("T")[0];
+      params.startDate = `${year}-${month}-01`;
+      params.endDate = `${year}-${month}-${String(lastDay).padStart(2, "0")}`;
     }
 
     // Custom date range
@@ -259,19 +268,14 @@ export default function OrdersMgmtPage() {
     }
 
     return params;
-  }, [
-    pageSummary,
-    limit,
-    searchTermSummary,
-    summaryFilters,
-    authorityId,
-    dmoId,
-  ]);
+  }, [pageSummary, limit, searchTermSummary, summaryFilters]);
   const [businessOrderParams, setBusinessOrderParams] = useState<{
     page: number;
     limit: number;
     businessId?: string;
     detailedView: boolean;
+    startDate?: string;
+    endDate?: string;
   } | null>(null);
 
   const {
@@ -377,7 +381,70 @@ export default function OrdersMgmtPage() {
     startDate: "",
     endDate: "",
     month: "all", // 'all', 'MM-YYYY', or 'custom'
+    dmoId: dmoId || "all",
+    authorityId: authorityId || "all",
   });
+
+  const lastGlobalDmoId = useRef(dmoId);
+  const lastGlobalAuthorityId = useRef(authorityId);
+
+  useEffect(() => {
+    if (dmoId !== lastGlobalDmoId.current) {
+      lastGlobalDmoId.current = dmoId;
+      setFilters((prev) => ({
+        ...prev,
+        dmoId: dmoId || "all",
+        authorityId: "all",
+      }));
+      setSummaryFilters((prev) => ({
+        ...prev,
+        dmoId: dmoId || "all",
+        authorityId: "all",
+      }));
+    }
+  }, [dmoId]);
+
+  useEffect(() => {
+    if (authorityId !== lastGlobalAuthorityId.current) {
+      lastGlobalAuthorityId.current = authorityId;
+      setFilters((prev) => ({ ...prev, authorityId: authorityId || "all" }));
+      setSummaryFilters((prev) => ({
+        ...prev,
+        authorityId: authorityId || "all",
+      }));
+    }
+  }, [authorityId]);
+
+  // const dmoOptions = useMemo(() => {
+  //   const options = [{ value: "all", label: t("all") }];
+  //   if (dmosAuthorities) {
+  //     dmosAuthorities.forEach((d) => {
+  //       options.push({ value: d._id, label: d.name });
+  //     });
+  //   }
+  //   return options;
+  // }, [dmosAuthorities, t]);
+
+  // const selectedLocalDmo = useMemo(() => {
+  //   const currentDmoId = orderSummaryClick ? summaryFilters.dmoId : filters.dmoId;
+  //   return dmosAuthorities?.find((d) => d._id === currentDmoId);
+  // }, [dmosAuthorities, orderSummaryClick, summaryFilters.dmoId, filters.dmoId]);
+
+  // const authorityOptions = useMemo(() => {
+  //   const options = [{ value: "all", label: t("all") }];
+  //   if (selectedLocalDmo) {
+  //     selectedLocalDmo.authorities?.forEach((a: any) => {
+  //       options.push({ value: a._id, label: a.name });
+  //     });
+  //   } else {
+  //     dmosAuthorities?.forEach((d) => {
+  //       d.authorities?.forEach((a: any) => {
+  //         options.push({ value: a._id, label: `${a.name} (${d.name})` });
+  //       });
+  //     });
+  //   }
+  //   return options;
+  // }, [selectedLocalDmo, dmosAuthorities, t]);
 
   //active filter chips
   const activeFilterChips = useMemo(() => {
@@ -414,8 +481,32 @@ export default function OrdersMgmtPage() {
         chips.push({ key: "dateTo", value: filters.endDate });
     }
 
+    if (filters.dmoId !== "all") {
+      const dmoName =
+        dmosAuthorities?.find((d) => d._id === filters.dmoId)?.name ||
+        filters.dmoId;
+      chips.push({
+        key: "dmoId",
+        value: dmoName,
+      });
+    }
+
+    if (filters.authorityId !== "all") {
+      let authName = "";
+      dmosAuthorities?.forEach((d) => {
+        const found = d.authorities?.find(
+          (a: any) => a._id === filters.authorityId,
+        );
+        if (found) authName = found.name;
+      });
+      chips.push({
+        key: "authorityId",
+        value: authName || filters.authorityId,
+      });
+    }
+
     return chips;
-  }, [filters]);
+  }, [filters, dmosAuthorities, t]);
 
   useEffect(() => {
     setPage(1);
@@ -428,8 +519,9 @@ export default function OrdersMgmtPage() {
     const params: any = {
       page,
       limit,
-      dmoId,
-      authorityId,
+      dmoId: filters.dmoId !== "all" ? filters.dmoId : undefined,
+      authorityId:
+        filters.authorityId !== "all" ? filters.authorityId : undefined,
       websiteId,
     };
 
@@ -464,7 +556,7 @@ export default function OrdersMgmtPage() {
     }
 
     return params;
-  }, [page, limit, searchTerm, filters, authorityId, dmoId, websiteId]);
+  }, [page, limit, searchTerm, filters, websiteId]);
 
   const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
     orderQueryParams,
@@ -540,12 +632,16 @@ export default function OrdersMgmtPage() {
     month: "all",
     startDate: "",
     endDate: "",
+    dmoId: "all",
+    authorityId: "all",
   };
   const defaultSummaryFilters = {
     status: "all",
     startDate: "",
     endDate: "",
     month: "all",
+    dmoId: "all",
+    authorityId: "all",
   };
   // Column visibility
   const [columnVisibility, setColumnVisibility] =
@@ -780,6 +876,20 @@ export default function OrdersMgmtPage() {
         </div>
       ),
     },
+    columnVisibility.dmos && {
+      key: "dmoName",
+      label: t("dmos"),
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.dmoName || "-"}</div>,
+    },
+    columnVisibility.authorities && {
+      key: "authorityName",
+      label: t("authorities"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.authorityName || "-"}</div>
+      ),
+    },
     {
       key: "businessAddressCity",
       label: t("business_address_city"),
@@ -848,6 +958,24 @@ export default function OrdersMgmtPage() {
                 limit: 10,
                 businessId: row._id,
                 detailedView: true,
+                ...(summaryFilters.month !== "all" &&
+                  summaryFilters.month !== "custom" &&
+                  (() => {
+                    const [month, year] = summaryFilters.month.split("-");
+                    const lastDay = new Date(
+                      Number(year),
+                      Number(month),
+                      0,
+                    ).getDate();
+                    return {
+                      startDate: `${year}-${month}-01`,
+                      endDate: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
+                    };
+                  })()),
+                ...(summaryFilters.month === "custom" && {
+                  startDate: summaryFilters.startDate || undefined,
+                  endDate: summaryFilters.endDate || undefined,
+                }),
               });
 
               setIsOpen(true); // open modal
@@ -878,6 +1006,24 @@ export default function OrdersMgmtPage() {
                 limit: 10,
                 businessId: row._id,
                 detailedView: true,
+                ...(summaryFilters.month !== "all" &&
+                  summaryFilters.month !== "custom" &&
+                  (() => {
+                    const [month, year] = summaryFilters.month.split("-");
+                    const lastDay = new Date(
+                      Number(year),
+                      Number(month),
+                      0,
+                    ).getDate();
+                    return {
+                      startDate: `${year}-${month}-01`,
+                      endDate: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
+                    };
+                  })()),
+                ...(summaryFilters.month === "custom" && {
+                  startDate: summaryFilters.startDate || undefined,
+                  endDate: summaryFilters.endDate || undefined,
+                }),
               });
               // downloadAsXLS(row);
               setPendingDownloadId(row._id);
@@ -1148,9 +1294,7 @@ export default function OrdersMgmtPage() {
               }
               h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
               totalCount={
-                orderSummaryClick
-                  ? orderSummaries?.data?.length
-                  : (totalData ?? 0)
+                orderSummaryClick ? (totalDataSummary ?? 0) : (totalData ?? 0)
               }
             />
           </div>
@@ -1187,7 +1331,6 @@ export default function OrdersMgmtPage() {
             )}
           </div>
         </div>
-
         {canViewOrders ? (
           <PageStats
             stats={orderStats}
@@ -1322,10 +1465,16 @@ export default function OrdersMgmtPage() {
                 </div>
                 {orderSummaryClick &&
                   (summaryFilters.status !== "all" ||
-                    summaryFilters.month !== "all") && (
+                    summaryFilters.month !== "all" ||
+                    !!dmoId ||
+                    !!authorityId) && (
                     <div className="min-w-55 mt-10">
                       <button
-                        onClick={() => setSummaryFilters(defaultSummaryFilters)}
+                        onClick={() => {
+                          setSummaryFilters(defaultSummaryFilters);
+                          dispatch(setDmo(""));
+                          dispatch(setAuthority(""));
+                        }}
                         className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                       >
                         {t("clear_all")}

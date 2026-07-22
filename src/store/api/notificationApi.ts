@@ -33,6 +33,14 @@ export const notificationApi = createApi({
       providesTags: ["NotificationData"],
     }),
 
+    getNotificationCount: builder.query<INotificationStats, void>({
+      query: () => ({
+        url: endpoints.notificationCount,
+        method: "GET",
+      }),
+      providesTags: ["NotificationData"],
+    }),
+
     markNotificationsAsRead: builder.mutation<INotifListRes, string>({
       query: (notificationId) => ({
         url: `${endpoints.notifications}/${notificationId}`,
@@ -41,7 +49,7 @@ export const notificationApi = createApi({
       invalidatesTags: ["NotificationData"],
     }),
 
-    bulkMarkNotificationsAsRead: builder.mutation<void, string[]>({
+    bulkMarkNotificationsAsRead: builder.mutation<void, string[] | undefined>({
       query: (ids) => ({
         url: endpoints.notificationsBulkMarkRead,
         method: "PATCH",
@@ -62,6 +70,7 @@ export const notificationApi = createApi({
         method: "PATCH",
         data: body,
       }),
+      invalidatesTags: ["NotificationData"],
     }),
   }),
 });
@@ -73,4 +82,5 @@ export const {
   useBulkMarkNotificationsAsReadMutation,
   useUpdateNotificationMutation,
   useGetNotificatonStatsQuery,
+  useGetNotificationCountQuery,
 } = notificationApi;

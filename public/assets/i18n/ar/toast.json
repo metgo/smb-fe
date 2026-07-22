@@ -13,6 +13,7 @@
   "image_upload_failed": "فشل تحميل الصورة",
   "image_deleted": "تم حذف الصورة بنجاح",
   "delete_failed": "فشل حذف الصورة",
+  "max_images_limit": "يمكنك تحميل حتى {{count}} صور فقط",
   "login_failed": "فشل تسجيل الدخول",
 
   "poi_delete_loading": "جاري حذف نقاط الاهتمام...",
@@ -65,5 +66,13 @@
   "empty_content_info": "يرجى إضافة فئة واحدة على الأقل تحتوي على أعمال.",
   "unsaved_changes": "تغييرات غير محفوظة",
   "close_without_saving": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد الإغلاق بدون الحفظ؟",
-  "close": "إغلاق"
+  "close": "إغلاق",
+
+  "login_attempt_rest_success": "تمت إعادة تعيين محاولات تسجيل الدخول بنجاح!",
+
+  "trip_status_updated_success": "تم تحديث حالة الرحلة بنجاح",
+  "trip_status_updated_faild": "فشل تحديث حالة الرحلة",
+  "trip_updated_success": "تم تحديث الرحلة بنجاح!",
+  "trip_created_success": "تم إنشاء الرحلة بنجاح!",
+  "trip_create_failed": "فشل إنشاء الرحلة"
 }

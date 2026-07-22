@@ -34,6 +34,7 @@ import {
   markNotificationAsRead,
   setNotificationStatus,
   updateNotificationStatus,
+  setUnreadCount,
 } from "@/features/notificationSlice";
 
 import {
@@ -41,6 +42,8 @@ import {
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
+import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
+import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
 import { useGetChangesByEntityQuery } from "@/store/api/businessQueryApi";
 import { ViewChangesModal } from "@/components/change-tracking";
 import { UserRole } from "@/enums/user.types";
@@ -63,6 +66,8 @@ const NotificationsBell = () => {
   const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
   const [updateBusiness] = useUpdateBusinessMutation();
   const [updateProduct] = useUpdateProductMutation();
+  const [updateEvent] = useUpdateEventMutation();
+  const [updatePoi] = useUpdatePoiMutation();
 
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
   const [viewChangesState, setViewChangesState] = useState({
@@ -100,7 +105,7 @@ const NotificationsBell = () => {
   const { isRTL, isDark, textPrimary, textSecondary, textTertiary, language } =
     useThemeClasses();
 
-  const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
+  const { unreadCount } = useAppSelector((state) => state.notification);
 
   const getNotificationIcon = (type: TNotifType) => {
     const base =
@@ -140,11 +145,12 @@ const NotificationsBell = () => {
   };
 
   const handleMarkAllAsRead = async () => {
-    const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n._id);
-    if (unreadIds.length === 0) return;
+    if (unreadCount === 0) return;
     try {
-      await bulkMarkNotificationsAsRead(unreadIds).unwrap();
+      // Call with undefined to mark all unread as read
+      await bulkMarkNotificationsAsRead(undefined).unwrap();
       dispatch(markAllNotificationsAsRead());
+      dispatch(setUnreadCount(0));
     } catch {
       toast.error("Failed to mark all as read. Please try again.");
     }
@@ -378,6 +384,16 @@ const NotificationsBell = () => {
                           productId: notification.itemId,
                           body: { status: "APPROVED" },
                         }).unwrap();
+                      } else if (itemType === "EVENT") {
+                        await updateEvent({
+                          eventId: notification.itemId,
+                          body: { status: "APPROVED" },
+                        }).unwrap();
+                      } else if (itemType === "POI") {
+                        await updatePoi({
+                          poiId: notification.itemId,
+                          body: { status: "APPROVED" },
+                        }).unwrap();
                       }
                       await updateNotification({
                         notificationId: notification._id,
@@ -531,7 +547,8 @@ const NotificationsBell = () => {
                             </div>
                           )}
 
-                          {!isApproved &&
+                          {(notification.status === "PENDING" ||
+                            notification.status === "DRAFT") &&
                             (itemType === "BUSINESS" ||
                               itemType === "PRODUCT" ||
                               itemType === "EVENT" ||
@@ -539,7 +556,8 @@ const NotificationsBell = () => {
                             (userRole === UserRole.SUPERADMIN ||
                               userRole === UserRole.AUTHORITY ||
                               userRole === UserRole.DMO ||
-                              userRole === UserRole.SITE_MANAGER) && (
+                              userRole === UserRole.SITE_MANAGER) &&
+                            (notification.changesCount as number) > 0 && (
                               <button
                                 onClick={handleViewChanges}
                                 className={clsx(

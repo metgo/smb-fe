@@ -11,20 +11,25 @@ interface BusinessStatsParams {
   averageCompletion?: number;
 }
 interface BusinessListParams {
-  page?: string;
-  limit?: string;
+  page?: string | number;
+  limit?: string | number;
   search?: string;
   businessType?: string;
   status?: string;
   isRegistration?: boolean;
   isFree?: boolean;
-  authorityId?: boolean;
-  dmoId?: boolean;
-  hasProductFilter?: string;
+  authorityId?: boolean | string;
+  dmoId?: boolean | string;
+  hasProductFilter?: string | boolean;
   sortOrder?: string;
   sortBy?: string;
   startDate?: string;
   endDate?: string;
+  externalApiId?: string;
+  locale?: string;
+  primaryCategoryId?: string;
+  assignmentStatus?: string;
+  viewCategory?: string;
 }
 
 interface BusinessesForProductParams {

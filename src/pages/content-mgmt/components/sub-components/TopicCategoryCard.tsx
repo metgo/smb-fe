@@ -71,6 +71,11 @@ const TopicCategoryCard = ({
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiBusinesses, setAiBusinesses] = useState<IAiSuggestedEntity[]>([]);
   const [aiProducts, setAiProducts] = useState<IAiSuggestedEntity[]>([]);
+  const aiCallTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastAiCallRef = useRef<{
+    categoryName: string;
+    timestamp: number;
+  } | null>(null);
 
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const iconPickerRef = useRef<HTMLDivElement>(null);
@@ -117,6 +122,15 @@ const TopicCategoryCard = ({
     };
     document.addEventListener("popup-opened", handler);
     return () => document.removeEventListener("popup-opened", handler);
+  }, []);
+
+  // Cleanup AI call timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (aiCallTimeoutRef.current) {
+        clearTimeout(aiCallTimeoutRef.current);
+      }
+    };
   }, []);
 
   // Calculate fixed portal position — works for both LTR and RTL
@@ -250,7 +264,13 @@ const TopicCategoryCard = ({
           ...template,
           groups: template.groups.map((grp, gIndex) => {
             if (gIndex !== categoryIndex) return grp;
-            return { ...grp, category: editValue };
+            // Update all language fields — if no He/Ar translation exists yet, fall back to the new name
+            return {
+              ...grp,
+              category: editValue,
+              categoryHe: grp.categoryHe || editValue,
+              categoryAr: grp.categoryAr || editValue,
+            };
           }),
         };
       }),
@@ -318,6 +338,12 @@ const TopicCategoryCard = ({
   const handleAiAutoFill = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
+    // Prevent multiple rapid clicks (debounce)
+    if (isAiLoading) {
+      toast.info("AI is already analyzing. Please wait...");
+      return;
+    }
+
     const categoryName = group.category?.trim();
     const categoryDescription =
       group.description?.trim() || group.category?.trim() || "";
@@ -327,12 +353,48 @@ const TopicCategoryCard = ({
       return;
     }
 
+    // Debounce: Prevent calling AI twice for the same category within 5 seconds
+    if (
+      lastAiCallRef.current &&
+      lastAiCallRef.current.categoryName === categoryName &&
+      Date.now() - lastAiCallRef.current.timestamp < 5000
+    ) {
+      toast.info("Already analyzing this category. Please wait...");
+      return;
+    }
+
+    // Clear any pending timeout
+    if (aiCallTimeoutRef.current) {
+      clearTimeout(aiCallTimeoutRef.current);
+    }
+
+    const loadingId = toast.loading(
+      "🤖 AI is analyzing... this may take a moment",
+    );
+
     try {
       const result = await aiSuggestEntities({
         categoryName,
         categoryDescription,
         externalApiId: externalApiId ?? undefined,
       }).unwrap();
+
+      toast.dismiss(loadingId);
+
+      // Update last call tracker
+      lastAiCallRef.current = {
+        categoryName,
+        timestamp: Date.now(),
+      };
+
+      // AI service was unavailable (quota exhausted, timeout, etc.)
+      if (result.aiUnavailable) {
+        toast.error(
+          "AI service is temporarily unavailable. Please try again later.",
+          { duration: 5000 },
+        );
+        return;
+      }
 
       const existingIds = new Set(
         group.contents.map((item: IContent) => item._id),
@@ -344,16 +406,34 @@ const TopicCategoryCard = ({
         (item) => !existingIds.has(item._id),
       );
 
+      // No matches found — genuine AI response with no relevant results
       if (!businesses.length && !products.length) {
-        toast.info("AI found no new matching entities for this category.");
+        const hasExisting = group.contents?.length > 0;
+        const message = hasExisting
+          ? "No new matches found. All matching items are already in this category."
+          : "No matches found. Try: 1) Using a different category name, 2) Adding tags to your items, 3) Checking spelling.";
+        toast.info(message);
         return;
       }
 
       setAiBusinesses(businesses);
       setAiProducts(products);
       setShowAiModal(true);
-    } catch {
-      toast.error("AI suggestion failed. Please try again.");
+      toast.success(
+        `Found ${businesses.length + products.length} suggestions! 🎉`,
+      );
+    } catch (error: any) {
+      toast.dismiss(loadingId);
+      const isTimeout =
+        error?.message?.includes?.("timeout") ||
+        error?.data?.message?.includes?.("timeout");
+      if (isTimeout) {
+        toast.error(
+          "Request took too long. Check your internet and try again.",
+        );
+      } else {
+        toast.error("AI suggestion failed. Please try again.");
+      }
     }
   };
 
@@ -361,30 +441,60 @@ const TopicCategoryCard = ({
     selectedBusinesses: IAiSuggestedEntity[],
     selectedProducts: IAiSuggestedEntity[],
   ) => {
+    // Validation: Ensure all selected items have required fields
+    const validBusinesses = selectedBusinesses.filter((business) => {
+      if (!business._id || !business.name) {
+        console.warn("Skipping invalid business:", business);
+        return false;
+      }
+      return true;
+    });
+
+    const validProducts = selectedProducts.filter((product) => {
+      if (!product._id || !product.name) {
+        console.warn("Skipping invalid product:", product);
+        return false;
+      }
+      return true;
+    });
+
     const nextContents: IContent[] = [
-      ...selectedBusinesses.map((business) => ({
+      ...validBusinesses.map((business) => ({
         _id: business._id,
         name: business.name,
-        desc: business.description,
+        desc: business.description || "",
         imageUrl: business.images?.[0]?.image || "",
         primaryCategory: "",
         contentType: "business" as const,
         title: business.name,
-        message: business.description,
+        message: business.description || "",
       })),
-      ...selectedProducts.map((product) => ({
+      ...validProducts.map((product) => ({
         _id: product._id,
         name: product.name,
-        desc: product.description,
+        desc: product.description || "",
         imageUrl: product.images?.[0]?.image || "",
         primaryCategory: "",
         contentType: "product" as const,
         title: product.name,
-        message: product.description,
+        message: product.description || "",
       })),
     ];
 
+    // If validation filtered out items, warn user
+    if (
+      validBusinesses.length < selectedBusinesses.length ||
+      validProducts.length < selectedProducts.length
+    ) {
+      const skipped =
+        selectedBusinesses.length -
+        validBusinesses.length +
+        (selectedProducts.length - validProducts.length);
+      toast.warning(`${skipped} item(s) were invalid and skipped.`);
+    }
+
     if (!nextContents.length) {
+      toast.info("No valid items to add.");
       setShowAiModal(false);
       return;
     }
@@ -397,19 +507,26 @@ const TopicCategoryCard = ({
           groups: template.groups.map((grp, gIndex) => {
             if (gIndex !== categoryIndex) return grp;
             const existingIds = new Set(grp.contents.map((item) => item._id));
+            // Final deduplication before adding
+            const newItems = nextContents.filter(
+              (item) => !existingIds.has(item._id),
+            );
+            if (newItems.length === 0) {
+              toast.info("All selected items are already in this category.");
+              return grp;
+            }
             return {
               ...grp,
-              contents: [
-                ...grp.contents,
-                ...nextContents.filter((item) => !existingIds.has(item._id)),
-              ],
+              contents: [...grp.contents, ...newItems],
             };
           }),
         };
       }),
     );
     setShowAiModal(false);
-    toast.success("AI suggestions added to the category.");
+    toast.success(
+      `Added ${nextContents.length} suggestion(s) to the category.`,
+    );
   };
 
   const divRef = useRef<HTMLDivElement>(null);
@@ -644,41 +761,43 @@ const TopicCategoryCard = ({
                 <span className="bg-gray-300 rounded-full w-6 h-6 text-center">
                   {group.contents.length}
                 </span>
-                <div className="relative group/ai">
-                  <button
-                    type="button"
-                    title="Auto Fill with AI"
-                    aria-label="Auto Fill with AI"
-                    onClick={handleAiAutoFill}
-                    disabled={isAiLoading}
-                    className={clsx(
-                      "h-7 w-7 rounded-md border flex items-center justify-center transition-colors",
-                      isAiLoading
-                        ? isDark
-                          ? "border-gray-700 text-gray-500 cursor-wait"
-                          : "border-gray-200 text-gray-400 cursor-wait"
-                        : isDark
-                          ? "border-purple-600/70 text-purple-300 hover:bg-purple-900/40 hover:border-purple-400"
-                          : "border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-500",
-                    )}
-                  >
-                    {isAiLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                  <div
-                    className={clsx(
-                      "absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover/ai:opacity-100 pointer-events-none transition-opacity z-20",
-                      isDark
-                        ? "bg-gray-700 text-gray-200"
-                        : "bg-gray-800 text-white",
-                    )}
-                  >
-                    Auto Fill with AI
+                {externalApiId && (
+                  <div className="relative group/ai">
+                    <button
+                      type="button"
+                      title="Auto Fill with AI"
+                      aria-label="Auto Fill with AI"
+                      onClick={handleAiAutoFill}
+                      disabled={isAiLoading}
+                      className={clsx(
+                        "h-7 w-7 rounded-md border flex items-center justify-center transition-colors",
+                        isAiLoading
+                          ? isDark
+                            ? "border-gray-700 text-gray-500 cursor-wait"
+                            : "border-gray-200 text-gray-400 cursor-wait"
+                          : isDark
+                            ? "border-purple-600/70 text-purple-300 hover:bg-purple-900/40 hover:border-purple-400"
+                            : "border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-500",
+                      )}
+                    >
+                      {isAiLoading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <div
+                      className={clsx(
+                        "absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover/ai:opacity-100 pointer-events-none transition-opacity z-20",
+                        isDark
+                          ? "bg-gray-700 text-gray-200"
+                          : "bg-gray-800 text-white",
+                      )}
+                    >
+                      Auto Fill with AI
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </>
           )}

@@ -219,10 +219,58 @@ interface ITicketDateTime {
   endTime: string;
 }
 
+// ── Sessions ─────────────────────────────────────────────────────────────────
+
+interface SessionSlot {
+  id: string;
+  time: string;
+  capacity: number;
+}
+
+interface SessionDate {
+  id: string;
+  date: string;
+  slots: SessionSlot[];
+}
+
+interface SessionInstructor {
+  name: string;
+  role: string;
+}
+
+interface EventSession {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  images: string[];
+  roomLabel: string;
+  rooms: string[];
+  instructors: SessionInstructor[];
+  dates: SessionDate[];
+}
+
+interface CreateSessionPayload {
+  eventId: string;
+  name: string;
+  tagline?: string;
+  description?: string;
+  images?: string[];
+  roomLabel?: string;
+  rooms?: string[];
+  instructors?: SessionInstructor[];
+  dates: SessionDate[];
+}
+
+type UpdateSessionPayload = Partial<Omit<CreateSessionPayload, "eventId">>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface ITicketPayload {
   _id?: string;
   name: string;
   description: string;
+  greeting: string;
   eventId: string;
   dayDescription: ITicketDateTime[];
   price: {
@@ -242,4 +290,48 @@ interface ITicketPayload {
   images?: [{ image: string }];
   status: string;
   type: string;
+  wrapperId?: string;
+}
+
+interface IEventListRes {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+  name: string;
+  nameHe: string;
+  nameAr: string;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  image?: string;
+  images?: { image: string; isPrimary: boolean }[];
+  slug: string;
+  dayDescription: IEventDayDescription[];
+  hasExternalTicket: boolean;
+  ticketBuyLink: string;
+  ticketCount: number;
+  wrapperCount: number;
+  associatedWebsiteIds: string[];
+  address: {
+    country: string;
+    city: string;
+    location: string;
+    additional_information: string;
+  };
+  pricing: {
+    price: {
+      sellingPrice: number;
+    };
+    type: string;
+  }[];
+}
+
+interface IEventDayDescription {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface IEventBusiness {
+  _id: string;
+  name: string;
+  logoUrl: string;
 }

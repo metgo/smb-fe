@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { detectLanguage } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGenerateBlogNameMutation } from "@/store/api/blogQueryApi";
+import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 
 interface ProductTranslateButtonProps {
   formData: any;
@@ -179,7 +180,7 @@ const BusinessTranslateButton = ({
         <button
           onClick={handleTranslate}
           disabled={isTranslating}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 disabled:opacity-60 transition-colors text-sm font-medium "
+          className="items-center flex gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 disabled:opacity-60 transition-colors text-sm font-medium "
         >
           <Languages className="w-4 h-4 animate-pulse" />
           {isTranslating ? t("translating") : t("auto_translate")}
@@ -214,12 +215,14 @@ const BusinessTranslateButton = ({
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow`}
                 />
               </div>
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-1`}
-                >
-                  {t("short_description")}
-                </label>
+              <FormFieldWrapper
+                label={t("short_description")}
+                error={
+                  (formData[shortDescription] || "").length > 150
+                    ? t("exceeds_char_limit", { limit: 150 })
+                    : undefined
+                }
+              >
                 <textarea
                   dir={dir}
                   rows={3}
@@ -228,14 +231,23 @@ const BusinessTranslateButton = ({
                     onChange({ [shortDescription]: e.target.value })
                   }
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-shadow`}
+                  maxLength={150}
                 />
-              </div>
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-1`}
-                >
-                  {t("full_description")}
-                </label>
+                <p className={`text-xs ${textTertiary} mt-1`}>
+                  {t("char_count", {
+                    count: (formData[shortDescription] || "").length,
+                    limit: 150,
+                  })}
+                </p>
+              </FormFieldWrapper>
+              <FormFieldWrapper
+                label={t("full_description")}
+                error={
+                  (formData[fullDescription] || "").length > 500
+                    ? t("exceeds_char_limit", { limit: 500 })
+                    : undefined
+                }
+              >
                 <textarea
                   dir={dir}
                   rows={6}
@@ -244,8 +256,15 @@ const BusinessTranslateButton = ({
                     onChange({ [fullDescription]: e.target.value })
                   }
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-shadow`}
+                  maxLength={500}
                 />
-              </div>
+                <p className={`text-xs ${textTertiary} mt-1`}>
+                  {t("char_count", {
+                    count: (formData[fullDescription] || "").length,
+                    limit: 500,
+                  })}
+                </p>
+              </FormFieldWrapper>
             </div>
           </div>
         );

@@ -1,5 +1,6 @@
 import AuthPage from "./auth";
 import ErrorUiPage from "./error-ui";
+import NoInternetPage from "./no-internet";
 import ProfilePage from "./profile";
 import EventsMgmtPage from "./events-mgmt";
 import ProductsMgmtPage from "./products-mgmt";
@@ -30,14 +31,20 @@ import PoiMgmtPage from "./poi-mgmt";
 import PoiDetailsPage from "./poi-mgmt/details";
 import WebsiteCrashesPage from "./website-crashes";
 import WebsiteCrashDetailsPage from "./website-crashes/details";
+import EventSessionMgmtPage from "./event-session-mgmt";
+import TripsMgmtPage from "./trips-mgmt";
+import TripDetailsPage from "./trips-mgmt/details";
 
 export {
   AuthPage,
   ErrorUiPage,
+  NoInternetPage,
   ProfilePage,
   DmosMgmtPage,
   CampaignsMgmtPage,
   AuthoritiesMgmtPage,
+  TripsMgmtPage,
+  TripDetailsPage,
   BusinessesMgmtPage,
   PendingApprovalsPage,
   BusinessDetailsPage,
@@ -46,6 +53,7 @@ export {
   ProductDetailsPage,
   EventsMgmtPage,
   EventDetailsPage,
+  EventSessionMgmtPage,
   MiniCampaignsMgmtPage,
   OrdersMgmtPage,
   MiniSiteMgmtPage,

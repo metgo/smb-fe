@@ -48,12 +48,7 @@ import { businessTabs } from "@/constants/tabs";
 import { IOpMode } from "@/enums/operation.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { envKeys } from "@/lib/envKeys";
-import {
-  TourProvider,
-  TourPortal,
-  useTour,
-  BUSINESS_DETAILS_TOUR_ID,
-} from "@/components/tour";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 import { getLngWiseStr } from "@/helpers";
 
@@ -119,18 +114,6 @@ function TourTrigger() {
   const handleManualStart = () => {
     startTour(buildSteps());
   };
-
-  // Auto-start once per user
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      startTour(buildSteps(), {
-        tourId: BUSINESS_DETAILS_TOUR_ID,
-        autoOnce: true,
-      });
-    }, 800);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <button
@@ -371,7 +354,8 @@ function BusinessDetailsPageInner() {
     const mediaProps = {
       logoImage: business?.logo?.image ?? null,
       images: businessImages.map((img: IImage) => ({
-        previewUrl: img.image,
+        image: img.image,
+        isPrimary: img.isPrimary,
       })),
       primaryImageIndex: Math.max(
         0,
@@ -545,7 +529,14 @@ function BusinessDetailsPageInner() {
       </div>
 
       <div className="details-top shrink-0" data-tour="business-header">
-        <DetailTitleSection {...business} imageSrc={business?.logo?.image} />
+        <DetailTitleSection
+          {...business}
+          imageSrc={
+            business?.images?.find((img: IImage) => img.isPrimary)?.image ||
+            business?.images?.[0]?.image ||
+            business?.logo?.image
+          }
+        />
         <div data-tour="business-stats">
           <PageStats
             stats={businessStats}

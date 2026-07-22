@@ -16,6 +16,7 @@ import { StatusChangeBtn } from "@/components/btns";
 import { ConfirmDialog } from "@/components/shared";
 import { useAppSelector } from "@/hooks/hooks";
 import { ReactSelect } from "@/components/form-fields";
+import ViewManagerPanel from "./ViewManagerPanel";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
 const TOPIC_TYPE = "TOPIC_ITEM";
@@ -31,6 +32,15 @@ interface ContentComposerProps {
   onStatusChangeHandler: (v: TStatus) => void;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
+  views?: IView[];
+  isLoadingViews?: boolean;
+  websiteName?: string;
+  onViewSelect?: (view: IView) => void;
+  onViewsRefetch?: () => void;
+  onRefetchTemplate?: () => void;
+  hasUnsavedContent?: boolean;
+  onSaveCurrentAsView?: () => void;
+  isSavingCurrentAsView?: boolean;
 }
 
 // ─── Draggable Topic Block ────────────────────────────────────────────────────
@@ -111,6 +121,9 @@ const TopicBlock = ({
     updated[topicIndex] = {
       ...updated[topicIndex],
       topic: newName,
+      // Keep existing He/Ar translations; only fall back to new name if they were empty
+      topicHe: updated[topicIndex].topicHe || newName,
+      topicAr: updated[topicIndex].topicAr || newName,
     };
 
     setTemplateContent(updated);
@@ -321,10 +334,23 @@ const ContentComposer = ({
   templateContentId,
   setTemplateContent,
   onStatusChangeHandler,
+  views = [],
+  isLoadingViews = false,
+  websiteName = "",
+  onViewSelect,
+  onViewsRefetch,
+  onRefetchTemplate,
+  hasUnsavedContent = false,
+  onSaveCurrentAsView,
+  isSavingCurrentAsView = false,
 }: ContentComposerProps) => {
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
   const { associatedWebsite } = useAppSelector((state) => state.auth);
+  const selectedWebsite = ((associatedWebsite as any[]) || []).find(
+    (w) => w._id === externalApiId,
+  );
+  const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
 
   const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -406,7 +432,24 @@ const ContentComposer = ({
         </div>
       </div>
 
-      <div className="overflow-y-scroll h-[64vh] pb-8">
+      {/* View Manager — shown only when a website is selected */}
+      {externalApiId && (
+        <ViewManagerPanel
+          views={views}
+          isLoading={isLoadingViews}
+          externalApiId={externalApiId}
+          websiteName={websiteName}
+          onViewSelect={(view) => onViewSelect?.(view)}
+          onRefetch={() => onViewsRefetch?.()}
+          onRefetchTemplate={() => onRefetchTemplate?.()}
+          hasUnsavedContent={hasUnsavedContent}
+          onSaveCurrentAsView={onSaveCurrentAsView}
+          isSavingCurrentAsView={isSavingCurrentAsView}
+          isMarketplace={isMarketplace}
+        />
+      )}
+
+      <div className="overflow-y-scroll h-[58vh] pb-8">
         <ContentConfigHeader
           header={header}
           setHeader={setHeader}

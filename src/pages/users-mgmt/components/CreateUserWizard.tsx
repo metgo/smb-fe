@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Loader, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -11,6 +12,8 @@ import {
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
 import { useCommon } from "@/hooks/useCommon";
+import ImageWithFallback from "@/components/shared/ImageWithFallback";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 const CREATABLE_ROLES: Partial<Record<UserRole, UserRole[]>> = {
   [UserRole.SUPERADMIN]: [
@@ -50,17 +53,17 @@ interface CreateUserWizardProps {
 }
 
 const LANGUAGE_OPTIONS = [
-  { value: "en", label: "English" },
-  { value: "ar", label: "Arabic" },
-  { value: "he", label: "Hebrew" },
+  { value: "en", labelKey: "lang_english" },
+  { value: "ar", labelKey: "lang_arabic" },
+  { value: "he", labelKey: "lang_hebrew" },
 ];
 
 const ROLE_OPTIONS = [
-  { value: UserRole.SUPERADMIN, label: "Super Admin" },
-  { value: UserRole.ADMIN, label: "Admin" },
-  { value: UserRole.DMO, label: "DMO" },
-  { value: UserRole.AUTHORITY, label: "Authority" },
-  { value: UserRole.TRAVELLER, label: "Traveller" },
+  { value: UserRole.SUPERADMIN, labelKey: "role_super_admin" },
+  { value: UserRole.ADMIN, labelKey: "role_admin" },
+  { value: UserRole.DMO, labelKey: "role_dmo" },
+  { value: UserRole.AUTHORITY, labelKey: "role_authority" },
+  { value: UserRole.TRAVELLER, labelKey: "role_traveller" },
 ];
 
 const CreateUserWizard = ({
@@ -68,6 +71,9 @@ const CreateUserWizard = ({
   editUser,
   onSuccess,
 }: CreateUserWizardProps) => {
+  const { t } = useTranslation("user");
+  const { isSuperadmin } = useUserRoles();
+
   const { isDark, borderColor } = useThemeClasses();
   const isEdit = !!editUser;
 
@@ -172,17 +178,18 @@ const CreateUserWizard = ({
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!formData.firstName.trim()) e.firstName = "Required";
-    if (!formData.lastName.trim()) e.lastName = "Required";
-    if (!formData.email.trim()) e.email = "Required";
+    if (!formData.firstName.trim()) e.firstName = t("required");
+    if (!formData.lastName.trim()) e.lastName = t("required");
+    if (!formData.email.trim()) e.email = t("required");
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      e.email = "Invalid email";
-    if (!formData.countryCode.trim()) e.countryCode = "Required";
-    if (!formData.phoneNumber.trim()) e.phoneNumber = "Required";
-    if (!formData.role) e.role = "Required";
-    if (formData.role === UserRole.DMO && !formData.dmoId) e.dmoId = "Required";
+      e.email = t("invalid_email");
+    if (!formData.countryCode.trim()) e.countryCode = t("required");
+    if (!formData.phoneNumber.trim()) e.phoneNumber = t("required");
+    if (!formData.role) e.role = t("required");
+    if (formData.role === UserRole.DMO && !formData.dmoId)
+      e.dmoId = t("required");
     if (formData.role === UserRole.AUTHORITY && !formData.authorityId)
-      e.authorityId = "Required";
+      e.authorityId = t("required");
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -200,45 +207,69 @@ const CreateUserWizard = ({
       languagePreference: formData.languagePreference,
     };
 
-    // Only include role when creating, not when editing
     if (!isEdit) {
       payload.role = formData.role;
 
       if (formData.role === UserRole.DMO && formData.dmoId) {
         payload.dmoId = formData.dmoId;
       }
+
       if (formData.role === UserRole.AUTHORITY && formData.authorityId) {
         payload.authorityId = formData.authorityId;
       }
     } else {
-      // When editing, allow updating dmoId/authorityId but not role
-      if (formData.dmoId) {
-        payload.dmoId = formData.dmoId;
+      // Allow Super Admin to change role while editing
+      if (isSuperadmin) {
+        payload.role = formData.role;
       }
-      if (formData.authorityId) {
-        payload.authorityId = formData.authorityId;
+
+      switch (formData.role) {
+        case UserRole.DMO:
+          if (formData.dmoId) {
+            payload.dmoId = formData.dmoId;
+          }
+          break;
+
+        case UserRole.AUTHORITY:
+          if (formData.authorityId) {
+            payload.authorityId = formData.authorityId;
+          }
+          break;
+      }
+
+      // Optional: if backend expects empty values when changing role
+      if (formData.role !== UserRole.DMO) {
+        payload.dmoId = "";
+      }
+
+      if (formData.role !== UserRole.AUTHORITY) {
+        payload.authorityId = "";
       }
     }
 
     try {
       if (isEdit && editUser) {
-        await updateUser({ userId: editUser._id, body: payload }).unwrap();
-        toast.success("User updated successfully");
+        await updateUser({
+          userId: editUser._id,
+          body: payload,
+        }).unwrap();
 
-        // Trigger refetch immediately to ensure fresh data in parent
+        toast.success(t("user_updated_success"));
+
         onSuccess?.();
 
-        // Close modal after a brief moment to allow refetch to start
         setTimeout(() => {
           onClose();
         }, 50);
       } else {
         await createUser(payload).unwrap();
-        toast.success("User created successfully");
+
+        toast.success(t("user_created_success"));
+
         onClose();
       }
     } catch (err: any) {
-      toast.error(err?.data?.message || "Something went wrong");
+      toast.error(err?.data?.message || t("something_went_wrong"));
     }
   };
 
@@ -254,7 +285,7 @@ const CreateUserWizard = ({
         className={`px-6 py-4 flex items-center justify-between border-b ${borderColor}`}
       >
         <h2 className={`text-xl ${isDark ? "text-gray-100" : "text-gray-900"}`}>
-          {isEdit ? "Edit User" : "Create User"}
+          {isEdit ? t("edit_user") : t("create_user")}
         </h2>
       </div>
 
@@ -263,26 +294,26 @@ const CreateUserWizard = ({
         {/* Name */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>First Name *</label>
+            <label className={labelClass}>{t("first_name")} *</label>
             <input
               type="text"
               value={formData.firstName}
               onChange={field("firstName")}
               className={inputClass}
-              placeholder="John"
+              placeholder={t("first_name_placeholder")}
             />
             {errors.firstName && (
               <p className={errorClass}>{errors.firstName}</p>
             )}
           </div>
           <div>
-            <label className={labelClass}>Last Name *</label>
+            <label className={labelClass}>{t("last_name")} *</label>
             <input
               type="text"
               value={formData.lastName}
               onChange={field("lastName")}
               className={inputClass}
-              placeholder="Doe"
+              placeholder={t("last_name_placeholder")}
             />
             {errors.lastName && <p className={errorClass}>{errors.lastName}</p>}
           </div>
@@ -291,21 +322,23 @@ const CreateUserWizard = ({
         {/* Email */}
         <div>
           <label className={labelClass}>
-            Email *{" "}
-            {isEdit && <span className="text-xs text-gray-500">(locked)</span>}
+            {t("email")} *{" "}
+            {isEdit && (
+              <span className="text-xs text-gray-500">{t("locked")}</span>
+            )}
           </label>
           <input
             type="email"
             value={formData.email}
             onChange={field("email")}
             className={isEdit ? disabledInputClass : inputClass}
-            placeholder="john.doe@example.com"
+            placeholder={t("email_placeholder")}
             disabled={isEdit}
           />
           {errors.email && <p className={errorClass}>{errors.email}</p>}
           {isEdit && (
             <p className="text-xs text-gray-500 mt-1">
-              Email cannot be changed after creation
+              {t("email_locked_hint")}
             </p>
           )}
         </div>
@@ -313,26 +346,26 @@ const CreateUserWizard = ({
         {/* Phone */}
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className={labelClass}>Country Code *</label>
+            <label className={labelClass}>{t("country_code")} *</label>
             <input
               type="text"
               value={formData.countryCode}
               onChange={field("countryCode")}
               className={inputClass}
-              placeholder="+1"
+              placeholder={t("country_code_placeholder")}
             />
             {errors.countryCode && (
               <p className={errorClass}>{errors.countryCode}</p>
             )}
           </div>
           <div className="col-span-2">
-            <label className={labelClass}>Phone Number *</label>
+            <label className={labelClass}>{t("phone_number")} *</label>
             <input
               type="tel"
               value={formData.phoneNumber}
               onChange={field("phoneNumber")}
               className={inputClass}
-              placeholder="5551234567"
+              placeholder={t("phone_number_placeholder")}
             />
             {errors.phoneNumber && (
               <p className={errorClass}>{errors.phoneNumber}</p>
@@ -342,13 +375,13 @@ const CreateUserWizard = ({
 
         {/* Address */}
         <div>
-          <label className={labelClass}>Address</label>
+          <label className={labelClass}>{t("address")}</label>
           <input
             type="text"
             value={formData.address}
             onChange={field("address")}
             className={inputClass}
-            placeholder="123 Main St, City, Country"
+            placeholder={t("address_placeholder")}
           />
         </div>
 
@@ -356,40 +389,43 @@ const CreateUserWizard = ({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>
-              Role *{" "}
-              {isEdit && (
-                <span className="text-xs text-gray-500">(locked)</span>
+              {t("role")} *{" "}
+              {isEdit && !isSuperadmin && (
+                <span className="text-xs text-gray-500">{t("locked")}</span>
               )}
             </label>
             <select
               value={formData.role}
-              onChange={(e) =>
-                !isEdit &&
-                setFormData((prev) => ({
-                  ...prev,
-                  role: e.target.value,
-                  authorityId: "",
-                  dmoId: "",
-                }))
+              onChange={(e) => {
+                if (!isEdit || isSuperadmin) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    role: e.target.value,
+                    authorityId: "",
+                    dmoId: "",
+                  }));
+                }
+              }}
+              disabled={isEdit && !isSuperadmin}
+              className={
+                isEdit && !isSuperadmin ? disabledInputClass : inputClass
               }
-              disabled={isEdit}
-              className={isEdit ? disabledInputClass : inputClass}
             >
               {allowedRoleOptions.map((r) => (
                 <option key={r.value} value={r.value}>
-                  {r.label}
+                  {t(r.labelKey)}
                 </option>
               ))}
             </select>
             {errors.role && <p className={errorClass}>{errors.role}</p>}
-            {isEdit && (
+            {isEdit && !isSuperadmin && (
               <p className="text-xs text-gray-500 mt-1">
-                Role cannot be changed after creation
+                {t("role_locked_hint")}
               </p>
             )}
           </div>
           <div>
-            <label className={labelClass}>Language Preference</label>
+            <label className={labelClass}>{t("language_preference")}</label>
             <select
               value={formData.languagePreference}
               onChange={field("languagePreference")}
@@ -397,7 +433,7 @@ const CreateUserWizard = ({
             >
               {LANGUAGE_OPTIONS.map((l) => (
                 <option key={l.value} value={l.value}>
-                  {l.label}
+                  {t(l.labelKey)}
                 </option>
               ))}
             </select>
@@ -407,7 +443,7 @@ const CreateUserWizard = ({
         {/* DMO — shown only when role is DMO */}
         {formData.role === UserRole.DMO && (
           <div ref={dmoDropdownRef}>
-            <label className={labelClass}>DMO *</label>
+            <label className={labelClass}>{t("dmo")} *</label>
             <div className="relative">
               <button
                 type="button"
@@ -425,30 +461,18 @@ const CreateUserWizard = ({
                     const dmoData = selected || editUser?.dmo;
                     return (
                       <span className="flex items-center gap-2">
-                        {dmoData?.logoPath ? (
-                          <img
-                            src={dmoData.logoPath}
-                            alt={dmoData.name}
-                            className="w-5 h-5 rounded-full object-cover shrink-0"
-                          />
-                        ) : (
-                          <span className="w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
-                            <svg
-                              className="w-3 h-3 text-gray-500"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z" />
-                            </svg>
-                          </span>
-                        )}
+                        <ImageWithFallback
+                          src={dmoData?.logoPath}
+                          alt={dmoData?.name}
+                          className="w-5 h-5 rounded-full object-cover shrink-0"
+                        />
                         {dmoData?.name}
                       </span>
                     );
                   })()
                 ) : (
                   <span className={isDark ? "text-gray-500" : "text-gray-400"}>
-                    Select DMO...
+                    {t("select_dmo_placeholder")}
                   </span>
                 )}
                 <svg
@@ -491,23 +515,11 @@ const CreateUserWizard = ({
                             : "text-gray-800 hover:bg-gray-50"
                       }`}
                     >
-                      {dmo.logoPath ? (
-                        <img
-                          src={dmo.logoPath}
-                          alt={dmo.name}
-                          className="w-6 h-6 rounded-full object-cover shrink-0"
-                        />
-                      ) : (
-                        <span className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
-                          <svg
-                            className="w-3 h-3 text-gray-500"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z" />
-                          </svg>
-                        </span>
-                      )}
+                      <ImageWithFallback
+                        src={dmo.logoPath}
+                        alt={dmo.name}
+                        className="w-6 h-6 rounded-full object-cover shrink-0"
+                      />
                       {dmo.name}
                     </li>
                   ))}
@@ -521,7 +533,7 @@ const CreateUserWizard = ({
         {/* Authority — shown only when role is Authority */}
         {formData.role === UserRole.AUTHORITY && (
           <div ref={authorityDropdownRef}>
-            <label className={labelClass}>Authority *</label>
+            <label className={labelClass}>{t("authority")} *</label>
             <div className="relative">
               <button
                 type="button"
@@ -539,30 +551,18 @@ const CreateUserWizard = ({
                     const authorityData = selected || editUser?.authority;
                     return (
                       <span className="flex items-center gap-2">
-                        {authorityData?.logoPath ? (
-                          <img
-                            src={authorityData.logoPath}
-                            alt={authorityData.name}
-                            className="w-5 h-5 rounded-full object-cover shrink-0"
-                          />
-                        ) : (
-                          <span className="w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
-                            <svg
-                              className="w-3 h-3 text-gray-500"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z" />
-                            </svg>
-                          </span>
-                        )}
+                        <ImageWithFallback
+                          src={authorityData?.logoPath}
+                          alt={authorityData?.name}
+                          className="w-5 h-5 rounded-full object-cover shrink-0"
+                        />
                         {authorityData?.name}
                       </span>
                     );
                   })()
                 ) : (
                   <span className={isDark ? "text-gray-500" : "text-gray-400"}>
-                    Select authority...
+                    {t("select_authority_placeholder")}
                   </span>
                 )}
                 <svg
@@ -608,23 +608,11 @@ const CreateUserWizard = ({
                             : "text-gray-800 hover:bg-gray-50"
                       }`}
                     >
-                      {a.logoPath ? (
-                        <img
-                          src={a.logoPath}
-                          alt={a.name}
-                          className="w-6 h-6 rounded-full object-cover shrink-0"
-                        />
-                      ) : (
-                        <span className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
-                          <svg
-                            className="w-3 h-3 text-gray-500"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z" />
-                          </svg>
-                        </span>
-                      )}
+                      <ImageWithFallback
+                        src={a.logoPath}
+                        alt={a.name}
+                        className="w-6 h-6 rounded-full object-cover shrink-0"
+                      />
                       {a.name}
                     </li>
                   ))}
@@ -650,7 +638,7 @@ const CreateUserWizard = ({
               : "border-gray-300 hover:bg-gray-100"
           }`}
         >
-          Cancel
+          {t("cancel")}
         </button>
         <button
           onClick={handleSubmit}
@@ -659,12 +647,12 @@ const CreateUserWizard = ({
         >
           {isSaving ? (
             <>
-              <Loader className="w-4 h-4 animate-spin" /> Saving...
+              <Loader className="w-4 h-4 animate-spin" /> {t("saving")}
             </>
           ) : (
             <>
               <CheckCircle className="w-4 h-4" />{" "}
-              {isEdit ? "Save Changes" : "Create User"}
+              {isEdit ? t("save_changes") : t("create_user")}
             </>
           )}
         </button>

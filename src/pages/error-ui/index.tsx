@@ -101,7 +101,9 @@ const ErrorUiPage = () => {
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
 
-    reportSiteError(payload);
+    if (window.location.hostname !== "localhost") {
+      reportSiteError(payload);
+    }
   }, []);
 
   return (

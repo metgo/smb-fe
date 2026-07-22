@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { useState, type FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, X, MapPin, Edit } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import PickupLocationModal from "./PickupLocationModal";
@@ -58,6 +58,8 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
 
   const { isDark, isRTL, textPrimary, textSecondary, bgTertiary, borderColor } =
     useThemeClasses();
+
+  const [isDeliveryChecked, setIsDeliveryChecked] = useState(false);
 
   const [pickupLocationModal, setPickupLocationModal] = useState<{
     show: boolean;
@@ -144,55 +146,22 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
         </div>
       )}
 
-      {/* Delivery Options */}
       <div className="flex items-center gap-6">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
-            type="radio"
-            name="deliveryType"
-            checked={formData.vendorDelivers}
-            disabled={isSameAsBusiness}
-            onChange={() =>
-              setFormData((prev) => ({
-                ...prev,
-                vendorDelivers: true,
-                globalDelivery: false,
-                globalDeliveryArea: [],
-              }))
-            }
-            className="w-4 h-4 border-gray-300 text-teal-600 focus:ring-teal-500"
+            type="checkbox"
+            checked={isDeliveryChecked}
+            onChange={(e) => setIsDeliveryChecked(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
           />
           <span
             className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
           >
-            {t("vendor_delivers")}
+            {/* {t("pickup_available")} */}
+            {t("delivery")}
           </span>
         </label>
 
-        {!isProduct && (
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="deliveryType"
-              checked={formData.globalDelivery}
-              disabled={isSameAsBusiness}
-              onChange={() =>
-                setFormData((prev) => ({
-                  ...prev,
-                  globalDelivery: true,
-                  vendorDelivers: false,
-                  vendorDeliveryArea: [],
-                }))
-              }
-              className="w-4 h-4 border-gray-300 text-teal-600 focus:ring-teal-500"
-            />
-            <span
-              className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
-            >
-              {t("global_delivery")}
-            </span>
-          </label>
-        )}
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -212,6 +181,59 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
           </span>
         </label>
       </div>
+
+      {/* Delivery Options */}
+      {isDeliveryChecked && (
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="deliveryType"
+              checked={formData.vendorDelivers}
+              disabled={isSameAsBusiness}
+              onChange={() =>
+                setFormData((prev) => ({
+                  ...prev,
+                  vendorDelivers: true,
+                  globalDelivery: false,
+                  globalDeliveryArea: [],
+                }))
+              }
+              className="w-4 h-4 border-gray-300 text-teal-600 focus:ring-teal-500"
+            />
+            <span
+              className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {t("vendor_delivers")}
+            </span>
+          </label>
+
+          {!isProduct && (
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="deliveryType"
+                checked={formData.globalDelivery}
+                disabled={isSameAsBusiness}
+                onChange={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    globalDelivery: true,
+                    vendorDelivers: false,
+                    vendorDeliveryArea: [],
+                  }))
+                }
+                className="w-4 h-4 border-gray-300 text-teal-600 focus:ring-teal-500"
+              />
+              <span
+                className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("global_delivery")}
+              </span>
+            </label>
+          )}
+        </div>
+      )}
 
       {/* Vendor Delivery Areas */}
       {formData.vendorDelivers && (

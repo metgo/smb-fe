@@ -39,5 +39,7 @@
   "phone_number": "הזן את מספר הטלפון שלך *",
   "password": "הזן סיסמה *",
   "next": "הבא",
-  "welcome_user": "ברוך הבא {{firstName}} {{lastName}}"
+  "welcome_user": "ברוך הבא {{firstName}} {{lastName}}",
+
+  "rate_limit_message": "החשבון שלך מוגבל כרגע עקב ניסיונות התחברות כושלים מרובים."
 }

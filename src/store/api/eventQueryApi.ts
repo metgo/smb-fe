@@ -44,6 +44,47 @@ export const eventQueryApi = createApi({
       providesTags: ["Event"],
     }),
 
+    getAllSessionTicket: builder.query<
+      ITicketResponse,
+      { eventId: string; wrapperId?: string }
+    >({
+      query: (params) => ({
+        url: `${endpoints.ticketsForEventSession}/${params.eventId}?wrapperId=${params.wrapperId || ""}`,
+        method: "GET",
+      }),
+      providesTags: ["Event"],
+    }),
+
+    getEventTickets: builder.query<
+      {
+        data: any[];
+        totalData: number;
+        meta: {
+          page: number;
+          limit: number;
+          data: number;
+          pageCount: number;
+          hasPreviousPage: boolean;
+          hasNextPage: boolean;
+        };
+      },
+      {
+        eventId: string;
+        page?: number;
+        limit?: number;
+        search?: string;
+        firstName?: string;
+        phone?: string;
+        email?: string;
+      }
+    >({
+      query: ({ eventId, ...params }) => ({
+        url: `${endpoints.eventTickets}/${eventId}`,
+        method: "GET",
+        params,
+      }),
+    }),
+
     getAllEvents: builder.query<any, EventListParams>({
       query: (params) => ({
         url: `${endpoints.events}?sortBy=DESC`,
@@ -74,14 +115,53 @@ export const eventQueryApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+
+    getPublicEventTicket: builder.query<
+      any,
+      { eventId: string; ticketId: string }
+    >({
+      query: ({ eventId, ticketId }) => ({
+        url: `${endpoints.publicEventTicket}/${eventId}/${ticketId}`,
+        method: "GET",
+      }),
+      keepUnusedDataFor: 0,
+    }),
+
+    getSessionsByEventId: builder.query<
+      IEventSessionListResponse,
+      { eventId: string }
+    >({
+      query: ({ eventId }) => ({
+        url: endpoints.eventSessions,
+        method: "GET",
+        params: { eventId },
+      }),
+      providesTags: ["Event"],
+      keepUnusedDataFor: 0,
+    }),
+
+    getContentManagementEvents: builder.query<any, any>({
+      query: (params) => ({
+        url: `${endpoints.contentManagementEvents}?sortBy=DESC`,
+        method: "GET",
+        params,
+      }),
+    }),
   }),
 });
 
 export const {
   useGetAllTicketQuery,
+  useGetAllSessionTicketQuery,
   useGetAllEventsQuery,
   useGetEventByIdQuery,
   useLazyGetEventByIdQuery,
   useGetEventsStatsQuery,
   useGetAllUpcomingEventsQuery,
+  useGetEventTicketsQuery,
+  useLazyGetEventTicketsQuery,
+  useGetPublicEventTicketQuery,
+  useLazyGetPublicEventTicketQuery,
+  useGetSessionsByEventIdQuery,
+  useGetContentManagementEventsQuery,
 } = eventQueryApi;

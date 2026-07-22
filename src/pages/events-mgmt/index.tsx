@@ -6,21 +6,17 @@ import { Calendar, Users, Ticket, DollarSign } from "lucide-react";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { PageHeader, PageStats, ViewModeToggle } from "@/components/shared";
-import {
-  useGetAllEventsQuery,
-  useGetEventsStatsQuery,
-} from "@/store/api/eventQueryApi";
-import { EventsWithViewMode, CreateEventWizard } from "./components";
+import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
+import { CreateEventWizardNew, EventsWithViewMode } from "./components";
 import SearchInput from "@/components/shared/SearchInput";
-import { useAppSelector } from "@/hooks/hooks";
 import { FilterByStatus } from "@/components/filter-fields";
+import { useEventListData } from "./hooks/useEventListData";
+
+const STORAGE_KEY = "event_query_state";
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
-  const { dmoId, authorityId, websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
 
   const navigate = useNavigate();
 
@@ -31,8 +27,6 @@ export default function EventsMgmtPage() {
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
-
-  const STORAGE_KEY = "event_query_state";
 
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   const [searchQuery, setSearchQuery] = useState(savedState?.searchQuery || "");
@@ -75,53 +69,20 @@ export default function EventsMgmtPage() {
     searchQuery,
   ]);
 
-  const eventQueryParams = useMemo(() => {
-    const params: any = {
-      dmoId,
-      authorityId,
-      externalApiId: websiteId,
-    };
-
-    const finalSearchTerm =
-      localStorage.getItem("eventsSearchTerm") ?? searchQuery;
-    if (finalSearchTerm) params.search = finalSearchTerm;
-
-    if (eventTypeFilter === "free") {
-      params.isFree = true;
-    }
-
-    if (eventTypeFilter === "paid") {
-      params.isFree = false;
-    }
-
-    if (registrationFilter !== "all") {
-      params.isRegistration = Boolean(registrationFilter);
-    }
-
-    if (statusFilter !== "all") {
-      params.status = statusFilter;
-    }
-
-    if (dateRangeFilter.start) {
-      params.startDate = dateRangeFilter.start;
-    }
-
-    if (dateRangeFilter.end) {
-      params.endDate = dateRangeFilter.end;
-    }
-
-    return params;
-  }, [
-    dmoId,
-    authorityId,
+  // Data Fetch (paginated, infinite scroll)
+  const {
+    combinedEvents,
+    isLoading,
+    isFetching,
+    refetch,
+    hasMore,
+    totalData,
+    eventQueryParams,
+    fetchNextPage,
+  } = useEventListData(
+    { eventTypeFilter, registrationFilter, statusFilter, dateRangeFilter },
     searchQuery,
-    eventTypeFilter,
-    registrationFilter,
-    statusFilter,
-    dateRangeFilter.start,
-    dateRangeFilter.end,
-    websiteId,
-  ]);
+  );
 
   useEffect(() => {
     const urlParams: Record<string, any> = {};
@@ -138,13 +99,6 @@ export default function EventsMgmtPage() {
     const searchParams = new URLSearchParams(urlParams).toString();
     navigate(`?${searchParams}`, { replace: true });
   }, [eventQueryParams, navigate]);
-
-  // Data Fetch
-  const {
-    data: events,
-    refetch,
-    isLoading: isLoading,
-  } = useGetAllEventsQuery(eventQueryParams);
 
   const statsQueryParams = useMemo(() => {
     const { page, limit, status, locale, ...rest } = eventQueryParams;
@@ -207,7 +161,7 @@ export default function EventsMgmtPage() {
             btnLabel={t("add_event")}
             h1Gradient={textPrimary}
             onClick={handleAddEvent}
-            totalCount={events?.totalData || 0}
+            totalCount={totalData || 0}
           />
 
           <PageStats
@@ -447,9 +401,11 @@ export default function EventsMgmtPage() {
         {/* Events with different View */}
         <div className="flex-1 overflow-y-auto min-h-0">
           <EventsWithViewMode
-            isLoading={isLoading}
-            events={(events?.data as any) || []}
+            isLoading={isLoading || isFetching}
+            events={combinedEvents}
             refetch={refetch}
+            hasMore={hasMore}
+            fetchNextPage={fetchNextPage}
             eventTypeFilter={eventTypeFilter}
             registrationFilter={registrationFilter}
             statusFilter={statusFilter}
@@ -459,7 +415,7 @@ export default function EventsMgmtPage() {
         </div>
       </div>
       {/* Create Event Wizard */}
-      <CreateEventWizard
+      <CreateEventWizardNew
         isOpen={isCreateWizardOpen}
         onClose={handleCreateWizardClose}
         refetch={refetch}
