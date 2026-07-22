@@ -61,7 +61,7 @@
   "customer_requested_cancellation": "طلب العميل الإلغاء",
   "pricing_error": "خطأ في السعر",
   "duplicate_order": "طلب مكرر",
-  "other_please_specify": "آخر (يرجى التحديد)",
+  "other": "آخر (يرجى التحديد)",
   "open_dispute": "فتح تنازع",
   "dispute_reason": "سبب النزاع",
   "wrong_item_shipped": "تم شحن عنصر خاطئ",

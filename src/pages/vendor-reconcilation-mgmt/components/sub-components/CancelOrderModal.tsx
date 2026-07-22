@@ -58,7 +58,7 @@ export default function CancelOrderModal({
   };
 
   return (
-    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl">
+    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl" height="">
       {/* Header */}
       <div
         className={`border-b ${borderColor} p-6 flex items-center justify-between flex-shrink-0`}
