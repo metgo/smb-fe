@@ -49,7 +49,7 @@ export default function DmoAuthorityWebsiteSelector({
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark } = useThemeClasses();
   const { dmoId } = useAppSelector((state) => state.auth);
-  const { isSuperadmin, isDMO, isAuthority } = useUserRoles();
+  const { isDMO, isAuthority } = useUserRoles();
 
   // Auto-select DMO user's own DMO on mount
   useEffect(() => {
@@ -343,13 +343,13 @@ export default function DmoAuthorityWebsiteSelector({
       {/* Websites */}
       {(selectedDmoId || selectedAuthorityId) && (
         <div className="space-y-4">
-          <label
+          {/* <label
             className={`block text-sm mb-2 ${
               isDark ? "text-gray-300" : "text-gray-800"
             }`}
           >
             {t("website_visibility")}
-          </label>
+          </label> */}
 
           {renderSection(
             t("select_associated_websites"),
@@ -358,13 +358,13 @@ export default function DmoAuthorityWebsiteSelector({
             "selectedBlacklistIds",
           )}
 
-          {isSuperadmin &&
+          {/* {isSuperadmin &&
             renderSection(
               t("select_unassociated_websites"),
               unAssociatedWebsites,
               "allWhitelistIds",
               "selectedWhitelistIds",
-            )}
+            )} */}
         </div>
       )}
     </section>

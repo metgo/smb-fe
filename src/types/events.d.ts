@@ -301,7 +301,8 @@ interface IEventListRes {
   nameHe: string;
   nameAr: string;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  image: string;
+  image?: string;
+  images?: { image: string; isPrimary: boolean }[];
   slug: string;
   dayDescription: IEventDayDescription[];
   hasExternalTicket: boolean;

@@ -259,7 +259,10 @@ export const useTrip = ({
       if (!isDraft) {
         onClose();
         onPublishSuccess?.();
-        navigate(routes.tripsMgmt);
+        // Only navigate if not called from details page (onPublishSuccess provided)
+        if (!onPublishSuccess) {
+          navigate(routes.tripsMgmt);
+        }
       }
     } catch (err: any) {
       toast.error(tt("trip_create_failed"));

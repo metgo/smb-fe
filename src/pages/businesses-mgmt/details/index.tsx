@@ -354,7 +354,8 @@ function BusinessDetailsPageInner() {
     const mediaProps = {
       logoImage: business?.logo?.image ?? null,
       images: businessImages.map((img: IImage) => ({
-        previewUrl: img.image,
+        image: img.image,
+        isPrimary: img.isPrimary,
       })),
       primaryImageIndex: Math.max(
         0,
@@ -528,7 +529,14 @@ function BusinessDetailsPageInner() {
       </div>
 
       <div className="details-top shrink-0" data-tour="business-header">
-        <DetailTitleSection {...business} imageSrc={business?.logo?.image} />
+        <DetailTitleSection
+          {...business}
+          imageSrc={
+            business?.images?.find((img: IImage) => img.isPrimary)?.image ||
+            business?.images?.[0]?.image ||
+            business?.logo?.image
+          }
+        />
         <div data-tour="business-stats">
           <PageStats
             stats={businessStats}

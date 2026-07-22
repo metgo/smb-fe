@@ -28,7 +28,11 @@ import {
   ImageWithFallback,
   ReordableDataTable,
 } from "@/components/shared";
-import { extractCenterAddressText, extractEventDates } from "@/helpers";
+import {
+  extractCenterAddressText,
+  extractEventDates,
+  getLngWiseStr,
+} from "@/helpers";
 import {
   useDeleteEventMutation,
   useUpdateEventMutation,
@@ -227,9 +231,10 @@ export default function EventsWithViewMode({
   }, [currentDate]);
 
   // Handle events sets
-  const handleEventSelect = (_event: IEventListRes) => {
-    // setShowQuickViewModal(true);
-    // navigate(`?eventId=${event?._id}`, { replace: true });
+  const handleEventSelect = (event: IEventListRes) => {
+    navigate(`${routes.eventDetails}?eventId=${event?._id}`, {
+      replace: true,
+    });
   };
 
   const handleEventDelete = async (eventId: string) => {
@@ -454,37 +459,43 @@ export default function EventsWithViewMode({
     return (
       <div ref={scrollRef} className="py-4 px-3 overflow-y-auto max-h-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-          {displayedEvents?.map((event) => (
-            <GridCard
-              key={event._id}
-              image={event?.image}
-              imageAlt={event.name}
-              imageHeight="h-36"
-              fallbackIcon={Calendar}
-              fallbackGradient="from-purple-400 to-pink-400"
-              title={event.name}
-              status={event?.status?.toLowerCase()}
-              isChecked={selectedEvents?.has(event._id) ?? false}
-              onCheckChange={() => toggleCheckBox(event._id)}
-              onDelete={(e) => {
-                e.stopPropagation();
-                setIsConfirmOpen(true);
-                setEventToDelete(event._id);
-              }}
-              onClick={() => handleEventSelect(event)}
-              meta={[
-                {
-                  icon: Calendar,
-                  label: extractEventDates(event?.dayDescription),
-                },
-                {
-                  icon: MapPin,
-                  label:
-                    extractCenterAddressText(event?.address?.location) || "",
-                },
-              ]}
-            />
-          ))}
+          {displayedEvents?.map((event) => {
+            const imageUrl =
+              event?.images?.find((img) => img.isPrimary)?.image ||
+              event?.images?.[0]?.image ||
+              event?.image;
+            return (
+              <GridCard
+                key={event._id}
+                image={imageUrl}
+                imageAlt={event.name}
+                imageHeight="h-36"
+                fallbackIcon={Calendar}
+                fallbackGradient="from-purple-400 to-pink-400"
+                title={event.name}
+                status={event?.status?.toLowerCase()}
+                isChecked={selectedEvents?.has(event._id) ?? false}
+                onCheckChange={() => toggleCheckBox(event._id)}
+                onDelete={(e) => {
+                  e.stopPropagation();
+                  setIsConfirmOpen(true);
+                  setEventToDelete(event._id);
+                }}
+                onClick={() => handleEventSelect(event)}
+                meta={[
+                  {
+                    icon: Calendar,
+                    label: extractEventDates(event?.dayDescription),
+                  },
+                  {
+                    icon: MapPin,
+                    label:
+                      extractCenterAddressText(event?.address?.location) || "",
+                  },
+                ]}
+              />
+            );
+          })}
         </div>
 
         {isLoading && (
@@ -520,7 +531,12 @@ export default function EventsWithViewMode({
             render: (event) => (
               <div className="flex items-center gap-2">
                 <span className="text-sm line-clamp-2">
-                  {event.name || event.nameHe || event.nameAr}
+                  {getLngWiseStr(
+                    language,
+                    event.name,
+                    event.nameHe,
+                    event.nameAr,
+                  )}
                 </span>
               </div>
             ),
