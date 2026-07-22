@@ -51,7 +51,10 @@ const ActionIconButtons = ({
           <TooltipWrapper key={action.title} infoText={action.title}>
             <button
               disabled={action.disabled}
-              onClick={action.onClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                action.onClick();
+              }}
               className={clsx(
                 "rounded-md p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer",
                 color.text,
