@@ -320,8 +320,13 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
             formData.operatingHours.map((hour: any, index: number) => {
               const display = hour.isHoliday
                 ? t("closed")
-                : hour.open && hour.close
-                  ? `${hour.open} ${t("to")} ${hour.close}`
+                : hour.slots && hour.slots.length > 0
+                  ? hour.slots
+                      .filter((slot: any) => slot.open && slot.close)
+                      .map(
+                        (slot: any) => `${slot.open} ${t("to")} ${slot.close}`,
+                      )
+                      .join(", ")
                   : "—";
 
               return (

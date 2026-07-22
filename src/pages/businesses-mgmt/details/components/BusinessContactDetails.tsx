@@ -31,6 +31,7 @@ interface BusinessContactDetailsProps {
       lastName: string;
       email: string;
       phoneNumber: string;
+      lastLogin: string;
       createdAt: string;
       updatedAt: string;
     };
@@ -183,6 +184,7 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
                         {
                           year: "numeric",
                           month: "short",
+                          day: "numeric",
                         },
                       )}
                     </span>
@@ -190,7 +192,7 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
                 )}
 
                 {/* Last Active (if available) */}
-                {business.userId.updatedAt && (
+                {business.userId.lastLogin && (
                   <div
                     className={`flex items-center gap-2 text-sm ${
                       isDark ? "text-gray-400" : "text-gray-500"
@@ -199,9 +201,10 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
                     <Clock className="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span>
                       {t("last_active")}:{" "}
-                      {new Date(business.userId.updatedAt).toLocaleDateString(
+                      {new Date(business.userId.lastLogin).toLocaleDateString(
                         undefined,
                         {
+                          year: "numeric",
                           month: "short",
                           day: "numeric",
                         },
