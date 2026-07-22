@@ -284,6 +284,7 @@ export const VendorMonthlyReport = () => {
   const {
     data: orderProductsData,
     isLoading,
+    isFetching,
     refetch: refetchOrders,
   } = useGetOrderProductsQuery(apiParams);
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
@@ -457,14 +458,14 @@ export const VendorMonthlyReport = () => {
   const hasMore = orderProductsData?.meta?.hasNextPage ?? false;
 
   const loadNextPage = () => {
-    if (!hasMore || isLoading || isLoadingNextPageRef.current) return;
+    if (!hasMore || isLoading || isFetching || isLoadingNextPageRef.current) return;
     isLoadingNextPageRef.current = true;
     setPage((prev) => prev + 1);
   };
 
   useEffect(() => {
-    isLoadingNextPageRef.current = isLoading;
-  }, [isLoading]);
+    isLoadingNextPageRef.current = isLoading || isFetching;
+  }, [isLoading, isFetching]);
 
   useEffect(() => {
     setPage(1);
@@ -1343,7 +1344,7 @@ export const VendorMonthlyReport = () => {
       <ReordableDataTable
         rowKey="_id"
         data={orders}
-        isDataLoading={isLoading}
+        isDataLoading={isLoading || isFetching}
         onRowClick={(order: MonthlyOrder) => handleViewDetails(order)}
         storageKey="vendorMonthlyReportColumnOrder"
         columns={columns}
