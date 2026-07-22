@@ -25,7 +25,6 @@ export interface OpenDisputeRequest {
 export interface RespondDisputeRequest {
   disputeId: string;
   action: string;
-  internalNotes: string;
   vendorFacingResponse: string;
 }
 
@@ -110,7 +109,6 @@ export const reconciliationQueryApi = createApi({
         method: "POST",
         data: {
           action: body.action,
-          internalNotes: body.internalNotes,
           vendorFacingResponse: body.vendorFacingResponse,
         },
       }),

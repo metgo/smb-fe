@@ -62,7 +62,7 @@
   "customer_requested_cancellation": "Customer requested cancellation",
   "pricing_error": "Pricing error",
   "duplicate_order": "Duplicate order",
-  "other_please_specify": "Other (please specify)",
+  "other": "Other (please specify)",
   "open_dispute": "Open Dispute",
   "dispute_reason": "Dispute Reason",
   "wrong_item_shipped": "Wrong item shipped",

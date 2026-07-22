@@ -62,7 +62,7 @@
   "customer_requested_cancellation": "הלקוח ביקש ביטול",
   "pricing_error": "שגיאת תמחור",
   "duplicate_order": "הזמנה כפולה",
-  "other_please_specify": "אחר (אנא ציין)",
+  "other": "אחר (אנא ציין)",
   "open_dispute": "פתח תלונה",
   "dispute_reason": "סיבת התלונה",
   "wrong_item_shipped": "הפריט השגוי נשלח",

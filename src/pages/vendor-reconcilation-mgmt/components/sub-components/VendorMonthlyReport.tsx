@@ -19,7 +19,7 @@ import {
   useGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
   useOpenDisputeMutation,
-  useRespondDisputeMutation,
+  // useRespondDisputeMutation,
   // useBulkApproveOrderProductsMutation,
   useGetReconciliationStatsQuery,
   useBulkMarkOrderAsCompletedMutation,
@@ -62,6 +62,7 @@ interface OrderProduct {
     | "disputed"
     | "rejected"
     | "closed";
+    rejectedReason?: string;
   };
   customerInformation: {
     name: string;
@@ -149,27 +150,29 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
   return {
     _id: d._id,
     orderId: d.orderId,
-    productName: d.productInformation?.name || "",
-    productImage: d.productInformation?.image || "",
-    productCategory: d.productInformation?.category?.name || "",
-    customerName: d.customerInformation?.name?.trim() || "",
-    customerEmail: d.customerInformation?.email || "",
-    customerPhone: d.customerInformation?.phone || "",
-    purchaseDate: d.orderInformation?.purchaseDate || "",
-    quantity: d.orderInformation?.quantity || 0,
-    unitPrice: d.orderInformation?.unitPrice || 0,
-    totalPrice: d.orderInformation?.total || 0,
-    platformFee: d.orderInformation?.platformFee || 0,
+    productName: d?.productInformation?.name || "",
+    productImage: d?.productInformation?.image || "",
+    productCategory: d?.productInformation?.category?.name || "",
+    customerName: d?.customerInformation?.name?.trim() || "",
+    customerEmail: d?.customerInformation?.email || "",
+    customerPhone: d?.customerInformation?.phone || "",
+    purchaseDate: d?.orderInformation?.purchaseDate || "",
+    quantity: d?.orderInformation?.quantity || 0,
+    unitPrice: d?.orderInformation?.unitPrice || 0,
+    totalPrice: d?.orderInformation?.total || 0,
+    platformFee: d?.orderInformation?.platformFee || 0,
+    rejectedReason: d?.orderInformation?.rejectedReason || "",
+
     netToVendor:
-      (d.orderInformation?.total || 0) - (d.orderInformation?.platformFee || 0),
+      (d?.orderInformation?.total || 0) - (d?.orderInformation?.platformFee || 0),
     status,
     reconciliationStatus,
     externalApiId: (d as any).externalApiId || "",
-    paymentMethod: d.paymentInformation?.paymentMethod?.join(", ") || "",
-    paymentStatus: d.paymentInformation?.paymentStatus || "",
-    deliveryMethod: d.deliveryInformation?.deliveryMethod || "",
+    paymentMethod: d?.paymentInformation?.paymentMethod?.join(", ") || "",
+    paymentStatus: d?.paymentInformation?.paymentStatus || "",
+    deliveryMethod: d?.deliveryInformation?.deliveryMethod || "",
     deliveryAddress: address,
-    specialInstructions: d.deliveryInformation?.specialInstructions || "",
+    specialInstructions: d?.deliveryInformation?.specialInstructions || "",
     disputeId: d.orderInformation?.disputeId,
   };
 }
@@ -289,7 +292,7 @@ export const VendorMonthlyReport = () => {
     });
   const [cancelOrderProduct] = useCancelOrderProductMutation();
   const [openDispute] = useOpenDisputeMutation();
-  const [respondDispute] = useRespondDisputeMutation();
+  // const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkMarkOrderAsCompleted] = useBulkMarkOrderAsCompletedMutation();
   // const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
@@ -587,56 +590,56 @@ export const VendorMonthlyReport = () => {
     }
   };
 
-  const handleApprove = async (order: MonthlyOrder) => {
-    try {
-      if (!order._id || !order.disputeId) {
-        toast.error(t("invalid_order_data"));
-        return;
-      }
+  // const handleApprove = async (order: MonthlyOrder) => {
+  //   try {
+  //     if (!order._id || !order.disputeId) {
+  //       toast.error(t("invalid_order_data"));
+  //       return;
+  //     }
 
-      // Use actual disputeId from order data
-      await respondDispute({
-        disputeId: order.disputeId,
-        action: "accept",
-        internalNotes: "Approved by admin",
-        vendorFacingResponse:
-          "Your dispute has been accepted. Refund will be processed.",
-      }).unwrap();
+  //     // Use actual disputeId from order data
+  //     await respondDispute({
+  //       disputeId: order.disputeId,
+  //       action: "accept",
+  //       internalNotes: "Approved by admin",
+  //       vendorFacingResponse:
+  //         "Your dispute has been accepted. Refund will be processed.",
+  //     }).unwrap();
 
-      toast.success(t("order_approved"));
-      refetchOrders();
-      refetchReconciliationStats();
-    } catch (error: any) {
-      const errorMessage = error?.data?.message || error?.message;
-      toast.error(errorMessage || t("approve_failed"));
-      console.error("Approve error:", error);
-    }
-  };
+  //     toast.success(t("order_approved"));
+  //     refetchOrders();
+  //     refetchReconciliationStats();
+  //   } catch (error: any) {
+  //     const errorMessage = error?.data?.message || error?.message;
+  //     toast.error(errorMessage || t("approve_failed"));
+  //     console.error("Approve error:", error);
+  //   }
+  // };
 
-  const handleReject = async (order: MonthlyOrder) => {
-    try {
-      if (!order._id || !order.disputeId) {
-        toast.error(t("invalid_order_data"));
-        return;
-      }
+  // const handleReject = async (order: MonthlyOrder) => {
+  //   try {
+  //     if (!order._id || !order.disputeId) {
+  //       toast.error(t("invalid_order_data"));
+  //       return;
+  //     }
 
-      // Use actual disputeId from order data
-      await respondDispute({
-        disputeId: order.disputeId,
-        action: "reject",
-        internalNotes: "Rejected by admin",
-        vendorFacingResponse: "Your dispute has been rejected.",
-      }).unwrap();
+  //     // Use actual disputeId from order data
+  //     await respondDispute({
+  //       disputeId: order.disputeId,
+  //       action: "reject",
+  //       internalNotes: "Rejected by admin",
+  //       vendorFacingResponse: "Your dispute has been rejected.",
+  //     }).unwrap();
 
-      toast.success(t("status_updated"));
-      refetchOrders();
-      refetchReconciliationStats();
-    } catch (error: any) {
-      const errorMessage = error?.data?.message || error?.message;
-      toast.error(errorMessage || t("approve_failed"));
-      console.error("Update error:", error);
-    }
-  };
+  //     toast.success(t("status_updated"));
+  //     refetchOrders();
+  //     refetchReconciliationStats();
+  //   } catch (error: any) {
+  //     const errorMessage = error?.data?.message || error?.message;
+  //     toast.error(errorMessage || t("approve_failed"));
+  //     console.error("Update error:", error);
+  //   }
+  // };
 
   const handleCancelOrder = (order: MonthlyOrder) => {
     setSelectedOrder(order);
@@ -1364,24 +1367,24 @@ export const VendorMonthlyReport = () => {
             setShowOrderDetails(false);
             setShowCancelModal(true);
           }}
-          onApprove={() => {
-            if (displayedOrder.reconciliationStatus === "disputed") {
-              setShowOrderDetails(false);
-              setShowAdminDisputeModal(true);
-            } else {
-              handleApprove(displayedOrder);
-              closeDetails();
-            }
-          }}
-          onReject={() => {
-            if (displayedOrder.reconciliationStatus === "disputed") {
-              setShowOrderDetails(false);
-              setShowAdminDisputeModal(true);
-            } else {
-              handleReject(displayedOrder);
-              closeDetails();
-            }
-          }}
+          // onApprove={() => {
+          //   if (displayedOrder.reconciliationStatus === "disputed") {
+          //     setShowOrderDetails(false);
+          //     setShowAdminDisputeModal(true);
+          //   } else {
+          //     handleApprove(displayedOrder);
+          //     closeDetails();
+          //   }
+          // }}
+          // onReject={() => {
+          //   if (displayedOrder.reconciliationStatus === "disputed") {
+          //     setShowOrderDetails(false);
+          //     setShowAdminDisputeModal(true);
+          //   } else {
+          //     handleReject(displayedOrder);
+          //     closeDetails();
+          //   }
+          // }}
           adminView={adminView}
         />
       )}

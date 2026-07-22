@@ -10,8 +10,8 @@ interface OrderDetailsModalProps {
   onClose: () => void;
   onDispute: () => void;
   onCancel: () => void;
-  onApprove: () => void;
-  onReject: () => void;
+  // onApprove: () => void;
+  // onReject: () => void;
   loading?: boolean;
   adminView?: boolean;
 }
@@ -21,10 +21,11 @@ export default function OrderDetailsModal({
   onClose,
   onDispute,
   onCancel,
-  onApprove,
-  onReject,
+  // onApprove,
+  // onReject,
   loading,
 }: OrderDetailsModalProps) {
+  console.log(order)
   const { t } = useTranslation("reconciliation");
   const { isDark } = useThemeClasses()
   const { isRTL, theme } = useAppSelector((state) => state.settings);
@@ -107,6 +108,21 @@ export default function OrderDetailsModal({
                       </>
                     )}
                   </span>
+                  <span className={textSecondary}>
+                    {order.reconciliationStatus === "rejected" && (
+                      <>
+                        <span
+                          className={
+                            order.reconciliationStatus === "rejected"
+                              && isDark ? "text-red-400" : "text-red-600"
+                          }
+                        >
+                          {order.rejectedReason}
+                        </span>
+                      </>
+                    )}
+                  </span>
+
                 </div>
               </div>
             </div>
@@ -266,9 +282,9 @@ export default function OrderDetailsModal({
 
         {/* Actions */}
         <div
-          className={`sticky bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
+          className={` bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
         >
-          <>
+          {/* <>
             {userRole === "superadmin" &&
               order.status !== "canceled" &&
               order.reconciliationStatus === "disputed" &&
@@ -293,7 +309,7 @@ export default function OrderDetailsModal({
                   {t("reject_dispute_btn")}
                 </button>
               )}
-          </>
+          </> */}
 
           <div className="flex gap-3">
             {order.status !== "canceled" &&
@@ -323,6 +339,6 @@ export default function OrderDetailsModal({
           </div>
         </div>
       </div>
-    </ModalWrapper>
+    </ModalWrapper >
   );
 }

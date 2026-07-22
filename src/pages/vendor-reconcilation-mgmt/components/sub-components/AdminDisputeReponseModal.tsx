@@ -32,7 +32,6 @@ export const AdminDisputeResponseModal = ({
       skip: !actualDisputeId,
     });
 
-  const [internalNotes, setInternalNotes] = useState("");
   const [responseToVendor, setResponseToVendor] = useState("");
   const [resolutionAction, setResolutionAction] = useState("");
   const [errors, setErrors] = useState<{ action?: string }>({});
@@ -85,7 +84,6 @@ export const AdminDisputeResponseModal = ({
       await respondDispute({
         disputeId: actualDisputeId,
         action: resolutionAction,
-        internalNotes,
         vendorFacingResponse: responseToVendor || defaultResponse,
       }).unwrap();
 
@@ -437,21 +435,7 @@ export const AdminDisputeResponseModal = ({
                   )}
                 </div>
 
-                {/* Internal Notes (Optional) */}
-                <div className="mt-6 pt-6 border-t">
-                  <label
-                    className={`block text-sm font-medium ${textPrimary} mb-2`}
-                  >
-                    {t("internal_notes")}
-                  </label>
-                  <textarea
-                    value={internalNotes}
-                    onChange={(e) => setInternalNotes(e.target.value)}
-                    placeholder={t("internal_notes_placeholder")}
-                    rows={2}
-                    className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
-                  />
-                </div>
+
               </>
             )}
           </div>
@@ -459,7 +443,7 @@ export const AdminDisputeResponseModal = ({
 
         {/* Actions */}
         <div
-          className={`sticky bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-between gap-3`}
+          className={` ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-between gap-3`}
         >
           <button
             onClick={onClose}

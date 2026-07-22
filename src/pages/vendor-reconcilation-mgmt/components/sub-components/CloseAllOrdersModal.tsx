@@ -42,7 +42,7 @@ export default function CloseAllOrdersModal({
   const { textPrimary, textTertiary, borderColor } = useThemeClasses();
 
   return (
-    <ModalWrapper onClose={onClose} maxWidth="max-w-lg">
+    <ModalWrapper onClose={onClose} maxWidth="max-w-lg" height="">
       {/* Header */}
       <div
         className={`border-b ${borderColor} p-6 flex items-center justify-between flex-shrink-0`}
