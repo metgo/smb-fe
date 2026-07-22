@@ -629,7 +629,7 @@ function CreateBusinessWizardInner({
   const stepPayloadMap = {
     // step 1:
     authorityId: selectedAuthorityId,
-    // dmoId: selectedDmoId,
+    dmoId: selectedDmoId,
     name: formData.name,
     nameAr: formData.nameAr,
     nameHe: formData.nameHe,

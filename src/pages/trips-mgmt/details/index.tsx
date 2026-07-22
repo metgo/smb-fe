@@ -195,10 +195,7 @@ export default function TripDetailsPage() {
       </div>
 
       {isEditOpen && (
-        <CreateTripWizard
-          onClose={handleClose}
-          onPublishSuccess={refetch}
-        />
+        <CreateTripWizard onClose={handleClose} onPublishSuccess={refetch} />
       )}
     </div>
   );
