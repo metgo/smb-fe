@@ -10,14 +10,14 @@ import {
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { QueryBus } from '@nestjs/cqrs';
-import { GetSiteFiltersConfigByIdentifierIdQuery } from '../queries/get-site-filters-config-by-identifierId.query';
-import { GetSiteFiltersConfigByIdentifierIdRequest } from '../requests/get-site-filters-config-by-identifierId.request';
-import { GetProductsByTopicQuery } from '../queries/get-products-by-topic.query';
-import { GetProductsByTopicRequest } from '../requests/get-products-by-topic.request';
-import { GetProductsGroupedByTopicQuery } from '../queries/get-products-grouped-by-topic.query';
-import { GetProductsGroupedByTopicRequest } from '../requests/get-products-grouped-by-topic.request';
-import { GetSiteConfigByIdentifierIdQuery } from '../queries/get-site-config-by-identifierId.query';
-import { GetSiteConfigByIdentifierIdRequest } from '../requests/get-site-config-by-identifierId.request';
+import { GetSiteFiltersConfigByIdentifierIdQuery } from './queries/get-site-filters-config-by-identifierId.query';
+import { GetSiteFiltersConfigByIdentifierIdRequest } from './requests/get-site-filters-config-by-identifierId.request';
+import { GetProductsByTopicQuery } from './queries/get-products-by-topic.query';
+import { GetProductsByTopicRequest } from './requests/get-products-by-topic.request';
+import { GetProductsGroupedByTopicQuery } from './queries/get-products-grouped-by-topic.query';
+import { GetProductsGroupedByTopicRequest } from './requests/get-products-grouped-by-topic.request';
+import { GetSiteConfigByIdentifierIdQuery } from './queries/get-site-config-by-identifierId.query';
+import { GetSiteConfigByIdentifierIdRequest } from './requests/get-site-config-by-identifierId.request';
 
 @Controller('')
 export class SiteSettingsController {

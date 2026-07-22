@@ -40,29 +40,20 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
           },
         ];
         select = '_id name description shortDescription slug stations';
-      }
-
-      if (!query.isMap) {
+      } else {
         populate = [
           {
             path: 'stations._id',
             select:
-              'name slug description images primaryCategoryId  geoLocation',
+              'name nameHe slug description descriptionHe images primaryCategoryId  geoLocation',
             populate: {
               path: 'primaryCategoryId',
               select: 'name hebrewName',
             },
           },
         ];
-
-        if (query.isTrip) {
-          select
-            = '_id name description shortDescription slug stations estimatedDuration totalDistanceCovered';
-        }
-        if (!query.isTrip) {
-          select
-            = '_id name description shortDescription contactDetails slug stations images itenary estimatedDuration totalDistanceCovered';
-        }
+        select
+          = '_id name description shortDescription contactDetails slug stations images itenary estimatedDuration totalDistanceCovered';
       }
 
       const trip = await this.tripModel
@@ -117,21 +108,20 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
 
       const groupTypesAndAccessibilities = Array.from(uniqueByNameMap.values());
 
-      if (!query.isTrip) {
-        tripObj.itenary.sort((a, b) => {
-          const toMinutes = (t: string) => {
-            const [h, m] = t.split(':').map(Number);
-            return h * 60 + m;
-          };
+      tripObj.itenary.sort((a, b) => {
+        const toMinutes = (t: string) => {
+          const [h, m] = t.split(':').map(Number);
+          return h * 60 + m;
+        };
 
-          return toMinutes(a.startTime) - toMinutes(b.startTime);
-        });
-      }
+        return toMinutes(a.startTime) - toMinutes(b.startTime);
+      });
 
       return {
         ...tripObj,
         stations,
         groupTypesAndAccessibilities,
+        itenary: tripObj.itenary,
       };
     } catch (err) {
       this.logger.error('[EVENT]: FAILED TO FETCH Trip', {

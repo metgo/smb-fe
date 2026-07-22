@@ -10,10 +10,10 @@ import { QueryBus } from '@nestjs/cqrs';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { GetAllTripsRequest } from '../request/get-all-trips.request';
-import { GetAllTripsQuery } from '../queries/get-all-trips.query';
-import { GetTripBySlugQuery } from '../queries/get-trip-by-slug.query';
-import { GetTripsBySlugRequest } from '../request/get-trips-by-slug.request';
+import { GetAllTripsRequest } from './request/get-all-trips.request';
+import { GetAllTripsQuery } from './queries/get-all-trips.query';
+import { GetTripBySlugQuery } from './queries/get-trip-by-slug.query';
+import { GetTripsBySlugRequest } from './request/get-trips-by-slug.request';
 
 @Controller()
 export class TripController {

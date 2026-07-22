@@ -2,9 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
-import { GetByCampCodeQueryRequest } from 'src/common/request/get-by-camp-code.request';
-
-export class GetTripsBySlugRequest extends GetByCampCodeQueryRequest {
+export class GetTripsBySlugRequest {
   @ApiProperty({
     required: false,
   })

@@ -9,7 +9,7 @@ import {
   SiteFiltersConfig,
   SiteFiltersConfigSchema,
 } from './schema/site-filters-config.schema';
-import { SiteSettingsController } from './controller/site-filters-config.controller';
+import { SiteSettingsController } from './site-filters-config.controller';
 import { GetSiteFiltersConfigByIdentifierIdHandler } from './queries/handler/get-site-filters-config-by-identifierId.handler';
 import { GetProductsByTopicHandler } from './queries/handler/get-products-by-topic.handler';
 import { GetProductsGroupedByTopicHandler } from './queries/handler/get-products-grouped-by-topic.handler';
