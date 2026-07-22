@@ -227,7 +227,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
                 setName(e.target.value);
                 setError("");
               }}
-              className={`w-full px-3 py-2 ${inputClasses} rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-3 py-2 border ${inputClasses} rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500`}
             />
           </div>
 
@@ -240,7 +240,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
               placeholder="What this group is for..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className={`w-full px-3 py-2 ${inputClasses} rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none`}
+              className={`w-full px-3 py-2 border ${inputClasses} rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none`}
             />
           </div>
         </div>
@@ -257,7 +257,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
               placeholder="Search contacts..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`w-full pl-9 pr-4 py-2 ${inputClasses} rounded-lg text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500`}
+              className={`w-full pl-9 pr-4 py-2 border ${inputClasses} rounded-lg text-xs focus:outline-hidden focus:ring-2 focus:ring-teal-500`}
             />
           </div>
 
@@ -315,7 +315,7 @@ interface NewBroadcastModalProps extends ModalProps {
 }
 
 export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({ isOpen, onClose, currentUser, onBroadcastCreated }) => {
-  const { isDark, borderColor, inputClasses, textPrimary, textSecondary } = useThemeClasses();
+  const { isDark, borderColor, inputClasses, textSecondary } = useThemeClasses();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [targetRole, setTargetRole] = useState<UserRole>("dmo");

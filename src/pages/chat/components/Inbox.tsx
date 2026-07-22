@@ -13,6 +13,7 @@ interface InboxProps {
   onOpenNewDm: () => void;
   onOpenNewGroup: () => void;
   onOpenNewBroadcast: () => void;
+  collapsed?: boolean;
 }
 
 export const Inbox: React.FC<InboxProps> = ({
@@ -23,6 +24,7 @@ export const Inbox: React.FC<InboxProps> = ({
   onOpenNewDm,
   onOpenNewGroup,
   onOpenNewBroadcast,
+  collapsed = false,
 }) => {
   const { isDark, textPrimary, textSecondary, borderColor, inputClasses } = useThemeClasses();
   
@@ -142,58 +144,90 @@ export const Inbox: React.FC<InboxProps> = ({
   const canCreateGroup = currentUser && ["superadmin", "admin", "dmo", "authority", "authorityAdmin"].includes(currentUser.role);
 
   return (
-    <div className={`w-full md:w-80 border-r ${borderColor} ${isDark ? 'bg-gray-900' : 'bg-white'} flex flex-col h-full shrink-0 relative select-none`}>
-      {/* Top search & title */}
-      <div className={`p-4 border-b ${borderColor} space-y-3`}>
-        <div className="flex items-center justify-between">
-          <h2 className={`text-lg font-bold ${textPrimary} flex items-center gap-2`}>
-            <MessageSquare className="w-5 h-5 text-teal-600" />
-            Chats
-          </h2>
-          <div className="flex items-center gap-1">
+    <div className={`border-r ${borderColor} ${isDark ? 'bg-gray-900' : 'bg-white'} flex flex-col h-full shrink-0 relative select-none transition-all duration-300 ${collapsed ? 'w-16' : 'w-full md:w-80'}`}>
+      {collapsed ? (
+        /* Collapsed state - show only icons */
+        <div className="flex flex-col items-center py-4 gap-4">
+          <button
+            onClick={onOpenNewDm}
+            title="New DM"
+            className={`p-2 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
+          >
+            <Mail className="w-5 h-5" />
+          </button>
+          {canCreateGroup && (
             <button
-              onClick={onOpenNewDm}
-              title="New DM"
-              className={`p-1.5 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
+              onClick={onOpenNewGroup}
+              title="New Group Chat"
+              className={`p-2 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
             >
-              <Mail className="w-4 h-4" />
+              <Users className="w-5 h-5" />
             </button>
-            {canCreateGroup && (
-              <button
-                onClick={onOpenNewGroup}
-                title="New Group Chat"
-                className={`p-1.5 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
-              >
-                <Users className="w-4 h-4" />
-              </button>
-            )}
-            {isSuperOrAdmin && (
-              <button
-                onClick={onOpenNewBroadcast}
-                title="Create Broadcast Channel"
-                className={`p-1.5 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
-              >
-                <Megaphone className="w-4 h-4" />
-              </button>
-            )}
+          )}
+          {isSuperOrAdmin && (
+            <button
+              onClick={onOpenNewBroadcast}
+              title="Create Broadcast Channel"
+              className={`p-2 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
+            >
+              <Megaphone className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      ) : (
+        /* Expanded state - show full interface */
+        <>
+          {/* Top search & title */}
+          <div className={`p-4 border-b ${borderColor} space-y-3`}>
+            <div className="flex items-center justify-between">
+              <h2 className={`text-lg font-bold ${textPrimary} flex items-center gap-2`}>
+                <MessageSquare className="w-5 h-5 text-teal-600" />
+                Chats
+              </h2>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={onOpenNewDm}
+                  title="New DM"
+                  className={`p-1.5 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
+                >
+                  <Mail className="w-4 h-4" />
+                </button>
+                {canCreateGroup && (
+                  <button
+                    onClick={onOpenNewGroup}
+                    title="New Group Chat"
+                    className={`p-1.5 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
+                  >
+                    <Users className="w-4 h-4" />
+                  </button>
+                )}
+                {isSuperOrAdmin && (
+                  <button
+                    onClick={onOpenNewBroadcast}
+                    title="Create Broadcast Channel"
+                    className={`p-1.5 ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'} rounded-lg cursor-pointer`}
+                  >
+                    <Megaphone className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Global Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search messages or files..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full pl-9 pr-3 py-1.5 text-sm ${inputClasses} rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500`}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Global Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search messages or files..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full pl-9 pr-3 py-1.5 text-sm ${inputClasses} rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500`}
-          />
-        </div>
-      </div>
-
-      {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {/* Conversations List */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
         {searchQuery.trim().length >= 2 ? (
           // Global Search Results View
           <div className="p-2 space-y-2">
@@ -360,6 +394,8 @@ export const Inbox: React.FC<InboxProps> = ({
             )}
           </button>
         </div>
+      )}
+        </>
       )}
     </div>
   );

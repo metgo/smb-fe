@@ -36,6 +36,7 @@ import {
   ChevronLeft,
   CheckSquare,
   AlertTriangle,
+  MessageCircle,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -122,6 +123,13 @@ export default function Sidebar() {
       path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
+      isEnabled: true,
+    },
+     {
+      id: "chat",
+      path: routes.chat,
+      label: t("chat") || "Chat",
+      icon: MessageCircle,
       isEnabled: true,
     },
     {

@@ -636,17 +636,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   return (
     <div className={`flex-1 flex flex-col h-full ${bgSecondary} relative overflow-hidden select-none`}>
       {/* Header */}
-      <div className={`p-4 border-b ${borderColor} ${isDark ? 'bg-gray-900' : 'bg-white'} flex items-center justify-between z-10 shadow-xs`}>
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className={`md:hidden p-1 rounded ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} cursor-pointer`}>
+      <div className={`p-3 md:p-4 border-b ${borderColor} ${isDark ? 'bg-gray-900' : 'bg-white'} flex items-center justify-between z-10 shadow-xs`}>
+        <div className="flex items-center gap-2 md:gap-3">
+          <button onClick={onBack} className={`md:hidden p-1.5 rounded ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} cursor-pointer`}>
             ←
           </button>
-          <div>
-            <h3 className={`text-sm font-bold ${textPrimary}`}>
+          <div className="min-w-0">
+            <h3 className={`text-sm md:text-base font-bold ${textPrimary} truncate`}>
               {conversation?.name}
             </h3>
             {conversation?.type !== "dm" && (
-              <p className="text-[10px] text-gray-500">
+              <p className="text-[10px] text-gray-500 hidden md:block">
                 {conversation?.members.length} members &bull; {conversation?.description}
               </p>
             )}
@@ -703,7 +703,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-4 custom-scrollbar"
+        className="flex-1 overflow-y-auto p-3 md:p-4 custom-scrollbar"
       >
         {renderMessageList()}
         
@@ -792,23 +792,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       )}
 
       {/* Composer Input Area */}
-      <div className={`p-4 border-t ${borderColor} ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+      <div className={`p-3 md:p-4 border-t ${borderColor} ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
         {isComposerDisabled ? (
-          <div className={`flex items-center justify-center p-3 bg-red-50 text-red-700 ${isDark ? 'dark:bg-red-950/20 dark:text-red-400' : ''} border border-red-200 ${isDark ? 'dark:border-red-900/40' : ''} rounded-lg text-xs font-semibold select-none text-center`}>
+          <div className={`flex items-center justify-center p-2 md:p-3 bg-red-50 text-red-700 ${isDark ? 'dark:bg-red-950/20 dark:text-red-400' : ''} border border-red-200 ${isDark ? 'dark:border-red-900/40' : ''} rounded-lg text-[10px] md:text-xs font-semibold select-none text-center`}>
             {silence ? (
-              <span className="flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4" />
-                You have been silenced globally. Expires: {silence.expiresAt === "permanent" ? "Indefinite" : new Date(silence.expiresAt).toLocaleString()}. Reason: {silence.reason}
+              <span className="flex items-center gap-1 md:gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden md:inline">You have been silenced globally. Expires: {silence.expiresAt === "permanent" ? "Indefinite" : new Date(silence.expiresAt).toLocaleString()}. Reason: {silence.reason}</span>
+                <span className="md:hidden">Silenced globally</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4" />
-                Read-only channel. Only the channel owner can post announcements.
+              <span className="flex items-center gap-1 md:gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden md:inline">Read-only channel. Only the channel owner can post announcements.</span>
+                <span className="md:hidden">Read-only channel</span>
               </span>
             )}
           </div>
         ) : (
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-1.5 md:gap-2">
             {/* Attachment paperclip */}
             <div className="relative">
               <input
@@ -821,10 +823,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               />
               <button
                 onClick={() => document.getElementById("chat-file-picker")?.click()}
-                className={`p-2 rounded-lg ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'} cursor-pointer`}
+                className={`p-1.5 md:p-2 rounded-lg ${isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'} cursor-pointer`}
                 title="Attach file (JPG, PNG, GIF, PDF, DOCX, XLSX, CSV, ZIP. Max 10MB)"
               >
-                <Paperclip className="w-5 h-5" />
+                <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             </div>
 
@@ -835,8 +837,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={1}
-                placeholder="Type a message... (Press Enter to send, Shift+Enter for newline)"
-                className={`w-full px-4 py-2 ${isDark ? 'bg-gray-850 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'} rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none min-h-[38px] max-h-[120px] custom-scrollbar`}
+                placeholder="Type a message..."
+                className={`w-full px-3 md:px-4 py-2 ${isDark ? 'bg-gray-850 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'} rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none min-h-[38px] max-h-[120px] custom-scrollbar`}
               />
             </div>
 
@@ -844,9 +846,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <button
               onClick={handleSend}
               disabled={!text.trim() && attachments.length === 0}
-              className="p-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-xl cursor-pointer shadow-xs transition-colors"
+              className="p-1.5 md:p-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-xl cursor-pointer shadow-xs transition-colors"
             >
-              <CornerDownLeft className="w-5 h-5" />
+              <CornerDownLeft className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </div>
         )}

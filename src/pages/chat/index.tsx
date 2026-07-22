@@ -1,19 +1,23 @@
-import  { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Inbox } from "./components/Inbox";
 import { ChatWindow } from "./components/ChatWindow";
-import { 
-  NewDmModal, NewGroupModal, NewBroadcastModal, SilenceUserModal 
+import {
+  NewDmModal, NewGroupModal, NewBroadcastModal, SilenceUserModal
 } from "./components/Modals";
-import { 
-  MockChatDatabase, MOCK_USERS 
+import {
+  MockChatDatabase, MOCK_USERS
 } from "./mockDb";
 import type { MockUser } from "./mockDb";
 import type { Conversation, ModerationLogEntry, SilenceState } from "./types";
-import { 
-  ShieldAlert, Settings, Eye, Shield, UserX, AlertTriangle, FileText, CheckCircle 
+import {
+  ShieldAlert, Settings, Eye, Shield, UserX, AlertTriangle, FileText, CheckCircle, Menu, ChevronLeft, ChevronRight
 } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 export default function ChatPage() {
+  const { bgSecondary, bgPrimary, textPrimary, borderColor, isDark } = useThemeClasses();
+
   // Debug active profile selection (for visual testing)
   const [activeDebugProfile, setActiveDebugProfile] = useState<string>("user-superadmin");
   const [currentUser, setCurrentUser] = useState<MockUser | null>(null);
@@ -21,9 +25,12 @@ export default function ChatPage() {
   // Core Chat State
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  
+
   // Navigation for mobile responsive view
   const [showInbox, setShowInbox] = useState(true);
+  
+  // Desktop sidebar collapse state
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Search Highlight Message (Story 8)
   const [highlightMessageId, setHighlightMessageId] = useState<string | undefined>(undefined);
@@ -58,7 +65,7 @@ export default function ChatPage() {
       sessionStorage.setItem("user_info", JSON.stringify({ user }));
       sessionStorage.setItem("access_token", `mock-token-${user.id}`);
       window.dispatchEvent(new Event("session:updated"));
-      
+
       // Load settings
       setReadReceiptsDisabled(MockChatDatabase.isReadReceiptsDisabled(user.id));
     }
@@ -69,7 +76,7 @@ export default function ChatPage() {
   // Load chat records
   const loadChatRecords = useCallback(() => {
     if (!currentUser) return;
-    
+
     // Fetch conversations where current user is a member
     const list = MockChatDatabase.getConversations();
     const userConvs = list.filter((c) => c.members.includes(currentUser.id));
@@ -177,23 +184,47 @@ export default function ChatPage() {
   const allConversations = MockChatDatabase.getConversations();
 
   return (
-    <div className="flex flex-col h-full bg-background select-none">
+    <div className={clsx("flex flex-col h-full select-none", bgSecondary)}>
       {/* Dynamic Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-wrap items-center justify-between gap-4 z-20">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            In-App Chat System
-          </h1>
-          <p className="text-xs text-gray-500">Real-time messaging coordination workspace</p>
+      <div className={clsx(
+        bgPrimary,
+        borderColor,
+        "p-4 border-b flex flex-wrap items-center justify-between gap-4 z-20"
+      )}>
+        <div className="flex items-center gap-3">
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setShowInbox(!showInbox)}
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+            aria-label="Toggle inbox"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          
+          {/* Desktop sidebar collapse button */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="hidden md:flex p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+            aria-label="Toggle sidebar"
+          >
+            {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          </button>
+          
+          <div>
+            <h1 className={clsx(textPrimary, "text-xl font-bold flex items-center gap-2")}>
+              In-App Chat System
+            </h1>
+            <p className={clsx(textPrimary, "text-xs")}>Real-time messaging coordination workspace</p>
+          </div>
         </div>
 
         {/* Debug Panel / Interactive Role Switcher */}
-        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
-          <span className="text-[10px] font-bold text-gray-500 uppercase px-1">Testing Role:</span>
+        <div className={clsx(bgPrimary, borderColor, "flex items-center gap-2 p-1.5 rounded-lg border")}>
+          <span className={clsx("text-[10px] font-bold uppercase px-1")}>Testing Role:</span>
           <select
             value={activeDebugProfile}
             onChange={(e) => setActiveDebugProfile(e.target.value)}
-            className="text-xs font-semibold bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-teal-600 dark:text-teal-400 px-2 py-1 rounded-md cursor-pointer outline-hidden"
+            className={clsx(bgPrimary, borderColor, "text-xs font-semibold border text-teal-600 px-2 py-1 rounded-md cursor-pointer outline-hidden")}
           >
             <option value="user-superadmin">Karma Lama (SUPERADMIN)</option>
             <option value="user-admin-1">Alex Admin (ADMIN)</option>
@@ -210,7 +241,7 @@ export default function ChatPage() {
       {/* Main Split Layout */}
       <div className="flex-1 flex overflow-hidden min-h-0 relative">
         {/* Inbox Navigation Pane */}
-        <div className={`${showInbox ? "flex" : "hidden md:flex"} h-full`}>
+        <div className={`${showInbox ? "flex" : "hidden md:flex"} h-full transition-all duration-300 ${sidebarCollapsed ? "w-0 md:w-16" : "w-full md:w-80"} overflow-hidden`}>
           <Inbox
             conversations={conversations}
             activeConversationId={activeConversationId}
@@ -219,20 +250,22 @@ export default function ChatPage() {
             onOpenNewDm={() => setModalOpen({ ...modalOpen, newDm: true })}
             onOpenNewGroup={() => setModalOpen({ ...modalOpen, newGroup: true })}
             onOpenNewBroadcast={() => setModalOpen({ ...modalOpen, newBroadcast: true })}
+            collapsed={sidebarCollapsed}
           />
         </div>
 
         {/* Dynamic Workspace Panel (Chat window / Admin Views / Settings) */}
-        <div className={`flex-1 flex flex-col h-full ${showInbox ? "hidden md:flex" : "flex"}`}>
+        <div className={`flex-1 flex flex-col h-full ${showInbox ? "hidden md:flex" : "flex"} transition-all duration-300`}>
           {/* Sub tabs bar for Admins or settings */}
-          <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center gap-2">
+          <div className={clsx(bgPrimary, borderColor, " border-b px-4 py-2 flex items-center gap-2")}>
             <button
               onClick={() => setActiveSubTab("chat")}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                activeSubTab === "chat" 
-                  ? "bg-teal-500 text-white" 
-                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-              }`}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${activeSubTab === "chat"
+                ? "bg-teal-500 text-white"
+                : isDark
+                  ? "text-gray-400 hover:bg-gray-800"
+                  : "text-gray-600 hover:bg-gray-100"
+                }`}
             >
               Active Chat
             </button>
@@ -241,11 +274,12 @@ export default function ChatPage() {
                 {isSuperadmin && (
                   <button
                     onClick={() => setActiveSubTab("admin_view")}
-                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-                      activeSubTab === "admin_view" 
-                        ? "bg-teal-500 text-white" 
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}
+                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${activeSubTab === "admin_view"
+                      ? "bg-teal-500 text-white"
+                      : isDark
+                        ? "text-gray-400 hover:bg-gray-800"
+                        : "text-gray-600 hover:bg-gray-100"
+                      }`}
                   >
                     <Eye className="w-3.5 h-3.5" />
                     All Platform Chats (Admin)
@@ -253,11 +287,12 @@ export default function ChatPage() {
                 )}
                 <button
                   onClick={() => setActiveSubTab("mod_logs")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-                    activeSubTab === "mod_logs" 
-                      ? "bg-teal-500 text-white" 
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  }`}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${activeSubTab === "mod_logs"
+                    ? "bg-teal-500 text-white"
+                    : isDark
+                      ? "text-gray-400"
+                      : "text-gray-600"
+                    }`}
                 >
                   <ShieldAlert className="w-3.5 h-3.5" />
                   Moderation Logs
@@ -266,11 +301,12 @@ export default function ChatPage() {
             )}
             <button
               onClick={() => setActiveSubTab("settings")}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ml-auto cursor-pointer ${
-                activeSubTab === "settings" 
-                  ? "bg-teal-500 text-white" 
-                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-              }`}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ml-auto cursor-pointer ${activeSubTab === "settings"
+                ? "bg-teal-500 text-white"
+                : isDark
+                  ? "text-gray-400 hover:bg-gray-800"
+                  : "text-gray-600 hover:bg-gray-100"
+                }`}
             >
               <Settings className="w-3.5 h-3.5" />
               Settings
@@ -288,9 +324,9 @@ export default function ChatPage() {
                   onBack={() => setShowInbox(true)}
                 />
               ) : (
-                <div className="flex flex-col items-center justify-center h-full p-6 text-center select-none bg-slate-50 dark:bg-gray-950">
+                <div className={clsx("flex flex-col items-center justify-center h-full p-6 text-center select-none", isDark ? "bg-gray-950" : "bg-slate-50")}>
                   <AlertTriangle className="w-12 h-12 text-teal-500 mb-4 animate-pulse" />
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">No Chat Selected</h3>
+                  <h3 className={clsx("text-base font-bold", textPrimary)}>No Chat Selected</h3>
                   <p className="text-xs text-gray-500 max-w-sm mt-1">
                     Select a conversation from the inbox panel or trigger a direct message from the action bar.
                   </p>
@@ -298,33 +334,33 @@ export default function ChatPage() {
               )
             ) : activeSubTab === "admin_view" ? (
               /* PLATFORM ADMIN VIEW (Story 10) */
-              <div className="p-6 space-y-6 overflow-y-auto h-full bg-slate-50 dark:bg-gray-950">
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-250 dark:border-gray-800 space-y-4">
+              <div className={clsx("p-6 space-y-6 overflow-y-auto h-full", isDark ? "bg-gray-950" : "bg-slate-50")}>
+                <div className={clsx("rounded-xl p-4 border space-y-4", bgPrimary, borderColor)}>
                   <div className="flex items-center gap-2">
                     <Shield className="w-5 h-5 text-teal-600" />
-                    <h2 className="text-sm font-bold text-gray-900 dark:text-white">All Platform Chats (Superadmin view)</h2>
+                    <h2 className={clsx("text-sm font-bold", textPrimary)}>All Platform Chats (Superadmin view)</h2>
                   </div>
-                  
-                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+
+                  <div className={clsx("divide-y", isDark ? "divide-gray-800" : "divide-gray-100")}>
                     {allConversations.map((c) => (
                       <div key={c.id} className="py-3 flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                           <img src={c.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${c.name}`} className="w-9 h-9 rounded-full bg-gray-50 border" alt="" />
                           <div>
-                            <p className="text-xs font-bold text-gray-900 dark:text-white">{c.name}</p>
+                            <p className={clsx("text-xs font-bold", textPrimary)}>{c.name}</p>
                             <p className="text-[10px] text-gray-500 uppercase">{c.type}</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleSelectConversation(c.id)}
-                            className="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 rounded text-xs font-semibold cursor-pointer"
+                            className={clsx("px-2.5 py-1 rounded text-xs font-semibold cursor-pointer", isDark ? "bg-teal-950/20 text-teal-400" : "bg-teal-50 hover:bg-teal-100 text-teal-600")}
                           >
                             Inspect Thread
                           </button>
                           <button
                             onClick={() => handleExportHistory(c.id)}
-                            className="px-2.5 py-1 border border-gray-300 hover:bg-gray-50 dark:border-gray-850 dark:hover:bg-gray-850 text-gray-700 dark:text-gray-300 rounded text-xs font-semibold cursor-pointer"
+                            className={clsx("px-2.5 py-1 border rounded text-xs font-semibold cursor-pointer", isDark ? "border-gray-850 hover:bg-gray-850 text-gray-300" : "border-gray-300 hover:bg-gray-50 text-gray-700")}
                           >
                             Export History
                           </button>
@@ -336,11 +372,11 @@ export default function ChatPage() {
               </div>
             ) : activeSubTab === "mod_logs" ? (
               /* MODERATION LOGS AND SILENCE CONTROLS (Story 10) */
-              <div className="p-6 space-y-6 overflow-y-auto h-full bg-slate-50 dark:bg-gray-950 text-left">
+              <div className={clsx("p-6 space-y-6 overflow-y-auto h-full text-left", isDark ? "bg-gray-950" : "bg-slate-50")}>
                 {/* Silence actions tool */}
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-250 dark:border-gray-800 flex justify-between items-center gap-4">
+                <div className={clsx("rounded-xl p-4 border flex justify-between items-center gap-4", bgPrimary, borderColor)}>
                   <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <h3 className={clsx("text-sm font-bold flex items-center gap-1.5", textPrimary)}>
                       <UserX className="w-4 h-4 text-destructive" />
                       Silenced Users Directory
                     </h3>
@@ -356,15 +392,15 @@ export default function ChatPage() {
 
                 {/* Active Silences list */}
                 {silences.length > 0 && (
-                  <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-250 dark:border-gray-800 space-y-3">
-                    <h4 className="text-xs font-bold text-gray-900 dark:text-white">Active Silenced Accounts</h4>
+                  <div className={clsx("rounded-xl p-4 border space-y-3", bgPrimary, borderColor)}>
+                    <h4 className={clsx("text-xs font-bold", textPrimary)}>Active Silenced Accounts</h4>
                     <div className="space-y-2">
                       {silences.map((s) => {
                         const user = MOCK_USERS.find((u) => u.id === s.userId);
                         return (
-                          <div key={s.userId} className="flex justify-between items-center bg-gray-50 dark:bg-gray-850 p-2.5 rounded-lg border border-gray-150 dark:border-gray-800">
+                          <div key={s.userId} className={clsx("flex justify-between items-center p-2.5 rounded-lg border", isDark ? "bg-gray-850 border-gray-800" : "bg-gray-50 border-gray-150")}>
                             <div>
-                              <p className="text-xs font-bold text-gray-950 dark:text-white">
+                              <p className={clsx("text-xs font-bold", textPrimary)}>
                                 {user ? `${user.firstName} ${user.lastName}` : s.userId}
                               </p>
                               <p className="text-[10px] text-gray-500">Reason: {s.reason}</p>
@@ -374,7 +410,7 @@ export default function ChatPage() {
                             </div>
                             <button
                               onClick={() => handleUnsilenceUser(s.userId)}
-                              className="px-2 py-1 bg-teal-500/20 hover:bg-teal-500/35 text-teal-600 dark:text-teal-400 text-[10px] font-bold rounded cursor-pointer"
+                              className={clsx("px-2 py-1 bg-teal-500/20 hover:bg-teal-500/35 text-[10px] font-bold rounded cursor-pointer", isDark ? "text-teal-400" : "text-teal-600")}
                             >
                               Lift Silence
                             </button>
@@ -386,22 +422,22 @@ export default function ChatPage() {
                 )}
 
                 {/* Action logs */}
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-250 dark:border-gray-800 space-y-4">
+                <div className={clsx("rounded-xl p-4 border space-y-4", bgPrimary, borderColor)}>
                   <div className="flex items-center gap-1.5">
                     <FileText className="w-4 h-4 text-gray-500" />
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">Audit Log Actions</h3>
+                    <h3 className={clsx("text-sm font-bold", textPrimary)}>Audit Log Actions</h3>
                   </div>
-                  
+
                   {logs.length > 0 ? (
-                    <div className="space-y-3 divide-y divide-gray-100 dark:divide-gray-800">
+                    <div className={clsx("space-y-3 divide-y", isDark ? "divide-gray-800" : "divide-gray-100")}>
                       {logs.map((log) => (
                         <div key={log.id} className="pt-3 text-xs space-y-1">
                           <div className="flex justify-between">
-                            <span className="font-bold text-gray-900 dark:text-white">{log.actorName}</span>
+                            <span className={clsx("font-bold", textPrimary)}>{log.actorName}</span>
                             <span className="text-[10px] text-gray-400">{new Date(log.timestamp).toLocaleString()}</span>
                           </div>
-                          <p className="text-gray-600 dark:text-gray-400">
-                            Action: <span className="font-semibold text-teal-600 dark:text-teal-400 capitalize">{log.action.replace("_", " ")}</span>
+                          <p className={isDark ? "text-gray-400" : "text-gray-600"}>
+                            Action: <span className={clsx("font-semibold capitalize", isDark ? "text-teal-400" : "text-teal-600")}>{log.action.replace("_", " ")}</span>
                           </p>
                           <p className="text-gray-500 italic">Target: {log.targetName}</p>
                           <p className="text-gray-500">Reason: {log.reason}</p>
@@ -415,29 +451,29 @@ export default function ChatPage() {
               </div>
             ) : (
               /* SETTINGS TAB */
-              <div className="p-6 space-y-6 overflow-y-auto h-full bg-slate-50 dark:bg-gray-950 text-left">
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-250 dark:border-gray-800 space-y-4 max-w-md">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Chat settings</h3>
-                  
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-850 rounded-lg border">
+              <div className={clsx("p-6 space-y-6 overflow-y-auto h-full text-left", isDark ? "bg-gray-950" : "bg-slate-50")}>
+                <div className={clsx("rounded-xl p-5 border space-y-4 max-w-md", bgPrimary, borderColor)}>
+                  <h3 className={clsx("text-sm font-bold", textPrimary)}>Chat settings</h3>
+
+                  <div className={clsx("flex items-center justify-between p-3 rounded-lg border", isDark ? "bg-gray-850" : "bg-gray-50")}>
                     <div>
-                      <h4 className="text-xs font-bold text-gray-900 dark:text-white">Read Receipts</h4>
+                      <h4 className={clsx("text-xs font-bold", textPrimary)}>Read Receipts</h4>
                       <p className="text-[10px] text-gray-400 mt-0.5">
                         If disabled, you will not send receipts and cannot see others' blue ticks.
                       </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input 
-                        type="checkbox" 
-                        checked={!readReceiptsDisabled} 
+                      <input
+                        type="checkbox"
+                        checked={!readReceiptsDisabled}
                         onChange={handleToggleReadReceipts}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-gray-300 dark:bg-gray-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600" />
+                      <div className={clsx("w-9 h-5 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600", isDark ? "bg-gray-700" : "bg-gray-300")} />
                     </label>
                   </div>
-                  
-                  <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold p-2">
+
+                  <div className={clsx("flex items-center gap-2 text-xs font-semibold p-2", isDark ? "text-emerald-400" : "text-emerald-600")}>
                     <CheckCircle className="w-4 h-4" />
                     Settings applied successfully.
                   </div>
