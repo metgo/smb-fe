@@ -183,6 +183,10 @@ export class PaymentsService {
       }
 
       if (existingPayment.status === PaymentStatus.SUCCESS) {
+        this.logger.info('[PAYMENT]: Payment already processed, skipping duplicate', {
+          paymentRequestId,
+          orderId: existingPayment.orderId,
+        });
         return;
       }
 

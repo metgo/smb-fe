@@ -675,6 +675,20 @@ export class OrdersService {
     languagePreference?: Locale,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
     try {
+      // Check if order is already processed to prevent duplicates
+      const existingOrder = await findOneById<Order>(this.OrderModel, orderId);
+      if (existingOrder?.paymentStatus === PaymentStatus.SUCCESS) {
+        this.logger.info('[ORDER]: Order already processed, skipping duplicate', {
+          orderId,
+          paymentStatus: existingOrder.paymentStatus,
+        });
+        // Return existing order data to avoid breaking the flow
+        const productInfo = await this.productsService.getProductInformationForOrders(
+          existingOrder.products.map(p => ({ id: p.id, quantity: 1, itemType: OrderItemType.PRODUCT })),
+        );
+        return { updateOrder: existingOrder, getProductInformation: productInfo };
+      }
+
       const updatedField = {
         paymentStatus: PaymentStatus.SUCCESS,
         status: OrderStatus.PROCESSING,
@@ -1213,11 +1227,24 @@ export class OrdersService {
       );
     }
 
-    await this.OrderModel.findByIdAndDelete(parentOrder._id);
-
-    this.logger.info('[ORDER]: PARENT COMBO ORDER DELETED AFTER VENDOR SPLIT', {
-      parentOrderId: parentOrder._id,
-    });
+    try {
+      const deleteResult = await this.OrderModel.findByIdAndDelete(parentOrder._id);
+      if (!deleteResult) {
+        this.logger.error('[ORDER]: FAILED TO DELETE PARENT ORDER - ORDER NOT FOUND', {
+          parentOrderId: parentOrder._id,
+        });
+      } else {
+        this.logger.info('[ORDER]: PARENT COMBO ORDER DELETED AFTER VENDOR SPLIT', {
+          parentOrderId: parentOrder._id,
+        });
+      }
+    } catch (error) {
+      this.logger.error('[ORDER]: FAILED TO DELETE PARENT ORDER', {
+        parentOrderId: parentOrder._id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // Continue execution even if deletion fails - vendor orders are already created
+    }
 
     return {
       updateOrder: parentOrder,

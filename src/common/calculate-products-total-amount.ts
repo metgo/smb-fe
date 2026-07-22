@@ -60,17 +60,21 @@ export async function calculateProductsTotalAmount(
       })
       .filter(Boolean);
 
-    const payableAmount = cartItems.reduce(
-      (sum, item) => sum + item.quantity * item.amount + item.deliveryFee,
-      0,
-    );
+    const payableAmount = Math.round(
+      cartItems.reduce(
+        (sum, item) => sum + item.quantity * item.amount,
+        0,
+      ) * 100,
+    ) / 100;
 
-    const totalDeliveryFee = cartItems.reduce(
-      (sum, item) => sum + item.deliveryFee,
-      0,
-    );
+    const totalDeliveryFee = Math.round(
+      cartItems.reduce(
+        (sum, item) => sum + item.deliveryFee,
+        0,
+      ) * 100,
+    ) / 100;
 
-    return { payableAmount, cartItems, totalDeliveryFee };
+    return { payableAmount: Math.round((payableAmount + totalDeliveryFee) * 100) / 100, cartItems, totalDeliveryFee };
   } catch (error) {
     throw new BadRequestException(error);
   }
