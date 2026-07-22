@@ -601,8 +601,8 @@ function CreateBusinessWizardInner({
           long: String(editData.geoLocation.long),
         });
       }
-      setSelectAuthorityId(editData?.authorityId?._id || "");
-      setSelectedDmoId(editData?.dmoId?._id || "");
+      setSelectAuthorityId(editData?.authorityId || "");
+      setSelectedDmoId(editData?.dmoId || "");
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images);
