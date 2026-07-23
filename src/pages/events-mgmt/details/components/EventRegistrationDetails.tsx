@@ -307,8 +307,8 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   const { t } = useTranslation("events");
   const { isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
-console.log(eventDetails)
 
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
