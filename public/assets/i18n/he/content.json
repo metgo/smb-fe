@@ -117,6 +117,8 @@
   "toast_current_layout_saved_draft": "הפריסה הנוכחית נשמרה כתצוגת טיוטה.",
   "edit_view": "ערוך תצוגה",
   "view_name_optional": "שם תצוגה (אופציונلي)",
+  "view_name_placeholder": "שם תצוגה *",
+  "toast_view_name_required": "שם תצוגה הוא שדה חובה",
   "wizard_step_topics": "נושאים",
   "wizard_step_categories": "קטגוריות",
   "wizard_step_assign": "הקצאת תוכן",

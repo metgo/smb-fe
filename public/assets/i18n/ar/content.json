@@ -118,6 +118,8 @@
   "toast_current_layout_saved_draft": "تم حفظ التخطيط الحالي كعرض مسودة.",
   "edit_view": "تعديل العرض",
   "view_name_optional": "اسم العرض (اختياري)",
+  "view_name_placeholder": "اسم العرض *",
+  "toast_view_name_required": "اسم العرض مطلوب",
   "wizard_step_topics": "مواضيع",
   "wizard_step_categories": "فئات",
   "wizard_step_assign": "تعيين المحتوى",
