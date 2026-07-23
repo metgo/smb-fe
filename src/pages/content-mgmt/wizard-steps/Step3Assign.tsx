@@ -219,11 +219,11 @@ interface CategoryRowProps {
   isMarketplace?: boolean;
   onRemoveBusiness: (topicIdx: number, catIdx: number, bizId: string) => void;
   onRemoveProduct: (topicIdx: number, catIdx: number, prodId: string) => void;
-  onRemoveEvent: (topicIdx: number, catIdx: number, eventId: string) => void;
+  // onRemoveEvent: (topicIdx: number, catIdx: number, eventId: string) => void; // COMMENTED OUT FOR TRAVELLER PURPOSE
   onRemovePoi: (topicIdx: number, catIdx: number, poiId: string) => void;
   onAddBusiness: (topicIdx: number, catIdx: number, item: any) => void;
   onAddProduct: (topicIdx: number, catIdx: number, item: any) => void;
-  onAddEvent: (topicIdx: number, catIdx: number, item: any) => void;
+  // onAddEvent: (topicIdx: number, catIdx: number, item: any) => void; // COMMENTED OUT FOR TRAVELLER PURPOSE
   onAddPoi: (topicIdx: number, catIdx: number, item: any) => void;
 }
 
@@ -234,16 +234,16 @@ function CategoryRow({
   isDark,
   allBusinesses,
   allProducts,
-  allEvents,
+  // allEvents, // COMMENTED OUT FOR TRAVELLER PURPOSE
   allPois,
   isMarketplace = false,
   onRemoveBusiness,
   onRemoveProduct,
-  onRemoveEvent,
+  // onRemoveEvent, // COMMENTED OUT FOR TRAVELLER PURPOSE
   onRemovePoi,
   onAddBusiness,
   onAddProduct,
-  onAddEvent,
+  // onAddEvent, // COMMENTED OUT FOR TRAVELLER PURPOSE
   onAddPoi,
 }: CategoryRowProps) {
   const { t } = useTranslation("content");
@@ -255,16 +255,16 @@ function CategoryRow({
   const assignedProdIds = new Set(
     (cat.productIds ?? []).map((p: any) => p._id ?? p),
   );
-  const assignedEventIds = new Set(
-    (cat.eventIds ?? []).map((e: any) => e._id ?? e),
-  );
+  // const assignedEventIds = new Set( // COMMENTED OUT FOR TRAVELLER PURPOSE
+  //   (cat.eventIds ?? []).map((e: any) => e._id ?? e),
+  // );
   const assignedPoiIds = new Set(
     (cat.poiIds ?? []).map((poi: any) => poi._id ?? poi),
   );
 
   const availableBiz = allBusinesses.filter((b) => !assignedBizIds.has(b._id));
   const availableProd = allProducts.filter((p) => !assignedProdIds.has(p._id));
-  const availableEvents = allEvents.filter((e) => !assignedEventIds.has(e._id));
+  // const availableEvents = allEvents.filter((e) => !assignedEventIds.has(e._id)); // COMMENTED OUT FOR TRAVELLER PURPOSE
   const availablePois = allPois.filter((poi) => !assignedPoiIds.has(poi._id));
 
   const bCount = cat.businessIds?.length ?? 0;
@@ -328,8 +328,8 @@ function CategoryRow({
               {pCount}
             </span>
           )}
-          {/* Events — TRAVELING only */}
-          {!isMarketplace && eCount > 0 && (
+          {/* Events — TRAVELING only - COMMENTED OUT FOR TRAVELLER PURPOSE */}
+          {/* {!isMarketplace && eCount > 0 && (
             <span
               className={clsx(
                 "flex items-center gap-1 text-xs",
@@ -338,7 +338,7 @@ function CategoryRow({
             >
               🎫 {eCount}
             </span>
-          )}
+          )} */}
           {/* POIs — TRAVELING only */}
           {!isMarketplace && poiCount > 0 && (
             <span
@@ -544,8 +544,8 @@ function CategoryRow({
             </>
           )}
 
-          {/* Events — TRAVELING only */}
-          {!isMarketplace && (
+          {/* Events — TRAVELING only - COMMENTED OUT FOR TRAVELLER PURPOSE */}
+          {/* {!isMarketplace && (
             <div className="space-y-1.5">
               <p
                 className={clsx(
@@ -601,7 +601,7 @@ function CategoryRow({
                 />
               </div>
             </div>
-          )}
+          )} */}
 
           {/* POIs — TRAVELING only */}
           {!isMarketplace && (
@@ -885,19 +885,19 @@ export default function Step3Assign({
     [markChanged],
   );
 
-  const removeEvent = useCallback(
-    (tIdx: number, cIdx: number, eventId: string) => {
-      setLocalTopics((prev) => {
-        const next = structuredClone(prev);
-        next[tIdx].siteCategories[cIdx].eventIds = (
-          next[tIdx].siteCategories[cIdx].eventIds ?? []
-        ).filter((e: any) => (e._id ?? e) !== eventId);
-        return next;
-      });
-      markChanged();
-    },
-    [markChanged],
-  );
+  // const removeEvent = useCallback( // Events disabled for TRAVELLER purpose
+  //   (tIdx: number, cIdx: number, eventId: string) => {
+  //     setLocalTopics((prev) => {
+  //       const next = structuredClone(prev);
+  //       next[tIdx].siteCategories[cIdx].eventIds = (
+  //         next[tIdx].siteCategories[cIdx].eventIds ?? []
+  //       ).filter((e: any) => (e._id ?? e) !== eventId);
+  //       return next;
+  //     });
+  //     markChanged();
+  //   },
+  //   [markChanged],
+  // );
 
   const removePoi = useCallback(
     (tIdx: number, cIdx: number, poiId: string) => {
@@ -945,21 +945,21 @@ export default function Step3Assign({
     [markChanged],
   );
 
-  const addEvent = useCallback(
-    (tIdx: number, cIdx: number, item: any) => {
-      setLocalTopics((prev) => {
-        const next = structuredClone(prev);
-        const list = next[tIdx].siteCategories[cIdx].eventIds ?? [];
-        if (!list.find((e: any) => (e._id ?? e) === item._id)) {
-          list.push(item);
-          next[tIdx].siteCategories[cIdx].eventIds = list;
-        }
-        return next;
-      });
-      markChanged();
-    },
-    [markChanged],
-  );
+  // const addEvent = useCallback( // Events disabled for TRAVELLER purpose
+  //   (tIdx: number, cIdx: number, item: any) => {
+  //     setLocalTopics((prev) => {
+  //       const next = structuredClone(prev);
+  //       const list = next[tIdx].siteCategories[cIdx].eventIds ?? [];
+  //       if (!list.find((e: any) => (e._id ?? e) === item._id)) {
+  //         list.push(item);
+  //         next[tIdx].siteCategories[cIdx].eventIds = list;
+  //       }
+  //       return next;
+  //     });
+  //     markChanged();
+  //   },
+  //   [markChanged],
+  // );
 
   const addPoi = useCallback(
     (tIdx: number, cIdx: number, item: any) => {
@@ -1366,11 +1366,11 @@ export default function Step3Assign({
                   isMarketplace={isMarketplace}
                   onRemoveBusiness={removeBusiness}
                   onRemoveProduct={removeProduct}
-                  onRemoveEvent={removeEvent}
+                  // onRemoveEvent={removeEvent} // Events disabled for TRAVELLER purpose
                   onRemovePoi={removePoi}
                   onAddBusiness={addBusiness}
                   onAddProduct={addProduct}
-                  onAddEvent={addEvent}
+                  // onAddEvent={addEvent} // Events disabled for TRAVELLER purpose
                   onAddPoi={addPoi}
                 />
               ))}

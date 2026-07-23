@@ -64,7 +64,7 @@ const ALL_FILTER_OPTIONS = [
   "Businesses",
   "Products",
   // "Trips",
-  "Events",
+  // "Events", // Events disabled for TRAVELLER purpose
   "POI",
 ];
 
@@ -72,7 +72,7 @@ const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
   Businesses: "business",
   Products: "product",
   Trips: "trip",
-  Events: "event",
+  // Events: "event", // Events disabled for TRAVELLER purpose
   POI: "poi",
 };
 
@@ -652,7 +652,8 @@ const Contents = ({
                   </div>
                 )}
                 {/* ── Event filters ── */}
-                {currentTab === "Events" && (
+                {/* Events disabled for TRAVELLER purpose - commented out */}
+                {/* {currentTab === "Events" && (
                   <div className="flex flex-col min-w-45">
                     <label className={`block text-sm mb-2 `}>
                       {t("registration")}
@@ -717,7 +718,7 @@ const Contents = ({
                       />
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* ── Active Filter Chips ── */}
@@ -725,11 +726,14 @@ const Contents = ({
                 (filters.hasProductFilter !== "all" ||
                   filters.primaryCategory !== "all")) ||
               (currentTab === "Products" && filters.businessId) ||
+              /* Events disabled for TRAVELLER purpose - commented out
               (currentTab === "Events" &&
                 ((filters.registrationFilter &&
                   filters.registrationFilter !== "all") ||
                   filters.dateRangeFilter.start ||
-                  filters.dateRangeFilter.end)) ? (
+                  filters.dateRangeFilter.end)) ||
+              */
+              false ? (
                 <div className="flex flex-col items-start gap-1">
                   <label
                     className={`block text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -748,11 +752,12 @@ const Contents = ({
                           return null;
                         if (currentTab === "Products" && key !== "businessId")
                           return null;
-                        if (
-                          currentTab === "Events" &&
-                          key !== "registrationFilter"
-                        )
-                          return null;
+                        // Events disabled for TRAVELLER purpose - commented out
+                        // if (
+                        //   currentTab === "Events" &&
+                        //   key !== "registrationFilter"
+                        // )
+                        //   return null;
 
                         let displayValue = value;
                         if (key === "hasProductFilter")
@@ -788,7 +793,8 @@ const Contents = ({
                           />
                         );
                       })}
-                      {currentTab === "Events" &&
+                      {/* Events disabled for TRAVELLER purpose - commented out */}
+                      {/* {currentTab === "Events" &&
                         (filters.dateRangeFilter.start ||
                           filters.dateRangeFilter.end) && (
                           <FilterChips
@@ -800,7 +806,7 @@ const Contents = ({
                               }))
                             }
                           />
-                        )}
+                        )} */}
                     </div>
                     <button
                       onClick={clearFilter}
@@ -871,20 +877,6 @@ const Contents = ({
                 }
                 categoryName={item?.primaryCategoryId?.name}
                 address={item?.address}
-                startDate={
-                  currentTab === "Events"
-                    ? item?.dayDescription?.[0]?.date
-                    : undefined
-                }
-                startTime={
-                  currentTab === "Events"
-                    ? item?.dayDescription?.[0]?.startTime
-                    : undefined
-                }
-                isFree={currentTab === "Events" ? item?.isFree : undefined}
-                eventType={
-                  currentTab === "Events" ? item?.eventType : undefined
-                }
                 viewMode={viewMode}
                 isExpanded={isExpanded}
                 isSelected={selectedItems.has(item._id)}

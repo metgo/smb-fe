@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
-  useGenerateTopicsMutation,
+  useGenerateUnifiedMutation,
   useTranslateTopicMutation,
 } from "@/store/api/contentMutationApi";
 
@@ -23,6 +23,7 @@ interface Props {
   externalApiId: string;
   themeContext: string;
   setThemeContext: React.Dispatch<React.SetStateAction<string>>;
+  onUnifiedGenerated?: (topics: WizardTopic[]) => void; // Callback for when unified generation completes
 }
 
 const makeId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -33,10 +34,11 @@ export default function Step1Topics({
   externalApiId,
   themeContext,
   setThemeContext,
+  onUnifiedGenerated,
 }: Props) {
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
-  const [generateTopics, { isLoading }] = useGenerateTopicsMutation();
+  const [generateUnified, { isLoading }] = useGenerateUnifiedMutation();
   const [translateTopic] = useTranslateTopicMutation();
   const [activeLang, setActiveLang] = useState<WizardLang>("he");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -47,11 +49,14 @@ export default function Step1Topics({
 
   const handleGenerate = async () => {
     try {
-      const result = await generateTopics({
+      // Use unified generation for optimized token usage
+      const result = await generateUnified({
         externalApiId,
         themeContext: themeContext.trim() || undefined,
       }).unwrap();
-      const mapped = result.slice(0, MAX_TOPICS).map((t: any) => ({
+
+      // Map the unified result to WizardTopic format
+      const mapped = result.topics.slice(0, MAX_TOPICS).map((t: any) => ({
         id: makeId(),
         title: t.title ?? "",
         titleHe: t.titleHe ?? t.title ?? "",
@@ -59,17 +64,46 @@ export default function Step1Topics({
         description: t.description ?? "",
         descriptionHe: t.descriptionHe ?? t.description ?? "",
         descriptionAr: t.descriptionAr ?? t.description ?? "",
-        categories: [],
+        categories: (t.categories || []).map((c: any) => ({
+          id: makeId(),
+          title: c.title ?? "",
+          titleHe: c.titleHe ?? c.title ?? "",
+          titleAr: c.titleAr ?? c.title ?? "",
+          description: c.description ?? "",
+          descriptionHe: c.descriptionHe ?? c.description ?? "",
+          descriptionAr: c.descriptionAr ?? c.description ?? "",
+          synonyms: c.synonyms ?? [],
+          synonymsHe: c.synonymsHe ?? [],
+          synonymsAr: c.synonymsAr ?? [],
+          searchKeywords: c.searchKeywords ?? [],
+          searchKeywordsHe: c.searchKeywordsHe ?? [],
+          searchKeywordsAr: c.searchKeywordsAr ?? [],
+        })),
       }));
+
       setTopics(mapped);
-      toast.success(t("toast_generated_topics", { count: mapped.length }));
+      const topicCount = mapped.length;
+      const categoryCount = mapped.reduce(
+        (sum, t) => sum + t.categories.length,
+        0,
+      );
+      const message =
+        categoryCount > 0
+          ? `Generated ${topicCount} topic${topicCount !== 1 ? "s" : ""} with ${categoryCount} categor${categoryCount !== 1 ? "ies" : "y"}`
+          : t("toast_generated_topics_other", { count: topicCount });
+      toast.success(message);
+
+      // Notify parent component that unified generation completed with topics and categories
+      if (onUnifiedGenerated) {
+        onUnifiedGenerated(mapped);
+      }
     } catch (error: any) {
       // Extract meaningful error message from backend
       const errorMsg =
         error?.data?.message ||
         error?.message ||
         t("toast_ai_generation_unavailable");
-      console.error("[Step1Topics] Generation error:", errorMsg);
+      console.error("[Step1Topics] Unified generation error:", errorMsg);
       toast.error(errorMsg);
     }
   };

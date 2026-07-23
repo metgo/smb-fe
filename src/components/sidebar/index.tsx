@@ -67,6 +67,10 @@ export default function Sidebar() {
   const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelector(
     (state) => state.ui,
   );
+  const associatedWebsite = useAppSelector(
+    (state) => state.auth.associatedWebsite,
+  );
+  const websiteId = useAppSelector((state) => state.auth.websiteId);
   const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
 
   // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin, siteManager)
@@ -77,6 +81,13 @@ export default function Sidebar() {
     "dmoadmin",
     "siteManager",
   ].includes(userRole);
+
+  // Check if current website purpose is TRAVELING (hide Events for TRAVELING websites)
+  const selectedWebsite = (associatedWebsite as any[])?.find(
+    (w) => w._id === websiteId,
+  );
+  const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
+  const isTravelingWebsite = !isMarketplace; // TRAVELING purpose
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -115,7 +126,7 @@ export default function Sidebar() {
       path: routes.eventsMgmt,
       label: t("events") || "Events",
       icon: Calendar,
-      isEnabled: true,
+      isEnabled: !isTravelingWebsite, // Hide Events for TRAVELING purpose websites
     },
     {
       id: "poi",

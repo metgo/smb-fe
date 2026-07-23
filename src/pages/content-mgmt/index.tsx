@@ -195,8 +195,8 @@ export default function ContentMgmtPage() {
   const selectedWebsiteName = selectedWebsite?.name ?? "";
 
   const marketplaceHiddenTabs = isMarketplace
-    ? ["Businesses", "POI", "Events"]
-    : [];
+    ? ["Businesses", "POI", "Events"] // MARKETPLACE: show only Products
+    : ["Events"]; // TRAVELLER: show Businesses, Products, POIs (hide Events)
 
   // When switching to a marketplace site, jump off any now-hidden tab
   useEffect(() => {

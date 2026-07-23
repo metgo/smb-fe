@@ -100,6 +100,7 @@ export default function CreateViewWizard({
     existingView?._id ?? null,
   );
   const [isAssigning, setIsAssigning] = useState(false);
+  const [skipStep2, setSkipStep2] = useState(false); // Skip category generation if unified AI already generated them
 
   // Re-initialize topics whenever existingView changes
   // Using entire existingView as dependency ensures we pick up data changes (deletions, edits)
@@ -144,6 +145,29 @@ export default function CreateViewWizard({
   const canProceedStep1 = topics.length > 0;
   const canProceedStep2 = topics.every((t) => t.categories.length > 0);
 
+  // Handle unified AI generation completion - skip Step 2 if categories were generated
+  const handleUnifiedGenerated = (generatedTopics: WizardTopic[]) => {
+    const hasCategories = generatedTopics.some((t) => t.categories.length > 0);
+    if (hasCategories) {
+      setSkipStep2(true);
+    }
+  };
+
+  // Reset skipStep2 when topics change manually (user edits)
+  useEffect(() => {
+    if (!isEditMode && topics.length > 0) {
+      // Only reset if user manually added/removed topics (not from AI generation)
+      // This is a simple heuristic - could be improved with a flag
+      const totalCategories = topics.reduce(
+        (sum, t) => sum + t.categories.length,
+        0,
+      );
+      if (totalCategories === 0 && skipStep2) {
+        setSkipStep2(false);
+      }
+    }
+  }, [topics, skipStep2, isEditMode]);
+
   const buildPayload = (status: string) => ({
     header: websiteName,
     status,
@@ -182,7 +206,7 @@ export default function CreateViewWizard({
             // Preserve existing assignments in edit mode, otherwise empty
             businessIds: (originalCat as any)?.businessIds ?? [],
             productIds: (originalCat as any)?.productIds ?? [],
-            eventIds: (originalCat as any)?.eventIds ?? [],
+            // eventIds: (originalCat as any)?.eventIds ?? [], // Events disabled for TRAVELLER purpose
             poiIds: (originalCat as any)?.poiIds ?? [],
             tripIds: (originalCat as any)?.tripIds ?? [],
             fundayIds: (originalCat as any)?.fundayIds ?? [],
@@ -472,9 +496,10 @@ export default function CreateViewWizard({
             externalApiId={externalApiId}
             themeContext={themeContext}
             setThemeContext={setThemeContext}
+            onUnifiedGenerated={handleUnifiedGenerated}
           />
         )}
-        {step === 2 && (
+        {step === 2 && !skipStep2 && (
           <Step2Categories
             topics={topics}
             setTopics={setTopics}
