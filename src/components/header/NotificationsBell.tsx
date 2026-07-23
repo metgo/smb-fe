@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Check,
   Eye,
+  Siren,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -139,6 +140,12 @@ const NotificationsBell = () => {
         return (
           <span className={`${base} bg-red-100 dark:bg-red-900/40`}>
             <XCircle className="w-4 h-4 text-red-500" />
+          </span>
+        );
+      case "DISPUTE":
+        return (
+          <span className={`${base} bg-red-100 dark:bg-red-900/40`}>
+            <Siren className="w-4 h-4 text-red-500" />
           </span>
         );
     }
@@ -328,8 +335,17 @@ const NotificationsBell = () => {
                     await markNotificationsAsRead(notification._id);
                     dispatch(markNotificationAsRead(notification._id));
                     if (itemEndpoint[itemType]) {
+                      const paramName =
+                        itemType === "DISPUTE" ? "orderProductId" : queryParam;
+
+                      const idValue =
+                        itemType === "DISPUTE" ? notification.orderProductId : notification.itemId;
+
+                      const disputeParam =
+                        itemType === "DISPUTE" ? `&disputeId=${notification.itemId}` : "";
+
                       navigate(
-                        `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                        `${itemEndpoint[itemType]}?${paramName}=${idValue}${disputeParam}`,
                       );
                     }
                   };
@@ -629,20 +645,20 @@ const NotificationsBell = () => {
         notificationId={viewChangesState.notificationId}
         changeData={
           changesData &&
-          Array.isArray(changesData.changes) &&
-          changesData.changes.length > 0
+            Array.isArray(changesData.changes) &&
+            changesData.changes.length > 0
             ? {
-                changeId: changesData._id || undefined,
-                changes: changesData.changes || [],
-                summary: changesData.summary || "",
-                changesCount: changesData.changesCount || 0,
-                changedBy: changesData.changedBy || {
-                  firstName: "",
-                  email: "",
-                },
-                changedAt: changesData.changedAt || new Date(),
-                status: changesData.status || "PENDING",
-              }
+              changeId: changesData._id || undefined,
+              changes: changesData.changes || [],
+              summary: changesData.summary || "",
+              changesCount: changesData.changesCount || 0,
+              changedBy: changesData.changedBy || {
+                firstName: "",
+                email: "",
+              },
+              changedAt: changesData.changedAt || new Date(),
+              status: changesData.status || "PENDING",
+            }
             : undefined
         }
         isLoading={changesLoading}

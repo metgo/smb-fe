@@ -25,6 +25,7 @@ i18n
       "trips",
       "tour",
       "content",
+      "reconciliation",
     ],
     defaultNS: "common",
 

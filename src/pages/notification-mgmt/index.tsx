@@ -10,6 +10,7 @@ import {
   CheckCheck,
   X,
   Eye,
+  Siren,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -124,8 +125,8 @@ export default function NotificationsMgmtPage() {
 
   const hasMore =
     !isNotifError &&
-    notifications?.meta?.hasNextPage &&
-    notifications?.data?.length > 0
+      notifications?.meta?.hasNextPage &&
+      notifications?.data?.length > 0
       ? true
       : false;
 
@@ -187,6 +188,8 @@ export default function NotificationsMgmtPage() {
         return <AlertTriangle className={`${iconClass} text-yellow-500`} />;
       case "ERROR":
         return <XCircle className={`${iconClass} text-red-500`} />;
+      case "DISPUTE":
+        return <Siren className={`${iconClass} text-red-500`} />;
     }
   };
 
@@ -438,10 +441,10 @@ export default function NotificationsMgmtPage() {
                           prev.map((item) =>
                             item._id === notification._id
                               ? {
-                                  ...item,
-                                  status: "APPROVED",
-                                  isRead: true,
-                                }
+                                ...item,
+                                status: "APPROVED",
+                                isRead: true,
+                              }
                               : item,
                           ),
                         );
@@ -475,8 +478,17 @@ export default function NotificationsMgmtPage() {
                         await markNotificationsAsRead(notification._id);
                         refetchNotifStats();
                         refetchNotifList();
+                        // For DISPUTE, use orderProductId as the query parameter
+                        const paramName =
+                          itemType === "DISPUTE" ? "orderProductId" : queryParam;
+
+                        const idValue =
+                          itemType === "DISPUTE" ? notification.orderProductId : notification.itemId;
+                        const disputeParam =
+                          itemType === "DISPUTE" ? `&disputeId=${notification.itemId}` : "";
+
                         navigate(
-                          `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                          `${itemEndpoint[itemType]}?${paramName}=${idValue}${disputeParam}`,
                         );
                       };
 
@@ -496,9 +508,8 @@ export default function NotificationsMgmtPage() {
                           {/* Unread dot indicator */}
                           {!notification.isRead && (
                             <span
-                              className={`absolute top-6 ${
-                                isRTL ? "left-4" : "right-4"
-                              } w-2.5 h-2.5 bg-blue-500 rounded-full`}
+                              className={`absolute top-6 ${isRTL ? "left-4" : "right-4"
+                                } w-2.5 h-2.5 bg-blue-500 rounded-full`}
                             ></span>
                           )}
 
@@ -596,7 +607,7 @@ export default function NotificationsMgmtPage() {
                                   {(notification.status === "PENDING" ||
                                     notification.status === "DRAFT") &&
                                     (notification.changesCount as number) >
-                                      0 && (
+                                    0 && (
                                       <button
                                         onClick={handleViewChanges}
                                         className="px-3 py-1.5 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition flex items-center gap-1"
@@ -630,20 +641,20 @@ export default function NotificationsMgmtPage() {
         entityName={viewChangesState.entityName}
         changeData={
           changesData &&
-          Array.isArray(changesData.changes) &&
-          changesData.changes.length > 0
+            Array.isArray(changesData.changes) &&
+            changesData.changes.length > 0
             ? {
-                changeId: changesData._id || undefined,
-                changes: changesData.changes || [],
-                summary: changesData.summary || "",
-                changesCount: changesData.changesCount || 0,
-                changedBy: changesData.changedBy || {
-                  firstName: "",
-                  email: "",
-                },
-                changedAt: changesData.changedAt || new Date(),
-                status: changesData.status || "PENDING",
-              }
+              changeId: changesData._id || undefined,
+              changes: changesData.changes || [],
+              summary: changesData.summary || "",
+              changesCount: changesData.changesCount || 0,
+              changedBy: changesData.changedBy || {
+                firstName: "",
+                email: "",
+              },
+              changedAt: changesData.changedAt || new Date(),
+              status: changesData.status || "PENDING",
+            }
             : undefined
         }
         isLoading={changesLoading}
