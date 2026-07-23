@@ -36,6 +36,8 @@ import {
   ChevronLeft,
   CheckSquare,
   AlertTriangle,
+  CalendarArrowDown,
+  ShoppingBag,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -88,6 +90,7 @@ export default function Sidebar() {
   );
   const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
   const isTravelingWebsite = !isMarketplace; // TRAVELING purpose
+  const isVendorReconciliation = ["superadmin", "traveller"].includes(userRole);
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -116,10 +119,37 @@ export default function Sidebar() {
     },
     {
       id: "orders",
-      path: routes.ordersMgmt,
+      path: "#orders",
       label: t("orders") || "Orders",
       icon: ShoppingCart,
       isEnabled: true,
+      subItems: [
+        {
+          id: "all-orders",
+          path: routes.ordersMgmt,
+          label: t("orders") || "All Orders",
+          icon: ShoppingBag,
+          isEnabled: true,
+        },
+        {
+          id: "all-orders-summary",
+          path: routes.ordersSummaryMgmt,
+          label: t("order_summary") || "Orders Summary",
+          icon: CalendarArrowDown,
+          isEnabled: true,
+        },
+        ...(isVendorReconciliation
+          ? [
+              {
+                id: "vendor-reconciliation",
+                path: routes.vendorReconciliationMgmt,
+                label: t("vendor_reconciliation") || "Vendor Reconciliation",
+                icon: Receipt,
+                isEnabled: false,
+              },
+            ]
+          : []),
+      ],
     },
     {
       id: "events",
@@ -129,6 +159,13 @@ export default function Sidebar() {
       isEnabled: !isTravelingWebsite, // Hide Events for TRAVELING purpose websites
     },
     {
+      id: "notifications",
+      path: routes.notificationMgmt,
+      label: t("notifications") || "Notifications",
+      icon: BellIcon,
+      isEnabled: true,
+    },
+    {
       id: "poi",
       path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
@@ -136,10 +173,10 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "notifications",
-      path: routes.notificationMgmt,
-      label: t("notifications") || "Notifications",
-      icon: BellIcon,
+      id: "article",
+      path: routes.articleMgmt,
+      label: t("article") || "Article",
+      icon: FileText,
       isEnabled: true,
     },
     ...(isAdminRole
@@ -226,13 +263,7 @@ export default function Sidebar() {
           icon: Megaphone,
           isEnabled: true,
         },
-        {
-          id: "article",
-          path: routes.articleMgmt,
-          label: t("article") || "Article",
-          icon: FileText,
-          isEnabled: true,
-        },
+
         {
           id: "news-feed",
           path: routes.dashboard,
@@ -376,7 +407,7 @@ export default function Sidebar() {
   };
 
   const isItemActive = (path: string) =>
-    location.pathname.slice(0, 5) === path.slice(0, 5);
+    location.pathname === path || location.pathname.startsWith(path + "/");
 
   const isExpanded = (path: string) => expandedItems.includes(path);
 

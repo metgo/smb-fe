@@ -58,6 +58,8 @@
   "generating_tags": "جارٍ إنشاء العلامات",
 
   "orders": "الطلبات",
+  "order_summary": "ملخص الطلبات",
+  "vendor_reconciliation": "تسوية الموردين",
   "pois": "نقاط الاهتمام",
   "trips": "الرحلات",
   "fun_days": "أيام الترفيه",
@@ -75,6 +77,7 @@
   "news_feed": "تدفق الأخبار",
   "feed_settings": "إعدادات التدفق",
   "mini_site": "الموقع المصغر",
+  "mini_campaigns": "الحملات المصغرة",
   "dynamic_pages": "الصفحات الديناميكية",
   "my_profile": "ملفي الشخصي",
   "settings": "الإعدادات",

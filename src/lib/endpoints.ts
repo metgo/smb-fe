@@ -54,17 +54,27 @@ export const endpoints = {
   //orders
   orders: "/orders",
   orderDetails: "/order-details",
-
   orderSummary: "/orders-summary",
+  orderProducts: "/order-products",
+  orderProductsDetails: "/order-products/details",
+  cancelOrderProduct: "/cancel-order-product",
+  approveOrderProduct: "/approve-order-product",
+  openDispute: "/orders/dispute",
+  respondDispute: "/disputes/respond",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",
-  orderStatus: "/orders",
   orderProductStatus: "/admin/orderProduct",
   orderConfirmation: "/admin/send-success-emails",
   productsStats: "/products-stat",
   cancleOrderProduct: "/cancel-order-product",
   updateOrderStatus: "/update-order-status",
+  bulkApprove: "/orders/bulk-approve",
+  reconciliationStats: "/orders/reconciliation-stats",
+  bulkMarkAsComplete: "/orders/bulk-order-product-status",
+  finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
+  previewFinaliseApprovedOrders:
+    "/admin/monthly-reports/finalize-closed-orders/preview",
 
   // public
   publicEventTicket: "/public/event-tickets",

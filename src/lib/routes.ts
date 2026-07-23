@@ -19,11 +19,12 @@ export const routes = {
 
   ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
+  ordersSummaryMgmt: "/orders-summary-management",
 
   contentMgmt: "/content-management",
   voucherMgmt: "/voucher-management",
   voucherDetails: "/voucher-details",
-
+  vendorReconciliationMgmt: "/vendor-reconciliation",
   pointOfInterest: "/point-of-interest",
   poiMgmt: "/poi-management",
   poiDetails: "/poi-details",
