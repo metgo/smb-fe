@@ -71,5 +71,10 @@ interface IArticleFormData {
   metaDescriptionAr: string;
   // Common
   status:
-    "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED" | "PENDING";
+    | "DRAFT"
+    | "PUBLISHED"
+    | "SCHEDULED"
+    | "ARCHIVED"
+    | "APPROVED"
+    | "PENDING";
 }
