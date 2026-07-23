@@ -24,6 +24,7 @@ interface Props {
   themeContext: string;
   setThemeContext: React.Dispatch<React.SetStateAction<string>>;
   onUnifiedGenerated?: (topics: WizardTopic[]) => void; // Callback for when unified generation completes
+  onUnifiedAIUsed?: () => void; // Callback to notify parent that unified AI was used
 }
 
 const makeId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -35,6 +36,7 @@ export default function Step1Topics({
   themeContext,
   setThemeContext,
   onUnifiedGenerated,
+  onUnifiedAIUsed,
 }: Props) {
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
@@ -96,6 +98,10 @@ export default function Step1Topics({
       // Notify parent component that unified generation completed with topics and categories
       if (onUnifiedGenerated) {
         onUnifiedGenerated(mapped);
+      }
+      // Notify parent that unified AI was used (for one-click flow)
+      if (onUnifiedAIUsed) {
+        onUnifiedAIUsed();
       }
     } catch (error: any) {
       // Extract meaningful error message from backend

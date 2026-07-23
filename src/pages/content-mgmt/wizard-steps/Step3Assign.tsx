@@ -37,6 +37,7 @@ interface Props {
   isMarketplace?: boolean;
   onAssignStart: () => void;
   onAssignEnd: () => void;
+  autoTriggerAssignment?: boolean; // Auto-trigger AI assignment on mount for one-click flow
 }
 
 type AssignState = "idle" | "running" | "done" | "error";
@@ -432,7 +433,7 @@ function CategoryRow({
               )}
             </div>
           ) : (
-            /* TRAVELING: Show Businesses + Products + Events + POIs */
+            /* TRAVELING: Show Businesses + POIs only */
             <>
               {/* Businesses */}
               <div className="space-y-1.5">
@@ -489,40 +490,43 @@ function CategoryRow({
                 )}
               </div>
 
-              {/* Products */}
+              {/* POIs */}
               <div className="space-y-1.5">
                 <p
                   className={clsx(
                     "text-xs font-semibold flex items-center gap-1",
-                    isDark ? "text-purple-400" : "text-purple-600",
+                    isDark ? "text-green-400" : "text-green-600",
                   )}
                 >
-                  <Package className="w-3 h-3" /> Products ({pCount})
+                  <span className="w-3 h-3 inline-block text-center leading-3">
+                    📍
+                  </span>
+                  Points of Interest ({poiCount})
                 </p>
                 <div className="space-y-1">
-                  {(cat.productIds ?? []).map((prod: any) => (
+                  {(cat.poiIds ?? []).map((poi: any) => (
                     <div
-                      key={prod._id ?? prod}
+                      key={poi._id ?? poi}
                       className={clsx(
                         "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
                         isDark
                           ? "bg-gray-750 hover:bg-gray-700"
-                          : "bg-gray-50 hover:bg-gray-100",
+                          : "bg-green-50 hover:bg-green-100",
                       )}
                     >
-                      <ItemAvatar item={prod} size={5} />
+                      <ItemAvatar item={poi} size={5} />
                       <span
                         className={clsx(
                           "text-xs flex-1 truncate",
                           isDark ? "text-gray-300" : "text-gray-700",
                         )}
                       >
-                        {itemLabel(prod)}
+                        {itemLabel(poi)}
                       </span>
                       <button
                         type="button"
                         onClick={() =>
-                          onRemoveProduct(topicIdx, catIdx, prod._id ?? prod)
+                          onRemovePoi(topicIdx, catIdx, poi._id ?? poi)
                         }
                         className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
                         title="Remove"
@@ -532,12 +536,12 @@ function CategoryRow({
                     </div>
                   ))}
                 </div>
-                {availableProd.length > 0 && (
+                {availablePois.length > 0 && (
                   <div className="pt-1">
                     <SearchSelect
-                      placeholder={t("add_product_placeholder")}
-                      options={availableProd}
-                      onSelect={(item) => onAddProduct(topicIdx, catIdx, item)}
+                      placeholder={t("add_poi_placeholder")}
+                      options={availablePois}
+                      onSelect={(item) => onAddPoi(topicIdx, catIdx, item)}
                       isDark={isDark}
                     />
                   </div>
@@ -604,66 +608,6 @@ function CategoryRow({
               </div>
             </div>
           )} */}
-
-          {/* POIs — TRAVELING only */}
-          {!isMarketplace && (
-            <div className="space-y-1.5">
-              <p
-                className={clsx(
-                  "text-xs font-semibold flex items-center gap-1",
-                  isDark ? "text-green-400" : "text-green-600",
-                )}
-              >
-                <span className="w-3 h-3 inline-block text-center leading-3">
-                  📍
-                </span>
-                Points of Interest ({poiCount})
-              </p>
-              <div className="space-y-1">
-                {(cat.poiIds ?? []).map((poi: any) => (
-                  <div
-                    key={poi._id ?? poi}
-                    className={clsx(
-                      "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
-                      isDark
-                        ? "bg-gray-750 hover:bg-gray-700"
-                        : "bg-green-50 hover:bg-green-100",
-                    )}
-                  >
-                    <ItemAvatar item={poi} size={5} />
-                    <span
-                      className={clsx(
-                        "text-xs flex-1 truncate",
-                        isDark ? "text-gray-300" : "text-gray-700",
-                      )}
-                    >
-                      {itemLabel(poi)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onRemovePoi(topicIdx, catIdx, poi._id ?? poi)
-                      }
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
-                      title="Remove"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              {availablePois.length > 0 && (
-                <div className="pt-1">
-                  <SearchSelect
-                    placeholder={t("add_poi_placeholder")}
-                    options={availablePois}
-                    onSelect={(item) => onAddPoi(topicIdx, catIdx, item)}
-                    isDark={isDark}
-                  />
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -679,6 +623,7 @@ export default function Step3Assign({
   isMarketplace = false,
   onAssignStart,
   onAssignEnd,
+  autoTriggerAssignment = false,
 }: Props) {
   const { isDark } = useThemeClasses();
   const { t } = useTranslation("content");
@@ -1040,6 +985,43 @@ export default function Step3Assign({
       toast.error(`Assignment failed to start: ${errorMessage}`);
     }
   };
+
+  // ── Auto-trigger AI assignment for one-click flow ──
+  useEffect(() => {
+    if (
+      autoTriggerAssignment &&
+      viewId &&
+      assignState === "idle" &&
+      initialStateSet
+    ) {
+      // Only trigger if not already assigned
+      const totalAssigned = localTopics.reduce(
+        (sum, t) =>
+          sum +
+          (t.siteCategories ?? []).reduce((s: number, c: any) => {
+            const bCount = Array.isArray(c.businessIds)
+              ? c.businessIds.length
+              : 0;
+            const pCount = Array.isArray(c.productIds)
+              ? c.productIds.length
+              : 0;
+            const eCount = Array.isArray(c.eventIds) ? c.eventIds.length : 0;
+            const poiCount = Array.isArray(c.poiIds) ? c.poiIds.length : 0;
+            return s + bCount + pCount + eCount + poiCount;
+          }, 0),
+        0,
+      );
+      if (totalAssigned === 0) {
+        runAssignment();
+      }
+    }
+  }, [
+    autoTriggerAssignment,
+    viewId,
+    assignState,
+    initialStateSet,
+    localTopics,
+  ]);
 
   // ── Build category options for unassigned dropdown — COMMENTED OUT ──
   // const catOptions = useMemo(
