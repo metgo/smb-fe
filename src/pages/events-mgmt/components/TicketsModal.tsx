@@ -242,9 +242,12 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                 <button
                   type="button"
                   onClick={updateTicketPurchaseLink}
+                  disabled={isEventUpdating || ticketBuyLink === ""}
                   className={clsx(
-                    "bg-green-600 hover:bg-green-500 rounded-lg px-4 py-2 text-white",
-                    isEventUpdating ? " cursor-not-allowed" : " cursor-pointer",
+                    "rounded-lg px-4 py-2 text-white",
+                    isEventUpdating || ticketBuyLink === ""
+                      ? "cursor-not-allowed bg-green-300"
+                      : "cursor-pointer bg-green-600 hover:bg-green-500",
                   )}
                 >
                   {t("submit")}

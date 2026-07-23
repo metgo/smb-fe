@@ -518,7 +518,7 @@ export default function EventsWithViewMode({
         onSelectionChange={(selected) =>
           setSelectedEvents(selected as Set<string>)
         }
-        onRowClick={(item) => handleEventSelect(item)}
+        // onRowClick={(item) => handleEventSelect(item)}
         storageKey="eventsTableColumnOrder"
         hasMore={hasMore}
         next={fetchNextPage}

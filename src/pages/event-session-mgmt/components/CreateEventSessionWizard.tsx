@@ -41,29 +41,23 @@ interface IEventSessionDate {
 function transformTicketDateTimeToDates(
   ticketDateTime: ITicketDayTimeForSession[],
 ): IEventSessionDate[] {
-  // Group by date
   const dateMap = new Map<string, Set<string>>();
 
   ticketDateTime.forEach((item) => {
-    // Extract just the date part (YYYY-MM-DD)
     const dateOnly = item.date.split("T")[0];
-
     if (!dateMap.has(dateOnly)) {
       dateMap.set(dateOnly, new Set());
     }
-
-    // Add startTime to the set for this date
     dateMap.get(dateOnly)!.add(item.startTime);
   });
 
-  // Convert to the required format
   const result: IEventSessionDate[] = [];
   dateMap.forEach((times, date) => {
     result.push({
-      date: `${date}`, // Keep the original format
+      date: `${date}`,
       slots: Array.from(times).map((time) => ({
         time: time,
-        capacity: 8, // Default capacity, adjust as needed
+        capacity: 8,
       })),
     });
   });
@@ -88,9 +82,12 @@ export function CreateEventSessionWizard({
   } = useThemeClasses();
 
   const [currentStep, setCurrentStep] = useState(1);
-
-  // State for the new tag input field
   const [newRoomInput, setNewRoomInput] = useState("");
+
+  // Track validation errors for instructors
+  const [instructorErrors, setInstructorErrors] = useState<
+    Record<number, { name: boolean; role: boolean }>
+  >({});
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
@@ -100,6 +97,11 @@ export function CreateEventSessionWizard({
       ? "focus:border-blue-400 focus:ring-blue-400/10"
       : "focus:border-blue-500 focus:ring-blue-500/10",
   );
+  const INPUT_ERROR = clsx(
+    INPUT,
+    "border-red-500 focus:border-red-500 focus:ring-red-500/10",
+  );
+
   const BTN_GHOST_XS = clsx(
     "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold transition-[transform,filter] active:translate-y-px",
     isDark
@@ -134,12 +136,7 @@ export function CreateEventSessionWizard({
       imagesLables: [],
       roomLabel: "",
       rooms: [],
-      instructors: [
-        {
-          name: "",
-          role: "",
-        },
-      ],
+      instructors: [],
       isActive: true,
       dates: dates,
     };
@@ -165,12 +162,63 @@ export function CreateEventSessionWizard({
     });
   };
 
+  const validateInstructors = (): boolean => {
+    if (!ev?.instructors || ev.instructors.length === 0) return true;
+
+    const errors: Record<number, { name: boolean; role: boolean }> = {};
+    let isValid = true;
+
+    ev.instructors.forEach((ins, i) => {
+      const nameEmpty = !ins.name?.trim();
+      const roleEmpty = !ins.role?.trim();
+
+      errors[i] = { name: nameEmpty, role: roleEmpty };
+
+      if (nameEmpty || roleEmpty) {
+        isValid = false;
+      }
+    });
+
+    setInstructorErrors(errors);
+    return isValid;
+  };
+
   function handleDone() {
-    if (isNew) {
-      update({ sessions: [...config.sessions, draftSession] });
+    if (!validateInstructors()) {
+      setCurrentStep(3); // Jump back to instructors step if invalid
+      return;
     }
+
+    // Filter out any completely empty instructors just in case
+    const validInstructors = (ev?.instructors || []).filter(
+      (instructor) =>
+        instructor.name?.trim() !== "" || instructor.role?.trim() !== "",
+    );
+
+    const sessionToSave = {
+      ...(isNew ? draftSession : config.sessions[editIndex]),
+      instructors: validInstructors,
+    };
+
+    if (isNew) {
+      update({ sessions: [...config.sessions, sessionToSave] });
+    } else {
+      update({
+        sessions: config.sessions.map((e, i) =>
+          i === editIndex ? sessionToSave : e,
+        ),
+      });
+    }
+
     setIsOpen(false);
   }
+
+  const handleNext = () => {
+    if (currentStep === 3) {
+      if (!validateInstructors()) return; // Block navigation if invalid
+    }
+    setCurrentStep((p) => p + 1);
+  };
 
   function addDate() {
     if (!ev) return;
@@ -245,6 +293,7 @@ export function CreateEventSessionWizard({
       ],
     });
   }
+
   function insPatch(i: number, patch: Partial<Instructor>) {
     if (!ev) return;
     updateSession({
@@ -252,12 +301,26 @@ export function CreateEventSessionWizard({
         idx === i ? { ...x, ...patch } : x,
       ),
     });
+
+    // Clear error for the patched field as user types
+    if (instructorErrors[i]) {
+      setInstructorErrors((prev) => {
+        const newErrors = { ...prev };
+        if (patch.name !== undefined)
+          newErrors[i] = { ...newErrors[i], name: false };
+        if (patch.role !== undefined)
+          newErrors[i] = { ...newErrors[i], role: false };
+        return newErrors;
+      });
+    }
   }
+
   function insRemove(i: number) {
     if (!ev) return;
     updateSession({
       instructors: (ev.instructors ?? []).filter((_, idx) => idx !== i),
     });
+    setInstructorErrors({}); // Reset errors, will re-validate on Next/Done
   }
 
   const steps: IWizardStep[] = [
@@ -361,28 +424,65 @@ export function CreateEventSessionWizard({
                 {t("instructors_title")}
               </h3>
             </div>
-            {(ev.instructors || []).map((ins, i) => (
-              <div
-                key={i}
-                className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-2 items-center"
-              >
-                <input
-                  className={INPUT}
-                  value={ins.name}
-                  onChange={(e) => insPatch(i, { name: e.target.value })}
-                  placeholder={t("instructor_name_placeholder")}
-                />
-                <input
-                  className={INPUT}
-                  value={ins.role}
-                  onChange={(e) => insPatch(i, { role: e.target.value })}
-                  placeholder={t("instructor_role_placeholder")}
-                />
-                <button className={BTN_DANGER_XS} onClick={() => insRemove(i)}>
-                  {t("remove_btn")}
-                </button>
-              </div>
-            ))}
+            {(ev.instructors || []).map((ins, i) => {
+              const nameError = instructorErrors[i]?.name;
+              const roleError = instructorErrors[i]?.role;
+
+              return (
+                <div key={i} className="flex flex-col gap-1 mb-3">
+                  <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-start">
+                    <div className="flex flex-col">
+                      <input
+                        className={nameError ? INPUT_ERROR : INPUT}
+                        value={ins.name}
+                        onChange={(e) => insPatch(i, { name: e.target.value })}
+                        onBlur={() => {
+                          if (!ins.name.trim()) {
+                            setInstructorErrors((prev) => ({
+                              ...prev,
+                              [i]: { ...prev[i], name: true },
+                            }));
+                          }
+                        }}
+                        placeholder={t("instructor_name_placeholder")}
+                      />
+                      {nameError && (
+                        <span className="text-xs text-red-500 mt-1">
+                          {t("field_required", "Name is required")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <input
+                        className={roleError ? INPUT_ERROR : INPUT}
+                        value={ins.role}
+                        onChange={(e) => insPatch(i, { role: e.target.value })}
+                        onBlur={() => {
+                          if (!ins.role.trim()) {
+                            setInstructorErrors((prev) => ({
+                              ...prev,
+                              [i]: { ...prev[i], role: true },
+                            }));
+                          }
+                        }}
+                        placeholder={t("instructor_role_placeholder")}
+                      />
+                      {roleError && (
+                        <span className="text-xs text-red-500 mt-1">
+                          {t("field_required", "Role is required")}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      className={clsx(BTN_DANGER_XS, "mt-0.5")}
+                      onClick={() => insRemove(i)}
+                    >
+                      {t("remove_btn")}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
             <button className={BTN_GHOST_XS} onClick={insAdd}>
               {t("add_instructor_btn")}
             </button>
@@ -405,7 +505,6 @@ export function CreateEventSessionWizard({
               {t("rooms_help")}
             </p>
 
-            {/* Tag Input Field for Adding New Rooms */}
             <div className="flex gap-2 items-center mb-4">
               <input
                 className={clsx(INPUT, "flex-1")}
@@ -438,7 +537,6 @@ export function CreateEventSessionWizard({
                 {t("add_btn", "Add")}
               </button>
             </div>
-            {/* Existing Editable Tags */}
             <div className="flex flex-wrap gap-2 items-center mb-3">
               {(ev.rooms || []).map((r, i) => (
                 <span
@@ -497,7 +595,6 @@ export function CreateEventSessionWizard({
       case 6:
         return (
           <div className="flex flex-col gap-4">
-            {/* Details */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -551,7 +648,6 @@ export function CreateEventSessionWizard({
               </div>
             </div>
 
-            {/* Images */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -587,7 +683,6 @@ export function CreateEventSessionWizard({
               </div>
             </div>
 
-            {/* Instructors */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -626,7 +721,6 @@ export function CreateEventSessionWizard({
               </div>
             </div>
 
-            {/* Rooms */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -659,7 +753,6 @@ export function CreateEventSessionWizard({
               </div>
             </div>
 
-            {/* Schedule */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -739,7 +832,7 @@ export function CreateEventSessionWizard({
         isSaving={false}
         isPublishing={false}
         onPrevious={() => setCurrentStep((p) => p - 1)}
-        onNext={() => setCurrentStep((p) => p + 1)}
+        onNext={handleNext}
         isPublishButton={false}
         onDone={handleDone}
         onPublish={() => {}}

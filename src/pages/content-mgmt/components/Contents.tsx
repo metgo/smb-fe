@@ -181,11 +181,9 @@ const Contents = ({
   templateContents,
   hiddenTabs = [],
 }: ContentsProps) => {
-  console.log("🚀 ~ Contents ~ hiddenTabs:", hiddenTabs);
   const FILTER_OPTIONS = ALL_FILTER_OPTIONS.filter(
     (tab) => !hiddenTabs.includes(tab),
   );
-  console.log("🚀 ~ Contents ~ FILTER_OPTIONS:", FILTER_OPTIONS);
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
 

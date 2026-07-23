@@ -601,8 +601,8 @@ function CreateBusinessWizardInner({
           long: String(editData.geoLocation.long),
         });
       }
-      setSelectAuthorityId(editData?.authorityId?._id || "");
-      setSelectedDmoId(editData?.dmoId?._id || "");
+      setSelectAuthorityId(editData?.authorityId || "");
+      setSelectedDmoId(editData?.dmoId || "");
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images);
@@ -629,7 +629,7 @@ function CreateBusinessWizardInner({
   const stepPayloadMap = {
     // step 1:
     authorityId: selectedAuthorityId,
-    // dmoId: selectedDmoId,
+    dmoId: selectedDmoId,
     name: formData.name,
     nameAr: formData.nameAr,
     nameHe: formData.nameHe,

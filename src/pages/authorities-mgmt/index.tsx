@@ -101,8 +101,7 @@ const AuthoritiesMgmtPage = () => {
     }
   };
 
-  const handleMigrateToProd = (authorityId: string) => {
-    console.log("🚀 ~ handleMigrateToProd ~ authorityId:", authorityId);
+  const handleMigrateToProd = (_authorityId: string) => {
     // setMigrateTarget(authorityId);
   };
 

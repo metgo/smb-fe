@@ -191,9 +191,7 @@ export default function ContentMgmtPage() {
   const selectedWebsite = (associatedWebsite as IWebsite[]).find(
     (w) => w._id === externalApiId,
   );
-  console.log("🚀 ~ ContentMgmtPage ~ selectedWebsite:", selectedWebsite);
   const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
-  console.log("🚀 ~ ContentMgmtPage ~ isMarketplace:", isMarketplace);
   const selectedWebsiteName = selectedWebsite?.name ?? "";
 
   const marketplaceHiddenTabs = isMarketplace
