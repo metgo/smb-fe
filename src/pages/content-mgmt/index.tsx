@@ -133,6 +133,14 @@ export default function ContentMgmtPage() {
 
   const tabs = useContentTabs(externalApiId);
 
+  // ── Derived ──────────────────────────────────────────────────────────────────
+
+  const selectedWebsite = (associatedWebsite as IWebsite[]).find(
+    (w) => w._id === externalApiId,
+  );
+  const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
+  const selectedWebsiteName = selectedWebsite?.name ?? "";
+
   const data = useContentData({
     selected: tabs.selected,
     tabState: tabs.tabState,
@@ -140,6 +148,7 @@ export default function ContentMgmtPage() {
     dmoId,
     authorityId,
     language,
+    isMarketplace,
   });
 
   const template = useContentTemplate({
@@ -186,22 +195,15 @@ export default function ContentMgmtPage() {
     toast.success(t("messages_sent_to_customers", { count: results?.length }));
   };
 
-  // ── Derived ──────────────────────────────────────────────────────────────────
-
-  const selectedWebsite = (associatedWebsite as IWebsite[]).find(
-    (w) => w._id === externalApiId,
-  );
-  const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
-  const selectedWebsiteName = selectedWebsite?.name ?? "";
-
   const marketplaceHiddenTabs = isMarketplace
     ? ["Businesses", "POI", "Events"] // MARKETPLACE: show only Products
-    : ["Events"]; // TRAVELLER: show Businesses, Products, POIs (hide Events)
+    : ["Events", "Products"]; // TRAVELLER: show Businesses, POIs (hide Events, Products)
 
   // When switching to a marketplace site, jump off any now-hidden tab
+  // When switching to a TRAVELLER site, jump off Products tab
   useEffect(() => {
     if (marketplaceHiddenTabs.includes(tabs.selected)) {
-      tabs.setSelected("Products");
+      tabs.setSelected(isMarketplace ? "Products" : "Businesses");
     }
   }, [isMarketplace]);
 
@@ -480,6 +482,7 @@ export default function ContentMgmtPage() {
                       isSavingCurrentAsView={
                         template.isCreating || template.isUpdating
                       }
+                      isMarketplace={isMarketplace}
                     />
                   </motion.div>
                 )}

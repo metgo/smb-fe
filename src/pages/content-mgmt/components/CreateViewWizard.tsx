@@ -205,7 +205,10 @@ export default function CreateViewWizard({
             searchKeywordsAr: cat.searchKeywordsAr,
             // Preserve existing assignments in edit mode, otherwise empty
             businessIds: (originalCat as any)?.businessIds ?? [],
-            productIds: (originalCat as any)?.productIds ?? [],
+            // Products disabled for TRAVELLER purpose
+            productIds: isMarketplace
+              ? ((originalCat as any)?.productIds ?? [])
+              : [],
             // eventIds: (originalCat as any)?.eventIds ?? [], // Events disabled for TRAVELLER purpose
             poiIds: (originalCat as any)?.poiIds ?? [],
             tripIds: (originalCat as any)?.tripIds ?? [],

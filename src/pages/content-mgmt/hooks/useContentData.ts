@@ -17,6 +17,7 @@ interface UseContentDataParams {
   dmoId: string;
   authorityId: string;
   language: string;
+  isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
 }
 
 export function useContentData({
@@ -26,6 +27,7 @@ export function useContentData({
   dmoId,
   authorityId,
   language,
+  isMarketplace = false,
 }: UseContentDataParams) {
   const [page, setPage] = useState(1);
   const [productPage, setProductPage] = useState(1);
@@ -145,7 +147,10 @@ export function useContentData({
     isLoading: isLoadingProduct,
     isFetching: isFetchingProduct,
   } = useGetContentManagementProductsQuery(
-    selected === "Products" && externalApiId ? productParams : skipToken,
+    // Products disabled for TRAVELLER purpose
+    selected === "Products" && externalApiId && isMarketplace
+      ? productParams
+      : skipToken,
   );
 
   const { data: tripData, isLoading: isLoadingTrip } = useGetAllTripsQuery(

@@ -26,7 +26,7 @@ import {
 import { useGetViewByIdQuery } from "@/store/api/contentQueryApi";
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
-import { useGetContentManagementEventsQuery } from "@/store/api/eventQueryApi";
+// import { useGetContentManagementEventsQuery } from "@/store/api/eventQueryApi"; // Events disabled for TRAVELLER purpose
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 
@@ -263,7 +263,9 @@ function CategoryRow({
   );
 
   const availableBiz = allBusinesses.filter((b) => !assignedBizIds.has(b._id));
-  const availableProd = allProducts.filter((p) => !assignedProdIds.has(p._id));
+  const availableProd = isMarketplace
+    ? allProducts.filter((p) => !assignedProdIds.has(p._id))
+    : []; // TRAVELLER: no products
   // const availableEvents = allEvents.filter((e) => !assignedEventIds.has(e._id)); // COMMENTED OUT FOR TRAVELLER PURPOSE
   const availablePois = allPois.filter((poi) => !assignedPoiIds.has(poi._id));
 
@@ -316,8 +318,8 @@ function CategoryRow({
               {bCount}
             </span>
           )}
-          {/* Products */}
-          {pCount > 0 && (
+          {/* Products — MARKETPLACE only */}
+          {isMarketplace && pCount > 0 && (
             <span
               className={clsx(
                 "flex items-center gap-1 text-xs",
@@ -720,17 +722,17 @@ export default function Step3Assign({
       ? { externalApiId, status: "APPROVED", limit: 1000, page: 1 }
       : skipToken,
   );
-  // Events: only needed for TRAVELING mode
-  const { data: allEventsData } = useGetContentManagementEventsQuery(
-    externalApiId && !isMarketplace
-      ? {
-          externalApiId: [externalApiId],
-          status: "APPROVED",
-          limit: 1000,
-          page: 1,
-        }
-      : skipToken,
-  );
+  // Events: DISABLED for TRAVELLER purpose - commented out
+  // const { data: allEventsData } = useGetContentManagementEventsQuery(
+  //   externalApiId && !isMarketplace
+  //     ? {
+  //         externalApiId: [externalApiId],
+  //         status: "APPROVED",
+  //         limit: 1000,
+  //         page: 1,
+  //       }
+  //     : skipToken,
+  // );
   // POIs: only needed for TRAVELING mode
   const { data: allPoisData } = useGetAllPOIQuery(
     externalApiId && !isMarketplace
@@ -739,8 +741,8 @@ export default function Step3Assign({
   );
 
   const allBusinesses: any[] = isMarketplace ? [] : (allBizData?.data ?? []);
-  const allProducts: any[] = allProdData?.data ?? [];
-  const allEvents: any[] = isMarketplace ? [] : (allEventsData?.data ?? []);
+  const allProducts: any[] = isMarketplace ? (allProdData?.data ?? []) : []; // TRAVELLER: no products
+  const allEvents: any[] = []; // TRAVELLER: no events (already disabled)
   const allPois: any[] = isMarketplace ? [] : (allPoisData?.data ?? []);
 
   // ── Sync local topics from populated view ──
