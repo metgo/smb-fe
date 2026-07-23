@@ -29,7 +29,7 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
   const { isDark, borderColor } = useThemeClasses();
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
-console.log(eventDetails)
+console.log(eventDetails.ticketCount)
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -179,7 +179,7 @@ console.log(eventDetails)
         >
           {t("event_sessions_empty_desc")}
         </p>
-        {eventDetails?.ticketId !== null && (
+        {eventDetails?.ticketCount !== null && eventDetails?.ticketCount !== 0 && (
  <button
           onClick={() =>
             navigate(`${routes.eventSessionMgmt}?eventId=${eventId}`)
