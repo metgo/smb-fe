@@ -14,6 +14,7 @@ interface EventSessionDetailsProps {
   isLoading: boolean;
   sessions?: IEventSessionListResponse;
   refetch: () => void;
+  eventDetails?: any;
 }
 
 const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
@@ -21,14 +22,14 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
   isLoading,
   sessions,
   refetch,
+  eventDetails,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("event_session");
   const { isDark, borderColor } = useThemeClasses();
-
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
-
+console.log(eventDetails)
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -178,7 +179,8 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
         >
           {t("event_sessions_empty_desc")}
         </p>
-        <button
+        {eventDetails?.ticketId !== null && (
+ <button
           onClick={() =>
             navigate(`${routes.eventSessionMgmt}?eventId=${eventId}`)
           }
@@ -192,6 +194,8 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
           <Plus size={16} />
           {t("event_landing_page_create_btn")}
         </button>
+        ) }
+       
       </div>
     );
   }
