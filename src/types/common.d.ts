@@ -4,7 +4,12 @@ type Theme = "light" | "dark";
 type TViewMode = "list" | "grid";
 
 type TStatus =
-  "draft" | "pending" | "approved" | "rejected" | "closed" | "archived";
+  | "draft"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "closed"
+  | "archived";
 
 type EventStatus = "draft" | "pending" | "approved";
 type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
@@ -164,13 +169,28 @@ type TNotifStatus = "ALL" | "READ" | "UNREAD";
 type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "POI";
 
 type TNotifType =
-  "ALL" | "INFO" | "WARNING" | "ACTION" | "URGENT" | "ERROR" | "UNREAD";
+  | "ALL"
+  | "INFO"
+  | "WARNING"
+  | "ACTION"
+  | "URGENT"
+  | "ERROR"
+  | "UNREAD";
 
 type TItemStatus =
-  "PENDING" | "APPROVED" | "CLOSED" | "REJECTED" | "DRAFT" | "ARCHIVED";
+  | "PENDING"
+  | "APPROVED"
+  | "CLOSED"
+  | "REJECTED"
+  | "DRAFT"
+  | "ARCHIVED";
 
 type TOrderStatus =
-  "pending" | "processing" | "completed" | "shipped" | "canceled";
+  | "pending"
+  | "processing"
+  | "completed"
+  | "shipped"
+  | "canceled";
 type TPaymentStatus = "PAID" | "UNPAID" | "PARTIAL" | "REFUNDED" | "SUCCESS";
 
 type TSortDirection = "asc" | "desc" | null;
