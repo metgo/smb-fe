@@ -255,10 +255,11 @@ export default function OrdersMgmtPage() {
     // Month filter
     if (summaryFilters.month !== "all" && summaryFilters.month !== "custom") {
       const [month, year] = summaryFilters.month.split("-");
-      const lastDay = new Date(Number(year), Number(month), 0).getDate();
+      const firstDay = new Date(Number(year), Number(month) - 1, 1);
+      const lastDay = new Date(Number(year), Number(month), 0);
 
-      params.startDate = `${year}-${month}-01`;
-      params.endDate = `${year}-${month}-${String(lastDay).padStart(2, "0")}`;
+      params.startDate = firstDay.toISOString().split("T")[0];
+      params.endDate = lastDay.toISOString().split("T")[0];
     }
 
     // Custom date range
@@ -962,14 +963,15 @@ export default function OrdersMgmtPage() {
                   summaryFilters.month !== "custom" &&
                   (() => {
                     const [month, year] = summaryFilters.month.split("-");
-                    const lastDay = new Date(
+                    const firstDay = new Date(
                       Number(year),
-                      Number(month),
-                      0,
-                    ).getDate();
+                      Number(month) - 1,
+                      1,
+                    );
+                    const lastDay = new Date(Number(year), Number(month), 0);
                     return {
-                      startDate: `${year}-${month}-01`,
-                      endDate: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
+                      startDate: firstDay.toISOString().split("T")[0],
+                      endDate: lastDay.toISOString().split("T")[0],
                     };
                   })()),
                 ...(summaryFilters.month === "custom" && {
@@ -1010,14 +1012,15 @@ export default function OrdersMgmtPage() {
                   summaryFilters.month !== "custom" &&
                   (() => {
                     const [month, year] = summaryFilters.month.split("-");
-                    const lastDay = new Date(
+                    const firstDay = new Date(
                       Number(year),
-                      Number(month),
-                      0,
-                    ).getDate();
+                      Number(month) - 1,
+                      1,
+                    );
+                    const lastDay = new Date(Number(year), Number(month), 0);
                     return {
-                      startDate: `${year}-${month}-01`,
-                      endDate: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
+                      startDate: firstDay.toISOString().split("T")[0],
+                      endDate: lastDay.toISOString().split("T")[0],
                     };
                   })()),
                 ...(summaryFilters.month === "custom" && {
@@ -1541,7 +1544,11 @@ export default function OrdersMgmtPage() {
                           ))}
                         </div>
                         <button
-                          onClick={() => setFilters(defaultFilters)}
+                          onClick={() => {
+                            setFilters(defaultFilters);
+                            dispatch(setDmo(""));
+                            dispatch(setAuthority(""));
+                          }}
                           className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                         >
                           {t("clear_all")}
