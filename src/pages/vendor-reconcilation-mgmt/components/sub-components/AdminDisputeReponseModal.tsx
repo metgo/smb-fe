@@ -34,7 +34,9 @@ export const AdminDisputeResponseModal = ({
 
   const [responseToVendor, setResponseToVendor] = useState("");
   const [resolutionAction, setResolutionAction] = useState("");
-  const [errors, setErrors] = useState<{ action?: string; response?: string }>({});
+  const [errors, setErrors] = useState<{ action?: string; response?: string }>(
+    {},
+  );
 
   const isResolved =
     order.reconciliationStatus === "approved" ||

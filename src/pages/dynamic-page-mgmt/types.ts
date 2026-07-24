@@ -20,7 +20,4 @@ export interface PageFormData {
 }
 
 export type TabId =
-  | "terms_and_condition"
-  | "privacy"
-  | "business_regulation"
-  | "document_upload";
+  "terms_and_condition" | "privacy" | "business_regulation" | "document_upload";
