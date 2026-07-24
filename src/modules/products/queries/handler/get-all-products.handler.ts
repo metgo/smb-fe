@@ -267,8 +267,16 @@ implements IQueryHandler<GetAllProductsQuery> {
 
           const mappedProducts = await Promise.all(
             results.map((product: any) => {
-              const { _id, productId, ...rest } = product;
-              return { ...rest, _id: productId };
+              const { _id, ...rest } = product;
+              return {
+                ...rest,
+                _id,
+                businessId: {
+                  ...rest.businessId,
+                  logo: sanitizeImages([rest?.businessId?.logo][0]),
+                },
+                images: sanitizeImages(rest.images?.slice(0, 1)),
+              };
             }),
           );
 
@@ -326,16 +334,16 @@ implements IQueryHandler<GetAllProductsQuery> {
 
       const mappedProducts = await Promise.all(
         productsList.data.map((product: any) => {
-          const { _id, productId, ...rest } = product.toObject
+          const { _id, ...rest } = product.toObject
             ? product.toObject()
             : product;
 
           return {
             ...rest,
-            _id: productId,
+            _id,
             businessId: {
               ...rest.businessId,
-              logo: sanitizeImages([rest.businessId.logo])[0],
+              logo: sanitizeImages([rest?.businessId?.logo][0]),
             },
             images: sanitizeImages(rest.images?.slice(0, 1)),
           };
