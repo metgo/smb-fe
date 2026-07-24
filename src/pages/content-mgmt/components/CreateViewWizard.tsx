@@ -100,6 +100,7 @@ export default function CreateViewWizard({
     existingView?._id ?? null,
   );
   const [isAssigning, setIsAssigning] = useState(false);
+  const [usedUnifiedAI, setUsedUnifiedAI] = useState(false); // Track if user used unified AI for one-click flow
 
   // Re-initialize topics whenever existingView changes
   // Using entire existingView as dependency ensures we pick up data changes (deletions, edits)
@@ -141,7 +142,7 @@ export default function CreateViewWizard({
   const [updateContent, { isLoading: isUpdating }] = useUpdateContentMutation();
   const [activateView, { isLoading: isActivating }] = useActivateViewMutation();
 
-  const canProceedStep1 = topics.length > 0;
+  const canProceedStep1 = topics.length > 0 && viewName.trim().length > 0;
   const canProceedStep2 = topics.every((t) => t.categories.length > 0);
 
   const buildPayload = (status: string) => ({
@@ -181,8 +182,11 @@ export default function CreateViewWizard({
             searchKeywordsAr: cat.searchKeywordsAr,
             // Preserve existing assignments in edit mode, otherwise empty
             businessIds: (originalCat as any)?.businessIds ?? [],
-            productIds: (originalCat as any)?.productIds ?? [],
-            eventIds: (originalCat as any)?.eventIds ?? [],
+            // Products disabled for TRAVELLER purpose
+            productIds: isMarketplace
+              ? ((originalCat as any)?.productIds ?? [])
+              : [],
+            // eventIds: (originalCat as any)?.eventIds ?? [], // Events disabled for TRAVELLER purpose
             poiIds: (originalCat as any)?.poiIds ?? [],
             tripIds: (originalCat as any)?.tripIds ?? [],
             fundayIds: (originalCat as any)?.fundayIds ?? [],
@@ -283,7 +287,11 @@ export default function CreateViewWizard({
 
   const handleNext = async () => {
     if (step === 1 && !canProceedStep1) {
-      toast.error(t("toast_add_topic_error"));
+      if (topics.length === 0) {
+        toast.error(t("toast_add_topic_error"));
+      } else if (viewName.trim().length === 0) {
+        toast.error(t("toast_view_name_required"));
+      }
       return;
     }
     if (step === 2 && !canProceedStep2) {
@@ -441,7 +449,7 @@ export default function CreateViewWizard({
         <input
           value={viewName}
           onChange={(e) => setViewName(e.target.value)}
-          placeholder={t("view_name_optional")}
+          placeholder={t("view_name_placeholder")}
           className={clsx(
             "text-sm px-3 py-1.5 rounded-lg border hidden sm:block",
             isDark
@@ -472,6 +480,7 @@ export default function CreateViewWizard({
             externalApiId={externalApiId}
             themeContext={themeContext}
             setThemeContext={setThemeContext}
+            onUnifiedAIUsed={() => setUsedUnifiedAI(true)}
           />
         )}
         {step === 2 && (
@@ -489,6 +498,7 @@ export default function CreateViewWizard({
             isMarketplace={isMarketplace}
             onAssignStart={() => setIsAssigning(true)}
             onAssignEnd={() => setIsAssigning(false)}
+            autoTriggerAssignment={usedUnifiedAI}
           />
         )}
       </div>

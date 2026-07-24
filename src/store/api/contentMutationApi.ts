@@ -71,6 +71,40 @@ export const contentMutationApi = createApi({
       }),
     }),
 
+    generateUnified: builder.mutation<
+      {
+        topics: Array<{
+          title: string;
+          titleHe: string;
+          titleAr: string;
+          description: string;
+          descriptionHe: string;
+          descriptionAr: string;
+          categories: Array<{
+            title: string;
+            titleHe: string;
+            titleAr: string;
+            description: string;
+            descriptionHe: string;
+            descriptionAr: string;
+            synonyms: string[];
+            synonymsHe: string[];
+            synonymsAr: string[];
+            searchKeywords: string[];
+            searchKeywordsHe: string[];
+            searchKeywordsAr: string[];
+          }>;
+        }>;
+      },
+      { externalApiId: string; themeContext?: string }
+    >({
+      query: (body) => ({
+        url: endpoints.wizardGenerateUnified,
+        method: "POST",
+        data: body,
+      }),
+    }),
+
     assignAllEntities: builder.mutation<
       {
         summary: {
@@ -144,6 +178,7 @@ export const {
   useActivateViewMutation,
   useGenerateTopicsMutation,
   useGenerateCategoriesMutation,
+  useGenerateUnifiedMutation,
   useAssignAllEntitiesMutation,
   useAiSuggestCategoryEntitiesMutation,
   useTranslateTopicMutation,

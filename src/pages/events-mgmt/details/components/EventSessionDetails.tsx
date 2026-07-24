@@ -29,7 +29,7 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
   const { isDark, borderColor } = useThemeClasses();
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
-console.log(eventDetails.ticketCount)
+  console.log(eventDetails.ticketCount);
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -179,23 +179,23 @@ console.log(eventDetails.ticketCount)
         >
           {t("event_sessions_empty_desc")}
         </p>
-        {eventDetails?.ticketCount !== null && eventDetails?.ticketCount !== 0 && (
- <button
-          onClick={() =>
-            navigate(`${routes.eventSessionMgmt}?eventId=${eventId}`)
-          }
-          className={clsx(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-            isDark
-              ? "bg-indigo-600 hover:bg-indigo-500 text-white"
-              : "bg-indigo-600 hover:bg-indigo-700 text-white",
+        {eventDetails?.ticketCount !== null &&
+          eventDetails?.ticketCount !== 0 && (
+            <button
+              onClick={() =>
+                navigate(`${routes.eventSessionMgmt}?eventId=${eventId}`)
+              }
+              className={clsx(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                isDark
+                  ? "bg-indigo-600 hover:bg-indigo-500 text-white"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white",
+              )}
+            >
+              <Plus size={16} />
+              {t("event_landing_page_create_btn")}
+            </button>
           )}
-        >
-          <Plus size={16} />
-          {t("event_landing_page_create_btn")}
-        </button>
-        ) }
-       
       </div>
     );
   }

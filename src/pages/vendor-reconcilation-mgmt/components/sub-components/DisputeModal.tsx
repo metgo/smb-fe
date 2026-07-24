@@ -217,8 +217,9 @@ export default function DisputeModal({
                 setReason(e.target.value);
                 setErrors({ ...errors, reason: undefined });
               }}
-              className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-orange-500 ${errors.reason ? "border-red-500" : ""
-                }`}
+              className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+                errors.reason ? "border-red-500" : ""
+              }`}
             >
               <option value="">{t("select_reason")}</option>
               {disputeReasons.map((r) => (
@@ -246,8 +247,9 @@ export default function DisputeModal({
               placeholder={t("provide_dispute_details")}
               rows={4}
               maxLength={250}
-              className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none ${errors.details ? "border-red-500" : ""
-                }`}
+              className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none ${
+                errors.details ? "border-red-500" : ""
+              }`}
             />
             <div className="flex justify-between items-center mt-1">
               <div>
@@ -267,10 +269,11 @@ export default function DisputeModal({
               {t("attach_evidence")}
             </label>
             <div
-              className={`border-2 border-dashed ${borderColor} rounded-lg p-6 text-center ${files.length >= 5
+              className={`border-2 border-dashed ${borderColor} rounded-lg p-6 text-center ${
+                files.length >= 5
                   ? "opacity-50 cursor-not-allowed"
                   : "cursor-pointer hover:border-orange-500"
-                }`}
+              }`}
               onClick={() => {
                 if (files.length < 5) {
                   document.getElementById("file-upload")?.click();
