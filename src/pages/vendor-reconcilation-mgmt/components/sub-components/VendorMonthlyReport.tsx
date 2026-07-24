@@ -56,7 +56,12 @@ interface OrderProduct {
     platformFee: number;
     disputeId?: string;
     reconciliationStatus?:
-      "pending" | "approved" | "canceled" | "disputed" | "rejected" | "closed";
+      | "pending"
+      | "approved"
+      | "canceled"
+      | "disputed"
+      | "rejected"
+      | "closed";
     vendorFacingResponse?: string;
   };
   customerInformation: {
@@ -1033,18 +1038,20 @@ export const VendorMonthlyReport = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
-        <div className="flex items-start justify-between gap-4">
+      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-5 mb-6`}>
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className={`text-2xl font-bold ${textPrimary} mb-1`}>
+            <h1 className={`text-lg font-bold ${textPrimary}`}>
               {t("vendor_reconciliation")}
             </h1>
-            <p className={textTertiary}>{t("review_and_approve_orders")}</p>
+            <p className={`text-sm ${textTertiary}`}>
+              {t("review_and_approve_orders")}
+            </p>
           </div>
           {adminView && (
             <button
               onClick={() => setShowCloseAllOrdersModal(true)}
-              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+              className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
             >
               {t("close_all_orders")}
             </button>
@@ -1053,60 +1060,55 @@ export const VendorMonthlyReport = () => {
       </div>
 
       {/* Stats Dashboard */}
-      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>
-              {t("total_orders")}
-            </div>
-            <div className={`text-2xl font-bold ${textPrimary}`}>
+      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+            <div className={`text-xs ${textTertiary}`}>{t("total_orders")}</div>
+            <div className={`text-lg font-bold ${textPrimary}`}>
               {stats.totalOrders}
             </div>
           </div>
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>
+          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+            <div className={`text-xs ${textTertiary}`}>
               {t("total_revenue")}
             </div>
-            <div className={`text-2xl font-bold ${textPrimary}`}>
+            <div className={`text-lg font-bold ${textPrimary}`}>
               ₪{(stats.totalRevenue || 0).toLocaleString()}
             </div>
           </div>
 
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>
-              {t("net_payout")}
-            </div>
-            <div
-              className={`text-2xl font-bold text-green-600 dark:text-green-400`}
-            >
+          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+            <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
+            <div className="text-lg font-bold text-green-600 dark:text-green-400">
               ₪{(stats.netPayout || 0).toLocaleString()}
             </div>
           </div>
-          <div className={`${bgSecondary} rounded-lg p-4 col-span-2`}>
-            <div className={`text-xs ${textTertiary} mb-2`}>
+
+          <div className={`${bgSecondary} rounded-lg px-3 py-2 col-span-2`}>
+            <div className={`text-xs ${textTertiary} mb-1`}>
               {t("status_overview")}
             </div>
-            <div className="flex flex-wrap gap-2 text-sm">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
               <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                <Clock className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" />
                 <span className={textSecondary}>
                   {stats.pending} {t("pending")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
                 <span className={textSecondary}>
                   {stats.approved} {t("approved")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                <AlertTriangle className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
                 <span className={textSecondary}>
                   {stats.disputed} {t("disputed")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                <XCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
                 <span className={textSecondary}>
                   {stats.cancelled} {t("canceled")}
                 </span>
@@ -1117,7 +1119,7 @@ export const VendorMonthlyReport = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className={`$ p-4 mb-6`}>
+      <div className={`$ mb-6`}>
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
           <div className="flex-1 w-full min-w-0">
             <SearchInput
