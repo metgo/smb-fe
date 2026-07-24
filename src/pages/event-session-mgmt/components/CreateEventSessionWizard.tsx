@@ -89,6 +89,10 @@ export function CreateEventSessionWizard({
     Record<number, { name: boolean; role: boolean }>
   >({});
 
+  // Track validation errors for required fields
+  const [nameError, setNameError] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
     "w-full px-3 py-2.5 text-sm rounded-[9px] transition-[border-color,box-shadow] focus:outline-none focus:ring-2 border",
@@ -183,9 +187,34 @@ export function CreateEventSessionWizard({
     return isValid;
   };
 
+  const validateRequiredFields = (): boolean => {
+    let isValid = true;
+
+    // Validate name (required)
+    const hasName = ev?.name?.trim();
+    setNameError(!hasName);
+    if (!hasName) isValid = false;
+
+    // Validate images (at least one required)
+    const hasImages = ev?.images && ev.images.length > 0;
+    setImageError(!hasImages);
+    if (!hasImages) isValid = false;
+
+  
+
+    return isValid;
+  };
+
   function handleDone() {
     if (!validateInstructors()) {
       setCurrentStep(3); // Jump back to instructors step if invalid
+      return;
+    }
+
+    if (!validateRequiredFields()) {
+      // Jump to the first invalid step
+      if (nameError) setCurrentStep(1);
+      else if (imageError) setCurrentStep(2);
       return;
     }
 
@@ -214,6 +243,18 @@ export function CreateEventSessionWizard({
   }
 
   const handleNext = () => {
+    if (currentStep === 1) {
+      // Validate name before leaving step 1
+      const hasName = ev?.name?.trim();
+      setNameError(!hasName);
+      if (!hasName) return;
+    }
+    if (currentStep === 2) {
+      // Validate images before leaving step 2
+      const hasImages = ev?.images && ev.images.length > 0;
+      setImageError(!hasImages);
+      if (!hasImages) return;
+    }
     if (currentStep === 3) {
       if (!validateInstructors()) return; // Block navigation if invalid
     }
@@ -383,11 +424,19 @@ export function CreateEventSessionWizard({
             </div>
             <AField label={t("field_name")}>
               <input
-                className={INPUT}
+                className={nameError ? INPUT_ERROR : INPUT}
                 value={ev.name}
-                onChange={(e) => updateSession({ name: e.target.value })}
+                onChange={(e) => {
+                  updateSession({ name: e.target.value });
+                  if (e.target.value.trim()) setNameError(false);
+                }}
               />
             </AField>
+            {nameError && (
+              <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
+                {t("required_badge")}
+              </p>
+            )}
             <AField label={t("field_subtitle")}>
               <input
                 className={INPUT}
@@ -407,14 +456,24 @@ export function CreateEventSessionWizard({
         );
       case 2:
         return (
-          <ImageUploadSection
-            key={editIndex}
-            id={String(editIndex)}
-            images={ev.images || []}
-            onImagesChange={(images) => updateSession({ images })}
-            title={t("images_title")}
-            cardClasses={cardClasses}
-          />
+          <div>
+            <ImageUploadSection
+              key={editIndex}
+              id={String(editIndex)}
+              images={ev.images || []}
+              onImagesChange={(images) => {
+                updateSession({ images });
+                if (images.length > 0) setImageError(false);
+              }}
+              title={t("images_title")}
+              cardClasses={cardClasses}
+            />
+            {imageError && (
+              <p className="text-xs font-semibold text-red-500 mt-3">
+                {t("required_badge")}
+              </p>
+            )}
+          </div>
         );
       case 3:
         return (
@@ -570,27 +629,30 @@ export function CreateEventSessionWizard({
         );
       case 5:
         return (
-          <DatesEditor
-            event={ev}
-            onAddDate={addDate}
-            onPatchDate={patchDate}
-            onRemoveDate={removeDate}
-            onAddSlot={addSlot}
-            onPatchSlot={patchSlot}
-            onRemoveSlot={removeSlot}
-            labels={{
-              datesTitle: t("dates_title"),
-              addDate: t("add_date_btn"),
-              groupSizeHelp: t("group_size_help"),
-              groupSizeHelpRoom: t("group_size_help_room", {
-                roomLabel: ev.roomLabel,
-              }),
-              removeDate: t("remove_date_btn"),
-              colTime: t("col_time"),
-              colGroupSize: t("col_group_size"),
-              addSlot: t("add_slot_btn"),
-            }}
-          />
+          <div>
+            <DatesEditor
+              event={ev}
+              onAddDate={addDate}
+              onPatchDate={patchDate}
+              onRemoveDate={removeDate}
+              onAddSlot={addSlot}
+              onPatchSlot={patchSlot}
+              onRemoveSlot={removeSlot}
+              labels={{
+                datesTitle: t("dates_title"),
+                addDate: t("add_date_btn"),
+                groupSizeHelp: t("group_size_help"),
+                groupSizeHelpRoom: t("group_size_help_room", {
+                  roomLabel: ev.roomLabel,
+                }),
+                removeDate: t("remove_date_btn"),
+                colTime: t("col_time"),
+                colGroupSize: t("col_group_size"),
+                addSlot: t("add_slot_btn"),
+              }}
+            />
+          
+          </div>
         );
       case 6:
         return (

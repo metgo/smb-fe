@@ -669,13 +669,13 @@ export default function EventsWithViewMode({
                     },
                   },
                   {
-                    title: event?.hasExternalTicket
+                    title: (event?.hasExternalTicket || event.ticketCount === 0)
                       ? t("create_ticket_for_this_event")
                       : t("create_landing_page"),
                     icon: LayoutList,
                     color: "yellow",
                     onClick: () => {
-                      if (event?.hasExternalTicket) return;
+                      if (event?.hasExternalTicket || event.ticketCount === 0) return;
                       window.open(
                         `${routes.eventSessionMgmt}?eventId=${event?._id}`,
                         "_blank",
