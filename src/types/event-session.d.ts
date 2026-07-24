@@ -30,6 +30,7 @@ interface IAdminConfig {
   images: IImage[];
   isActive: boolean;
   selectionMode: "radio" | "checkbox";
+  bookingLimit: number;
   liveEventIds: string[];
   ticketIds: string[];
   sessions: IEventSession[];

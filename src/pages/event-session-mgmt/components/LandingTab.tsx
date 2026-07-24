@@ -69,8 +69,9 @@ export function LandingTab({
     language,
     borderColor,
   } = useThemeClasses();
-  const update = (patch: Partial<IAdminConfig>) =>
-    onChange({ ...config, ...patch });
+  const update = (patch: Partial<IAdminConfig>) => {
+    return onChange({ ...config, ...patch });
+  };
 
   const [_searchParams, setSearchParams] = useSearchParams();
   const [ticketDateTime, setTicketDateTime] = useState<
@@ -125,6 +126,7 @@ export function LandingTab({
           brand: `${existingSession.brand} (Copy)`,
           images: [],
           ticketIds: [],
+          bookinLimit: 1,
           sessions: existingSession?.sessions?.map((session) => ({
             ...session,
             images: [],
@@ -442,6 +444,69 @@ export function LandingTab({
             )}
           </div>
 
+          <div className={clsx(cardClasses, "rounded-[14px] p-5")}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
+                {t("choose_theme_title")}
+              </h3>
+              {config.themeId && (
+                <span
+                  className={clsx(
+                    "text-xs font-semibold",
+                    isDark ? "text-blue-400" : "text-blue-600",
+                  )}
+                >
+                  {THEMES.find((th) => th.id === config.themeId)?.name}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-6 gap-2">
+              {THEMES.map((th) => {
+                const active = config.themeId === th.id;
+                return (
+                  <button
+                    key={th.id}
+                    title={`${th.name} — ${th.mood}`}
+                    onClick={() => update({ themeId: th.id })}
+                    className={clsx(
+                      "flex flex-col items-center gap-1.5 p-2 rounded-[10px] border-[1.5px] transition-all hover:-translate-y-0.5",
+                      isDark ? "bg-gray-800" : "bg-white",
+                      active
+                        ? isDark
+                          ? "border-blue-400 shadow-[0_0_0_3px_rgb(59_130_246/0.12)]"
+                          : "border-blue-600 shadow-[0_0_0_3px_rgb(59_130_246/0.12)]"
+                        : isDark
+                          ? "border-gray-700"
+                          : "border-gray-200",
+                    )}
+                  >
+                    <span className="flex w-full h-4 overflow-hidden">
+                      {th.swatch.map((c, i) => (
+                        <span
+                          key={i}
+                          className="flex-1"
+                          style={{ background: c }}
+                        />
+                      ))}
+                    </span>
+                    <span
+                      className={clsx(
+                        "text-[10px] font-semibold leading-none truncate w-full text-center",
+                        active
+                          ? isDark
+                            ? "text-blue-400"
+                            : "text-blue-600"
+                          : textTertiary,
+                      )}
+                    >
+                      {th.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
@@ -523,69 +588,6 @@ export function LandingTab({
         </div>
 
         <div className="space-y-4">
-          <div className={clsx(cardClasses, "rounded-[14px] p-5")}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
-                {t("choose_theme_title")}
-              </h3>
-              {config.themeId && (
-                <span
-                  className={clsx(
-                    "text-xs font-semibold",
-                    isDark ? "text-blue-400" : "text-blue-600",
-                  )}
-                >
-                  {THEMES.find((th) => th.id === config.themeId)?.name}
-                </span>
-              )}
-            </div>
-            <div className="grid grid-cols-6 gap-2">
-              {THEMES.map((th) => {
-                const active = config.themeId === th.id;
-                return (
-                  <button
-                    key={th.id}
-                    title={`${th.name} — ${th.mood}`}
-                    onClick={() => update({ themeId: th.id })}
-                    className={clsx(
-                      "flex flex-col items-center gap-1.5 p-2 rounded-[10px] border-[1.5px] transition-all hover:-translate-y-0.5",
-                      isDark ? "bg-gray-800" : "bg-white",
-                      active
-                        ? isDark
-                          ? "border-blue-400 shadow-[0_0_0_3px_rgb(59_130_246/0.12)]"
-                          : "border-blue-600 shadow-[0_0_0_3px_rgb(59_130_246/0.12)]"
-                        : isDark
-                          ? "border-gray-700"
-                          : "border-gray-200",
-                    )}
-                  >
-                    <span className="flex w-full h-4 overflow-hidden">
-                      {th.swatch.map((c, i) => (
-                        <span
-                          key={i}
-                          className="flex-1"
-                          style={{ background: c }}
-                        />
-                      ))}
-                    </span>
-                    <span
-                      className={clsx(
-                        "text-[10px] font-semibold leading-none truncate w-full text-center",
-                        active
-                          ? isDark
-                            ? "text-blue-400"
-                            : "text-blue-600"
-                          : textTertiary,
-                      )}
-                    >
-                      {th.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           <div className={CARD}>
             <div className={CARD_HEAD}>
               <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
@@ -707,6 +709,37 @@ export function LandingTab({
                 {t("required_badge")}
               </p>
             )}
+
+            {config.selectionMode === "checkbox" && (
+              <div className="flex items-center gap-4 text-sm font-bold mb-2">
+                <label htmlFor="booking_limit_label">
+                  {t("booking_limit_label")}{" "}
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  name="booking_limit_label"
+                  defaultValue={config.bookingLimit || 1}
+                  value={config.bookingLimit}
+                  max={config.sessions.length}
+                  className={clsx(
+                    "w-16 border border-gray-200 rounded px-1 py-0.5",
+                  )}
+                  onChange={(e) => {
+                    const maxLimit = config.sessions.length;
+                    const value = Number(e.target.value);
+                    update({ bookingLimit: value });
+
+                    if (value > maxLimit) {
+                      e.target.value = maxLimit.toString();
+                    } else if (value < 1 && e.target.value !== "") {
+                      e.target.value = "1";
+                    }
+                  }}
+                />
+              </div>
+            )}
+
             {config?.sessions?.map((e, sessionIdx) => (
               <div
                 key={sessionIdx}

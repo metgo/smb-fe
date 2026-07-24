@@ -25,6 +25,7 @@ export const DEFAULT_CONFIG: IAdminConfig = {
   subhead: "",
   images: [],
   sessions: [],
+  bookingLimit: 1,
   isActive: true,
   liveEventIds: [],
   ticketIds: [],

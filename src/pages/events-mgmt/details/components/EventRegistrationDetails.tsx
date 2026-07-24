@@ -7,9 +7,9 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Search, Users, ChevronDown, AlertCircle } from "lucide-react";
 import { ReordableDataTable } from "@/components/shared";
 import { ExportBtns } from "@/components/btns";
-import { useAppSelector } from "@/hooks/hooks";
 import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi";
 import { useLazyGetEventTicketsQuery } from "@/store/api/eventQueryApi";
+import TicketRegDetailModal from "./TicketRegDetailModal";
 
 const STATUS_OPTIONS = [
   { value: "completed", label: "Completed" },
@@ -52,25 +52,6 @@ const getStatusColor = (status: string, isDark: boolean) => {
       );
   }
 };
-
-interface IEventTicket {
-  _id: string;
-  createdAt: string;
-  vendorId: string;
-  status: string;
-  email: string;
-  phone: string;
-  firstName: string;
-  lastName: string | null;
-  paymentMode: string[];
-  paymentDate: string | null;
-  ticketName: string;
-  ticketImage: { image: string }[];
-  orderProductId?: string;
-  amount?: number;
-  quantity?: number;
-  paymentStatus?: string;
-}
 
 interface CancelDialogProps {
   isDark: boolean;
@@ -305,14 +286,16 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   eventDetails,
 }) => {
   const { t } = useTranslation("events");
-  const { isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textTertiary, isDark } = useThemeClasses();
+  const { textPrimary, textTertiary, isDark, isRTL } = useThemeClasses();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [isTicktDetailsModalOpen, setIsTicketDetailModalOpen] = useState(false);
 
   const [allTickets, setAllTickets] = useState<IEventTicket[]>([]);
+  const [ticketDetails, setTicketDetails] = useState<IEventTicket | null>(null);
+
   const [totalData, setTotalData] = useState(0);
 
   const eventId = eventDetails?._id ?? eventDetails?.vendorId ?? "";
@@ -462,6 +445,11 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
     printWindow.print();
   };
 
+  function handleTicketRegRowClick(ticket: IEventTicket) {
+    setTicketDetails(ticket);
+    setIsTicketDetailModalOpen(true);
+  }
+
   return (
     <div className="max-h-[75vh]">
       <section>
@@ -510,6 +498,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
               rowKey="_id"
               data={filteredTickets}
               storageKey="eventTicketsTableColumnOrder"
+              onRowClick={handleTicketRegRowClick}
               columns={[
                 {
                   key: "full_name",
@@ -671,6 +660,13 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
           </div>
         )}
       </section>
+
+      {isTicktDetailsModalOpen && (
+        <TicketRegDetailModal
+          setIsOpen={setIsTicketDetailModalOpen}
+          ticketDetails={ticketDetails}
+        />
+      )}
     </div>
   );
 };

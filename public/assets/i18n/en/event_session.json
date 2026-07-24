@@ -281,5 +281,12 @@
   "wizard_no_instructors": "No instructors added.",
   "wizard_no_rooms": "No rooms added.",
 
-  "ticket_date_time_notice": "The date and time below are based on your selected ticket(s). If you need to change them, please update your ticket selection."
+  "ticket_date_time_notice": "The date and time below are based on your selected ticket(s). If you need to change them, please update your ticket selection.",
+
+  "booking_limit_label": "Session Booking Limit:",
+
+  "landing_pages": "Landing Pages",
+
+  "landing_pages_empty_title": "No Landing Pages Available",
+  "landing_pages_empty_desc": "No landing pages have been created for this event yet"
 }

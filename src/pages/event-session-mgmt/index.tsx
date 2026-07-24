@@ -189,7 +189,6 @@ function EventSessionMgmtPageInner() {
   const tabs = [
     { id: "landing", label: t("tab_landing"), icon: Layout },
     { id: "capacity", label: t("tab_capacity"), icon: Users },
-    // { id: "analytics", label: t("tab_analytics"), icon: BarChart2 },
     { id: "notify", label: t("tab_notify"), icon: Bell },
     { id: "regs", label: t("tab_regs"), icon: ClipboardList },
   ];
