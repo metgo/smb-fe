@@ -8,6 +8,7 @@ import { queryhandler } from 'src/core/helper/query-helper';
 import { GetAllProductsByBusinessIdQuery } from '../get-all-products-by-businessId.query';
 import { ProductsAudit } from '../../schema/products-audit.schema';
 import { ProductsService } from '../../products.services';
+import { sanitizeImages } from 'src/core/helper/image.util';
 
 @QueryHandler(GetAllProductsByBusinessIdQuery)
 export class GetAllProductsByBusinessIdHandler
@@ -57,6 +58,7 @@ implements IQueryHandler<GetAllProductsByBusinessIdQuery> {
           return {
             ...rest,
             _id: productId,
+            images: sanitizeImages(rest.images?.slice(0, 1)),
           };
         }),
       );

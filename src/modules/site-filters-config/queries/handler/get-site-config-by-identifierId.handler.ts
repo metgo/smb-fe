@@ -8,6 +8,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Locale, CommonStatus } from 'src/common/enum';
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { sanitizeImages } from 'src/core/helper/image.util';
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
 import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { GetSiteConfigByIdentifierIdQuery } from '../get-site-config-by-identifierId.query';
@@ -31,7 +32,7 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
     private EventsAuditModel: Model<EventsAudit>,
     @InjectModel(Trip.name)
     private TripModel: Model<Trip>,
-  ) {}
+  ) { }
 
   async execute(queries: GetSiteConfigByIdentifierIdQuery) {
     try {
@@ -62,16 +63,6 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
             path: 'siteTopics.siteCategories.poiIds',
             select:
               'slug name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr geoLocation images primaryCategoryId groupTypesId accessibilitiesId tagsId address',
-          },
-          {
-            path: 'siteTopics.siteCategories.fundayIds',
-            select:
-              'slug name  shortDescription images groupTypesId accessibilitiesId',
-          },
-          {
-            path: 'siteTopics.siteCategories.productIds',
-            select:
-              'slug name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr images primaryCategoryId groupTypesId accessibilitiesId tagsId address',
           },
         ]);
 
@@ -118,7 +109,7 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
       const siteEvents = events.map((event: any) => ({
         ...event,
         _id: event.eventId,
-        images: this.sanitizeImages(event.images),
+        images: sanitizeImages(event.images?.slice(0, 5)),
         serviceType: ServicesTypes.EVENT,
       }));
 
@@ -136,7 +127,7 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
 
       const siteTrips = trips.map((trip: any) => ({
         ...trip,
-        images: this.sanitizeImages(trip.images),
+        images: sanitizeImages(trip.images?.slice(0, 5)),
         serviceType: ServicesTypes.TRIPS,
       }));
 
@@ -157,81 +148,97 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
       delete result.headerDescriptionHe;
       delete result.headerDescriptionAr;
 
-      result.siteTopics = (result.siteTopics || [])
+      // Process all site topics and categories
+      const processedSiteTopics = result.siteTopics
         .filter((topic: any) => !topic.isArchived)
-        .map((topic: any) => {
+        .map((topic: any, topicIndex: number) => {
           const {
-            titleHe,
-            titleAr,
-            descriptionHe,
-            descriptionAr,
+            titleHe: topicTitleHe,
+            titleAr: topicTitleAr,
+            descriptionHe: topicDescHe,
+            descriptionAr: topicDescAr,
             icon,
             colors,
+            isArchived: topicIsArchived,
+            synonyms: topicSynonyms,
+            synonymsHe: topicSynonymsHe,
+            synonymsAr: topicSynonymsAr,
+            searchKeywords: topicSearchKeywords,
+            searchKeywordsHe: topicSearchKeywordsHe,
+            searchKeywordsAr: topicSearchKeywordsAr,
             ...topicRest
           } = topic;
+
+          // Process categories for this topic
+          const processedCategories = topic.siteCategories
+            .filter((cat: any) => !cat.isArchived)
+            .map((category: any, categoryIndex: number) => {
+              const {
+                titleHe: catTitleHe,
+                titleAr: catTitleAr,
+                descriptionHe: catDescHe,
+                descriptionAr: catDescAr,
+                productIds,
+                fundayIds,
+                isPrimary,
+                isArchived,
+                synonyms,
+                synonymsHe,
+                synonymsAr,
+                searchKeywords,
+                searchKeywordsHe,
+                searchKeywordsAr,
+                ...catRest
+              } = category;
+
+              // Prepare base category object
+              const processedCategory = {
+                ...catRest,
+                title: this.localizeString(
+                  { base: category.title, he: catTitleHe, ar: catTitleAr },
+                  locale,
+                ),
+                description: this.localizeString(
+                  { base: category.description, he: catDescHe, ar: catDescAr },
+                  locale,
+                ),
+                businessIds: (category.businessIds || [])
+                  .filter(Boolean)
+                  .map((item: any) => ({
+                    ...this.localizeItem(item, locale),
+                    images: sanitizeImages(item.images?.slice(0, 5)),
+                    serviceType: ServicesTypes.BUSINESS,
+                  })),
+                poiIds: (category.poiIds || [])
+                  .filter(Boolean)
+                  .map((item: any) => ({
+                    ...this.localizeItem(item, locale),
+                    images: sanitizeImages(item.images?.slice(0, 5)),
+                    serviceType: ServicesTypes.POINT_OF_INTEREST,
+                  })),
+              };
+
+              // Only add eventIds and tripIds to the first topic's first category
+              if (topicIndex === 0 && categoryIndex === 0) {
+                processedCategory.eventIds = siteEvents; // All events for the site
+                processedCategory.tripIds = siteTrips; // All trips for the site
+              }
+
+              return processedCategory;
+            });
+
           return {
             ...topicRest,
-            icon,
-            colors,
             title: this.localizeString(
-              { base: topic.title, he: titleHe, ar: titleAr },
+              { base: topic.title, he: topicTitleHe, ar: topicTitleAr },
               locale,
             ),
-            description: this.localizeString(
-              { base: topic.description, he: descriptionHe, ar: descriptionAr },
-              locale,
-            ),
-            siteCategories: (topic.siteCategories || [])
-              .filter((cat: any) => !cat.isArchived)
-              .map((cat: any) => {
-                const {
-                  titleHe: catTitleHe,
-                  titleAr: catTitleAr,
-                  descriptionHe: catDescHe,
-                  descriptionAr: catDescAr,
-                  ...catRest
-                } = cat;
-                return {
-                  ...catRest,
-                  title: this.localizeString(
-                    { base: cat.title, he: catTitleHe, ar: catTitleAr },
-                    locale,
-                  ),
-                  description: this.localizeString(
-                    { base: cat.description, he: catDescHe, ar: catDescAr },
-                    locale,
-                  ),
-                  businessIds: (cat.businessIds || [])
-                    .filter(Boolean)
-                    .map((item: any) => ({
-                      ...this.localizeItem(item, locale),
-                      serviceType: ServicesTypes.BUSINESS,
-                    })),
-                  poiIds: (cat.poiIds || [])
-                    .filter(Boolean)
-                    .map((item: any) => ({
-                      ...this.localizeItem(item, locale),
-                      serviceType: ServicesTypes.POINT_OF_INTEREST,
-                    })),
-                  productIds: (cat.productIds || [])
-                    .filter(Boolean)
-                    .map((item: any) => ({
-                      ...this.localizeItem(item, locale),
-                      serviceType: ServicesTypes.PRODUCT,
-                    })),
-                  eventIds: siteEvents,
-                  tripIds: siteTrips,
-                  fundayIds: (cat.fundayIds || [])
-                    .filter(Boolean)
-                    .map(({ images, ...item }: any) => ({
-                      ...item,
-                      images: this.sanitizeImages(images),
-                      serviceType: ServicesTypes.FUNDAY,
-                    })),
-                };
-              }),
+            siteCategories: processedCategories,
           };
         });
+
+      // Set the result with all processed topics
+      result.siteTopics = processedSiteTopics;
 
       return result;
     } catch (error) {
@@ -240,11 +247,6 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
       });
       exceptionHandling(error);
     }
-  }
-
-  private sanitizeImages(images: any[]): any[] {
-    if (!Array.isArray(images)) return images;
-    return images.map(({ subCoordinates, ...img }) => img);
   }
 
   private localizeItem(item: any, locale: Locale) {
@@ -269,7 +271,7 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
         },
         locale,
       ),
-      images: this.sanitizeImages(images),
+      images: sanitizeImages(images),
     };
   }
 

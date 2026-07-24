@@ -9,6 +9,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { GetBusinessDetailForTourismQuery } from '../get-business-detail.query';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
+import { sanitizeImages } from 'src/core/helper/image.util';
 
 @QueryHandler(GetBusinessDetailForTourismQuery)
 export class GetBusinessDetailForTourismHandler
@@ -24,11 +25,11 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
       const { slug, query } = queries;
 
       const select
-        = '_id businessId dmoId authorityId location cover logo images name nameHe nameAr address countryCode phoneNumber busiEmail shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation groupTypesId accessibilitiesId primaryCategoryId tagsId bussCategoriesId bussSubCategoriesId openingHrs isAlwaysOpen slug socialMedia impact deliveryArea deliverySpecificSellerInfo deliveryReturnExchange deliveryAdditionalInfo isPickUpAvailable';
+        = '_id businessId primaryCategoryId location cover logo images name nameHe nameAr address countryCode phoneNumber busiEmail shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation groupTypesId accessibilitiesId primaryCategoryId tagsId openingHrs isAlwaysOpen slug socialMedia impact deliveryArea deliverySpecificSellerInfo deliveryReturnExchange deliveryAdditionalInfo isPickUpAvailable';
 
       const populate = [
         {
-          path: 'groupTypesId accessibilitiesId',
+          path: 'groupTypesId accessibilitiesId primaryCategoryId',
           select: '_id name hebrewName',
         },
         {
@@ -59,6 +60,8 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
         const mappedData = {
           ...rest,
           _id: businessId,
+          images: sanitizeImages(rest.images),
+          logo: sanitizeImages([rest.logo])[0],
           socialMedia: (socialMedia ?? []).map(({ socialMediaId, url }: any) => ({
             ...(socialMediaId ?? {}),
             url,

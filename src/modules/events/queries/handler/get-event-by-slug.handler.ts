@@ -14,6 +14,7 @@ import { TicketStatus } from 'src/modules/tickets/tickets.type';
 import { GetAllTicketsQuery } from 'src/modules/tickets/queries/get-all-tickets.query';
 import { GetAllTicketsRequest } from 'src/modules/tickets/requests/get-all-tickets.request';
 import { EventsAudit } from '../../schema/events-audit.schema';
+import { sanitizeImages } from 'src/core/helper/image.util';
 
 @QueryHandler(GetEventBySlugQuery)
 export class GetEventBySlugHandler
@@ -112,6 +113,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
       const newEvent = {
         ...rest,
         _id: eventId,
+        images: sanitizeImages(rest.images),
         payment: {
           ticketIds: tickets,
         },

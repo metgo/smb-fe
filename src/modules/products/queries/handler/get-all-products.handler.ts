@@ -2,7 +2,7 @@ import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
 
-import { SortOrder, CommonStatus } from 'src/common/enum';
+import { SortOrder, CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import {
@@ -16,6 +16,7 @@ import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
 import { GetAllProductsQuery } from '../get-all-products.query';
 import { ProductsAudit } from '../../schema/products-audit.schema';
 import { ProductsService } from '../../products.services';
+import { sanitizeImages } from 'src/core/helper/image.util';
 
 @QueryHandler(GetAllProductsQuery)
 export class GetAllProductsHandler
@@ -29,7 +30,7 @@ implements IQueryHandler<GetAllProductsQuery> {
     @InjectModel(BussCategory.name)
     private CategoryModel: Model<BussCategory>,
     private readonly productsService: ProductsService,
-  ) {}
+  ) { }
 
   async execute(queries: GetAllProductsQuery): Promise<any> {
     try {
@@ -71,21 +72,12 @@ implements IQueryHandler<GetAllProductsQuery> {
         return { totalData: 0, products: [] };
       }
 
-      let select
-        = '_id slug name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId groupTypesId accessibilitiesId tagsId categories subCategories productId deliveryArea isPickUpAvailable deliveryAdditionalInfo deliverySpecificSellerInfo deliveryReturnExchange';
+      let select = '_id slug name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId';
 
       let populate: any = [
         {
           path: 'businessId',
-          select: '_id logo name nameHe nameAr isAlwaysOpen slug deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
-        },
-        {
-          path: 'categories subCategories',
-          select: '_id name hebrewName',
-        },
-        {
-          path: 'tagsId',
-          select: '_id name nameHe nameAr',
+          select: '_id logo name nameHe nameAr slug',
         },
       ];
 
@@ -341,19 +333,18 @@ implements IQueryHandler<GetAllProductsQuery> {
           return {
             ...rest,
             _id: productId,
+            businessId: {
+              ...rest.businessId,
+              logo: sanitizeImages([rest.businessId.logo])[0],
+            },
+            images: sanitizeImages(rest.images?.slice(0, 1)),
           };
         }),
       );
 
-      const filteredByVendorStatus = mappedProducts.filter((product: any) => {
-        const business = product?.businessId as any;
-        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
-      });
-
       productsList.data = await Promise.all(
-        filteredByVendorStatus.map(p => this.productsService.localizeProduct(p, locale)),
+        mappedProducts.map(p => this.productsService.localizeProduct(p, Locale.HEBREW)),
       );
-
       return productsList;
     } catch (err) {
       exceptionHandling(err);

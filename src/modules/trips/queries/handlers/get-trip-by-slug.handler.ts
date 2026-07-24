@@ -10,6 +10,7 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { Trip } from '../../schema/trips.schema';
 import { GetTripBySlugQuery } from '../get-trip-by-slug.query';
 import { TripStatus } from '../../trips.types';
+import { sanitizeImages } from 'src/core/helper/image.util';
 
 @QueryHandler(GetTripBySlugQuery)
 export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
@@ -120,6 +121,7 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
       return {
         ...tripObj,
         stations,
+        images: sanitizeImages(tripObj.images),
         groupTypesAndAccessibilities,
         itenary: tripObj.itenary,
       };

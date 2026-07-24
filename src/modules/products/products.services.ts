@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { FlattenMaps, Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
@@ -21,6 +21,7 @@ import { GetProductsQuery } from 'src/modules/products/queries';
 import { Business } from '../business/shared/schema/business.schema';
 import { Product } from './schema/products.schema';
 import { ProductsAudit } from './schema/products-audit.schema';
+import { sanitizeImages } from 'src/core/helper/image.util';
 
 @Injectable()
 export class ProductsService {
@@ -31,7 +32,7 @@ export class ProductsService {
     private ProductModel: Model<Product>,
     @InjectModel(ProductsAudit.name)
     private ProductsAuditModel: Model<ProductsAudit>,
-  ) {}
+  ) { }
 
   async findOne(
     id: string | mongoose.Types.ObjectId,
@@ -72,7 +73,7 @@ export class ProductsService {
 
       const { productId, ...rest } = product;
 
-      const response = { ...rest, _id: productId };
+      const response = { ...rest, _id: productId, images: sanitizeImages(rest.images) };
 
       const mappedResponse = await this.localizeProduct(response, locale);
 
@@ -85,7 +86,7 @@ export class ProductsService {
   async getOne(slug: string, query: GetProductsQuery) {
     try {
       const select
-        = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness deliveryArea globalDelivery globalDeliveryArea vendorDelivers vendorDeliveryArea';
+        = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId';
 
       const populate = {
         path: 'categories subCategories',
@@ -95,11 +96,7 @@ export class ProductsService {
       const businessPopulate = {
         path: 'businessId',
         select:
-          '_id logo name nameHe nameAr tagsId shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location openingHrs isAlwaysOpen deliveryAdditionalInfo isPickUpAvailable slug deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
-        populate: {
-          path: 'tagsId',
-          select: '_id name nameHe nameAr',
-        },
+          '_id logo name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location',
       };
 
       let product = await this.ProductsAuditModel.findOne({
@@ -117,13 +114,6 @@ export class ProductsService {
         .select(select)
         .lean();
 
-      if (product) {
-        const business = product?.businessId as any;
-        if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
-          product = null;
-        }
-      }
-
       if (!product && mongoose.Types.ObjectId.isValid(slug)) {
         product = await this.ProductsAuditModel.findOne({
           productId: slug,
@@ -139,32 +129,11 @@ export class ProductsService {
           .populate(populate)
           .select(select)
           .lean();
-
-        if (product) {
-          const business = product?.businessId as any;
-          if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
-            product = null;
-          }
-        }
       }
 
       if (!product) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
-
-      const useBusinessInfo: FlattenMaps<Business>
-        = product?.deliveryInfoSameAsBusiness
-          ? product?.businessId
-          : {
-            ...product?.businessId,
-            deliveryArea: [],
-            deliveryAdditionalInfo: '',
-            isPickUpAvailable: false,
-            globalDelivery: false,
-            globalDeliveryArea: [],
-            vendorDelivers: false,
-          };
-
       const response = await this.localizeProduct(product, query.locale);
 
       const localizedBusiness = response?.businessId
@@ -176,23 +145,10 @@ export class ProductsService {
         name: response?.name,
         dmoId: response?.dmoId,
         description: response?.description,
-        images: response?.images,
+        images: sanitizeImages(response?.images),
         price: response?.price,
         quantity: response?.quantity,
         businessId: localizedBusiness,
-        deliveryArea: response?.deliveryArea?.length
-          ? product.deliveryArea
-          : useBusinessInfo?.deliveryArea,
-
-        deliveryAdditionalInfo:
-          response?.deliveryAdditionalInfo
-          ?? useBusinessInfo?.deliveryAdditionalInfo,
-        isPickUpAvailable:
-          response?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
-        deliverySpecificSellerInfo: response?.deliverySpecificSellerInfo,
-        vendorDelivers: useBusinessInfo?.vendorDelivers ?? false,
-        globalDelivery: useBusinessInfo?.globalDelivery ?? false,
-        globalDeliveryArea: useBusinessInfo?.globalDeliveryArea ?? [],
         categories: response?.categories,
         subCategories: response?.subCategories,
       };

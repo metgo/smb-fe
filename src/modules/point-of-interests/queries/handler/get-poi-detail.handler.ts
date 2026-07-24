@@ -8,6 +8,7 @@ import { ServerErrors } from 'src/common/constant';
 import { CommonStatus, Locale } from 'src/common/enum';
 import { PointOfInterestsAudit } from '../../schema/point-of-interest-audit.schema';
 import { GetPOIDetailQuery } from '../get-poi-detail.query';
+import { sanitizeImages } from 'src/core/helper/image.util';
 
 @QueryHandler(GetPOIDetailQuery)
 export class GetPOIDetailHandler implements IQueryHandler<GetPOIDetailQuery> {
@@ -83,6 +84,7 @@ export class GetPOIDetailHandler implements IQueryHandler<GetPOIDetailQuery> {
           shortDescription:
             shortDescriptionAr || shortDescription || shortDescriptionHe,
           description: descriptionAr || description || descriptionHe,
+          images: sanitizeImages(rest.images),
         };
       case Locale.HEBREW:
         return {
@@ -91,6 +93,7 @@ export class GetPOIDetailHandler implements IQueryHandler<GetPOIDetailQuery> {
           shortDescription:
             shortDescriptionHe || shortDescription || shortDescriptionAr,
           description: descriptionHe || description || descriptionAr,
+          images: sanitizeImages(rest.images),
         };
       default:
         return {
@@ -99,6 +102,7 @@ export class GetPOIDetailHandler implements IQueryHandler<GetPOIDetailQuery> {
           shortDescription:
             shortDescription || shortDescriptionHe || shortDescriptionAr,
           description: description || descriptionHe || descriptionAr,
+          images: sanitizeImages(rest.images),
         };
     }
   }
