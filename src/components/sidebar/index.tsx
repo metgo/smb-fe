@@ -135,7 +135,7 @@ export default function Sidebar() {
                 path: routes.vendorReconciliationMgmt,
                 label: t("vendor_reconciliation") || "Vendor Reconciliation",
                 icon: Receipt,
-                isEnabled: false,
+                isEnabled: true,
               },
             ]
           : []),
