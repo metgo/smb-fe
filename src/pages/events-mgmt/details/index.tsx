@@ -243,7 +243,7 @@ export default function EventDetailsPage() {
       case "sessions":
         return (
           <EventSessionDetails
-          eventDetails={eventDetails}
+            eventDetails={eventDetails}
             eventId={eventId}
             isLoading={isSessionsLoading}
             sessions={sessions}

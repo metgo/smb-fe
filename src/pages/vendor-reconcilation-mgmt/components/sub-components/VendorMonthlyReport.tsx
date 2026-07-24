@@ -56,12 +56,7 @@ interface OrderProduct {
     platformFee: number;
     disputeId?: string;
     reconciliationStatus?:
-    | "pending"
-    | "approved"
-    | "canceled"
-    | "disputed"
-    | "rejected"
-    | "closed";
+      "pending" | "approved" | "canceled" | "disputed" | "rejected" | "closed";
     vendorFacingResponse?: string;
   };
   customerInformation: {
@@ -165,7 +160,8 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
     vendorFacingResponse: d?.orderInformation?.vendorFacingResponse || "",
 
     netToVendor:
-      (d?.orderInformation?.total || 0) - (d?.orderInformation?.platformFee || 0),
+      (d?.orderInformation?.total || 0) -
+      (d?.orderInformation?.platformFee || 0),
     status,
     reconciliationStatus,
     externalApiId: (d as any).externalApiId || "",
@@ -459,7 +455,8 @@ export const VendorMonthlyReport = () => {
   const hasMore = orderProductsData?.meta?.hasNextPage ?? false;
 
   const loadNextPage = () => {
-    if (!hasMore || isLoading || isFetching || isLoadingNextPageRef.current) return;
+    if (!hasMore || isLoading || isFetching || isLoadingNextPageRef.current)
+      return;
     isLoadingNextPageRef.current = true;
     setPage((prev) => prev + 1);
   };
@@ -563,7 +560,7 @@ export const VendorMonthlyReport = () => {
             gcsURL: string;
           };
 
-          await uploadWithProgress(file, signedUrl, () => { });
+          await uploadWithProgress(file, signedUrl, () => {});
           attachmentUrls.push(gcsURL);
         }
       }
@@ -1144,14 +1141,14 @@ export const VendorMonthlyReport = () => {
             {(stats.orderProductPending > 0 ||
               stats.orderProductProcessing > 0 ||
               stats.orderProductShipped > 0) && (
-                <button
-                  onClick={handleBulkMarkOrderCompleted}
-                  className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {t("approve_pending_orders")}
-                </button>
-              )}
+              <button
+                onClick={handleBulkMarkOrderCompleted}
+                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {t("approve_pending_orders")}
+              </button>
+            )}
 
             <ExportOrdersButton
               orders={orders}
@@ -1423,7 +1420,7 @@ export const VendorMonthlyReport = () => {
             setShowAdminDisputeModal(false);
             setSelectedOrder(null);
             setDetailsOrderId(null);
-            closeDetails()
+            closeDetails();
           }}
           onResolve={handleAdminResolveDispute}
         />

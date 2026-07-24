@@ -132,7 +132,7 @@
   "attachment": "Attachment",
 
   "total_amount": "Total Amount",
-  "response_required_for_rejection" : "Response required for rejection",
+  "response_required_for_rejection": "Response required for rejection",
   "custom_response": "Custom Response to Vendor ",
 
   "custom_response_placeholder": "Enter a custom response to the vendor (leave blank for default)...",

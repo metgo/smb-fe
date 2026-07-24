@@ -43,6 +43,7 @@ interface Props {
   externalApiId?: string | null;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
+  isMarketplace?: boolean; // Added to handle TRAVELLER vs MARKETPLACE differences
 }
 
 const TopicCategoryCard = ({
@@ -52,6 +53,7 @@ const TopicCategoryCard = ({
   externalApiId,
   templateContents,
   setTemplateContent,
+  isMarketplace = false,
 }: Props) => {
   const { isDark, bgTertiary, inputClasses } = useThemeClasses();
   const { t } = useTranslation("content");
@@ -71,6 +73,7 @@ const TopicCategoryCard = ({
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiBusinesses, setAiBusinesses] = useState<IAiSuggestedEntity[]>([]);
   const [aiProducts, setAiProducts] = useState<IAiSuggestedEntity[]>([]);
+  const [aiPois, setAiPois] = useState<IAiSuggestedEntity[]>([]);
   const aiCallTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAiCallRef = useRef<{
     categoryName: string;
@@ -402,12 +405,19 @@ const TopicCategoryCard = ({
       const businesses = result.businesses.filter(
         (item) => !existingIds.has(item._id),
       );
-      const products = result.products.filter(
-        (item) => !existingIds.has(item._id),
-      );
+      // Products disabled for TRAVELLER purpose
+      const products = isMarketplace
+        ? result.products.filter((item) => !existingIds.has(item._id))
+        : [];
+      // POIs only for TRAVELLER purpose
+      const pois = !isMarketplace
+        ? ((result as any).pois || []).filter(
+            (item: any) => !existingIds.has(item._id),
+          )
+        : [];
 
       // No matches found — genuine AI response with no relevant results
-      if (!businesses.length && !products.length) {
+      if (!businesses.length && !products.length && !pois.length) {
         const hasExisting = group.contents?.length > 0;
         const message = hasExisting
           ? "No new matches found. All matching items are already in this category."
@@ -418,9 +428,10 @@ const TopicCategoryCard = ({
 
       setAiBusinesses(businesses);
       setAiProducts(products);
+      setAiPois(pois);
       setShowAiModal(true);
       toast.success(
-        `Found ${businesses.length + products.length} suggestions! 🎉`,
+        `Found ${businesses.length + products.length + pois.length} suggestions! 🎉`,
       );
     } catch (error: any) {
       toast.dismiss(loadingId);
@@ -440,6 +451,7 @@ const TopicCategoryCard = ({
   const handleAiModalConfirm = (
     selectedBusinesses: IAiSuggestedEntity[],
     selectedProducts: IAiSuggestedEntity[],
+    selectedPois: IAiSuggestedEntity[],
   ) => {
     // Validation: Ensure all selected items have required fields
     const validBusinesses = selectedBusinesses.filter((business) => {
@@ -450,13 +462,27 @@ const TopicCategoryCard = ({
       return true;
     });
 
-    const validProducts = selectedProducts.filter((product) => {
-      if (!product._id || !product.name) {
-        console.warn("Skipping invalid product:", product);
-        return false;
-      }
-      return true;
-    });
+    // Products disabled for TRAVELLER purpose - validate only for MARKETPLACE
+    const validProducts = isMarketplace
+      ? selectedProducts.filter((product) => {
+          if (!product._id || !product.name) {
+            console.warn("Skipping invalid product:", product);
+            return false;
+          }
+          return true;
+        })
+      : [];
+
+    // POIs only for TRAVELLER purpose - validate only for TRAVELLER
+    const validPois = !isMarketplace
+      ? selectedPois.filter((poi) => {
+          if (!poi._id || !poi.name) {
+            console.warn("Skipping invalid POI:", poi);
+            return false;
+          }
+          return true;
+        })
+      : [];
 
     const nextContents: IContent[] = [
       ...validBusinesses.map((business) => ({
@@ -479,17 +505,31 @@ const TopicCategoryCard = ({
         title: product.name,
         message: product.description || "",
       })),
+      ...validPois.map((poi) => ({
+        _id: poi._id,
+        name: poi.name,
+        desc: poi.description || "",
+        imageUrl: poi.images?.[0]?.image || "",
+        primaryCategory: "",
+        contentType: "poi" as const,
+        title: poi.name,
+        message: poi.description || "",
+      })),
     ];
 
     // If validation filtered out items, warn user
     if (
       validBusinesses.length < selectedBusinesses.length ||
-      validProducts.length < selectedProducts.length
+      validProducts.length < selectedProducts.length ||
+      validPois.length < selectedPois.length
     ) {
       const skipped =
         selectedBusinesses.length -
         validBusinesses.length +
-        (selectedProducts.length - validProducts.length);
+        selectedProducts.length -
+        validProducts.length +
+        selectedPois.length -
+        validPois.length;
       toast.warning(`${skipped} item(s) were invalid and skipped.`);
     }
 
@@ -955,7 +995,9 @@ const TopicCategoryCard = ({
         categoryName={group.category}
         suggestedBusinesses={aiBusinesses}
         suggestedProducts={aiProducts}
+        suggestedPois={aiPois}
         onConfirm={handleAiModalConfirm}
+        isMarketplace={isMarketplace}
       />
     </div>
   );

@@ -200,8 +200,6 @@ export function CreateEventSessionWizard({
     setImageError(!hasImages);
     if (!hasImages) isValid = false;
 
-  
-
     return isValid;
   };
 
@@ -651,7 +649,6 @@ export function CreateEventSessionWizard({
                 addSlot: t("add_slot_btn"),
               }}
             />
-          
           </div>
         );
       case 6:

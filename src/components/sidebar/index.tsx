@@ -69,6 +69,7 @@ export default function Sidebar() {
   const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelector(
     (state) => state.ui,
   );
+
   const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
 
   // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin, siteManager)
@@ -155,7 +156,7 @@ export default function Sidebar() {
       icon: BellIcon,
       isEnabled: true,
     },
-    
+
     {
       id: "poi",
       path: routes.poiMgmt,

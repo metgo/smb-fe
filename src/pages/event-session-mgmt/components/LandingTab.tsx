@@ -344,7 +344,13 @@ export function LandingTab({
   const hasBrand = !!config.brand?.trim();
   const hasHeadline = !!config.headline?.trim();
   const hasSubhead = !!config.subhead?.trim();
-  const canPublish = hasHeroImage && hasTicket && hasActiveSession && hasBrand && hasHeadline && hasSubhead;
+  const canPublish =
+    hasHeroImage &&
+    hasTicket &&
+    hasActiveSession &&
+    hasBrand &&
+    hasHeadline &&
+    hasSubhead;
 
   async function handleSubmit() {
     if (!canPublish) {

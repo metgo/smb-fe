@@ -339,10 +339,14 @@ const NotificationsBell = () => {
                         itemType === "DISPUTE" ? "orderProductId" : queryParam;
 
                       const idValue =
-                        itemType === "DISPUTE" ? notification.orderProductId : notification.itemId;
+                        itemType === "DISPUTE"
+                          ? notification.orderProductId
+                          : notification.itemId;
 
                       const disputeParam =
-                        itemType === "DISPUTE" ? `&disputeId=${notification.itemId}` : "";
+                        itemType === "DISPUTE"
+                          ? `&disputeId=${notification.itemId}`
+                          : "";
 
                       navigate(
                         `${itemEndpoint[itemType]}?${paramName}=${idValue}${disputeParam}`,
@@ -645,20 +649,20 @@ const NotificationsBell = () => {
         notificationId={viewChangesState.notificationId}
         changeData={
           changesData &&
-            Array.isArray(changesData.changes) &&
-            changesData.changes.length > 0
+          Array.isArray(changesData.changes) &&
+          changesData.changes.length > 0
             ? {
-              changeId: changesData._id || undefined,
-              changes: changesData.changes || [],
-              summary: changesData.summary || "",
-              changesCount: changesData.changesCount || 0,
-              changedBy: changesData.changedBy || {
-                firstName: "",
-                email: "",
-              },
-              changedAt: changesData.changedAt || new Date(),
-              status: changesData.status || "PENDING",
-            }
+                changeId: changesData._id || undefined,
+                changes: changesData.changes || [],
+                summary: changesData.summary || "",
+                changesCount: changesData.changesCount || 0,
+                changedBy: changesData.changedBy || {
+                  firstName: "",
+                  email: "",
+                },
+                changedAt: changesData.changedAt || new Date(),
+                status: changesData.status || "PENDING",
+              }
             : undefined
         }
         isLoading={changesLoading}

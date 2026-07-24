@@ -41,6 +41,7 @@ interface ContentComposerProps {
   hasUnsavedContent?: boolean;
   onSaveCurrentAsView?: () => void;
   isSavingCurrentAsView?: boolean;
+  isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
 }
 
 // ─── Draggable Topic Block ────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ interface TopicBlockProps {
   moveItem: (from: number, to: number) => void;
   setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
   setTopicToDelete: React.Dispatch<React.SetStateAction<number | null>>;
+  isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
 }
 
 const TopicBlock = ({
@@ -66,6 +68,7 @@ const TopicBlock = ({
   moveItem,
   setTopicToDelete,
   setShowDeleteConfirm,
+  isMarketplace = false,
 }: TopicBlockProps) => {
   const { t } = useTranslation("content");
   const ref = useRef<HTMLDivElement>(null);
@@ -310,6 +313,7 @@ const TopicBlock = ({
                       externalApiId={externalApiId}
                       templateContents={templateContents}
                       setTemplateContent={setTemplateContent}
+                      isMarketplace={isMarketplace}
                     />
                   </div>
                 ))}
@@ -485,6 +489,7 @@ const ContentComposer = ({
               moveItem={moveItem}
               setTopicToDelete={setTopicToDelete}
               setShowDeleteConfirm={setShowDeleteConfirm}
+              isMarketplace={isMarketplace}
             />
           ))}
 
