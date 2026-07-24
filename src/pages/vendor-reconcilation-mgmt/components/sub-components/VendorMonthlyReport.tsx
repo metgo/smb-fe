@@ -306,7 +306,7 @@ export const VendorMonthlyReport = () => {
     skip: !showCloseAllOrdersModal,
   });
   const { data: reconciliationStats, refetch: refetchReconciliationStats } =
-    useGetReconciliationStatsQuery();
+    useGetReconciliationStatsQuery(apiParams);
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const websiteMap = useMemo(() => {

@@ -42,6 +42,18 @@ export interface FinalizeSweepPreview {
   targetMonth: string;
   sweptMonths: { label: string; payoutAmount: number }[];
 }
+
+export interface ReconciliationStatsParams {
+  dmoId?: string;
+  authorityId?: string;
+  status?: string;
+  reconciliationStatus?: string;
+  vendorId?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export const reconciliationQueryApi = createApi({
   reducerPath: "reconciliationQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -139,10 +151,14 @@ export const reconciliationQueryApi = createApi({
     }),
 
     // GET /orders/reconciliation-stats
-    getReconciliationStats: builder.query<any, void>({
-      query: () => ({
+    getReconciliationStats: builder.query<
+      any,
+      ReconciliationStatsParams | void
+    >({
+      query: (params) => ({
         url: endpoints.reconciliationStats,
         method: "GET",
+        params: params || {},
       }),
     }),
 
