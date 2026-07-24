@@ -156,7 +156,7 @@ export default function Sidebar() {
       path: routes.eventsMgmt,
       label: t("events") || "Events",
       icon: Calendar,
-      isEnabled: !isTravelingWebsite, // Hide Events for TRAVELING purpose websites
+      isEnabled: true,
     },
     {
       id: "notifications",
