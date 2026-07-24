@@ -165,6 +165,7 @@ export default function Sidebar() {
       icon: BellIcon,
       isEnabled: true,
     },
+    
     {
       id: "poi",
       path: routes.poiMgmt,

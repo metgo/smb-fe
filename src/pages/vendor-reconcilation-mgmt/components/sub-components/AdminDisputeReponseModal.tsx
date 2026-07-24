@@ -34,7 +34,7 @@ export const AdminDisputeResponseModal = ({
 
   const [responseToVendor, setResponseToVendor] = useState("");
   const [resolutionAction, setResolutionAction] = useState("");
-  const [errors, setErrors] = useState<{ action?: string }>({});
+  const [errors, setErrors] = useState<{ action?: string; response?: string }>({});
 
   const isResolved =
     order.reconciliationStatus === "approved" ||
@@ -62,6 +62,10 @@ export const AdminDisputeResponseModal = ({
 
     if (!resolutionAction) {
       newErrors.action = t("please_select_resolution_action");
+    }
+
+    if (resolutionAction === "reject" && !responseToVendor.trim()) {
+      newErrors.response = t("response_required_for_rejection");
     }
 
     setErrors(newErrors);
@@ -176,7 +180,7 @@ export const AdminDisputeResponseModal = ({
               </div>
               <div>
                 <div className={`text-xs ${textTertiary} mb-1`}>
-                  {t("amount")}
+                  {t("total_amount")}
                 </div>
                 <div className={`text-sm font-bold ${textPrimary}`}>
                   ₪{order.totalPrice.toFixed(2)}
@@ -348,16 +352,27 @@ export const AdminDisputeResponseModal = ({
                     className={`block text-sm font-medium ${textPrimary} mb-2`}
                   >
                     {t("custom_response")}
+                    {resolutionAction === "reject" && (
+                      <span className="text-red-500">*</span>
+                    )}
                   </label>
                   <textarea
                     value={responseToVendor}
                     onChange={(e) => {
                       setResponseToVendor(e.target.value);
+                      if (errors.response) {
+                        setErrors({ ...errors, response: undefined });
+                      }
                     }}
                     placeholder={t("custom_response_placeholder")}
                     rows={3}
-                    className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+                    className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${errors.response ? "border-red-500" : ""}`}
                   />
+                  {errors.response && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.response}
+                    </p>
+                  )}
                   <p className={`text-xs ${textTertiary} mt-1`}>
                     {t("custom_response_helper")}
                   </p>

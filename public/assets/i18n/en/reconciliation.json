@@ -130,7 +130,11 @@
   "product_in_dispute": "Product in Dispute",
   "attachments": "Attachments",
   "attachment": "Attachment",
-  "custom_response": "Custom Response to Vendor (Optional)",
+
+  "total_amount": "Total Amount",
+  "response_required_for_rejection" : "Response required for rejection",
+  "custom_response": "Custom Response to Vendor ",
+
   "custom_response_placeholder": "Enter a custom response to the vendor (leave blank for default)...",
   "custom_response_helper": "If left blank, a default response will be sent based on your decision.",
   "decision": "Decision",

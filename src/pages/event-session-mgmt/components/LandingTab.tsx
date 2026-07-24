@@ -341,7 +341,10 @@ export function LandingTab({
   const hasHeroImage = !!config.images?.length;
   const hasTicket = !!config.ticketIds?.length;
   const hasActiveSession = config.sessions.some((s) => s.isActive);
-  const canPublish = hasHeroImage && hasTicket && hasActiveSession;
+  const hasBrand = !!config.brand?.trim();
+  const hasHeadline = !!config.headline?.trim();
+  const hasSubhead = !!config.subhead?.trim();
+  const canPublish = hasHeroImage && hasTicket && hasActiveSession && hasBrand && hasHeadline && hasSubhead;
 
   async function handleSubmit() {
     if (!canPublish) {
@@ -401,6 +404,11 @@ export function LandingTab({
                 onChange={(e) => update({ brand: e.target.value })}
               />
             </AField>
+            {!hasBrand && (
+              <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
+                {t("required_badge")}
+              </p>
+            )}
             <AField label={t("main_heading_field")}>
               <input
                 className={INPUT}
@@ -408,6 +416,11 @@ export function LandingTab({
                 onChange={(e) => update({ headline: e.target.value })}
               />
             </AField>
+            {!hasHeadline && (
+              <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
+                {t("required_badge")}
+              </p>
+            )}
             <AField label={t("subtitle_field")}>
               <textarea
                 className={clsx(INPUT, "resize-y leading-relaxed")}
@@ -416,6 +429,11 @@ export function LandingTab({
                 onChange={(e) => update({ subhead: e.target.value })}
               />
             </AField>
+            {!hasSubhead && (
+              <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
+                {t("required_badge")}
+              </p>
+            )}
           </div>
 
           <div className={CARD}>

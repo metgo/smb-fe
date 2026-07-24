@@ -22,6 +22,7 @@ import {
   Package,
   LayoutList,
   ExternalLink,
+  Plus,
 } from "lucide-react";
 import TicketSummaryCard from "./TicketSummaryCard";
 import { ActionIconButtons } from "@/components/btns";
@@ -40,6 +41,28 @@ const safe = (n: any) => (Number.isFinite(n) ? n : 0);
 
 const sum = (arr: any[], fn: (t: any) => number) =>
   arr?.reduce((s, x) => s + safe(fn(x)), 0) ?? 0;
+
+// Blank template used when opening the wizard in CREATE mode
+const emptyTicketTemplate: any = {
+  name: "",
+  description: "",
+  type: "PAID",
+  status: "active",
+  price: {
+    markedPrice: 0,
+    sellingPrice: 0,
+  },
+  quantity: {
+    initial: 0,
+    sold: 0,
+    remaining: 0,
+    isUnlimited: false,
+    perUserLimit: 1,
+  },
+  dayDescription: [],
+  images: [],
+  imageUrl: "",
+};
 
 const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   tickets,
@@ -73,6 +96,13 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
     } catch {
       toast.error(t("ticket_delete_failed"));
     }
+  };
+
+  const handleCreateTicket = () => {
+    setEditingTicket({ ...emptyTicketTemplate });
+    setTicketDateTime([]);
+    setOpMode("CREATE");
+    setIsEditModalOpen(true);
   };
 
   const calculateTotalRevenue = (ticket: ITicketPayload) => {
@@ -138,35 +168,66 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
 
   if (!tickets?.length) {
     return (
-      <div
-        className={clsx(
-          "flex flex-col items-center justify-center py-12 rounded-xl border",
-          isDark ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200",
+      <>
+        <div
+          className={clsx(
+            "flex flex-col items-center justify-center py-12 rounded-xl border",
+            isDark
+              ? "bg-gray-800 border-gray-700"
+              : "bg-gray-50 border-gray-200",
+          )}
+        >
+          <Ticket
+            className={clsx(
+              "w-12 h-12 mb-3",
+              isDark ? "text-gray-600" : "text-gray-400",
+            )}
+          />
+          <h3
+            className={clsx(
+              "text-base font-semibold mb-1",
+              isDark ? "text-gray-300" : "text-gray-700",
+            )}
+          >
+            No Tickets Available
+          </h3>
+          <p
+            className={clsx(
+              "text-sm mb-4",
+              isDark ? "text-gray-400" : "text-gray-500",
+            )}
+          >
+            No tickets have been created for this event yet
+          </p>
+          <button
+            type="button"
+            onClick={handleCreateTicket}
+            className={clsx(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
+              isDark
+                ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                : "bg-blue-600 text-white hover:bg-blue-700",
+            )}
+          >
+            <Plus className="w-4 h-4" />
+            {t("create_ticket")}
+          </button>
+        </div>
+
+        {isEditModalOpen && editingTicket && (
+          <CreateTicketWizard
+            eventId={eventId}
+            refetch={refetch}
+            opMode={opMode}
+            eventDays={eventDays}
+            setIsOpen={setIsEditModalOpen}
+            editData={editingTicket!}
+            setEditData={setEditingTicket}
+            ticketDateTime={ticketDateTime}
+            setTicketDateTime={setTicketDateTime}
+          />
         )}
-      >
-        <Ticket
-          className={clsx(
-            "w-12 h-12 mb-3",
-            isDark ? "text-gray-600" : "text-gray-400",
-          )}
-        />
-        <h3
-          className={clsx(
-            "text-base font-semibold mb-1",
-            isDark ? "text-gray-300" : "text-gray-700",
-          )}
-        >
-          No Tickets Available
-        </h3>
-        <p
-          className={clsx(
-            "text-sm",
-            isDark ? "text-gray-400" : "text-gray-500",
-          )}
-        >
-          No tickets have been created for this event yet
-        </p>
-      </div>
+      </>
     );
   }
 
@@ -214,7 +275,31 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
           />
         </div>
 
-        {/* Tickets List */}
+        {/* Tickets List Header + Create Button */}
+        <div className="flex items-center justify-between">
+          <h3
+            className={clsx(
+              "text-lg font-semibold",
+              isDark ? "text-white" : "text-gray-900",
+            )}
+          >
+            {t("tickets")}
+          </h3>
+          <button
+            type="button"
+            onClick={handleCreateTicket}
+            className={clsx(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
+              isDark
+                ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                : "bg-blue-600 text-white hover:bg-blue-700",
+            )}
+          >
+            <Plus className="w-4 h-4" />
+            {t("create_ticket")}
+          </button>
+        </div>
+
         <div className="space-y-4">
           {tickets.map((ticket) => {
             const image = ticket.images?.[0]?.image;
