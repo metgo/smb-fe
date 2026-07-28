@@ -46,8 +46,10 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
         const business = await this.BusinessesAuditModel.findOne({
           slug,
           status: CommonStatus.APPROVED,
+          isActive: true,
+          isDeleted: { $ne: true },
         })
-          .sort({ isActive: -1, createdAt: -1 })
+          .sort({ createdAt: -1 })
           .select(select)
           .lean()
           .populate(populate);
@@ -61,7 +63,7 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           ...rest,
           _id: businessId,
           images: sanitizeImages(rest.images),
-          logo: sanitizeImages([rest.logo])[0],
+          logo: rest.logo != null ? sanitizeImages([rest.logo])[0] ?? null : null,
           socialMedia: (socialMedia ?? []).map(({ socialMediaId, url }: any) => ({
             ...(socialMediaId ?? {}),
             url,

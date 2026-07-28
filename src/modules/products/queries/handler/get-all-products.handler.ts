@@ -273,7 +273,7 @@ implements IQueryHandler<GetAllProductsQuery> {
                 _id,
                 businessId: {
                   ...rest.businessId,
-                  logo: sanitizeImages([rest?.businessId?.logo][0]),
+                  logo: sanitizeImages([rest?.businessId?.logo])[0],
                 },
                 images: sanitizeImages(rest.images?.slice(0, 1)),
               };
@@ -343,7 +343,7 @@ implements IQueryHandler<GetAllProductsQuery> {
             _id,
             businessId: {
               ...rest.businessId,
-              logo: sanitizeImages([rest?.businessId?.logo][0]),
+              logo: sanitizeImages([rest?.businessId?.logo])[0],
             },
             images: sanitizeImages(rest.images?.slice(0, 1)),
           };
