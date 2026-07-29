@@ -96,7 +96,7 @@ export class ProductsService {
       const businessPopulate = {
         path: 'businessId',
         select:
-          '_id logo name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location',
+          '_id slug logo name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location tagsId',
       };
 
       let product = await this.ProductsAuditModel.findOne({
