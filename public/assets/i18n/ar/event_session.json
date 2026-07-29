@@ -280,5 +280,42 @@
   "wizard_no_instructors": "لم تتم إضافة مدربين.",
   "wizard_no_rooms": "لم تتم إضافة غرف.",
 
-  "ticket_date_time_notice": "يعتمد التاريخ والوقت أدناه على التذكرة (أو التذاكر) التي حددتها. إذا كنت بحاجة إلى تغييرهما، فيرجى تحديث اختيار التذكرة."
+  "ticket_date_time_notice": "يعتمد التاريخ والوقت أدناه على التذكرة (أو التذاكر) التي حددتها. إذا كنت بحاجة إلى تغييرهما، فيرجى تحديث اختيار التذكرة.",
+
+  "booking_limit_label": "حد حجز الجلسة:",
+
+  "landing_pages": "صفحات الهبوط",
+
+  "landing_pages_empty_title": "لا توجد صفحات هبوط متاحة",
+  "landing_pages_empty_desc": "لم يتم إنشاء أي صفحات هبوط لهذا الحدث بعد",
+
+  "create_session_block": "إنشاء كتلة جلسة",
+  "name": "الاسم",
+  "enter_name": "أدخل الاسم",
+  "booking_limit": "حد الحجز",
+  "enter_booking_limit": "أدخل حد الحجز",
+  "description": "الوصف",
+  "enter_description": "أدخل الوصف",
+  "select_sessions": "اختر الجلسات",
+  "select_sessions_placeholder": "اختر الجلسات...",
+  "create_block": "إنشاء كتلة",
+
+  "assigned_to_block": "مخصص للكتلة",
+  "session_assigned_warning": "هذه الجلسة مخصصة لكتلة ولا يمكن حذفها",
+  "edit": "تعديل",
+  "delete": "حذف",
+
+  "no_sessions_available_for_block": "لا توجد جلسات متاحة. يرجى إنشاء جلسة جديدة أولاً.",
+
+  "add_block": "إضافة كتلة",
+  "greeting": "تحية",
+  "booking_limit_exceeded": "لا يمكن أن يتجاوز حد الحجز {{max}}",
+  "max_limit": "الحد الأقصى:",
+  "assign_sessions_into_block": "تعيين الجلسات إلى كتلة",
+  "assign_block_help": "قم بتجميع الجلسات في كتل لتنظيم أفضل وإدارة الحجوزات.",
+  "assigned_sessions": "الجلسات المخصصة",
+  "toast_session_deleted": "تم حذف الجلسة بنجاح!",
+  "toast_session_delete_error": "فشل حذف الجلسة.",
+  "toast_session_block_deleted": "تم حذف كتلة الجلسة بنجاح!",
+  "toast_session_block_delete_error": "فشل حذف كتلة الجلسة."
 }

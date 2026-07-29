@@ -73,5 +73,8 @@
   "trip_status_updated_faild": "עדכון סטטוס הטיול נכשל",
   "trip_updated_success": "הטיול עודכן בהצלחה!",
   "trip_created_success": "הטיול נוצר בהצלחה!",
-  "trip_create_failed": "יצירת הטיול נכשלה"
+  "trip_create_failed": "יצירת הטיול נכשלה",
+
+  "ticket_email_resend_success": "אימייל הכרטיס נשלח מחדש בהצלחה",
+  "ticket_email_resend_failed": "שליחת אימייל הכרטיס מחדש נכשלה"
 }

@@ -2,11 +2,22 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Edit, LayoutList, Layers, Plus, Eye, Copy } from "lucide-react";
+import {
+  Edit,
+  LayoutList,
+  Layers,
+  Plus,
+  Eye,
+  Copy,
+  Trash2,
+} from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useUpdateEventSessionMutation } from "@/store/api/eventSessionApi";
+import {
+  useDeleteLandingPageMutation,
+  useUpdateEventSessionMutation,
+} from "@/store/api/eventSessionApi";
 import { ActionIconButtons } from "@/components/btns";
 
 interface EventSessionDetailsProps {
@@ -29,8 +40,22 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
   const { isDark, borderColor } = useThemeClasses();
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
-  console.log(eventDetails.ticketCount);
-  if (isLoading) {
+  const [deleteLandingPage, { isLoading: isDeleting }] =
+    useDeleteLandingPageMutation();
+
+  const handleDeleteSession = async (wrapperId: string) => {
+    await deleteLandingPage(wrapperId)
+      .unwrap()
+      .then(() => {
+        toast.success("Session deleted successfully");
+        refetch();
+      })
+      .catch((err) => {
+        toast.error(err.data.message);
+      });
+  };
+
+  if (isLoading || isDeleting) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -297,6 +322,12 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
                             color: "gray",
                             onClick: () => handleDuplicateSession(session._id),
                           },
+                          {
+                            title: "Delete",
+                            icon: Trash2,
+                            color: "red",
+                            onClick: () => handleDeleteSession(session._id),
+                          },
                         ]}
                       />
                     </div>
@@ -321,17 +352,6 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
                           : t("event_sessions_count_other")}
                       </span>
                     </div>
-
-                    <span
-                      className={clsx(
-                        "px-2 py-0.5 rounded-full border capitalize",
-                        borderColor,
-                        isDark ? "text-gray-300" : "text-gray-600",
-                      )}
-                    >
-                      {session.selectionMode}
-                    </span>
-
                     <span
                       className={clsx(
                         "px-2 py-0.5 rounded-full border",

@@ -280,5 +280,42 @@
   "wizard_no_instructors": "לא נוספו מנחים.",
   "wizard_no_rooms": "לא נוספו חדרים.",
 
-  "ticket_date_time_notice": "התאריך והשעה שלהלן מבוססים על הכרטיס(ים) שבחרת. אם ברצונך לשנות אותם, אנא עדכן את בחירת הכרטיס."
+  "ticket_date_time_notice": "התאריך והשעה שלהלן מבוססים על הכרטיס(ים) שבחרת. אם ברצונך לשנות אותם, אנא עדכן את בחירת הכרטיס.",
+
+  "booking_limit_label": "מגבלת הזמנת מפגש:",
+
+  "landing_pages": "דפי נחיתה",
+
+  "landing_pages_empty_title": "אין דפי נחיתה זמינים",
+  "landing_pages_empty_desc": "לא נוצרו דפי נחיתה לאירוע זה עדיין",
+
+  "create_session_block": "יצירת בלוק מפגש",
+  "name": "שם",
+  "enter_name": "הזן שם",
+  "booking_limit": "מגבלת הזמנה",
+  "enter_booking_limit": "הזן מגבלת הזמנה",
+  "description": "תיאור",
+  "enter_description": "הזן תיאור",
+  "select_sessions": "בחר מפגשים",
+  "select_sessions_placeholder": "בחר מפגשים...",
+  "create_block": "צור בלוק",
+
+  "assigned_to_block": "מוקצה לבלוק",
+  "session_assigned_warning": "מפגש זה מוקצה לבלוק ולא ניתן למחיקה",
+  "edit": "עריכה",
+  "delete": "מחיקה",
+
+  "no_sessions_available_for_block": "אין מפגשים זמינים. יש ליצור מפגש חדש תחילה.",
+
+  "add_block": "הוסף בלוק",
+  "greeting": "ברכה",
+  "booking_limit_exceeded": "לא ניתן לחרוג ממגבלת ההזמנות {{max}}",
+  "max_limit": "מגבלה מקסימלית:",
+  "assign_sessions_into_block": "הקצאת מפגשים לבלוק",
+  "assign_block_help": "קבצו מפגשים לבלוקים לארגון טוב יותר וניהול הזמנות.",
+  "assigned_sessions": "מפגשים מוקצים",
+  "toast_session_deleted": "המפגש נמחק בהצלחה!",
+  "toast_session_delete_error": "מחיקת המפגש נכשלה.",
+  "toast_session_block_deleted": "בלוק המפגש נמחק בהצלחה!",
+  "toast_session_block_delete_error": "מחיקת בלוק המפגש נכשלה."
 }

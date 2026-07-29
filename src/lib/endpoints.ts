@@ -85,12 +85,16 @@ export const endpoints = {
   eventsStats: "/events-stats",
   upcomingEvents: "/upcoming-events",
   contentManagementEvents: "/content-management-events",
-
-  // event sessions
   tickets: "/tickets",
   eventTickets: "/event-tickets",
+  resendTicketEmailToCustomer: "/resend-order-emails",
+
+  // event sessions
+  initWrapperCreate: "/event-sessions/initialize",
   eventSessions: "/event-sessions",
   eventSessionPreviwLink: "/event-sessions/preview-link",
+  createWrapperSessionBlock: "/event-sessions/blocks",
+  createWrapperSession: "/event-sessions/sessions",
   ticketsForEventSession: "/event-sessions/tickets-without-sessions",
   eventSessionCapacityReport: "/event-sessions/capacity-report",
   eventSessionReg: "/event-sessions/registrations",

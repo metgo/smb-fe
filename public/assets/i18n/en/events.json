@@ -332,5 +332,24 @@
   "submit": "Submit",
   "landing_pages": "Landing Pages",
   "image": "Image",
-  "create_ticket_for_this_event": "Create the ticket for this event first."
+  "create_ticket_for_this_event": "Create the ticket for this event first.",
+
+  "ticket_reg_detail_title": "Ticket Registration Details",
+  "customer_information": "Customer Information",
+  "full_name": "Full Name",
+  "email": "Email",
+  "phone": "Phone",
+  "registration_date": "Registration Date",
+  "ticket_information": "Ticket Information",
+  "ticket_name": "Ticket Name",
+  "ticket_id": "Ticket ID",
+  "quantity": "Quantity",
+  "amount": "Amount",
+  "status": "Status",
+  "payment_status": "Payment Status",
+  "payment_information": "Payment Information",
+  "payment_mode": "Payment Mode",
+  "payment_date": "Payment Date",
+  "order_product_id": "Order Product ID",
+  "resend_email_to_customer": "Resend Email to Customer"
 }

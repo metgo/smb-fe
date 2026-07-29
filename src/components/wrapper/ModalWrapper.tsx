@@ -11,6 +11,7 @@ interface ModalWrapperProps {
   showSpinner?: boolean;
   maxWidth?: string;
   height?: string;
+  closeOnOutsideClick?: boolean;
 }
 
 const ModalWrapper: React.FC<ModalWrapperProps> = ({
@@ -19,6 +20,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   showSpinner = false,
   height = "h-[80dvh] md:h-[90vh]",
   maxWidth = "max-w-5xl",
+  closeOnOutsideClick = true,
 }) => {
   const { cardClasses, isRTL } = useThemeClasses();
   const [mounted, setMounted] = useState(false);
@@ -62,7 +64,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   return (
     <div
       className="fixed inset-0 bg-black/70 z-100 flex items-end md:items-center justify-center md:p-4"
-      onClick={handleClose}
+      onClick={closeOnOutsideClick ? handleClose : undefined}
     >
       <div
         onClick={(e) => e.stopPropagation()}

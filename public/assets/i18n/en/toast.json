@@ -78,5 +78,8 @@
   "trip_status_updated_faild": "Failed to update trip status",
   "trip_updated_success": "Trip updated successfully!",
   "trip_created_success": "Trip created successfully!",
-  "trip_create_failed": "Failed to create Trip"
+  "trip_create_failed": "Failed to create Trip",
+
+  "ticket_email_resend_success": "Ticket email resent successfully",
+  "ticket_email_resend_failed": "Failed to resend ticket email"
 }

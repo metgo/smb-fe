@@ -97,7 +97,6 @@ export function AnalyticsTab({ config, records, bookings }: AnalyticsTabProps) {
         <div className="flex flex-col gap-2.5">
           {config.sessions
             .map((e, i) => ({ ...e, idx: String(i) }))
-            .filter((e) => config.liveEventIds.includes(e.idx))
             .map((e) => {
               const er = rows.filter((r) => r.eventId === e.idx);
               const ecap = er.reduce((a, r) => a + r.capacity, 0);

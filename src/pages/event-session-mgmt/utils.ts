@@ -3,7 +3,6 @@ import { slotKey } from "./data";
 export function eventSlotRows(config: IAdminConfig): ISlotRow[] {
   const rows: ISlotRow[] = [];
   config.sessions.forEach((e, i) => {
-    if (!config.liveEventIds.includes(String(i))) return;
     const rooms = (e.rooms || []).length ? e.rooms : [""];
     e.dates.forEach((d, j) =>
       d.slots.forEach((s, k) =>

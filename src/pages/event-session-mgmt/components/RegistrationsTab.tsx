@@ -14,7 +14,7 @@ const SKELETON_ROWS = 6;
 const SKELETON_COLS = 6;
 
 interface RegistrationsTabProps {
-  wrapperId: string;
+  wrapperId: string | null;
 }
 
 export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
