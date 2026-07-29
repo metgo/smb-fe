@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 import { useInitBusinessCreateMutation } from "@/store/api/businessMutationApi";
-import { Check, X, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Check, Info} from "lucide-react";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -12,6 +11,8 @@ interface ArticleContentFormProps {
   onBusinessCreated?: (businessId: string) => void;
   dmoId?: string;
   authorityId?: string;
+  isBusinessContext?: boolean;
+  isEditMode?: boolean;
 }
 
 export const BusinessContentForm = ({
@@ -20,6 +21,8 @@ export const BusinessContentForm = ({
   onBusinessCreated,
   dmoId,
   authorityId,
+  isBusinessContext = false,
+  isEditMode = false,
 }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
   const {
@@ -31,44 +34,8 @@ export const BusinessContentForm = ({
     language,
   } = useThemeClasses();
 
-  const [checkAvailability, { isLoading: isChecking }] = useInitBusinessCreateMutation();
+  const [checkAvailability] = useInitBusinessCreateMutation();
   const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
-
-  const handleCheckAvailability = async () => {
-    const businessName = formData[titleField];
-    if (!businessName?.trim()) {
-      toast.error(t("please_enter_business_name"));
-      return;
-    }
-    if (!dmoId?.trim()) {
-      toast.error("Please select a DMO");
-      return;
-    }
-    if (!authorityId?.trim()) {
-      toast.error("Please select an Authority");
-      return;
-    }
-
-    setAvailabilityStatus(null);
-    try {
-      const res = await checkAvailability({ name: businessName, dmoId, authorityId }).unwrap();
-      setAvailabilityStatus('available');
-      toast.success(t("business_name_available"));
-      // Notify parent that business was created during availability check
-      if (res?.id && onBusinessCreated) {
-        onBusinessCreated(res.id);
-      }
-    } catch (error: any) {
-      setAvailabilityStatus('unavailable');
-
-    }
-  };
-
-  // Reset availability status when name changes
-  const handleNameChange = (value: string) => {
-    onChange({ [titleField]: value });
-    setAvailabilityStatus(null);
-  };
 
   // Get correct field name based on current global language
   const getFieldName = (baseField: string): string => {
@@ -83,6 +50,51 @@ export const BusinessContentForm = ({
   const titleField = getFieldName("name");
   const shortDescField = getFieldName("shortDescription");
   const fullDescField = getFieldName("fullDescription");
+
+  // Debounced availability check
+  const checkAvailabilityDebounced = useCallback(
+    async (businessName: string) => {
+      if (!businessName?.trim()) {
+        setAvailabilityStatus(null);
+        return;
+      }
+      if (!dmoId?.trim() || !authorityId?.trim()) {
+        setAvailabilityStatus(null);
+        return;
+      }
+
+      setAvailabilityStatus(null);
+      try {
+        const res = await checkAvailability({ name: businessName, dmoId, authorityId }).unwrap();
+        setAvailabilityStatus('available');
+        // Notify parent that business was created during availability check
+        if (res?.id && onBusinessCreated) {
+          onBusinessCreated(res.id);
+        }
+      } catch (error: any) {
+        setAvailabilityStatus('unavailable');
+      }
+    },
+    [checkAvailability, dmoId, authorityId, onBusinessCreated]
+  );
+
+  // Reset availability status when name changes
+  const handleNameChange = (value: string) => {
+    onChange({ [titleField]: value });
+    setAvailabilityStatus(null);
+  };
+
+  // Debounce effect for availability check
+  useEffect(() => {
+    if (!isBusinessContext || isEditMode) return;
+
+    const timer = setTimeout(() => {
+      const businessName = formData[titleField];
+      checkAvailabilityDebounced(businessName);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [formData[titleField], dmoId, authorityId, isBusinessContext, isEditMode, checkAvailabilityDebounced]);
 
   const isRtl = language === "he" || language === "ar";
   const dir = isRtl ? "rtl" : "ltr";
@@ -109,39 +121,19 @@ export const BusinessContentForm = ({
             } rounded-xl px-4 py-3 pr-12 focus:outline-none transition-colors`}
             dir={dir}
           />
-         
         </div>
-        <div className="flex items-center justify-between mt-2">
-          {availabilityStatus && (
-            <p className={`text-sm flex items-center gap-1.5 ${
-              availabilityStatus === 'available' ? 'text-green-500' : 'text-red-500'
-            }`}>
-              {availabilityStatus === 'available' ? (
-                <Check className="w-4 h-4" />
-              ) : (
-                <X className="w-4 h-4" />
-              )}
-              {availabilityStatus === 'available' ? t("business_name_available") : t("business_name_unavailable")}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={handleCheckAvailability}
-            disabled={isChecking || !formData[titleField]?.trim() || !dmoId?.trim() || !authorityId?.trim()}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-              isChecking || !formData[titleField]?.trim() || !dmoId?.trim() || !authorityId?.trim()
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            {isChecking ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
+        {isBusinessContext && !isEditMode && availabilityStatus && (
+          <p className={`text-sm mt-2 flex items-center gap-1.5 ${
+            availabilityStatus === 'available' ? 'text-green-500' : 'text-red-500'
+          }`}>
+            {availabilityStatus === 'available' ? (
               <Check className="w-4 h-4" />
+            ) : (
+              <Info className="w-4 h-4" />
             )}
-            {t("check_availability")}
-          </button>
-        </div>
+            {availabilityStatus === 'available' ? t("business_name_available") : t("business_name_unavailable")}
+          </p>
+        )}
       </div>
 
       {/* Short Description */}

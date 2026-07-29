@@ -960,6 +960,7 @@ function CreateBusinessWizardInner({
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
             businessAssociatedWebsites={editData?.associatedWebsites ?? []}
+            isEditMode={opMode === IOpMode.EDIT}
           />
         );
 

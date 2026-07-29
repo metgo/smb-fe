@@ -45,6 +45,7 @@ interface BusinessBasicInfosProps {
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   businessAssociatedWebsites?: IAssociatedWebsiteIds[];
+  isEditMode?: boolean;
 }
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
@@ -63,6 +64,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   businessAssociatedWebsites = [],
+  isEditMode = false,
 }) => {
   const { isSuperadmin } = useUserRoles();
   const { borderColor, isDark } = useThemeClasses();
@@ -106,6 +108,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         onBusinessCreated={setBusinessId}
         dmoId={selectedDmoId}
         authorityId={selectedAuthorityId}
+        isBusinessContext={true}
+        isEditMode={isEditMode}
       />
 
       {/* Internal Notes */}
