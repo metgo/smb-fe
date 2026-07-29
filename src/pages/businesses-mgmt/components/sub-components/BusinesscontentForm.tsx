@@ -4,6 +4,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 import { useInitBusinessCreateMutation } from "@/store/api/businessMutationApi";
 import { Check, Info} from "lucide-react";
+import { toast } from "sonner";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -18,7 +19,7 @@ interface ArticleContentFormProps {
 export const BusinessContentForm = ({
   formData,
   onChange,
-  onBusinessCreated,
+  // onBusinessCreated,
   dmoId,
   authorityId,
   isBusinessContext = false,
@@ -73,11 +74,15 @@ export const BusinessContentForm = ({
 
     setAvailabilityStatus(null);
     try {
-      const res = await checkAvailability({ name: businessName, dmoId, authorityId }).unwrap();
+      const res = await checkAvailability({ name: businessName, dmoId, authorityId, checkOnly: true  }).unwrap();
       setAvailabilityStatus('available');
-      // Notify parent that business was created during availability check
-      if (res?.id && onBusinessCreated) {
-        onBusinessCreated(res.id);
+      console.log(res.message)
+      if (res?.isAvailable) {
+        // Notify parent that business was created during availability check
+        setAvailabilityStatus('available');
+      }
+      else {
+        setAvailabilityStatus('unavailable');
       }
     } catch (error: any) {
       setAvailabilityStatus('unavailable');
