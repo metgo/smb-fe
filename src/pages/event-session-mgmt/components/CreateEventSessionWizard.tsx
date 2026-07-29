@@ -19,7 +19,6 @@ import ImageUploadSection from "./ImageUploadSection";
 import { ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { WizardStepper, WizardFooter } from "@/components/shared";
-import { useSearchParams } from "react-router-dom";
 
 type Instructor = { name: string; role: string };
 
@@ -75,8 +74,6 @@ export function CreateEventSessionWizard({
   onDone,
   setEditSessionData,
 }: CreateEventSessionWizardProps) {
-  const [searchParams] = useSearchParams();
-
   const { t } = useTranslation("event_session");
 
   const {
@@ -91,7 +88,10 @@ export function CreateEventSessionWizard({
   const [currentStep, setCurrentStep] = useState(1);
   const [newRoomInput, setNewRoomInput] = useState("");
 
-  const [createLandingPageSession, { isLoading: isLandingPageSessionCreating }] = useCreateLandingPageSessionMutation();
+  const [
+    createLandingPageSession,
+    { isLoading: isLandingPageSessionCreating },
+  ] = useCreateLandingPageSessionMutation();
 
   // Track validation errors for instructors
   const [instructorErrors, setInstructorErrors] = useState<
@@ -174,7 +174,8 @@ export function CreateEventSessionWizard({
   };
 
   const validateInstructors = (): boolean => {
-    if (!draftSession?.instructors || draftSession.instructors.length === 0) return true;
+    if (!draftSession?.instructors || draftSession.instructors.length === 0)
+      return true;
 
     const errors: Record<number, { name: boolean; role: boolean }> = {};
     let isValid = true;
@@ -236,9 +237,12 @@ export function CreateEventSessionWizard({
 
     if (wrapperId) {
       if (editData)
-        await createLandingPageSession({ wrapperId, data: { ...sessionToSave, sessionId: sessionToSave._id }, method: "PATCH" });
-      else
-        await createLandingPageSession({ wrapperId, data: sessionToSave });
+        await createLandingPageSession({
+          wrapperId,
+          data: { ...sessionToSave, sessionId: sessionToSave._id },
+          method: "PATCH",
+        });
+      else await createLandingPageSession({ wrapperId, data: sessionToSave });
       setIsOpen(false);
       setEditSessionData?.(null);
       onDone?.();
@@ -276,12 +280,16 @@ export function CreateEventSessionWizard({
   function patchDate(dateIndex: number, patch: Partial<IEventDate>) {
     if (!draftSession) return;
     updateSession({
-      dates: draftSession.dates.map((d, i) => (i === dateIndex ? { ...d, ...patch } : d)),
+      dates: draftSession.dates.map((d, i) =>
+        i === dateIndex ? { ...d, ...patch } : d,
+      ),
     });
   }
   function removeDate(dateIndex: number) {
     if (!draftSession) return;
-    updateSession({ dates: draftSession.dates.filter((_, i) => i !== dateIndex) });
+    updateSession({
+      dates: draftSession.dates.filter((_, i) => i !== dateIndex),
+    });
   }
   function addSlot(dateIndex: number) {
     if (!draftSession) return;
@@ -322,7 +330,9 @@ export function CreateEventSessionWizard({
   }
   function listRemove(i: number) {
     if (!draftSession) return;
-    updateSession({ rooms: (draftSession.rooms ?? []).filter((_, idx) => idx !== i) });
+    updateSession({
+      rooms: (draftSession.rooms ?? []).filter((_, idx) => idx !== i),
+    });
   }
 
   function insAdd() {
@@ -362,7 +372,9 @@ export function CreateEventSessionWizard({
   function insRemove(i: number) {
     if (!draftSession) return;
     updateSession({
-      instructors: (draftSession.instructors ?? []).filter((_, idx) => idx !== i),
+      instructors: (draftSession.instructors ?? []).filter(
+        (_, idx) => idx !== i,
+      ),
     });
     setInstructorErrors({}); // Reset errors, will re-validate on Next/Done
   }
@@ -678,7 +690,9 @@ export function CreateEventSessionWizard({
                   >
                     {t("field_name")}
                   </p>
-                  <p className="text-sm font-semibold">{draftSession.name || "—"}</p>
+                  <p className="text-sm font-semibold">
+                    {draftSession.name || "—"}
+                  </p>
                 </div>
                 {draftSession.tagline && (
                   <div>
@@ -860,8 +874,8 @@ export function CreateEventSessionWizard({
   return (
     <ModalWrapper
       onClose={() => {
-        setIsOpen(false)
-        setEditSessionData?.(null)
+        setIsOpen(false);
+        setEditSessionData?.(null);
       }}
       height="max-sm:h-[90vh] md:max-h-[90vh] md:min-h-[60vh]"
       maxWidth="max-w-3xl"

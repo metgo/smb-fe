@@ -46,26 +46,38 @@ export function useLandingPageTab({
     return onChange({ ...config, ...patch });
   };
 
-  const [editBlockData, setEditBlockData] = useState<ISessionBlock | null>(null);
-  const [editSessionData, setEditSessionData] = useState<IEventSession | null>(null);
-  const [ticketDateTime, setTicketDateTime] = useState<ITicketDayTimeForSession[]>([]);
+  const [editBlockData, setEditBlockData] = useState<ISessionBlock | null>(
+    null,
+  );
+  const [editSessionData, setEditSessionData] = useState<IEventSession | null>(
+    null,
+  );
+  const [ticketDateTime, setTicketDateTime] = useState<
+    ITicketDayTimeForSession[]
+  >([]);
 
   const [createEventSession, { isLoading: isCreating }] =
     useCreateEventSessionMutation();
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
-  const [deleteSessionBlock, { isLoading: isDeletingSessionBlock }] = useDeleteSessionBlockMutation();
-  const [deleteSession, { isLoading: isDeletingSession }] = useDeleteSessionMutation();
+  const [deleteSessionBlock, { isLoading: isDeletingSessionBlock }] =
+    useDeleteSessionBlockMutation();
+  const [deleteSession, { isLoading: isDeletingSession }] =
+    useDeleteSessionMutation();
   const [initLandingPage] = useInitCreateSessionWrapperMutation();
 
   const { data: ticketRes, refetch } = useGetAllSessionTicketQuery(
     eventId ? { eventId, wrapperId: wrapperId || "" } : skipToken,
   );
 
-  const { data: existingSession } = useGetEventSessionByIdQuery(wrapperId ? wrapperId : skipToken);
+  const { data: existingSession } = useGetEventSessionByIdQuery(
+    wrapperId ? wrapperId : skipToken,
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [initialImageUrl, setInitialImageUrl] = useState(config.images?.[0]?.image);
+  const [initialImageUrl, setInitialImageUrl] = useState(
+    config.images?.[0]?.image,
+  );
 
   const {
     previewUrl,
@@ -125,8 +137,8 @@ export function useLandingPageTab({
 
   const tickets = isDuplicate
     ? ticketRes?.data?.tickets?.filter(
-      (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
-    )
+        (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
+      )
     : (ticketRes?.data?.tickets ?? []);
 
   const isDirty =
@@ -192,12 +204,7 @@ export function useLandingPageTab({
 
   function hasAvailableSessionsForBlock(): boolean {
     if (!config.sessions || config.sessions.length === 0) return false;
-
-    // Collect all session IDs from existing blocks
-    const usedSessionIds = config.blocks?.flatMap((block) => block.sessionIds) || [];
-
-    // Check if there are any sessions not already assigned to blocks
-    return config.sessions.some((session) => !usedSessionIds.includes(session._id));
+    return true;
   }
 
   async function confirmDeleteEventSession() {
@@ -205,7 +212,10 @@ export function useLandingPageTab({
     const sessionToDelete = config.sessions[deleteIndex];
     if (sessionToDelete?._id && wrapperId) {
       try {
-        await deleteSession({ wrapperId, sessionId: sessionToDelete._id }).unwrap();
+        await deleteSession({
+          wrapperId,
+          sessionId: sessionToDelete._id,
+        }).unwrap();
         toast.success(t("toast_session_deleted"));
       } catch {
         toast.error(t("toast_session_delete_error"));
@@ -327,7 +337,10 @@ export function useLandingPageTab({
 
   async function handleDeleteSessionBlock(eventSessionBlockId: string) {
     try {
-      await deleteSessionBlock({ wrapperId: wrapperId!, blockId: eventSessionBlockId }).unwrap();
+      await deleteSessionBlock({
+        wrapperId: wrapperId!,
+        blockId: eventSessionBlockId,
+      }).unwrap();
       toast.success(t("toast_session_block_deleted"));
     } catch {
       toast.error(t("toast_session_block_delete_error"));
@@ -345,19 +358,18 @@ export function useLandingPageTab({
     setDeleteBlockIndex(null);
   }
 
-
   async function handleAddSessionBtn() {
     let finalWrapperId = wrapperId;
 
     if (!wrapperId || wrapperId === "") {
       const res = await initLandingPage({ ...config, eventId });
-      if (res && 'data' in res && res.data?.id) {
+      if (res && "data" in res && res.data?.id) {
         finalWrapperId = res.data.id;
         setWrapperId(finalWrapperId);
         // Set the wrapperId on URL
         const url = new URL(window.location.href);
-        url.searchParams.set('wrapperId', finalWrapperId);
-        window.history.replaceState({}, '', url);
+        url.searchParams.set("wrapperId", finalWrapperId);
+        window.history.replaceState({}, "", url);
       }
     }
     setIsCreateWizardOpen(true);

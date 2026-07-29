@@ -6,7 +6,9 @@ import SubmitButton from "@/components/btns/SubmitButton";
 import InputField from "@/components/form-fields/InputField";
 import TextareaField from "@/components/form-fields/TextareaField";
 import { useCreateLandingPageSessionBlockMutation } from "@/store/api/eventSessionApi";
-import ReactMultiSelect, { type MultiSelectOption } from "@/components/form-fields/ReactMultiSelect";
+import ReactMultiSelect, {
+  type MultiSelectOption,
+} from "@/components/form-fields/ReactMultiSelect";
 
 interface BlockSessionAssignModalProps {
   config: IAdminConfig;
@@ -16,43 +18,38 @@ interface BlockSessionAssignModalProps {
   editData?: ISessionBlock;
 }
 
-export default function BlockSessionAssignModal({ setIsOpen, config, wrapperId, editData }: BlockSessionAssignModalProps) {
+export default function BlockSessionAssignModal({
+  setIsOpen,
+  config,
+  wrapperId,
+  editData,
+}: BlockSessionAssignModalProps) {
   const { t } = useTranslation("event_session");
-  const [createLandingPageSessionBlock, { isLoading: isCreating }] = useCreateLandingPageSessionBlockMutation();
+  const [createLandingPageSessionBlock, { isLoading: isCreating }] =
+    useCreateLandingPageSessionBlockMutation();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [bookingLimit, setBookingLimit] = useState(0);
-  const [sessionIds, setSessionIds] = useState<string[]>( editData ? editData.sessionIds :[]);
-  console.log("🚀 ~ BlockSessionAssignModal ~ sessionIds:", sessionIds)
+  const [sessionIds, setSessionIds] = useState<string[]>(
+    editData ? editData.sessionIds : [],
+  );
 
-  const sessionOptions: MultiSelectOption[] = config.sessions
-    .filter((session) => {
-      // Collect all session IDs from existing blocks
-      const usedSessionIds = config.blocks?.flatMap((block) => block.sessionIds) || [];
-
-      // If editing, include the current block's session IDs
-      const currentBlockSessionIds = editData?.sessionIds || [];
-
-      // Allow session if it's not used in any block, or if it's in the current block being edited
-      return !usedSessionIds.includes(session._id) || currentBlockSessionIds.includes(session._id);
-    })
-    .map((session) => ({
+  const sessionOptions: MultiSelectOption[] = config.sessions.map(
+    (session) => ({
       label: session.name,
       value: session._id,
-    }));
-
-  console.log("🚀 ~ BlockSessionAssignModal ~ sessionOptions:", sessionOptions);
+    }),
+  );
 
   useEffect(() => {
     if (editData) {
-      console.log("🚀 ~ BlockSessionAssignModal ~ editData:", editData)
       setName(editData.name);
       setDescription(editData.description);
       setBookingLimit(editData.bookingLimit);
       setSessionIds(editData.sessionIds);
     }
-  }, [editData])
+  }, [editData]);
 
   const handleSubmit = async () => {
     if (!wrapperId) return;
@@ -68,7 +65,7 @@ export default function BlockSessionAssignModal({ setIsOpen, config, wrapperId, 
             isActive: true,
             blockId: editData._id,
           },
-          method: "PATCH"
+          method: "PATCH",
         }).unwrap();
       } else {
         await createLandingPageSessionBlock({
@@ -94,13 +91,14 @@ export default function BlockSessionAssignModal({ setIsOpen, config, wrapperId, 
       height="max-sm:h-[90vh] md:h-max p-4"
       maxWidth="max-w-2xl"
     >
-
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">{t("create_session_block")}</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">{t("name")} <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium mb-2">
+              {t("name")} <span className="text-red-500">*</span>
+            </label>
             <InputField
               value={name}
               onChange={setName}
@@ -110,14 +108,20 @@ export default function BlockSessionAssignModal({ setIsOpen, config, wrapperId, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">{t("booking_limit")} <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium mb-2">
+              {t("booking_limit")} <span className="text-red-500">*</span>
+            </label>
             <InputField
               type="number"
               maxLength={sessionOptions?.length || 1}
               value={bookingLimit.toString()}
               onChange={(v) => {
                 const value = Number(v);
-                if (value > 0 && (sessionOptions?.length === 0 || value <= sessionOptions?.length)) {
+                if (
+                  value > 0 &&
+                  (sessionOptions?.length === 0 ||
+                    value <= sessionOptions?.length)
+                ) {
                   setBookingLimit(value);
                 }
               }}
@@ -128,7 +132,9 @@ export default function BlockSessionAssignModal({ setIsOpen, config, wrapperId, 
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">{t("description")} <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-2">
+            {t("description")} <span className="text-red-500">*</span>
+          </label>
           <TextareaField
             value={description}
             onChange={setDescription}
@@ -156,7 +162,12 @@ export default function BlockSessionAssignModal({ setIsOpen, config, wrapperId, 
             label={t("create_block")}
             className="bg-teal-600 hover:bg-teal-700 text-white h-12"
             onClick={handleSubmit}
-            isDisabled={!name || !description || bookingLimit <= 0 || sessionIds.length === 0}
+            isDisabled={
+              !name ||
+              !description ||
+              bookingLimit <= 0 ||
+              sessionIds.length === 0
+            }
           />
         </div>
       </div>

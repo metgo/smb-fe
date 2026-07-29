@@ -125,7 +125,7 @@ export function LandingTab({
     ticketId,
     onDirtyChange,
     isDuplicate,
-    setWrapperId
+    setWrapperId,
   });
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
@@ -509,25 +509,28 @@ export function LandingTab({
                 >
                   <div className="flex items-center gap-2.5 py-2.25 px-0.5">
                     <div className="flex items-center gap-2.5 text-sm font-semibold">
-                      <ImageWithFallback src={e.images?.[0].image} alt={e.name} className="rounded w-8 h-8 object-cover" />
+                      <ImageWithFallback
+                        src={e.images?.[0].image}
+                        alt={e.name}
+                        className="rounded w-8 h-8 object-cover"
+                      />
                       <div className="flex1">
-                        <div className="flex items-center justify-between gap-4 md:gap-12">
-                          <p>{e.name}</p>
+                        <div className="flex items-center gap-1">
+                          <p className="">{e.name}</p>
                           {isAssigned && (
                             <div
                               className={clsx(
                                 "flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full",
-                                isDark
-                                  ? "bg-blue-950/50 text-blue-400 border border-blue-400/30"
-                                  : "bg-blue-50 text-blue-600 border border-blue-200",
+                                isDark ? "text-blue-400" : "text-blue-600",
                               )}
                             >
                               <Link className="w-3 h-3" />
-                              <span>{t("assigned_to_block")}: {assignedBlock.name}</span>
                             </div>
                           )}
                         </div>
-                        <span className="text-xs text-gray-500 line-clamp-1">{e.description}</span>
+                        <span className="text-xs text-gray-500 line-clamp-1">
+                          {e.description}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -545,7 +548,9 @@ export function LandingTab({
                           },
                         },
                         {
-                          title: isAssigned ? t("session_assigned_warning") : t("delete"),
+                          title: isAssigned
+                            ? t("session_assigned_warning")
+                            : t("delete"),
                           icon: Trash,
                           color: "red",
                           disabled: isAssigned,
@@ -574,7 +579,11 @@ export function LandingTab({
               </div>
               <TooltipWrapper
                 showToolTip={!hasTicket || !hasAvailableSessionsForBlock()}
-                infoText={!hasTicket ? "You must have ticket first" : t("no_sessions_available_for_block")}
+                infoText={
+                  !hasTicket
+                    ? "You must have ticket first"
+                    : t("no_sessions_available_for_block")
+                }
               >
                 <button
                   onClick={() => setIsCreateBlockWizardOpen(true)}
@@ -605,10 +614,7 @@ export function LandingTab({
             )}
 
             {config?.blocks?.map((e, blockId) => (
-              <div
-                key={blockId}
-                className="flex items-center justify-between"
-              >
+              <div key={blockId} className="flex items-center justify-between">
                 <label className="flex items-center gap-2.5 py-2.25 px-0.5 text-sm font-semibold cursor-pointer">
                   <input
                     type="checkbox"
@@ -620,9 +626,7 @@ export function LandingTab({
                     onChange={() =>
                       update({
                         blocks: config.blocks.map((s, i) =>
-                          i === blockId
-                            ? { ...s, isActive: !e.isActive }
-                            : s,
+                          i === blockId ? { ...s, isActive: !e.isActive } : s,
                         ),
                       })
                     }
