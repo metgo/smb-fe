@@ -31,6 +31,7 @@ export default function BlockSessionAssignModal({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [bookingLimit, setBookingLimit] = useState(0);
+  const [bookingLimitError, setBookingLimitError] = useState(false);
   const [sessionIds, setSessionIds] = useState<string[]>(
     editData ? editData.sessionIds : [],
   );
@@ -94,43 +95,66 @@ export default function BlockSessionAssignModal({
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">{t("create_session_block")}</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t("name")} <span className="text-red-500">*</span>
-            </label>
-            <InputField
-              value={name}
-              onChange={setName}
-              placeholder={t("enter_name")}
-              inputClasses="border-gray-300"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t("booking_limit")} <span className="text-red-500">*</span>
-            </label>
-            <InputField
-              type="number"
-              maxLength={sessionOptions?.length || 1}
-              value={bookingLimit.toString()}
-              onChange={(v) => {
-                const value = Number(v);
-                if (
-                  value > 0 &&
-                  (sessionOptions?.length === 0 ||
-                    value <= sessionOptions?.length)
-                ) {
-                  setBookingLimit(value);
-                }
-              }}
-              placeholder={t("enter_booking_limit")}
-              inputClasses="border-gray-300"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            {t("name")} <span className="text-red-500">*</span>
+          </label>
+          <InputField
+            value={name}
+            onChange={setName}
+            placeholder={t("enter_name")}
+            inputClasses="border-gray-300"
+          />
         </div>
 
+
+        <div>
+          <ReactMultiSelect
+            label={t("select_sessions") + " *"}
+            options={sessionOptions}
+            value={sessionIds}
+            onChange={setSessionIds}
+            placeholder={t("select_sessions_placeholder")}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            {t("booking_limit")} <span className="text-red-500">*</span>
+            <span className="ps-3 text-xs italic">{t("max_limit")} {sessionIds?.length || 1}</span>
+          </label>
+          <InputField
+            type="number"
+            maxLength={sessionIds?.length || 1}
+            value={bookingLimit.toString() || "1"}
+            onChange={(v) => {
+              const value = Number(v);
+              const maxLimit = sessionIds?.length || 1;
+              
+              if (value > maxLimit) {
+                setBookingLimitError(true);
+              } else {
+                setBookingLimitError(false);
+              }
+              
+              if (
+                value > 0 &&
+                (sessionIds?.length === 0 ||
+                  value <= sessionIds?.length)
+              ) {
+                setBookingLimit(value);
+              }
+            }}
+            placeholder={t("enter_booking_limit")}
+            inputClasses={bookingLimitError ? "border-red-500" : "border-gray-300"}
+          />
+          {bookingLimitError && (
+            <p className="text-xs text-red-500 mt-1">
+              {t("booking_limit_exceeded", { max: sessionIds?.length || 1 })}
+            </p>
+          )}
+        </div>
+        
         <div>
           <label className="block text-sm font-medium mb-2">
             {t("description")} <span className="text-red-500">*</span>
@@ -143,19 +167,9 @@ export default function BlockSessionAssignModal({
             inputClasses="border-gray-300"
           />
         </div>
-
-        <div>
-          <ReactMultiSelect
-            label={t("select_sessions") + " *"}
-            options={sessionOptions}
-            value={sessionIds}
-            onChange={setSessionIds}
-            placeholder={t("select_sessions_placeholder")}
-          />
-        </div>
       </div>
 
-      <div className="flex items-center justify-end mt-12">
+      <div className="flex items-center justify-end mt-6">
         <div className="w-40">
           <SubmitButton
             loading={isCreating}

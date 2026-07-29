@@ -309,6 +309,8 @@
 
   "add_block": "إضافة كتلة",
   "greeting": "تحية",
+  "booking_limit_exceeded": "لا يمكن أن يتجاوز حد الحجز {{max}}",
+  "max_limit": "الحد الأقصى:",
   "assign_sessions_into_block": "تعيين الجلسات إلى كتلة",
   "assign_block_help": "قم بتجميع الجلسات في كتل لتنظيم أفضل وإدارة الحجوزات.",
   "assigned_sessions": "الجلسات المخصصة",

@@ -121,10 +121,6 @@ export function useLandingPageTab({
           images: [],
           ticketIds: [],
           bookinLimit: 1,
-          sessions: existingSession?.sessions?.map((session) => ({
-            ...session,
-            images: [],
-          })),
         };
         (onChange(formattedExsitingSession),
           (savedConfigRef.current = formattedExsitingSession));
@@ -137,8 +133,8 @@ export function useLandingPageTab({
 
   const tickets = isDuplicate
     ? ticketRes?.data?.tickets?.filter(
-        (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
-      )
+      (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
+    )
     : (ticketRes?.data?.tickets ?? []);
 
   const isDirty =
@@ -302,9 +298,10 @@ export function useLandingPageTab({
     }
     try {
       if (wrapperId && !isDuplicate) {
+        const { sessions, blocks, ...rest } = config;
         await updateEventSession({
           sessionId: wrapperId,
-          body: config,
+          body: rest,
         }).unwrap();
         savedConfigRef.current = config;
         toast.success(t("toast_session_updated"));

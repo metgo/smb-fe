@@ -309,6 +309,8 @@
 
   "add_block": "הוסף בלוק",
   "greeting": "ברכה",
+  "booking_limit_exceeded": "לא ניתן לחרוג ממגבלת ההזמנות {{max}}",
+  "max_limit": "מגבלה מקסימלית:",
   "assign_sessions_into_block": "הקצאת מפגשים לבלוק",
   "assign_block_help": "קבצו מפגשים לבלוקים לארגון טוב יותר וניהול הזמנות.",
   "assigned_sessions": "מפגשים מוקצים",

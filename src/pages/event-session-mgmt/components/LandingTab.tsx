@@ -510,7 +510,7 @@ export function LandingTab({
                   <div className="flex items-center gap-2.5 py-2.25 px-0.5">
                     <div className="flex items-center gap-2.5 text-sm font-semibold">
                       <ImageWithFallback
-                        src={e.images?.[0].image}
+                        src={e?.images?.[0]?.image}
                         alt={e.name}
                         className="rounded w-8 h-8 object-cover"
                       />

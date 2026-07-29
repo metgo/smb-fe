@@ -155,6 +155,8 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
         eventsRefetch();
         setIsOpen(false);
       }}
+      height="md:min-h-[60vh]"
+      maxWidth="max-w-3xl"
       showSpinner={isFetching || isLoading}
     >
       <div className="p-8 space-y-4">
