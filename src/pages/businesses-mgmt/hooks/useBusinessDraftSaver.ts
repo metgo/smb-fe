@@ -10,7 +10,6 @@ import { getLngWiseStr } from "@/helpers";
 
 interface UseBusinessDraftSaverProps {
   opMode: IOpMode;
-  // refetch: () => void;
   onClose: () => void;
   currentStep: number;
   businessId: string;
@@ -23,7 +22,6 @@ interface UseBusinessDraftSaverProps {
 export function useBusinessDraftSaver({
   opMode,
   onClose,
-  // refetch,
   currentStep,
   businessId,
   setBusinessId,
@@ -35,28 +33,38 @@ export function useBusinessDraftSaver({
   const { isTraveller } = useUserRoles();
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   const { t } = useTranslation("toast");
-  // 🔹 Mark step dirty
+
   const markDirty = useCallback((step: number) => {
     setDirtySteps((prev) => new Set(prev).add(step));
   }, []);
 
-  // 🔹 Save Draft (manual or autosave)
   const saveDraft = useCallback(
     async (isPublish = false, processedFormData?: any) => {
       try {
-        let internalbusinessId;
+        // Reuse the business already created during the name-availability
+        // check (or from editData in EDIT/DUPLICATE) instead of assuming
+        // none exists yet.
+        let internalBusinessId = businessId;
 
-        // 1️⃣ Initialize event if not created yet
-        if (opMode !== IOpMode.EDIT) {
-          const name = getLngWiseStr(stepPayloadMap.name, stepPayloadMap.nameHe, stepPayloadMap.nameAr);
+        // 1️⃣ Only create if we truly don't have a business yet.
+        // Previously this ran unconditionally whenever opMode !== EDIT,
+        // which caused a second "create" call (with a deduped name) even
+        // after the availability check had already created one.
+        if (opMode !== IOpMode.EDIT && !internalBusinessId) {
+          const name = getLngWiseStr(
+            stepPayloadMap.name,
+            stepPayloadMap.nameHe,
+            stepPayloadMap.nameAr,
+          );
           if (!name) {
             toast.error(t("name_required"));
             return;
           }
           const res = await initBusinessCreate({ name }).unwrap();
-          internalbusinessId = res?.id;
+          internalBusinessId = res?.id;
           setBusinessId(res?.id);
         }
+
         // 2️⃣ Build base payload
         let payload = processedFormData || stepPayloadMap;
 
@@ -70,9 +78,15 @@ export function useBusinessDraftSaver({
 
         if (!Object.keys(payload).length) return;
 
-        // 4️⃣ Update event
+        if (!internalBusinessId) {
+          toast.error(t("draft_failed"));
+          return;
+        }
+
+        // 4️⃣ Update (patch) — this now always targets the SAME business
+        // whether it was created here or during the availability check.
         await updateBusiness({
-          businessId: internalbusinessId || businessId!,
+          businessId: internalBusinessId,
           body: payload,
         }).unwrap();
 
@@ -85,15 +99,12 @@ export function useBusinessDraftSaver({
 
         if (opMode === IOpMode.DUPLICATE) {
           navigate(
-            `${routes.businessDetails}?businessId=${internalbusinessId}`,
+            `${routes.businessDetails}?businessId=${internalBusinessId}`,
           );
-        } else {
-          console.log(".");
-          // refetch();
         }
         onClose();
         toast.success(isPublish ? t("business_published") : t("draft_saved"));
-        return internalbusinessId || businessId || undefined;
+        return internalBusinessId;
       } catch (err: any) {
         toast.error(err?.data?.message || t("draft_failed"));
       }
@@ -107,7 +118,6 @@ export function useBusinessDraftSaver({
       updateBusiness,
       setBusinessId,
       isTraveller,
-      // refetch,
       onClose,
       navigate,
       opMode,

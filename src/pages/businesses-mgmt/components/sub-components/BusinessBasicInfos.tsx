@@ -38,6 +38,7 @@ interface BusinessBasicInfosProps {
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   businessId: string;
+  setBusinessId?: (id: string) => void;
   selectedAuthorityId: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
@@ -58,6 +59,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   selectedAuthorityId,
   setSelectAuthorityId,
   businessId,
+  setBusinessId,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   businessAssociatedWebsites = [],
@@ -98,7 +100,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         itemAssociatedWebsites={businessAssociatedWebsites}
       />
 
-      <BusinessContentForm formData={formData} onChange={handleChange} />
+      <BusinessContentForm
+        formData={formData}
+        onChange={handleChange}
+        onBusinessCreated={setBusinessId}
+      />
 
       {/* Internal Notes */}
       {isSuperadmin && (

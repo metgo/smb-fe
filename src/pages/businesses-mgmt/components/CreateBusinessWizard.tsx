@@ -952,6 +952,7 @@ function CreateBusinessWizardInner({
           <BusinessBasicInfos
             {...commonProps}
             businessId={businessId}
+            setBusinessId={setBusinessId}
             selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
             selectedAuthorityId={selectedAuthorityId}

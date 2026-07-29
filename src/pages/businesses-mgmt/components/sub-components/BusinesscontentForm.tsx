@@ -9,11 +9,13 @@ import { toast } from "sonner";
 interface ArticleContentFormProps {
   formData: Record<string, any>;
   onChange: (updates: Record<string, any>) => void;
+  onBusinessCreated?: (businessId: string) => void;
 }
 
 export const BusinessContentForm = ({
   formData,
   onChange,
+  onBusinessCreated,
 }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
   const {
@@ -37,12 +39,16 @@ export const BusinessContentForm = ({
 
     setAvailabilityStatus(null);
     try {
-      await checkAvailability({ name: businessName }).unwrap();
+      const res = await checkAvailability({ name: businessName }).unwrap();
       setAvailabilityStatus('available');
       toast.success(t("business_name_available"));
+      // Notify parent that business was created during availability check
+      if (res?.id && onBusinessCreated) {
+        onBusinessCreated(res.id);
+      }
     } catch (error: any) {
       setAvailabilityStatus('unavailable');
-     
+
     }
   };
 
