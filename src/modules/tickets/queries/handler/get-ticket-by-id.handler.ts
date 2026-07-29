@@ -1,7 +1,7 @@
 import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
@@ -23,15 +23,34 @@ export class GetTicketByIdHandler implements IQueryHandler<GetTicketByIdQuery> {
   async execute(queries: GetTicketByIdQuery): Promise<Ticket> {
     try {
       const { id } = queries;
+      const tickets = await this.TicketModel.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(id),
+            status: TicketStatus.ACTIVE,
+          },
+        },
+        {
+          $lookup: {
+            from: 'sessionwrappers',
+            localField: '_id',
+            foreignField: 'ticketIds',
+            as: 'sessionWrappers',
+          },
+        },
+        {
+          $addFields: {
+            wrapperId: { $arrayElemAt: ['$sessionWrappers._id', 0] },
+          },
+        },
+        {
+          $project: {
+            sessionWrappers: 0,
+          },
+        },
+      ]);
 
-      const findQuery: any = {
-        _id: id,
-        status: TicketStatus.ACTIVE,
-      };
-
-      const select = 'name description price status images';
-
-      const ticket = await this.TicketModel.findOne(findQuery).select(select);
+      const ticket = tickets[0];
 
       if (!ticket) {
         throw new NotFoundException(`Ticket ${ServerErrors.NOT_FOUND}`);

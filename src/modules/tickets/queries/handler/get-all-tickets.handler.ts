@@ -44,9 +44,27 @@ export class GetAllTicketsHandler implements IQueryHandler<GetAllTicketsQuery> {
         ],
       };
 
-      const tickets = await this.TicketModel.find(query).select(
-        '_id name description images eventId price quantity status type dayDescription',
-      );
+      const tickets = await this.TicketModel.aggregate([
+        { $match: query },
+        {
+          $lookup: {
+            from: 'sessionwrappers',
+            localField: '_id',
+            foreignField: 'ticketIds',
+            as: 'sessionWrappers',
+          },
+        },
+        {
+          $addFields: {
+            wrapperId: { $arrayElemAt: ['$sessionWrappers._id', 0] },
+          },
+        },
+        {
+          $project: {
+            sessionWrappers: 0,
+          },
+        },
+      ]);
 
       this.logger.info('[TICKET]: TICKETS RETRIEVED');
 

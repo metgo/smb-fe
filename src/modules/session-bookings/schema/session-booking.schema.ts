@@ -42,6 +42,9 @@ export class SessionBooking extends AuditableSchema {
     identifierId: string;
 
   @Prop({ required: true, index: true })
+    sessionId: string;
+
+  @Prop({ required: true })
     sessionName: string;
 
   @Prop({ required: true })
@@ -85,6 +88,9 @@ export class SessionBooking extends AuditableSchema {
   @Prop({ required: false })
     bookingReference: string;
 
+  @Prop({ required: false, index: true })
+    inviteCode?: string;
+
   @Prop({ required: false })
     consumedAt?: Date; // Single-use lock: set when token is consumed
 
@@ -98,7 +104,13 @@ export const SessionBookingSchema = SchemaFactory.createForClass(SessionBooking)
 // Indexes for queries
 SessionBookingSchema.index({ userId: 1, status: 1 });
 SessionBookingSchema.index({
-  wrapperId: 1, sessionName: 1, slotDate: 1, slotTime: 1,
+  wrapperId: 1, sessionId: 1, slotDate: 1, slotTime: 1,
+});
+SessionBookingSchema.index({
+  wrapperId: 1,
+  inviteCode: 1,
+  'purchaserInfo.email': 1,
+  status: 1,
 });
 SessionBookingSchema.index({ holdExpiresAt: 1, status: 1 });
 SessionBookingSchema.index({ status: 1, isDeleted: 1 });

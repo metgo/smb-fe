@@ -5,6 +5,11 @@ import {
 import { Type } from 'class-transformer';
 
 export class SessionSlotDto {
+  @ApiProperty({ required: true, example: '507f1f77bcf86cd799439011' })
+  @IsString()
+  @IsNotEmpty()
+    sessionId: string;
+
   @ApiProperty({ required: true, example: 'אמבט צלילים ומנוחה עמוקה' })
   @IsString()
   @IsNotEmpty()
@@ -50,12 +55,14 @@ export class CreateSessionHoldDto {
     description: 'Array of 1-3 sessions to book atomically. TTL = 7 + (3 × extra sessions)',
     example: [
       {
+        sessionId: '507f1f77bcf86cd799439011',
         sessionName: 'אמבט צלילים',
         slotDate: '2026-07-11',
         slotTime: '10:00',
         room: 'מאיה ר.',
       },
       {
+        sessionId: '507f1f77bcf86cd799439012',
         sessionName: 'הנשימה',
         slotDate: '2026-07-12',
         slotTime: '14:00',

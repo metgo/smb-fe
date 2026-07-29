@@ -34,7 +34,7 @@ export class Ticket extends AuditableSchema {
   @Prop()
     description: string;
 
-  @Prop()
+  @Prop({ maxlength: 500 })
     greeting: string;
 
   @Prop()
@@ -53,6 +53,9 @@ export class Ticket extends AuditableSchema {
     required: true,
   })
     eventId: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
+    wrapperId?: string;
 
   @Prop({
     type: {

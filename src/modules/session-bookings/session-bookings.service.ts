@@ -182,15 +182,27 @@ export class SessionBookingsService {
     customerPhone?: string;
     eventCode?: string;
     scope?: string[];
+    inviteCode?: string;
     isConsumed: boolean;
     existingBooking?: {
       bookingId: string;
+      sessionId: string;
       sessionName: string;
       slotDate: string;
       slotTime: string;
       room?: string;
       bookingReference?: string;
     };
+    existingBookings?: Array<{
+      bookingId: string;
+      sessionId: string;
+      sessionName: string;
+      slotDate: string;
+      slotTime: string;
+      room?: string;
+      bookingReference?: string;
+      status: string;
+    }>;
   }> {
     // Decrypt and validate the token
     let payload: InvitePayload;
@@ -208,6 +220,16 @@ export class SessionBookingsService {
     // Real booking links block after first CONFIRMED booking
     let isConsumed = false;
     let existingBooking = null;
+    let existingBookings: Array<{
+      bookingId: string;
+      sessionId: string;
+      sessionName: string;
+      slotDate: string;
+      slotTime: string;
+      room?: string;
+      bookingReference?: string;
+      status: string;
+    }> = [];
 
     if (!payload.code) {
       // Only enforce single-use lock for real booking links (no code)
@@ -224,12 +246,39 @@ export class SessionBookingsService {
         isConsumed = true;
         existingBooking = {
           bookingId: String(existingConfirmed._id),
+          sessionId: existingConfirmed.sessionId,
           sessionName: existingConfirmed.sessionName,
           slotDate: existingConfirmed.slotDate,
           slotTime: existingConfirmed.slotTime,
           room: existingConfirmed.room,
           bookingReference: existingConfirmed.bookingReference,
         };
+      }
+    } else {
+      const confirmedBookings = await this.sessionBookingModel
+        .find({
+          wrapperId: payload.wrapperId,
+          'purchaserInfo.email': payload.email,
+          inviteCode: payload.code,
+          status: { $in: ['ACTIVE', 'CONFIRMED', 'ATTENDED'] },
+          isDeleted: { $ne: true },
+        })
+        .sort({ confirmedAt: 1, createdAt: 1 })
+        .lean();
+
+      existingBookings = confirmedBookings.map((booking: any) => ({
+        bookingId: String(booking._id),
+        sessionId: booking.sessionId,
+        sessionName: booking.sessionName,
+        slotDate: booking.slotDate,
+        slotTime: booking.slotTime,
+        room: booking.room,
+        bookingReference: booking.bookingReference,
+        status: booking.status,
+      }));
+
+      if (existingBookings.length > 0) {
+        [existingBooking] = existingBookings;
       }
     }
 
@@ -241,8 +290,16 @@ export class SessionBookingsService {
       isConsumed,
     };
 
+    if (payload.code) {
+      response.inviteCode = payload.code;
+    }
+
     if (existingBooking) {
       response.existingBooking = existingBooking;
+    }
+
+    if (existingBookings.length > 0) {
+      response.existingBookings = existingBookings;
     }
 
     return response;
@@ -253,10 +310,11 @@ export class SessionBookingsService {
   /**
    * Get session wrapper with active sessions and availability data.
    * No auth required — wrapper must be isActive.
+   * If code is provided, returns existingBookings for invite code context.
    */
-  async getSessionByWrapperId(wrapperId: string): Promise<any> {
+  async getSessionByWrapperId(wrapperId: string, dto?: any): Promise<any> {
     try {
-      this.logger.info('[SESSION_BOOKINGS]: GET session', { wrapperId });
+      this.logger.info('[SESSION_BOOKINGS]: GET session', { wrapperId, code: dto?.code });
 
       const query: any = { isDeleted: { $ne: true } };
       try {
@@ -302,36 +360,43 @@ export class SessionBookingsService {
             (session.dates || []).map(async (dateObj: any) => {
               const slotsWithAvailability = await Promise.all(
                 (dateObj.slots || []).map(async (slot: any) => {
+                  // Build base query for counting bookings
+                  const baseQuery = {
+                    wrapperId,
+                    sessionId: session._id.toString(),
+                    slotDate: dateObj.date,
+                    slotTime: slot.time,
+                    isDeleted: { $ne: true },
+                  };
+
+                  // If invite code is provided, exclude user's own bookings from availability count
+                  // This allows them to see their own booking as "available" for changes
+                  // We exclude both CONFIRMED and ACTIVE bookings with this invite code
+                  const excludeUserQuery = dto?.code
+                    ? { inviteCode: { $ne: dto.code } }
+                    : {};
+
                   const [confirmed, held, attended] = await Promise.all([
                     this.connection
                       .collection('sessionbookings')
                       .countDocuments({
-                        wrapperId,
-                        sessionName: session.name,
-                        slotDate: dateObj.date,
-                        slotTime: slot.time,
+                        ...baseQuery,
+                        ...excludeUserQuery,
                         status: 'CONFIRMED',
-                        isDeleted: { $ne: true },
                       }),
                     this.connection
                       .collection('sessionbookings')
                       .countDocuments({
-                        wrapperId,
-                        sessionName: session.name,
-                        slotDate: dateObj.date,
-                        slotTime: slot.time,
+                        ...baseQuery,
+                        ...excludeUserQuery,
                         status: 'ACTIVE',
-                        isDeleted: { $ne: true },
                       }),
                     this.connection
                       .collection('sessionbookings')
                       .countDocuments({
-                        wrapperId,
-                        sessionName: session.name,
-                        slotDate: dateObj.date,
-                        slotTime: slot.time,
+                        ...baseQuery,
+                        ...excludeUserQuery,
                         status: 'ATTENDED',
-                        isDeleted: { $ne: true },
                       }),
                   ]);
 
@@ -364,6 +429,37 @@ export class SessionBookingsService {
         }),
       );
 
+      // If invite code is provided, fetch existing bookings for pre-selection
+      let existingBookings: any[] = [];
+      let existingBooking: any = null;
+      if (dto?.code) {
+        const confirmedBookings = await this.connection
+          .collection('sessionbookings')
+          .find({
+            wrapperId,
+            inviteCode: dto.code,
+            status: { $in: ['ACTIVE', 'CONFIRMED', 'ATTENDED'] },
+            isDeleted: { $ne: true },
+          })
+          .sort({ confirmedAt: 1, createdAt: 1 })
+          .toArray();
+
+        existingBookings = confirmedBookings.map((booking: any) => ({
+          bookingId: String(booking._id),
+          sessionId: booking.sessionId,
+          sessionName: booking.sessionName,
+          slotDate: booking.slotDate,
+          slotTime: booking.slotTime,
+          room: booking.room,
+          bookingReference: booking.bookingReference,
+          status: booking.status,
+        }));
+
+        if (existingBookings.length > 0) {
+          [existingBooking] = existingBookings;
+        }
+      }
+
       return {
         success: true,
         message: 'Session details retrieved',
@@ -372,10 +468,12 @@ export class SessionBookingsService {
           brand: wrapper.brand,
           headline: wrapper.headline,
           subhead: wrapper.subhead,
-          selectionMode: wrapper.selectionMode,
+          blocks: wrapper.blocks || [],
           image: imageUrl,
           theme: wrapper.themeId,
           events: sessionsWithAvailability,
+          ...(existingBooking && { existingBooking }),
+          ...(existingBookings.length > 0 && { existingBookings }),
         },
       };
     } catch (err) {
@@ -399,7 +497,7 @@ export class SessionBookingsService {
   async createBatchSessionHolds(
     token: string,
     wrapperId: string,
-    sessions: Array<{ sessionName: string; slotDate: string; slotTime: string; room?: string }>,
+    sessions: Array<{ sessionId: string; sessionName: string; slotDate: string; slotTime: string; room?: string }>,
   ): Promise<any> {
     // ── PRE-VALIDATION (BEFORE transaction) ──────────────────────────────────
     // Decrypt token early to check for existing bookings before transaction
@@ -424,7 +522,7 @@ export class SessionBookingsService {
       const existingConfirmed = await this.sessionBookingModel.findOne({
         'purchaserInfo.email': payload.email,
         wrapperId,
-        sessionName: sessions[0].sessionName,
+        sessionId: sessions[0].sessionId,
         status: 'CONFIRMED',
         isDeleted: { $ne: true },
       }).lean();
@@ -469,15 +567,36 @@ export class SessionBookingsService {
       const ttlMinutes = HOLD_TTL_MINUTES + (3 * (sessions.length - 1)); // 7 + (3 × extraSessions)
       holdExpiresAt.setMinutes(holdExpiresAt.getMinutes() + ttlMinutes);
 
+      // ── 2a. Validate block selection limits if blocks exist ─────────────────
+      const blocks = wrapper.blocks || [];
+      if (blocks.length > 0) {
+        const activeBlocks = blocks.filter((block: any) => block.isActive);
+
+        const violation = activeBlocks.find((block: any) => {
+          const blockSessionIds = new Set((block.sessionIds || []).map((id: any) => id.toString()));
+          const selectedInBlock = sessions.filter(s => blockSessionIds.has(s.sessionId));
+          return selectedInBlock.length > block.bookingLimit;
+        });
+
+        if (violation) {
+          const blockSessionIds = new Set((violation.sessionIds || []).map((id: any) => id.toString()));
+          const selectedInBlock = sessions.filter(s => blockSessionIds.has(s.sessionId));
+          await mongoSession.abortTransaction();
+          throw new BadRequestException(
+            `You can only select up to ${violation.bookingLimit} session(s) from "${violation.name}". You selected ${selectedInBlock.length}.`,
+          );
+        }
+      }
+
       // Validate all sessions first
       sessions.forEach(sessionData => {
         const sessionInWrapper = (wrapper.sessions || []).find(
-          (s: any) => s.name === sessionData.sessionName,
+          (s: any) => s._id.toString() === sessionData.sessionId,
         );
 
         if (!sessionInWrapper) {
           throw new BadRequestException(
-            `Session "${sessionData.sessionName}" not found in wrapper`,
+            `Session "${sessionData.sessionId}" not found in wrapper`,
           );
         }
 
@@ -499,7 +618,7 @@ export class SessionBookingsService {
       const spotsChecks = await Promise.all(
         sessions.map(async sessionData => {
           const sessionInWrapper = (wrapper.sessions || []).find(
-            (s: any) => s.name === sessionData.sessionName,
+            (s: any) => s._id.toString() === sessionData.sessionId,
           );
           const dateObj = (sessionInWrapper.dates || []).find(
             (d: any) => d.date === sessionData.slotDate,
@@ -513,7 +632,7 @@ export class SessionBookingsService {
             sessionData.slotTime,
             slot.capacity,
             wrapperId,
-            sessionData.sessionName,
+            sessionData.sessionId,
           );
 
           return { sessionData, spotsLeft };
@@ -524,7 +643,7 @@ export class SessionBookingsService {
       spotsChecks.forEach(({ sessionData, spotsLeft }) => {
         if (spotsLeft <= 0) {
           throw new ConflictException(
-            `No spots available for ${sessionData.sessionName} on ${sessionData.slotDate} at ${sessionData.slotTime}`,
+            `No spots available for ${sessionData.sessionId} on ${sessionData.slotDate} at ${sessionData.slotTime}`,
           );
         }
       });
@@ -532,11 +651,13 @@ export class SessionBookingsService {
       // Create all holds in parallel using native MongoDB insert
       const docsToInsert = sessions.map(sessionData => ({
         wrapperId,
+        sessionId: sessionData.sessionId,
         sessionName: sessionData.sessionName,
         slotDate: sessionData.slotDate,
         slotTime: sessionData.slotTime,
         room: sessionData.room,
         purchaserInfo,
+        inviteCode: payload.code || null,
         holdExpiresAt,
         status: 'ACTIVE',
         createdAt: new Date(),
@@ -672,14 +793,40 @@ export class SessionBookingsService {
         throw new NotFoundException('Session wrapper not found');
       }
 
+      // ── 4a. Validate block selection limits if blocks exist ─────────────────
+      const blocks = wrapperForCapacity.blocks || [];
+      if (blocks.length > 0) {
+        try {
+          const activeBlocks = blocks.filter((block: any) => block.isActive);
+
+          const violation = activeBlocks.find((block: any) => {
+            const blockSessionIds = new Set(block.sessionIds || []);
+            const selectedInBlock = holds.filter(h => blockSessionIds.has(h.sessionId));
+            return selectedInBlock.length > block.bookingLimit;
+          });
+
+          if (violation) {
+            const blockSessionIds = new Set(violation.sessionIds || []);
+            const selectedInBlock = holds.filter(h => blockSessionIds.has(h.sessionId));
+            await mongoSession.abortTransaction();
+            throw new BadRequestException(
+              `You can only select up to ${violation.bookingLimit} session(s) from "${violation.name}". You selected ${selectedInBlock.length}.`,
+            );
+          }
+        } catch (blockErr) {
+          await mongoSession.abortTransaction();
+          throw blockErr;
+        }
+      }
+
       try {
         await Promise.all(holds.map(async hold => {
           const sessionData = (wrapperForCapacity.sessions || []).find(
-            (s: any) => s.name === hold.sessionName,
+            (s: any) => s._id.toString() === hold.sessionId,
           );
 
           if (!sessionData) {
-            throw new NotFoundException(`Session "${hold.sessionName}" not found in wrapper`);
+            throw new NotFoundException(`Session "${hold.sessionId}" not found in wrapper`);
           }
 
           const dateObj = (sessionData.dates || []).find(
@@ -703,11 +850,11 @@ export class SessionBookingsService {
             hold.slotTime,
             slot.capacity,
             hold.wrapperId,
-            hold.sessionName,
+            hold.sessionId,
           );
           if (spotsLeft <= 0) {
             throw new ConflictException(
-              `No spots available for ${hold.sessionName}. Please select another time.`,
+              `No spots available for ${hold.sessionId}. Please select another time.`,
             );
           }
         }));
@@ -731,6 +878,7 @@ export class SessionBookingsService {
             email: hold.purchaserInfo.email,
             phone: hold.purchaserInfo.phone,
             wrapperId: hold.wrapperId,
+            code: payload.code,
             exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
           };
           const qrToken = encryptInviteToken(checkInPayload);
@@ -742,7 +890,7 @@ export class SessionBookingsService {
           return {
             bookingId: String(hold._id),
             bookingReference,
-            sessionName: hold.sessionName,
+            sessionId: hold.sessionId,
             slotDate: hold.slotDate,
             slotTime: hold.slotTime,
             room: hold.room,
@@ -761,6 +909,7 @@ export class SessionBookingsService {
               qrToken: confirmedBookings[index].qrToken,
               bookingReference: confirmedBookings[index].bookingReference,
               identifierId,
+              inviteCode: payload.code || hold.inviteCode || null,
               ...(comments && { comments }),
               updatedAt: confirmedAt,
             },
@@ -773,6 +922,42 @@ export class SessionBookingsService {
       }
 
       await mongoSession.commitTransaction();
+
+      // ── 7. Cancel previous bookings for this invite code (after successful confirmation)
+      // This must happen AFTER transaction commit to prevent orphaned records if confirmation fails
+      if (payload.code) {
+        try {
+          const cancelResult = await this.sessionBookingModel.updateMany(
+            {
+              wrapperId: holds[0].wrapperId,
+              'purchaserInfo.email': payload.email,
+              inviteCode: payload.code,
+              status: { $in: ['ACTIVE', 'CONFIRMED'] },
+              _id: { $nin: holdObjectIds },
+              isDeleted: { $ne: true },
+            },
+            {
+              $set: {
+                status: 'CANCELLED',
+                updatedAt: confirmedAt,
+              },
+            },
+          );
+          this.logger.info('[SESSION_BOOKINGS]: Previous bookings cancelled for invite code', {
+            cancelledCount: cancelResult.modifiedCount,
+            inviteCode: payload.code,
+            email: payload.email,
+          });
+        } catch (cancelErr) {
+          // Log but don't fail - new bookings are already confirmed
+          this.logger.error('[SESSION_BOOKINGS]: Failed to cancel previous bookings for invite code', {
+            error: cancelErr instanceof Error ? cancelErr.message : String(cancelErr),
+            inviteCode: payload.code,
+            email: payload.email,
+            newBookingIds: holdObjectIds,
+          });
+        }
+      }
 
       this.logger.info('[SESSION_BOOKINGS]: Bookings confirmed', {
         count: confirmedBookings.length,
@@ -827,58 +1012,169 @@ export class SessionBookingsService {
             }
           };
 
-          // Send one email per confirmed booking — each has its own QR and reference
-          await Promise.all(
-            confirmedBookings.map(async (booking: any) => {
-              // QR points to Workspace-FE verify-session page (room rep check-in UI)
-              // Format: FE_BASE_URL/verify-session/:wrapperId/:sessionBookingId
-              const checkInUrl = `${FE}verify-session/${holds[0].wrapperId}/${booking.bookingId}`;
-              let checkInQrUrl = '';
+          // Send ONE combined email with all sessions and bulk details
+          const sessionsWithBlocks = confirmedBookings.map(async (booking: any) => {
+            const sessionData = (wrapperForCapacity.sessions || []).find(
+              (s: any) => s._id.toString() === booking.sessionId,
+            );
+            const sessionGreeting = sessionData?.greeting || '';
 
-              try {
-                checkInQrUrl = await this.qrCodeService.generateQRCode(
-                  checkInUrl,
-                  `checkin-${booking.bookingReference}`,
-                );
-              } catch (qrErr) {
-                this.logger.warn('[SESSION_BOOKINGS]: QR code generation failed', {
-                  error: qrErr instanceof Error ? qrErr.message : String(qrErr),
-                });
+            // Find which block this session belongs to (if any)
+            let blockInfo = null;
+            if (blocks.length > 0) {
+              const block = blocks.find((b: any) => b.isActive && (b.sessionIds || []).includes(booking.sessionId));
+              if (block) {
+                blockInfo = {
+                  name: block.name,
+                  description: block.description,
+                  bookingLimit: block.bookingLimit,
+                };
               }
+            }
 
-              const mergeVars = {
-                ...emailFields,
-                CUSTOMER_NAME: payload.name,
-                CUSTOMER_EMAIL: payload.email,
-                SESSION_NAME: booking.sessionName,
-                SLOT_DATE: formatDate(booking.slotDate),
-                SLOT_TIME: booking.slotTime,
-                ROOM: booking.room || 'לא צוין',
-                BOOKING_REFERENCE: booking.bookingReference,
-                QR_CODE_URL: checkInQrUrl || checkInUrl,
-                CHECK_IN_URL: checkInUrl,
-                BUTTON_LINK: externalApi?.websiteUrl,
-                BUSINESSADDRESS: '',
-                SUPPORT_EMAIL: externalApi?.email || 'support@metgo.app',
-                SUPPORT_PHONE: externalApi?.whatsappNumber || '',
-                MANAGEMENT_LINK: externalApi?.websiteUrl || '',
+            // Generate QR code for this session
+            const checkInUrl = `${FE}verify-session/${holds[0].wrapperId}/${booking.bookingId}`;
+            let checkInQrUrl = '';
+            try {
+              checkInQrUrl = await this.qrCodeService.generateQRCode(
+                checkInUrl,
+                `checkin-${booking.bookingReference}`,
+              );
+            } catch (qrErr) {
+              this.logger.warn('[SESSION_BOOKINGS]: QR code generation failed', {
+                error: qrErr instanceof Error ? qrErr.message : String(qrErr),
+              });
+            }
+
+            return {
+              sessionId: booking.sessionId,
+              sessionName: sessionData?.name || '',
+              sessionGreeting,
+              slotDate: formatDate(booking.slotDate),
+              slotTime: booking.slotTime,
+              room: booking.room || 'לא צוין',
+              bookingReference: booking.bookingReference,
+              qrCodeUrl: checkInQrUrl || checkInUrl,
+              checkInUrl,
+              blockInfo,
+            };
+          });
+
+          // Generate HTML for sessions grouped by blocks
+          let sessionsHtml = '';
+
+          const sessionsData = await Promise.all(sessionsWithBlocks);
+
+          // Group sessions by block for display
+          const sessionsByBlock: any = {};
+          if (blocks.length > 0) {
+            blocks.forEach((block: any) => {
+              if (block.isActive) {
+                sessionsByBlock[block.name] = {
+                  description: block.description,
+                  bookingLimit: block.bookingLimit,
+                  sessions: sessionsData.filter((s: any) => s.blockInfo?.name === block.name),
+                };
+              }
+            });
+            // Add sessions not in any block
+            const ungroupedSessions = sessionsData.filter((s: any) => !s.blockInfo);
+            if (ungroupedSessions.length > 0) {
+              sessionsByBlock.general = {
+                description: '',
+                bookingLimit: sessionsData.length,
+                sessions: ungroupedSessions,
               };
+            }
+          } else {
+            // No blocks - put all in general
+            sessionsByBlock.general = {
+              description: '',
+              bookingLimit: sessionsData.length,
+              sessions: sessionsData,
+            };
+          }
 
-              await this.mailchimpService.sendTransactionalEmail({
-                to: payload.email,
-                templatedId: DynamicEmailTemplate.SessionBookingConfirmationFinal,
-                from_email: externalApi?.email,
-                from_name: externalApi?.name,
-                mergeVars,
-              });
+          // Generate sessions HTML grouped by blocks
+          Object.keys(sessionsByBlock).forEach(blockName => {
+            const block = sessionsByBlock[blockName];
 
-              this.logger.info('[SESSION_BOOKINGS]: Confirmation email sent', {
-                email: payload.email,
-                bookingReference: booking.bookingReference,
-                sessionName: booking.sessionName,
-              });
-            }),
-          );
+            sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f9f9f9; border-radius: 8px; margin: 20px 0;">';
+            sessionsHtml += '<tr><td style="padding: 15px;">';
+
+            // Block header
+            if (blockName !== 'general') {
+              sessionsHtml += `<p style="margin: 0 0 5px 0; font-weight: bold; color: #313131; text-align: right; font-size: 16px;">📦 ${blockName}</p>`;
+              if (block.description) {
+                sessionsHtml += `<p style="margin: 0 0 10px 0; color: #666; text-align: right; font-size: 13px;">${block.description}</p>`;
+              }
+              sessionsHtml += `<p style="margin: 0 0 15px 0; color: #1976d2; text-align: right; font-size: 12px;">נבחרו ${block.sessions.length} מתוך ${block.bookingLimit} מפגשים</p>`;
+            } else {
+              sessionsHtml += '<p style="margin: 0 0 15px 0; font-weight: bold; color: #313131; text-align: right; font-size: 16px;">📋 מפגשים כלליים</p>';
+            }
+
+            // Sessions in block
+            block.sessions.forEach((session: any) => {
+              sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 6px; margin: 10px 0; border: 1px solid #e0e0e0;">';
+              sessionsHtml += '<tr><td style="padding: 12px;">';
+
+              sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0">';
+              sessionsHtml += '<tr>';
+              sessionsHtml += '<td style="padding: 0; width: 70%; vertical-align: top;">';
+
+              sessionsHtml += `<p style="margin: 0 0 8px 0; font-weight: bold; color: #313131; text-align: right; font-size: 14px;">${session.sessionName}</p>`;
+              if (session.sessionGreeting) {
+                sessionsHtml += `<p style="margin: 0 0 8px 0; color: #666; text-align: right; font-size: 12px; font-style: italic;">${session.sessionGreeting}</p>`;
+              }
+              sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0">';
+              sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>תאריך:</strong> ${session.slotDate}</td></tr>`;
+              sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>שעה:</strong> ${session.slotTime}</td></tr>`;
+              sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>חדר/מטפל:</strong> ${session.room}</td></tr>`;
+              sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>מספר הזמנה:</strong> ${session.bookingReference}</td></tr>`;
+              sessionsHtml += '</table>';
+
+              sessionsHtml += '</td>';
+              sessionsHtml += '<td style="padding: 0; width: 30%; vertical-align: middle; text-align: center;">';
+              sessionsHtml += `<img src="${session.qrCodeUrl}" alt="QR Code" width="100" height="100" class="qr-code" style="width: 100px; height: 100px; border: 2px solid #4caf50; border-radius: 8px;">`;
+              sessionsHtml += '<p style="margin: 5px 0 0 0; color: #666; text-align: center; font-size: 10px;">סרוק להגעה</p>';
+              sessionsHtml += '</td>';
+              sessionsHtml += '</tr>';
+              sessionsHtml += '</table>';
+
+              sessionsHtml += '</td></tr>';
+              sessionsHtml += '</table>';
+            });
+
+            sessionsHtml += '</td></tr>';
+            sessionsHtml += '</table>';
+          });
+
+          const mergeVars = {
+            ...emailFields,
+            CUSTOMER_NAME: payload.name,
+            CUSTOMER_EMAIL: payload.email,
+            SESSIONS_HTML: sessionsHtml,
+            TOTAL_SESSIONS: confirmedBookings.length,
+            BUTTON_LINK: externalApi?.websiteUrl,
+            BUSINESSADDRESS: '',
+            SUPPORT_EMAIL: externalApi?.email || 'support@metgo.app',
+            SUPPORT_PHONE: externalApi?.whatsappNumber || '',
+            MANAGEMENT_LINK: externalApi?.websiteUrl || '',
+          };
+
+          await this.mailchimpService.sendTransactionalEmail({
+            to: payload.email,
+            templatedId: DynamicEmailTemplate.SessionBookingConfirmationFinal,
+            from_email: externalApi?.email,
+            from_name: externalApi?.name,
+            subject: 'ההזמנה שלך אושרה! ✅',
+            mergeVars,
+          });
+
+          this.logger.info('[SESSION_BOOKINGS]: Combined confirmation email sent', {
+            email: payload.email,
+            totalSessions: confirmedBookings.length,
+          });
         }
       } catch (emailErr) {
         // Non-blocking: log error but don't fail the confirmation
@@ -970,7 +1266,7 @@ export class SessionBookingsService {
           customerName: updated.purchaserInfo.name,
           customerEmail: updated.purchaserInfo.email,
           customerPhone: updated.purchaserInfo.phone,
-          sessionName: updated.sessionName,
+          sessionId: updated.sessionId,
           slotDate: updated.slotDate,
           slotTime: updated.slotTime,
           room: updated.room,
@@ -1078,7 +1374,7 @@ export class SessionBookingsService {
     slotTime: string,
     capacity: number,
     wrapperId?: string,
-    sessionName?: string,
+    sessionId?: string,
   ): Promise<number> {
     try {
       const query: any = {
@@ -1091,8 +1387,8 @@ export class SessionBookingsService {
         query.wrapperId = wrapperId;
       }
 
-      if (sessionName) {
-        query.sessionName = sessionName;
+      if (sessionId) {
+        query.sessionId = sessionId;
       }
 
       const confirmedCount = await this.sessionBookingModel.countDocuments({
@@ -1113,7 +1409,7 @@ export class SessionBookingsService {
         slotDate,
         slotTime,
         wrapperId,
-        sessionName,
+        sessionId,
       });
       return 0;
     }

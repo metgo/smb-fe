@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
@@ -15,6 +16,7 @@ import { SessionBookingsGateway } from './session-bookings.gateway';
 import { ConfirmSessionHoldDto } from './dto/confirm-session-hold.dto';
 import { CreateSessionHoldDto } from './dto/create-session-hold.dto';
 import { GenerateTestTokenDto } from './dto/generate-test-token.dto';
+import { GetSessionByWrapperIdDto } from './dto/get-session-by-wrapper-id.dto';
 
 @Controller('session-bookings')
 export class SessionBookingsController {
@@ -114,8 +116,11 @@ export class SessionBookingsController {
   })
   @HttpCode(HttpStatus.OK)
   @Get(':wrapperId')
-  async getSessionByWrapperId(@Param('wrapperId') wrapperId: string) {
-    return this.sessionBookingsService.getSessionByWrapperId(wrapperId);
+  async getSessionByWrapperId(
+    @Param('wrapperId') wrapperId: string,
+    @Query() dto: GetSessionByWrapperIdDto,
+  ) {
+    return this.sessionBookingsService.getSessionByWrapperId(wrapperId, dto);
   }
 
   /**
@@ -185,20 +190,14 @@ export class SessionBookingsController {
   @HttpCode(HttpStatus.OK)
   @Post('confirm')
   async confirmSessionHold(@Body() dto: ConfirmSessionHoldDto) {
-    const result = this.sessionBookingsService.confirmSessionHold(dto);
+    const result = await this.sessionBookingsService.confirmSessionHold(dto);
 
     // Emit availability update after successful confirmation (fire-and-forget)
-    result
-      .then((res: any) => {
-        if (res?.data?.wrapperId) {
-          this.sessionBookingsGateway.emitAvailabilityUpdate(res.data.wrapperId).catch(() => {
-            // Silently ignore emit errors - don't block the response
-          });
-        }
-      })
-      .catch(() => {
-        // Service error, don't emit
+    if (result?.data?.wrapperId) {
+      this.sessionBookingsGateway.emitAvailabilityUpdate(result.data.wrapperId).catch(() => {
+        // Silently ignore emit errors - don't block the response
       });
+    }
 
     return result;
   }

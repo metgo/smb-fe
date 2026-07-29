@@ -34,7 +34,7 @@ export const DynamicEmailTemplate = {
   TicketConfirmationForCustomers: 'ticket-confirmation-for-customers',
   TicketConfirmationForEventCreator: 'ticket-confirmation-for-event-creator',
   SessionBookingConfirmation: 'lumen-session-booking-confirmation',
-  SessionBookingConfirmationFinal: 'lumen-booking-confirmation',
+  SessionBookingConfirmationFinal: 'lumen-sessions-booking-confirmation-final',
   OrderConfirmationForVendor: 'order-sent-to-business-owner',
   InquiryFundayToUser: 'inquiry-funday',
   InquiryFundayToOwner: 'inquiry-funday-for-client',
