@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
@@ -51,50 +51,38 @@ export const BusinessContentForm = ({
   const shortDescField = getFieldName("shortDescription");
   const fullDescField = getFieldName("fullDescription");
 
-  // Debounced availability check
-  const checkAvailabilityDebounced = useCallback(
-    async (businessName: string) => {
-      if (!businessName?.trim()) {
-        setAvailabilityStatus(null);
-        return;
-      }
-      if (!dmoId?.trim() || !authorityId?.trim()) {
-        setAvailabilityStatus(null);
-        return;
-      }
-
-      setAvailabilityStatus(null);
-      try {
-        const res = await checkAvailability({ name: businessName, dmoId, authorityId }).unwrap();
-        setAvailabilityStatus('available');
-        // Notify parent that business was created during availability check
-        if (res?.id && onBusinessCreated) {
-          onBusinessCreated(res.id);
-        }
-      } catch (error: any) {
-        setAvailabilityStatus('unavailable');
-      }
-    },
-    [checkAvailability, dmoId, authorityId, onBusinessCreated]
-  );
-
   // Reset availability status when name changes
   const handleNameChange = (value: string) => {
     onChange({ [titleField]: value });
     setAvailabilityStatus(null);
   };
 
-  // Debounce effect for availability check
-  useEffect(() => {
+  // Check availability on blur (when user leaves the field)
+  const handleNameBlur = async () => {
     if (!isBusinessContext || isEditMode) return;
 
-    const timer = setTimeout(() => {
-      const businessName = formData[titleField];
-      checkAvailabilityDebounced(businessName);
-    }, 500); // 500ms debounce
+    const businessName = formData[titleField];
+    if (!businessName?.trim()) {
+      setAvailabilityStatus(null);
+      return;
+    }
+    if (!dmoId?.trim() || !authorityId?.trim()) {
+      setAvailabilityStatus(null);
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, [formData[titleField], dmoId, authorityId, isBusinessContext, isEditMode, checkAvailabilityDebounced]);
+    setAvailabilityStatus(null);
+    try {
+      const res = await checkAvailability({ name: businessName, dmoId, authorityId }).unwrap();
+      setAvailabilityStatus('available');
+      // Notify parent that business was created during availability check
+      if (res?.id && onBusinessCreated) {
+        onBusinessCreated(res.id);
+      }
+    } catch (error: any) {
+      setAvailabilityStatus('unavailable');
+    }
+  };
 
   const isRtl = language === "he" || language === "ar";
   const dir = isRtl ? "rtl" : "ltr";
@@ -111,14 +99,18 @@ export const BusinessContentForm = ({
             type="text"
             value={formData[titleField] || ""}
             onChange={(e) => handleNameChange(e.target.value)}
+            onBlur={handleNameBlur}
             placeholder={t("title_placeholder")}
+            disabled={isBusinessContext && isEditMode}
             className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border-2 ${
               availabilityStatus === 'available'
                 ? 'border-green-500'
                 : availabilityStatus === 'unavailable'
                 ? 'border-red-500'
                 : borderColor
-            } rounded-xl px-4 py-3 pr-12 focus:outline-none transition-colors`}
+            } rounded-xl px-4 py-3 pr-12 focus:outline-none transition-colors ${
+              isBusinessContext && isEditMode ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
             dir={dir}
           />
         </div>
