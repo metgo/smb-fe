@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 import { useInitBusinessCreateMutation } from "@/store/api/businessMutationApi";
-import { Check, Info} from "lucide-react";
+import { Check, ExternalLink, Info, Mail, Phone} from "lucide-react";
+import { ModalWrapper } from "@/components/wrapper";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -25,6 +26,7 @@ export const BusinessContentForm = ({
   isEditMode = false,
 }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
+  const {isDark} = useThemeClasses()
   const {
     bgSecondary,
     textPrimary,
@@ -75,9 +77,7 @@ export const BusinessContentForm = ({
     try {
       const res = await checkAvailability({ name: businessName, dmoId, authorityId, checkOnly: true  }).unwrap();
       setAvailabilityStatus('available');
-      console.log(res.message)
       if (res?.isAvailable) {
-        // Notify parent that business was created during availability check
         setAvailabilityStatus('available');
       }
       else {
@@ -185,6 +185,65 @@ export const BusinessContentForm = ({
           })}
         </p>
       </FormFieldWrapper>
+
+{availabilityStatus === "unavailable" && (
+  <ModalWrapper onClose={() => setAvailabilityStatus(null)} height="h-[40vh]" maxWidth="max-w-lg">
+    <div className="flex flex-col items-center text-center px-6 py-4 h-full justify-center">
+      {/* Icon */}
+      <div className={`flex items-center justify-center w-14 h-14 rounded-full mb-4 ${
+        isDark ? 'bg-amber-500/20' : 'bg-amber-50'
+      }`}>
+        <Info className="w-7 h-7 text-amber-500" />
+      </div>
+
+      {/* Heading */}
+      <h3 className={`text-lg font-semibold ${textSecondary} mb-2`}>
+        {t("business_already_exists_title", "We've already built this business for you")}
+      </h3>
+
+      {/* Body */}
+      <p className={`text-sm ${textSecondary} max-w-sm mb-5`}>
+        {t(
+          "business_already_exists_body",
+          "Please contact our support team below, or take a look at the business we've already set up."
+        )}
+      </p>
+
+      {/* Dummy external link */}
+      <a
+        href="#"
+        onClick={(e) => e.preventDefault()}
+        className="flex items-center justify-center gap-2 w-full max-w-xs rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 mb-4 transition-colors"
+      >
+        <ExternalLink className="w-4 h-4" />
+        {t("view_business", "Take a Look")}
+      </a>
+
+      {/* Contact support */}
+      <div className={`w-full max-w-xs pt-4 border-t ${borderColor}`}>
+        <p className={`text-xs ${textTertiary} mb-2`}>
+          {t("contact_support_label", "Or contact our support team")}
+        </p>
+        <div className="flex flex-col gap-2">
+          <a
+            href="mailto:support@metgo.app"
+            className="flex items-center justify-center gap-1.5 text-sm text-green-500 hover:underline"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            support@metgo.app
+          </a>
+          <a
+            href="tel:0505545353"
+            className="flex items-center justify-center gap-1.5 text-sm text-green-500 hover:underline"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            0505545353
+          </a>
+        </div>
+      </div>
+    </div>
+  </ModalWrapper>
+)}
     </div>
   );
 };
