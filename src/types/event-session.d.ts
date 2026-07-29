@@ -22,7 +22,6 @@ interface IEventSession {
   isActive: boolean;
 }
 
-
 interface ISessionBlock {
   _id: string;
   name: string;

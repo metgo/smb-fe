@@ -2,11 +2,22 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Edit, LayoutList, Layers, Plus, Eye, Copy, Trash2 } from "lucide-react";
+import {
+  Edit,
+  LayoutList,
+  Layers,
+  Plus,
+  Eye,
+  Copy,
+  Trash2,
+} from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useDeleteLandingPageMutation, useUpdateEventSessionMutation } from "@/store/api/eventSessionApi";
+import {
+  useDeleteLandingPageMutation,
+  useUpdateEventSessionMutation,
+} from "@/store/api/eventSessionApi";
 import { ActionIconButtons } from "@/components/btns";
 
 interface EventSessionDetailsProps {
@@ -29,10 +40,8 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
   const { isDark, borderColor } = useThemeClasses();
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
-  const [deleteLandingPage, { isLoading: isDeleting }] = useDeleteLandingPageMutation()
-
-
-
+  const [deleteLandingPage, { isLoading: isDeleting }] =
+    useDeleteLandingPageMutation();
 
   const handleDeleteSession = async (wrapperId: string) => {
     await deleteLandingPage(wrapperId)
@@ -45,7 +54,6 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
         toast.error(err.data.message);
       });
   };
-
 
   if (isLoading || isDeleting) {
     return (

@@ -28,13 +28,14 @@ export const eventSessionApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ["EventSession"],
   endpoints: (builder) => ({
-
-
-    initCreateSessionWrapper: builder.mutation<{ message: string, id: string }, any>({
+    initCreateSessionWrapper: builder.mutation<
+      { message: string; id: string },
+      any
+    >({
       query: (payload) => ({
         url: endpoints.initWrapperCreate,
         method: "POST",
-        data: payload
+        data: payload,
       }),
     }),
 
@@ -193,7 +194,6 @@ export const eventSessionApi = createApi({
       }),
     }),
 
-
     getAllLandingPageSessions: builder.query<unknown, string>({
       query: (wrapperId) => ({
         url: `${endpoints.eventSessions}/${wrapperId}`,
@@ -203,7 +203,10 @@ export const eventSessionApi = createApi({
     }),
 
     // Landing page session block
-    createLandingPageSessionBlock: builder.mutation<any, { wrapperId: string; data: any, method?: TMethod }>({
+    createLandingPageSessionBlock: builder.mutation<
+      any,
+      { wrapperId: string; data: any; method?: TMethod }
+    >({
       query: ({ wrapperId, data, method = "POST" }) => ({
         url: `${endpoints.createWrapperSessionBlock}/${wrapperId}`,
         method,
@@ -212,7 +215,10 @@ export const eventSessionApi = createApi({
       invalidatesTags: ["EventSession"],
     }),
 
-    deleteSessionBlock: builder.mutation<any, { wrapperId: string, blockId: string }>({
+    deleteSessionBlock: builder.mutation<
+      any,
+      { wrapperId: string; blockId: string }
+    >({
       query: ({ wrapperId, blockId }) => ({
         url: `${endpoints.createWrapperSessionBlock}/${wrapperId}/${blockId}`,
         method: "DELETE",
@@ -220,8 +226,11 @@ export const eventSessionApi = createApi({
       invalidatesTags: ["EventSession"],
     }),
 
-    // Landing page session 
-    createLandingPageSession: builder.mutation<any, { wrapperId: string; data: any, method?: TMethod }>({
+    // Landing page session
+    createLandingPageSession: builder.mutation<
+      any,
+      { wrapperId: string; data: any; method?: TMethod }
+    >({
       query: ({ wrapperId, data, method = "POST" }) => ({
         url: `${endpoints.createWrapperSession}/${wrapperId}`,
         method,
@@ -230,14 +239,16 @@ export const eventSessionApi = createApi({
       invalidatesTags: ["EventSession"],
     }),
 
-    deleteSession: builder.mutation<any, { wrapperId: string, sessionId: string }>({
+    deleteSession: builder.mutation<
+      any,
+      { wrapperId: string; sessionId: string }
+    >({
       query: ({ wrapperId, sessionId }) => ({
         url: `${endpoints.eventSessions}/sessions/${wrapperId}/${sessionId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["EventSession"],
     }),
-
   }),
 });
 

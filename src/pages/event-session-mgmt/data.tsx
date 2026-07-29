@@ -22,7 +22,7 @@ export const DEFAULT_CONFIG: IAdminConfig = {
   themeId: "terra",
   headline: "",
   subhead: "",
-  greeting:"",
+  greeting: "",
   images: [],
   sessions: [],
   blocks: [],

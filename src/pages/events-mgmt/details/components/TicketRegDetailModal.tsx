@@ -39,7 +39,8 @@ const TicketRegDetailModal = ({
     cardClasses,
     isDark,
   } = useThemeClasses();
-  const [resendTicketEmailToCustomer, { isLoading: isResendingEmail }] = useResendTicketEmailToCustomerMutation();
+  const [resendTicketEmailToCustomer, { isLoading: isResendingEmail }] =
+    useResendTicketEmailToCustomerMutation();
 
   if (!ticketDetails) return null;
 
@@ -67,7 +68,7 @@ const TicketRegDetailModal = ({
       variant === "success" && "bg-green-500/15 text-green-500",
       variant === "warning" && "bg-yellow-500/15 text-yellow-600",
       variant === "neutral" &&
-      (isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"),
+        (isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"),
     );
 
   const Field = ({

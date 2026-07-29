@@ -95,13 +95,14 @@ export const eventMutationApi = createApi({
       invalidatesTags: ["Event"],
     }),
 
-
-
-    resendTicketEmailToCustomer: builder.mutation<any, { ordersId: string[], emailRecipient: "CUSTOMER" }>({
+    resendTicketEmailToCustomer: builder.mutation<
+      any,
+      { ordersId: string[]; emailRecipient: "CUSTOMER" }
+    >({
       query: (payload) => ({
         url: endpoints.resendTicketEmailToCustomer,
         method: "POST",
-        data: payload
+        data: payload,
       }),
     }),
   }),

@@ -88,8 +88,7 @@ export const endpoints = {
   tickets: "/tickets",
   eventTickets: "/event-tickets",
   resendTicketEmailToCustomer: "/resend-order-emails",
-  
-  
+
   // event sessions
   initWrapperCreate: "/event-sessions/initialize",
   eventSessions: "/event-sessions",
