@@ -397,5 +397,8 @@
   "check_availability": "تحقق من التوفر",
   "please_enter_business_name": "يرجى إدخال اسم النشاط التجاري",
   "business_name_available": "اسم النشاط التجاري متاح",
-  "business_name_unavailable": "اسم النشاط التجاري محجوز بالفعل"
+  "business_name_unavailable": "اسم النشاط التجاري محجوز بالفعل",
+  "business_already_created": "النشاط التجاري تم إنشاؤه بالفعل",
+  "business_already_created_desc": "لقد قمنا بالفعل بإنشاء هذا النشاط التجاري لك. يمكنك الاطلاع عليه إذا أردت.",
+  "connected_websites": "المواقع المرتبطة"
 }

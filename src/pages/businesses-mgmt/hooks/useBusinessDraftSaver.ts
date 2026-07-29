@@ -6,6 +6,7 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
+import { getLngWiseStr } from "@/helpers";
 
 interface UseBusinessDraftSaverProps {
   opMode: IOpMode;
@@ -14,7 +15,7 @@ interface UseBusinessDraftSaverProps {
   currentStep: number;
   businessId: string;
   setBusinessId: (id: string) => void;
-  initBusinessCreate: () => any;
+  initBusinessCreate: (v: { name: string }) => any;
   updateBusiness: (args: { businessId: string; body: any }) => any;
   stepPayloadMap: any;
 }
@@ -47,7 +48,12 @@ export function useBusinessDraftSaver({
 
         // 1️⃣ Initialize event if not created yet
         if (opMode !== IOpMode.EDIT) {
-          const res = await initBusinessCreate().unwrap();
+          const name = getLngWiseStr(stepPayloadMap.name, stepPayloadMap.nameHe, stepPayloadMap.nameAr);
+          if (!name) {
+            toast.error(t("name_required"));
+            return;
+          }
+          const res = await initBusinessCreate({ name }).unwrap();
           internalbusinessId = res?.id;
           setBusinessId(res?.id);
         }

@@ -408,5 +408,8 @@
   "check_availability": "Check Availability",
   "please_enter_business_name": "Please enter a business name",
   "business_name_available": "Business name is available",
-  "business_name_unavailable": "Business name is already taken"
+  "business_name_unavailable": "Business name is already taken",
+  "business_already_created": "Business Already Created",
+  "business_already_created_desc": "We have already created this business for you. Take a look if you like.",
+  "connected_websites": "Connected Websites"
 }

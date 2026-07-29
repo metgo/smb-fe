@@ -42,9 +42,7 @@ export const BusinessContentForm = ({
       toast.success(t("business_name_available"));
     } catch (error: any) {
       setAvailabilityStatus('unavailable');
-      // The backend error message already contains the Hebrew text
-      const errorMessage = error?.data?.message || error?.message || t("business_name_unavailable");
-      toast.error(errorMessage);
+     
     }
   };
 
@@ -78,47 +76,54 @@ export const BusinessContentForm = ({
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("title")} <span className="text-red-500">*</span>
         </label>
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={formData[titleField] || ""}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder={t("title_placeholder")}
-              className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
-              dir={dir}
-            />
-            {availabilityStatus && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                {availabilityStatus === 'available' ? (
-                  <Check className="w-6 h-6 text-green-500" />
-                ) : (
-                  <X className="w-6 h-6 text-red-500" />
-                )}
-              </div>
-            )}
-          </div>
+        <div className="relative">
+          <input
+            type="text"
+            value={formData[titleField] || ""}
+            onChange={(e) => handleNameChange(e.target.value)}
+            placeholder={t("title_placeholder")}
+            className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border-2 ${
+              availabilityStatus === 'available'
+                ? 'border-green-500'
+                : availabilityStatus === 'unavailable'
+                ? 'border-red-500'
+                : borderColor
+            } rounded-xl px-4 py-3 pr-12 focus:outline-none transition-colors`}
+            dir={dir}
+          />
+         
+        </div>
+        <div className="flex items-center justify-between mt-2">
+          {availabilityStatus && (
+            <p className={`text-sm flex items-center gap-1.5 ${
+              availabilityStatus === 'available' ? 'text-green-500' : 'text-red-500'
+            }`}>
+              {availabilityStatus === 'available' ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <X className="w-4 h-4" />
+              )}
+              {availabilityStatus === 'available' ? t("business_name_available") : t("business_name_unavailable")}
+            </p>
+          )}
           <button
             type="button"
             onClick={handleCheckAvailability}
             disabled={isChecking || !formData[titleField]?.trim()}
-            className={`px-4 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
               isChecking || !formData[titleField]?.trim()
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-500 text-white hover:bg-blue-600'
             }`}
           >
             {isChecking ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Check className="w-5 h-5" />
+              <Check className="w-4 h-4" />
             )}
             {t("check_availability")}
           </button>
         </div>
-        <p className={`text-xs ${textTertiary} mt-1`}>
-          {(formData[titleField] || "").length} {t("characters")}
-        </p>
       </div>
 
       {/* Short Description */}

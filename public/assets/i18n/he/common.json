@@ -412,5 +412,8 @@
   "check_availability": "בדוק זמינות",
   "please_enter_business_name": "אנא הזן שם עסק",
   "business_name_available": "שם העסק זמין",
-  "business_name_unavailable": "שם העסק כבר תפוס"
+  "business_name_unavailable": "שם העסק כבר תפוס",
+  "business_already_created": "העסק כבר נוצר",
+  "business_already_created_desc": "כבר יצרנו עבורך את העסק הזה. אתה מוזמן להציץ.",
+  "connected_websites": "אתרים מקושרים"
 }
