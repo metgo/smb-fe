@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
+import { useInitBusinessCreateMutation } from "@/store/api/businessMutationApi";
+import { Check, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -20,6 +24,35 @@ export const BusinessContentForm = ({
     borderColor,
     language,
   } = useThemeClasses();
+
+  const [checkAvailability, { isLoading: isChecking }] = useInitBusinessCreateMutation();
+  const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
+
+  const handleCheckAvailability = async () => {
+    const businessName = formData[titleField];
+    if (!businessName?.trim()) {
+      toast.error(t("please_enter_business_name"));
+      return;
+    }
+
+    setAvailabilityStatus(null);
+    try {
+      await checkAvailability({ name: businessName }).unwrap();
+      setAvailabilityStatus('available');
+      toast.success(t("business_name_available"));
+    } catch (error: any) {
+      setAvailabilityStatus('unavailable');
+      // The backend error message already contains the Hebrew text
+      const errorMessage = error?.data?.message || error?.message || t("business_name_unavailable");
+      toast.error(errorMessage);
+    }
+  };
+
+  // Reset availability status when name changes
+  const handleNameChange = (value: string) => {
+    onChange({ [titleField]: value });
+    setAvailabilityStatus(null);
+  };
 
   // Get correct field name based on current global language
   const getFieldName = (baseField: string): string => {
@@ -45,14 +78,44 @@ export const BusinessContentForm = ({
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("title")} <span className="text-red-500">*</span>
         </label>
-        <input
-          type="text"
-          value={formData[titleField] || ""} //  uses correct field
-          onChange={(e) => onChange({ [titleField]: e.target.value })}
-          placeholder={t("title_placeholder")}
-          className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
-          dir={dir}
-        />
+        <div className="flex gap-2">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={formData[titleField] || ""}
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder={t("title_placeholder")}
+              className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
+              dir={dir}
+            />
+            {availabilityStatus && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {availabilityStatus === 'available' ? (
+                  <Check className="w-6 h-6 text-green-500" />
+                ) : (
+                  <X className="w-6 h-6 text-red-500" />
+                )}
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={handleCheckAvailability}
+            disabled={isChecking || !formData[titleField]?.trim()}
+            className={`px-4 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 ${
+              isChecking || !formData[titleField]?.trim()
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
+          >
+            {isChecking ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Check className="w-5 h-5" />
+            )}
+            {t("check_availability")}
+          </button>
+        </div>
         <p className={`text-xs ${textTertiary} mt-1`}>
           {(formData[titleField] || "").length} {t("characters")}
         </p>

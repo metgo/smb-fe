@@ -393,5 +393,9 @@
   "deactivate_website": "تعطيل الموقع",
   "deactivate_website_confirm": "بمجرد التعطيل، سيرى الزوار شاشة \"قيد الإنشاء\" بدلاً من موقعك الفعلي. هل أنت متأكد من رغبتك في التعطيل؟",
   "pending_approvals": "الموافقات المعلقة",
-  "service_unavailable": "هذه الخدمة غير متاحة في الوقت الحالي"
+  "service_unavailable": "هذه الخدمة غير متاحة في الوقت الحالي",
+  "check_availability": "تحقق من التوفر",
+  "please_enter_business_name": "يرجى إدخال اسم النشاط التجاري",
+  "business_name_available": "اسم النشاط التجاري متاح",
+  "business_name_unavailable": "اسم النشاط التجاري محجوز بالفعل"
 }
