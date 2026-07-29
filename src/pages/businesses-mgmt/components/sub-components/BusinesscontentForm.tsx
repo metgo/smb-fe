@@ -10,12 +10,16 @@ interface ArticleContentFormProps {
   formData: Record<string, any>;
   onChange: (updates: Record<string, any>) => void;
   onBusinessCreated?: (businessId: string) => void;
+  dmoId?: string;
+  authorityId?: string;
 }
 
 export const BusinessContentForm = ({
   formData,
   onChange,
   onBusinessCreated,
+  dmoId,
+  authorityId,
 }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
   const {
@@ -36,10 +40,18 @@ export const BusinessContentForm = ({
       toast.error(t("please_enter_business_name"));
       return;
     }
+    if (!dmoId?.trim()) {
+      toast.error("Please select a DMO");
+      return;
+    }
+    if (!authorityId?.trim()) {
+      toast.error("Please select an Authority");
+      return;
+    }
 
     setAvailabilityStatus(null);
     try {
-      const res = await checkAvailability({ name: businessName }).unwrap();
+      const res = await checkAvailability({ name: businessName, dmoId, authorityId }).unwrap();
       setAvailabilityStatus('available');
       toast.success(t("business_name_available"));
       // Notify parent that business was created during availability check
@@ -115,9 +127,9 @@ export const BusinessContentForm = ({
           <button
             type="button"
             onClick={handleCheckAvailability}
-            disabled={isChecking || !formData[titleField]?.trim()}
+            disabled={isChecking || !formData[titleField]?.trim() || !dmoId?.trim() || !authorityId?.trim()}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-              isChecking || !formData[titleField]?.trim()
+              isChecking || !formData[titleField]?.trim() || !dmoId?.trim() || !authorityId?.trim()
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-500 text-white hover:bg-blue-600'
             }`}

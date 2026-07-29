@@ -104,6 +104,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         formData={formData}
         onChange={handleChange}
         onBusinessCreated={setBusinessId}
+        dmoId={selectedDmoId}
+        authorityId={selectedAuthorityId}
       />
 
       {/* Internal Notes */}
