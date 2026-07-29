@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Loader2, Plus, X } from "lucide-react";
@@ -15,6 +16,7 @@ interface ImageUploadSectionProps {
   onImagesChange: (images: IImage[]) => void;
   title: string;
   cardClasses: string;
+  onUploadingChange?: (isUploading: boolean) => void;
 }
 
 const ImageUploadSection = ({
@@ -23,6 +25,7 @@ const ImageUploadSection = ({
   onImagesChange,
   title,
   cardClasses,
+  onUploadingChange,
 }: ImageUploadSectionProps) => {
   const { t: tc } = useTranslation("common");
   const { t: tt } = useTranslation("toast");
@@ -43,6 +46,12 @@ const ImageUploadSection = ({
     initialImages: initialImages || [],
     onChange: onImagesChange,
   });
+
+  // Notify parent when upload state changes
+  useEffect(() => {
+    const isUploading = images.some((img) => img.status === "uploading");
+    onUploadingChange?.(isUploading);
+  }, [images, onUploadingChange]);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

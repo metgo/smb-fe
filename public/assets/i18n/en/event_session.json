@@ -288,5 +288,33 @@
   "landing_pages": "Landing Pages",
 
   "landing_pages_empty_title": "No Landing Pages Available",
-  "landing_pages_empty_desc": "No landing pages have been created for this event yet"
+  "landing_pages_empty_desc": "No landing pages have been created for this event yet",
+
+  "create_session_block": "Create Session Block",
+  "name": "Name",
+  "enter_name": "Enter name",
+  "booking_limit": "Booking Limit",
+  "enter_booking_limit": "Enter booking limit",
+  "description": "Description",
+  "enter_description": "Enter description",
+  "select_sessions": "Select Sessions",
+  "select_sessions_placeholder": "Select sessions...",
+  "create_block": "Create Block",
+
+  "assigned_to_block": "Assigned to block",
+  "session_assigned_warning": "This session is assigned to a block and cannot be deleted",
+  "edit": "Edit",
+  "delete": "Delete",
+
+  "no_sessions_available_for_block": "No sessions available. Please create a new session first.",
+
+  "add_block": "Add Block",
+  "greeting": "Greeting",
+  "assign_sessions_into_block": "Assign Sessions into Block",
+  "assign_block_help": "Group sessions into blocks for better organization and booking management.",
+  "assigned_sessions": "Assigned Sessions",
+  "toast_session_deleted": "Session deleted successfully!",
+  "toast_session_delete_error": "Failed to delete session.",
+  "toast_session_block_deleted": "Session block deleted successfully!",
+  "toast_session_block_delete_error": "Failed to delete session block."
 }

@@ -27,7 +27,7 @@ interface ISlotRow {
 }
 
 interface CapacityTabProps {
-  wrapperId: string;
+  wrapperId: string | null;
 }
 
 export function CapacityTab({ wrapperId }: CapacityTabProps) {

@@ -14,7 +14,10 @@ import {
   CreditCard,
   Package,
   Send,
+  Loader2,
 } from "lucide-react";
+import { useResendTicketEmailToCustomerMutation } from "@/store/api/eventMutationApi";
+import { toast } from "sonner";
 
 interface TicketRegDetailModalProps {
   setIsOpen: (v: boolean) => void;
@@ -26,6 +29,8 @@ const TicketRegDetailModal = ({
   ticketDetails,
 }: TicketRegDetailModalProps) => {
   const { t } = useTranslation("events");
+  const { t: tt } = useTranslation("toast");
+
   const {
     textPrimary,
     textSecondary,
@@ -34,10 +39,21 @@ const TicketRegDetailModal = ({
     cardClasses,
     isDark,
   } = useThemeClasses();
+  const [resendTicketEmailToCustomer, { isLoading: isResendingEmail }] = useResendTicketEmailToCustomerMutation();
+
   if (!ticketDetails) return null;
 
-  const handleResendEmail = () => {
-    console.log("Resending email to:", ticketDetails.email);
+  const handleResendEmail = async () => {
+    try {
+      await resendTicketEmailToCustomer({
+        ordersId: [ticketDetails.orderProductId!],
+        emailRecipient: "CUSTOMER",
+      }).unwrap();
+      toast.success(tt("ticket_email_resend_success"));
+    } catch (error) {
+      toast.error(tt("ticket_email_resend_failed"));
+      console.error("Failed to resend email:", error);
+    }
   };
 
   const formatDate = (dateString: string | null) => {
@@ -51,7 +67,7 @@ const TicketRegDetailModal = ({
       variant === "success" && "bg-green-500/15 text-green-500",
       variant === "warning" && "bg-yellow-500/15 text-yellow-600",
       variant === "neutral" &&
-        (isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"),
+      (isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"),
     );
 
   const Field = ({
@@ -217,9 +233,17 @@ const TicketRegDetailModal = ({
           <div className={clsx("flex justify-end pt-3 border-t", borderColor)}>
             <button
               onClick={handleResendEmail}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center gap-2 shadow-sm"
+              disabled={isResendingEmail}
+              className={clsx(
+                "px-4 py-2 cursor-pointer bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center gap-2 shadow-sm",
+                isResendingEmail && "opacity-50 cursor-not-allowed",
+              )}
             >
-              <Send className="h-4 w-4" />
+              {isResendingEmail ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
               {t("resend_email_to_customer")}
             </button>
           </div>

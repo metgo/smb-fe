@@ -20,14 +20,14 @@ export const DEFAULT_CONFIG: IAdminConfig = {
   eventId: "",
   brand: "",
   themeId: "terra",
-  selectionMode: "radio",
   headline: "",
   subhead: "",
+  greeting:"",
   images: [],
   sessions: [],
+  blocks: [],
   bookingLimit: 1,
   isActive: true,
-  liveEventIds: [],
   ticketIds: [],
 };
 

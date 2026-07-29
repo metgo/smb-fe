@@ -1,12 +1,16 @@
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useSearchParams } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
+import { Layout, Users, Bell, ClipboardList, Compass, Eye } from "lucide-react";
+
 import {
   LandingTab,
   CapacityTab,
   NotifyTab,
   RegistrationsTab,
 } from "./components";
-import { useTranslation } from "react-i18next";
 import { store } from "./data";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -15,20 +19,16 @@ import {
   ImageWithFallback,
   ConfirmDialog,
 } from "@/components/shared";
-import { Layout, Users, Bell, ClipboardList, Compass, Eye } from "lucide-react";
-import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 import { EVENT_SESSION_TOUR_ID } from "@/components/tour";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import { useGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import { useGenSessionPrivewLinkQuery } from "@/store/api/eventSessionApi";
-import { skipToken } from "@reduxjs/toolkit/query";
-import { useSearchParams } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { BackToListBtn } from "@/components/btns";
 import { getLngWiseStr } from "@/helpers";
 
 // ─── Tab → tour step mapping ──────────────────────────────────────────────────
-
 const STEP_TAB_MAP: Partial<Record<string, TTabId>> = {
   landing: "landing",
   capacity: "capacity",
@@ -40,10 +40,13 @@ const STEP_TAB_MAP: Partial<Record<string, TTabId>> = {
 // ─── Inner component (needs TourProvider above it) ────────────────────────────
 function EventSessionMgmtPageInner() {
   const [searchParams] = useSearchParams();
-  const eventId = searchParams.get("eventId") || "";
-  const wrapperId = searchParams.get("wrapperId") || "";
-  const ticketId = searchParams.get("ticketId") || "";
-  const isDuplicate = searchParams.get("isDuplicate") || "";
+  const ticketId = searchParams.get("ticketId") || null;
+  const isDuplicate = searchParams.get("isDuplicate") || null;
+
+
+  const [wrapperId, setWrapperId] = useState<string | null>(null)
+  const [eventId, setEventId] = useState<string | null>(null)
+
 
   const { t } = useTranslation("event_session");
   const { t: tt } = useTranslation("tour");
@@ -54,6 +57,7 @@ function EventSessionMgmtPageInner() {
     data: eventDetails,
     isFetching,
     isLoading,
+    refetch,
   } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
 
   const [previewArg, setPreviewArg] = useState<string | typeof skipToken>(
@@ -70,6 +74,13 @@ function EventSessionMgmtPageInner() {
     const link = previewLinkData?.data?.previewLink;
     if (link) window.open(link, "_blank", "noopener,noreferrer");
   }, [previewLinkData]);
+
+  useEffect(() => {
+    const eventId = searchParams.get("eventId") || null;
+    const wrapperId = searchParams.get("wrapperId") || null;
+    setEventId(eventId);
+    setWrapperId(wrapperId);
+  }, [searchParams])
 
   function handlePreview() {
     if (!wrapperId) return;
@@ -259,11 +270,10 @@ function EventSessionMgmtPageInner() {
               onClick={handlePreview}
               disabled={!wrapperId || isPreviewLoading}
               title={t("preview_btn")}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                isDark
-                  ? "border-gray-600 text-gray-400 hover:text-teal-400 hover:border-teal-600 hover:bg-gray-700/50"
-                  : "border-gray-300 text-gray-500 hover:text-teal-600 hover:border-teal-400 hover:bg-teal-50"
-              }`}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${isDark
+                ? "border-gray-600 text-gray-400 hover:text-teal-400 hover:border-teal-600 hover:bg-gray-700/50"
+                : "border-gray-300 text-gray-500 hover:text-teal-600 hover:border-teal-400 hover:bg-teal-50"
+                }`}
             >
               <Eye className="w-4 h-4" />
               <span className="hidden sm:inline">{t("preview_btn")}</span>
@@ -277,11 +287,10 @@ function EventSessionMgmtPageInner() {
                 })
               }
               title={tt("start_tour")}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
-                isDark
-                  ? "border-gray-600 text-gray-400 hover:text-teal-400 hover:border-teal-600 hover:bg-gray-700/50"
-                  : "border-gray-300 text-gray-500 hover:text-teal-600 hover:border-teal-400 hover:bg-teal-50"
-              }`}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${isDark
+                ? "border-gray-600 text-gray-400 hover:text-teal-400 hover:border-teal-600 hover:bg-gray-700/50"
+                : "border-gray-300 text-gray-500 hover:text-teal-600 hover:border-teal-400 hover:bg-teal-50"
+                }`}
             >
               <Compass className="w-4 h-4" />
               <span className="hidden sm:inline">{tt("start_tour")}</span>
@@ -297,10 +306,12 @@ function EventSessionMgmtPageInner() {
               onChange={onChange}
               eventId={eventId}
               wrapperId={wrapperId}
+              setWrapperId={setWrapperId}
               ticketId={ticketId}
               isDuplicate={isDuplicate === "true"}
               onDirtyChange={setIsLandingDirty}
               isLoading={isFetching || isLoading}
+              refetch={refetch}
             />
           )}
           {tab === "capacity" && <CapacityTab wrapperId={wrapperId} />}
