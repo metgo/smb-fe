@@ -214,3 +214,13 @@ interface ITripItinerary {
   startTime: string;
   endTime: string;
 }
+
+interface ITripColumnVisibility {
+  name: boolean;
+  shortDescription: boolean;
+  estimatedDuration: boolean;
+  stations: boolean;
+  status: boolean;
+  createdAt: boolean;
+  updatedAt: boolean;
+}

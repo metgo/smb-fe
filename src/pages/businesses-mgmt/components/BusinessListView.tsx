@@ -36,8 +36,6 @@ interface BusinessListViewProps {
   setSelectedBusinesses: (v: Set<string>) => void;
 }
 
-const USER_ROLE = "admin";
-
 export default function BusinessListView({
   t,
   isLoading,
@@ -53,14 +51,8 @@ export default function BusinessListView({
 
   const [error, _setError] = useState(false);
 
-  // Permission check
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    USER_ROLE,
-  );
-
   const columns = [
-    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
-
+    [{ key: "checkbox", label: "", width: "50px" }],
     columnVisibility.name && {
       key: "name",
       sortable: true,

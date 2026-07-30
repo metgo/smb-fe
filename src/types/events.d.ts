@@ -354,3 +354,19 @@ interface IEventTicket {
   quantity?: number;
   paymentStatus?: string;
 }
+
+interface IEventColumnVisibility {
+  image: boolean;
+  name: boolean;
+  status: boolean;
+  dayDescription: boolean;
+  ticketCount: boolean;
+  wrapperCount: boolean;
+  associatedWebsiteIds: boolean;
+  address: boolean;
+  pricing: boolean;
+  hasExternalTicket: boolean;
+  ticketBuyLink: boolean;
+  updatedAt: boolean;
+  createdAt: boolean;
+}

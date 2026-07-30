@@ -1,136 +1,123 @@
 {
-    "_id": "6a69c286259bbca2664a3aed",
-    "createdAt": "2026-07-29T09:06:14.238Z",
-    "updatedAt": "2026-07-29T09:11:07.160Z",
-    "createdBy": "659649e04267dd2b02174cc3",
-    "updatedBy": "659649e04267dd2b02174cc3",
-    "deletedBy": null,
-    "deletedAt": null,
-    "isDeleted": false,
-    "eventId": "6a69bf59259bbca2664a3864",
-    "ticketIds": [
-        "6a69c1d1259bbca2664a3aa8"
-    ],
-    "brand": "This is brand ticket 2",
-    "themeId": "terra",
-    "headline": "This is brand ticket 2",
-    "subhead": "This is brand ticket 2",
-    "images": [
+  "_id": "6a69c286259bbca2664a3aed",
+  "createdAt": "2026-07-29T09:06:14.238Z",
+  "updatedAt": "2026-07-29T09:11:07.160Z",
+  "createdBy": "659649e04267dd2b02174cc3",
+  "updatedBy": "659649e04267dd2b02174cc3",
+  "deletedBy": null,
+  "deletedAt": null,
+  "isDeleted": false,
+  "eventId": "6a69bf59259bbca2664a3864",
+  "ticketIds": ["6a69c1d1259bbca2664a3aa8"],
+  "brand": "This is brand ticket 2",
+  "themeId": "terra",
+  "headline": "This is brand ticket 2",
+  "subhead": "This is brand ticket 2",
+  "images": [
+    {
+      "image": "https://storage.googleapis.com/metgo_staging/2026/6/Q6_JUIMgmmcVSsIy.webp",
+      "isPrimary": false
+    }
+  ],
+  "liveEventIds": [],
+  "sessions": [
+    {
+      "_id": "6a69c3ab259bbca2664a3b42",
+      "name": "Ths is session 1 of ticket 2",
+      "tagline": "Ths is session 1 of ticket 2",
+      "description": "Ths is session 1 of ticket 2",
+      "images": [
         {
-            "image": "https://storage.googleapis.com/metgo_staging/2026/6/Q6_JUIMgmmcVSsIy.webp",
-            "isPrimary": false
+          "image": "https://storage.googleapis.com/metgo_staging/2026/6/6mdJbrjywWsOT4qt.webp",
+          "isPrimary": true
         }
-    ],
-    "liveEventIds": [],
-    "sessions": [
+      ],
+      "imagesLables": [],
+      "roomLabel": "",
+      "rooms": ["hall a", "hall b"],
+      "instructors": [
         {
-            "_id": "6a69c3ab259bbca2664a3b42",
-            "name": "Ths is session 1 of ticket 2",
-            "tagline": "Ths is session 1 of ticket 2",
-            "description": "Ths is session 1 of ticket 2",
-            "images": [
-                {
-                    "image": "https://storage.googleapis.com/metgo_staging/2026/6/6mdJbrjywWsOT4qt.webp",
-                    "isPrimary": true
-                }
-            ],
-            "imagesLables": [],
-            "roomLabel": "",
-            "rooms": [
-                "hall a",
-                "hall b"
-            ],
-            "instructors": [
-                {
-                    "name": "A",
-                    "role": "AA"
-                },
-                {
-                    "name": "B",
-                    "role": "BB"
-                }
-            ],
-            "dates": [
-                {
-                    "date": "2026-08-01",
-                    "slots": [
-                        {
-                            "time": "10:00",
-                            "capacity": 8,
-                            "id": "0ae7ee6e-d009-403f-8cd9-56ae2a3bf8be"
-                        }
-                    ]
-                }
-            ],
-            "isActive": true
+          "name": "A",
+          "role": "AA"
         },
         {
-            "_id": "6a69c3ab259bbca2664a3b43",
-            "name": "Ths is session 2 of ticket 2",
-            "tagline": "Ths is session 2 of ticket 2",
-            "description": "Ths is session 2 of ticket 2",
-            "images": [
-                {
-                    "image": "https://storage.googleapis.com/metgo_staging/2026/6/WOsIRJtPGw7OzH5_.webp",
-                    "isPrimary": true
-                }
-            ],
-            "imagesLables": [],
-            "roomLabel": "",
-            "rooms": [
-                "mall a",
-                "mall b"
-            ],
-            "instructors": [
-                {
-                    "name": "oooo",
-                    "role": "ooo"
-                },
-                {
-                    "name": "ppppp",
-                    "role": "ppppp"
-                }
-            ],
-            "dates": [
-                {
-                    "date": "2026-08-01",
-                    "slots": [
-                        {
-                            "time": "10:00",
-                            "capacity": 8,
-                            "id": "a9749ed4-a1b6-4725-8e9a-ad9ef82de009"
-                        }
-                    ]
-                }
-            ],
-            "isActive": true
+          "name": "B",
+          "role": "BB"
         }
-    ],
-    "blocks": [
+      ],
+      "dates": [
         {
-            "_id": "6a69c3ab259bbca2664a3b44",
-            "name": "This is block 1 of ticket 1",
-            "description": "This is block 1 of ticket 1",
-            "bookingLimit": 1,
-            "sessionIds": [
-                "6a69c302259bbca2664a3b03"
-            ],
-            "order": 0,
-            "isActive": true
+          "date": "2026-08-01",
+          "slots": [
+            {
+              "time": "10:00",
+              "capacity": 8,
+              "id": "0ae7ee6e-d009-403f-8cd9-56ae2a3bf8be"
+            }
+          ]
+        }
+      ],
+      "isActive": true
+    },
+    {
+      "_id": "6a69c3ab259bbca2664a3b43",
+      "name": "Ths is session 2 of ticket 2",
+      "tagline": "Ths is session 2 of ticket 2",
+      "description": "Ths is session 2 of ticket 2",
+      "images": [
+        {
+          "image": "https://storage.googleapis.com/metgo_staging/2026/6/WOsIRJtPGw7OzH5_.webp",
+          "isPrimary": true
+        }
+      ],
+      "imagesLables": [],
+      "roomLabel": "",
+      "rooms": ["mall a", "mall b"],
+      "instructors": [
+        {
+          "name": "oooo",
+          "role": "ooo"
         },
         {
-            "_id": "6a69c3ab259bbca2664a3b45",
-            "name": "this is session block 2 of ticket 2",
-            "description": "hahahha",
-            "bookingLimit": 2,
-            "sessionIds": [
-                "6a69c379259bbca2664a3b1f",
-                "6a69c302259bbca2664a3b03"
-            ],
-            "order": 0,
-            "isActive": true
+          "name": "ppppp",
+          "role": "ppppp"
         }
-    ],
-    "isActive": true,
-    "__v": 0
+      ],
+      "dates": [
+        {
+          "date": "2026-08-01",
+          "slots": [
+            {
+              "time": "10:00",
+              "capacity": 8,
+              "id": "a9749ed4-a1b6-4725-8e9a-ad9ef82de009"
+            }
+          ]
+        }
+      ],
+      "isActive": true
+    }
+  ],
+  "blocks": [
+    {
+      "_id": "6a69c3ab259bbca2664a3b44",
+      "name": "This is block 1 of ticket 1",
+      "description": "This is block 1 of ticket 1",
+      "bookingLimit": 1,
+      "sessionIds": ["6a69c302259bbca2664a3b03"],
+      "order": 0,
+      "isActive": true
+    },
+    {
+      "_id": "6a69c3ab259bbca2664a3b45",
+      "name": "this is session block 2 of ticket 2",
+      "description": "hahahha",
+      "bookingLimit": 2,
+      "sessionIds": ["6a69c379259bbca2664a3b1f", "6a69c302259bbca2664a3b03"],
+      "order": 0,
+      "isActive": true
+    }
+  ],
+  "isActive": true,
+  "__v": 0
 }

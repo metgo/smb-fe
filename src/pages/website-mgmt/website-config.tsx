@@ -487,7 +487,7 @@ export default function WebsiteConfigPage() {
         toast.error(t("upload_failed"));
       }
     },
-    [createSignedUrl],
+    [createSignedUrl, t],
   );
 
   const handleFileClear = useCallback((field: keyof ISiteSettingsFormData) => {
@@ -552,7 +552,7 @@ export default function WebsiteConfigPage() {
         toast.error(t("video_upload_failed"));
       }
     },
-    [createSignedUrl],
+    [createSignedUrl, t],
   );
 
   const handleVideoRemove = useCallback(
@@ -644,7 +644,7 @@ export default function WebsiteConfigPage() {
         toast.error(t("upload_failed"));
       }
     },
-    [createSignedUrl],
+    [createSignedUrl, t],
   );
 
   const handleThumbnailRemove = useCallback(

@@ -217,3 +217,11 @@ interface IDoucment {
 interface IDocumentRes extends IPagination {
   data: Array<IDoucment>;
 }
+
+interface IPoiColumnVisibility {
+  impact: boolean;
+  name: boolean;
+  shortDescription: boolean;
+  address: boolean;
+  status: boolean;
+}

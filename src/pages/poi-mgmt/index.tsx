@@ -30,37 +30,11 @@ import EmptyState from "@/components/shared/EmptyState";
 
 import { usePoiFilters } from "./hooks/usePoiFilters";
 import { usePoiListData } from "./hooks/usePoiListData";
+import { POI_COLUMNS } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const COLUMNS_STORAGE_KEY = "poisTableColumns";
-
-type ColumnVisibility = {
-  impact: boolean;
-  name: boolean;
-  shortDescription: boolean;
-  address: boolean;
-  status: boolean;
-};
-
-const defaultColumns: ColumnVisibility = {
-  impact: true,
-  name: true,
-  shortDescription: true,
-  address: true,
-  status: true,
-};
-
-const columnDefinitions: Array<{
-  key: keyof ColumnVisibility;
-  isDefault: boolean;
-}> = [
-  { key: "impact", isDefault: true },
-  { key: "name", isDefault: true },
-  { key: "shortDescription", isDefault: true },
-  { key: "address", isDefault: true },
-  { key: "status", isDefault: true },
-];
+const { defaultColumns, columnDefinitions, COLUMNS_STORAGE_KEY } = POI_COLUMNS;
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -102,7 +76,7 @@ export default function PoiMgmtPage() {
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedPois, setSelectedPois] = useState<Set<string>>(new Set());
   const [columnVisibility, setColumnVisibility] =
-    useState<ColumnVisibility>(defaultColumns);
+    useState<IPoiColumnVisibility>(defaultColumns);
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
@@ -151,7 +125,7 @@ export default function PoiMgmtPage() {
   );
 
   const resetToDefault = useCallback(() => {
-    setColumnVisibility(defaultColumns);
+    setColumnVisibility(POI_COLUMNS.defaultColumns);
   }, []);
 
   const promptBulkDelete = useCallback(() => {

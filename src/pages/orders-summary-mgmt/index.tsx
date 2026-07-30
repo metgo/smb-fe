@@ -34,23 +34,13 @@ import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "../orders-mgmt/components/OrdersModal";
 import { formatILS } from "@/helpers/formatter";
 import { setDmo, setAuthority } from "@/features/authSlice";
+import { ORDER_SUMMARY_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
 
-const defaultSummaryColumns = {
-  businessName: true,
-  businessAddressCity: true,
-  businessAddressLocation: true,
-  totalNoOfOrders: true,
-  totalAmount: true,
-  totalAmountPaidByCreditCard: true,
-};
+const { defaultColumns, columnDefinitions } = ORDER_SUMMARY_COLUMNS;
 
-type SummaryColumnVisibility = typeof defaultSummaryColumns;
-
-const summaryColumnSettingsDefs = Object.keys(defaultSummaryColumns).map(
-  (key) => ({ key }),
-);
+type SummaryColumnVisibility = typeof defaultColumns;
 
 export default function OrdersSummaryMgmtPage() {
   const navigate = useNavigate();
@@ -194,7 +184,7 @@ export default function OrdersSummaryMgmtPage() {
   };
 
   const [columnVisibility, setColumnVisibility] =
-    useState<SummaryColumnVisibility>(defaultSummaryColumns);
+    useState<SummaryColumnVisibility>(defaultColumns);
 
   const downloadAsXLS = (row: any) => {
     const workbook = XLSX?.utils?.book_new();
@@ -531,13 +521,13 @@ export default function OrdersSummaryMgmtPage() {
                 <ShowColumns
                   t={t}
                   viewMode="list"
-                  columnDefinitions={summaryColumnSettingsDefs}
+                  columnDefinitions={columnDefinitions}
                   columnVisibility={columnVisibility}
                   showColumnSettings={showColumnSettings}
                   setShowColumnSettings={setShowColumnSettings}
                   setColumnVisibility={setColumnVisibility}
                   resetToDefault={() =>
-                    setColumnVisibility(defaultSummaryColumns)
+                    setColumnVisibility(ORDER_SUMMARY_COLUMNS.defaultColumns)
                   }
                 />
                 <ExportOrdersButton
