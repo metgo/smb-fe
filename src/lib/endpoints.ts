@@ -53,6 +53,7 @@ export const endpoints = {
 
   //orders
   orders: "/orders",
+  orderStats: "/orders/stats",
   orderDetails: "/order-details",
   orderSummary: "/orders-summary",
   orderProducts: "/order-products",

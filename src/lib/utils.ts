@@ -131,3 +131,228 @@ export const EMAIL_TEMPLATE_IMAGE_KEYS = [
     name: "FOOTER_BANNER_MINISITE_BANNER",
   },
 ];
+
+// ==================================== Item list table columns ========================================
+// ------------ 1. Businesses -----------------
+export const BUSINESS_COLUMNS = {
+  COLUMNS_STORAGE_KEY: "businessesTableColumns",
+  defaultColumns: {
+    impact: true,
+    name: true,
+    shortDescription: true,
+    contactDetails: true,
+    busiEmail: true,
+    phoneNumber: true,
+    productCount: true,
+    status: true,
+    lifetimeSales: true,
+    tripCount: false,
+    associatedWebsites: false,
+    contactPhone: false,
+    categories: false,
+  },
+  columnDefinitions: [
+    { key: "impact", isDefault: true },
+    { key: "name", isDefault: true },
+    { key: "shortDescription", isDefault: true },
+    { key: "contactDetails", isDefault: true },
+    { key: "busiEmail", isDefault: true },
+    { key: "phoneNumber", isDefault: true },
+    { key: "productCount", isDefault: true },
+    { key: "status", isDefault: true },
+    { key: "lifetimeSales", isDefault: true },
+    { key: "tripCount", isDefault: false },
+    { key: "associatedWebsites", isDefault: false },
+    { key: "contactPhone", isDefault: false },
+    { key: "categories", isDefault: false },
+  ] as Array<{
+    key: keyof IBusinessColumnVisibility;
+    isDefault: boolean;
+  }>,
+};
+
+// ------------ 2. Products -----------------
+export const PRODUCT_COLUMNS = {
+  COLUMNS_STORAGE_KEY: "productsTableColumns",
+  defaultColumns: {
+    images: true,
+    name: true,
+    businessId: true,
+    shortDescription: false,
+    description: false,
+    actions: true,
+    status: true,
+    price: true,
+    impact: false,
+    quantity: true,
+    updatedAt: true,
+    createdAt: true,
+  },
+  columnDefinitions: [
+    { key: "images", isDefault: true },
+    { key: "name", isDefault: true },
+    { key: "businessId", isDefault: true },
+    { key: "status", isDefault: true },
+    { key: "price", isDefault: true },
+    { key: "actions", isDefault: true },
+    { key: "quantity", isDefault: true },
+    { key: "updatedAt", isDefault: true },
+    { key: "createdAt", isDefault: true },
+    { key: "impact", isDefault: false },
+    { key: "description", isDefault: false },
+    { key: "shortDescription", isDefault: false },
+  ] as Array<{
+    key: keyof IProductColumnVisibility;
+    isDefault: boolean;
+  }>,
+};
+
+// ------------ 3. Events -----------------
+export const EVENT_COLUMNS = {
+  COLUMNS_STORAGE_KEY: "eventsTableColumns",
+  defaultColumns: {
+    image: true,
+    name: true,
+    status: true,
+    dayDescription: true,
+    ticketCount: true,
+    wrapperCount: false,
+    associatedWebsiteIds: false,
+    address: false,
+    pricing: true,
+    hasExternalTicket: false,
+    ticketBuyLink: false,
+    updatedAt: true,
+    createdAt: true,
+  },
+  columnDefinitions: [
+    { key: "image", isDefault: true },
+    { key: "name", isDefault: true },
+    { key: "status", isDefault: true },
+    { key: "dayDescription", isDefault: true },
+    { key: "ticketCount", isDefault: true },
+    { key: "wrapperCount", isDefault: false },
+    { key: "associatedWebsiteIds", isDefault: false },
+    { key: "address", isDefault: false },
+    { key: "pricing", isDefault: true },
+    { key: "hasExternalTicket", isDefault: false },
+    { key: "ticketBuyLink", isDefault: false },
+    { key: "updatedAt", isDefault: true },
+    { key: "createdAt", isDefault: true },
+  ] as Array<{
+    key: keyof IEventColumnVisibility;
+    isDefault: boolean;
+  }>,
+};
+
+// ------------ 4. Trips -----------------
+export const TRIP_COLUMNS = {
+  COLUMNS_STORAGE_KEY: "tripsTableColumns",
+  defaultColumns: {
+    name: true,
+    shortDescription: true,
+    estimatedDuration: true,
+    stations: true,
+    status: true,
+    createdAt: true,
+    updatedAt: true,
+  },
+  columnDefinitions: [
+    { key: "name", isDefault: true },
+    { key: "shortDescription", isDefault: true },
+    { key: "estimatedDuration", isDefault: true },
+    { key: "stations", isDefault: true },
+    { key: "status", isDefault: true },
+    { key: "createdAt", isDefault: true },
+    { key: "updatedAt", isDefault: true },
+  ] as Array<{
+    key: keyof ITripColumnVisibility;
+    isDefault: boolean;
+  }>,
+};
+
+// ------------ 5. POIs -----------------
+export const POI_COLUMNS = {
+  COLUMNS_STORAGE_KEY: "poisTableColumns",
+  defaultColumns: {
+    impact: true,
+    name: true,
+    shortDescription: true,
+    address: true,
+    status: true,
+  },
+  columnDefinitions: [
+    { key: "impact", isDefault: true },
+    { key: "name", isDefault: true },
+    { key: "shortDescription", isDefault: true },
+    { key: "address", isDefault: true },
+    { key: "status", isDefault: true },
+  ] as Array<{
+    key: keyof IPoiColumnVisibility;
+    isDefault: boolean;
+  }>,
+};
+
+// ------------ 6. Orders -----------------
+export const ORDER_COLUMNS = {
+  COLUMNS_STORAGE_KEY: "ordersTableColumns",
+  defaultColumns: {
+    name: true,
+    email: true,
+    phone: true,
+    status: true,
+    paymentStatus: true,
+    paymentMethod: false,
+    totalOrderAmount: true,
+    productCount: true,
+    deliveryFee: true,
+    createdAt: true,
+    _id: false,
+    website: true,
+    dmos: true,
+    authorities: true,
+  },
+  columnDefinitions: [
+    { key: "name", isDefault: true },
+    { key: "email", isDefault: true },
+    { key: "phone", isDefault: true },
+    { key: "status", isDefault: true },
+    { key: "paymentStatus", isDefault: true },
+    { key: "paymentMethod", isDefault: false },
+    { key: "totalOrderAmount", isDefault: true },
+    { key: "productCount", isDefault: true },
+    { key: "deliveryFee", isDefault: true },
+    { key: "createdAt", isDefault: true },
+    { key: "_id", isDefault: false },
+    { key: "website", isDefault: true },
+    { key: "dmos", isDefault: true },
+    { key: "authorities", isDefault: true },
+  ] as Array<{
+    key: keyof IOrderColumnVisibility;
+    isDefault: boolean;
+  }>,
+};
+
+// ------------ 7. Order Summary -----------------
+export const ORDER_SUMMARY_COLUMNS = {
+  COLUMNS_STORAGE_KEY: "orderSummaryTableColumns",
+  defaultColumns: {
+    businessName: true,
+    businessAddressCity: true,
+    businessAddressLocation: true,
+    totalNoOfOrders: true,
+    totalAmount: true,
+    totalAmountPaidByCreditCard: true,
+  },
+  columnDefinitions: [
+    { key: "businessName", isDefault: true },
+    { key: "businessAddressCity", isDefault: true },
+    { key: "businessAddressLocation", isDefault: true },
+    { key: "totalNoOfOrders", isDefault: true },
+    { key: "totalAmount", isDefault: true },
+    { key: "totalAmountPaidByCreditCard", isDefault: true },
+  ] as Array<{
+    key: keyof IOrderSummaryColumnVisibility;
+    isDefault: boolean;
+  }>,
+};

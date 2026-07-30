@@ -26,38 +26,9 @@ import {
 } from "./components";
 import { useTripListFilters } from "./hooks/useTripListFilters";
 import { useTripListData } from "./hooks/useTripListData";
+import { TRIP_COLUMNS } from "@/lib/utils";
 
-const COLUMNS_STORAGE_KEY = "tripsTableColumns";
-
-type ColumnVisibility = {
-  name: boolean;
-  shortDescription: boolean;
-  estimatedDuration: boolean;
-  stations: boolean;
-  status: boolean;
-  createdAt: boolean;
-};
-
-const defaultColumns: ColumnVisibility = {
-  name: true,
-  shortDescription: true,
-  estimatedDuration: true,
-  stations: true,
-  status: true,
-  createdAt: true,
-};
-
-const columnDefinitions: Array<{
-  key: keyof ColumnVisibility;
-  isDefault: boolean;
-}> = [
-  { key: "name", isDefault: true },
-  { key: "shortDescription", isDefault: true },
-  { key: "estimatedDuration", isDefault: true },
-  { key: "stations", isDefault: true },
-  { key: "status", isDefault: true },
-  { key: "createdAt", isDefault: true },
-];
+const { defaultColumns, columnDefinitions, COLUMNS_STORAGE_KEY } = TRIP_COLUMNS;
 
 const TripsMgmtPage = () => {
   const { t } = useTranslation("trips");
@@ -88,7 +59,7 @@ const TripsMgmtPage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTrips, setSelectedTrips] = useState<Set<string>>(new Set());
   const [columnVisibility, setColumnVisibility] =
-    useState<ColumnVisibility>(defaultColumns);
+    useState<ITripColumnVisibility>(defaultColumns);
   const [tripToDelete, setTripToDelete] = useState<ITrip | null>(null);
   const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
@@ -201,7 +172,7 @@ const TripsMgmtPage = () => {
   }, [showColumnSettings]);
 
   const resetToDefault = useCallback(() => {
-    setColumnVisibility(defaultColumns);
+    setColumnVisibility(TRIP_COLUMNS.defaultColumns);
   }, []);
 
   return (
