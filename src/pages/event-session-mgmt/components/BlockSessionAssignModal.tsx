@@ -107,7 +107,6 @@ export default function BlockSessionAssignModal({
           />
         </div>
 
-
         <div>
           <ReactMultiSelect
             label={t("select_sessions") + " *"}
@@ -121,7 +120,9 @@ export default function BlockSessionAssignModal({
         <div>
           <label className="block text-sm font-medium mb-2">
             {t("booking_limit")} <span className="text-red-500">*</span>
-            <span className="ps-3 text-xs italic">{t("max_limit")} {sessionIds?.length || 1}</span>
+            <span className="ps-3 text-xs italic">
+              {t("max_limit")} {sessionIds?.length || 1}
+            </span>
           </label>
           <InputField
             type="number"
@@ -130,23 +131,24 @@ export default function BlockSessionAssignModal({
             onChange={(v) => {
               const value = Number(v);
               const maxLimit = sessionIds?.length || 1;
-              
+
               if (value > maxLimit) {
                 setBookingLimitError(true);
               } else {
                 setBookingLimitError(false);
               }
-              
+
               if (
                 value > 0 &&
-                (sessionIds?.length === 0 ||
-                  value <= sessionIds?.length)
+                (sessionIds?.length === 0 || value <= sessionIds?.length)
               ) {
                 setBookingLimit(value);
               }
             }}
             placeholder={t("enter_booking_limit")}
-            inputClasses={bookingLimitError ? "border-red-500" : "border-gray-300"}
+            inputClasses={
+              bookingLimitError ? "border-red-500" : "border-gray-300"
+            }
           />
           {bookingLimitError && (
             <p className="text-xs text-red-500 mt-1">
@@ -154,7 +156,7 @@ export default function BlockSessionAssignModal({
             </p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium mb-2">
             {t("description")} <span className="text-red-500">*</span>

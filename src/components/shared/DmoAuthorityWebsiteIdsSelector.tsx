@@ -34,8 +34,14 @@ export default function DmoAuthorityWebsiteIdsSelector({
   selectedWebsiteIds = [], // Add default value
   setSelectWebsiteIds,
 }: Props) {
-  console.log("🚀 ~ DmoAuthorityWebsiteIdsSelector ~ selectedAuthorityId:", selectedAuthorityId)
-  console.log("🚀 ~ DmoAuthorityWebsiteIdsSelector ~ selectedDmoId:", selectedDmoId)
+  console.log(
+    "🚀 ~ DmoAuthorityWebsiteIdsSelector ~ selectedAuthorityId:",
+    selectedAuthorityId,
+  );
+  console.log(
+    "🚀 ~ DmoAuthorityWebsiteIdsSelector ~ selectedDmoId:",
+    selectedDmoId,
+  );
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark } = useThemeClasses();
@@ -83,7 +89,10 @@ export default function DmoAuthorityWebsiteIdsSelector({
 
     return result;
   }, [allWebsites, selectedDmoId, selectedAuthorityId]);
-  console.log("🚀 ~ DmoAuthorityWebsiteIdsSelector ~ associatedWebsites:", associatedWebsites)
+  console.log(
+    "🚀 ~ DmoAuthorityWebsiteIdsSelector ~ associatedWebsites:",
+    associatedWebsites,
+  );
 
   /* ----------------------------
    Helpers
@@ -129,8 +138,9 @@ export default function DmoAuthorityWebsiteIdsSelector({
     return (
       <div>
         <label
-          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"
-            }`}
+          className={`block text-sm mb-2 ${
+            isDark ? "text-gray-300" : "text-gray-700"
+          }`}
         >
           {title}
         </label>
@@ -138,10 +148,11 @@ export default function DmoAuthorityWebsiteIdsSelector({
           {/* Select All */}
           <label
             className={`flex items-center gap-2 cursor-pointer border rounded p-2
-            ${isDark
+            ${
+              isDark
                 ? "border-gray-700 bg-gray-900 text-gray-300"
                 : "border-gray-300 bg-white text-gray-700"
-              }
+            }
           `}
           >
             <input
@@ -149,9 +160,10 @@ export default function DmoAuthorityWebsiteIdsSelector({
               checked={allSelected}
               onChange={() => toggleAll(allIds)}
               className={`rounded
-                ${isDark
-                  ? "bg-gray-900 border-gray-700 accent-teal-500"
-                  : "bg-white border-gray-300 accent-teal-600"
+                ${
+                  isDark
+                    ? "bg-gray-900 border-gray-700 accent-teal-500"
+                    : "bg-white border-gray-300 accent-teal-600"
                 }
               `}
             />
@@ -164,10 +176,11 @@ export default function DmoAuthorityWebsiteIdsSelector({
             <label
               key={item._id}
               className={`flex items-center gap-2 cursor-pointer border rounded p-2
-      ${isDark
-                  ? "border-gray-700 bg-gray-900 text-gray-300"
-                  : "border-gray-300 bg-white text-gray-700"
-                }
+      ${
+        isDark
+          ? "border-gray-700 bg-gray-900 text-gray-300"
+          : "border-gray-300 bg-white text-gray-700"
+      }
     `}
             >
               <input
@@ -175,10 +188,11 @@ export default function DmoAuthorityWebsiteIdsSelector({
                 checked={selectedWebsiteIds?.includes(item._id)}
                 onChange={() => toggleId(item._id)}
                 className={`rounded
-                ${isDark
+                ${
+                  isDark
                     ? "bg-gray-900 border-gray-700 accent-teal-500"
                     : "bg-white border-gray-300 accent-teal-600"
-                  }
+                }
               `}
               />
               <ImageWithFallback

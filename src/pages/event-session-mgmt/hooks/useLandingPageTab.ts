@@ -133,8 +133,8 @@ export function useLandingPageTab({
 
   const tickets = isDuplicate
     ? ticketRes?.data?.tickets?.filter(
-      (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
-    )
+        (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
+      )
     : (ticketRes?.data?.tickets ?? []);
 
   const isDirty =
