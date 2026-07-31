@@ -400,5 +400,11 @@
   "business_name_unavailable": "اسم النشاط التجاري محجوز بالفعل",
   "business_already_created": "النشاط التجاري تم إنشاؤه بالفعل",
   "business_already_created_desc": "لقد قمنا بالفعل بإنشاء هذا النشاط التجاري لك. يمكنك الاطلاع عليه إذا أردت.",
-  "connected_websites": "المواقع المرتبطة"
+  "connected_websites": "المواقع المرتبطة",
+  "support_email": "support@metgo.app",
+  "support_phone": "050 554 5353",
+  "business_already_exists_title": "لقد قمنا بالفعل ببناء هذا النشاط التجاري لك",
+  "business_already_exists_body": "يرجى التواصل مع فريق الدعم لدينا أدناه، أو انظر إلى النشاط التجاري الذي قمنا بإنشاؤه بالفعل.",
+  "view_business_on": "عرض على",
+  "contact_support_label": "أو اتصل بفريق الدعم لدينا"
 }

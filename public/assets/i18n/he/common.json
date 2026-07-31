@@ -415,5 +415,11 @@
   "business_name_unavailable": "שם העסק כבר תפוס",
   "business_already_created": "העסק כבר נוצר",
   "business_already_created_desc": "כבר יצרנו עבורך את העסק הזה. אתה מוזמן להציץ.",
-  "connected_websites": "אתרים מקושרים"
+  "connected_websites": "אתרים מקושרים",
+  "support_email": "support@metgo.app",
+  "support_phone": "050 554 5353",
+  "business_already_exists_title": "כבר בנינו את העסק הזה עבורך",
+  "business_already_exists_body": "אנא צור קשר עם צוות התמיכה שלנו להלן, או הסתכל בעסק שכבר הקמנו.",
+  "view_business_on": "צפה ב",
+  "contact_support_label": "או צור קשר עם צוות התמיכה שלנו"
 }

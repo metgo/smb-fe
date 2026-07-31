@@ -411,5 +411,11 @@
   "business_name_unavailable": "Business name is already taken",
   "business_already_created": "Business Already Created",
   "business_already_created_desc": "We have already created this business for you. Take a look if you like.",
-  "connected_websites": "Connected Websites"
+  "connected_websites": "Connected Websites",
+  "support_email": "support@metgo.app",
+  "support_phone": "050 554 5353",
+  "business_already_exists_title": "We've already built this business for you",
+  "business_already_exists_body": "Please contact our support team below, or take a look at the business we've already set up.",
+  "view_business_on": "View on",
+  "contact_support_label": "Or contact our support team"
 }

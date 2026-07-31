@@ -280,18 +280,18 @@ export const BusinessContentForm = ({
               </p>
               <div className="flex flex-col gap-2">
                 <a
-                  href="mailto:support@metgo.app"
+                  href={`mailto:${t("support_email")}`}
                   className="flex items-center justify-center gap-1.5 text-sm text-green-500 hover:underline"
                 >
                   <Mail className="w-3.5 h-3.5" />
-                  support@metgo.app
+                  {t("support_email")}
                 </a>
                 <a
-                  href="tel:0505545353"
+                  href={`tel:${t("support_phone").replace(/\s/g, "")}`}
                   className="flex items-center justify-center gap-1.5 text-sm text-green-500 hover:underline"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  0505545353
+                  {t("support_phone")}
                 </a>
               </div>
             </div>
