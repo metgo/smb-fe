@@ -48,6 +48,7 @@ import {
   EventSessionMgmtPage,
   TripsMgmtPage,
   TripDetailsPage,
+  StatsSummaryPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -538,6 +539,10 @@ function App() {
             {
               path: routes.analyticsDashboard,
               element: <AnalyticsDashboardPage />,
+            },
+            {
+              path: routes.statsSummary,
+              element: <StatsSummaryPage />,
             },
 
             { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },

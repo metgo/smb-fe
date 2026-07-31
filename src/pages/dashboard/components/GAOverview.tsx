@@ -27,6 +27,16 @@ type AnalyticsItem = {
 };
 
 const transformAnalyticsData = (data: AnalyticsItem[]) => {
+  if (!data || data.length === 0) {
+    return {
+      activeUsers: { total: 0, sparklineData: [] as number[] },
+      pageviews: { total: 0, sparklineData: [] as number[] },
+      sessions: { total: 0, sparklineData: [] as number[] },
+      conversions: { total: 0, sparklineData: [] as number[] },
+      averageSessionDuration: { total: 0, sparklineData: [] as number[] },
+    };
+  }
+
   return data?.reduce(
     (acc, curr) => {
       acc.activeUsers.total += curr.activeUsers;
@@ -64,18 +74,48 @@ interface KPICardProps {
   icon: React.ReactNode;
   sparklineData: number[];
   color: keyof typeof COLORS;
+  isLoading?: boolean;
 }
 
-function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
+function KPICard({
+  title,
+  value,
+  icon,
+  sparklineData,
+  color,
+  isLoading = false,
+}: KPICardProps) {
   const { isDark } = useThemeClasses();
   const chartData = sparklineData?.map((v, index) => ({ value: v, index }));
   const colorConfig = COLORS[color];
+
+  // Skeleton loader for sparkline
+  const SkeletonSparkline = () => (
+    <div className="h-10 w-full flex items-center justify-center">
+      <div className="flex items-end gap-0.5 h-8 w-full">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className={clsx(
+              "flex-1 rounded-sm animate-pulse",
+              isDark ? "bg-gray-700" : "bg-gray-200",
+            )}
+            style={{
+              height: `${Math.random() * 80 + 20}%`,
+              animationDelay: `${i * 0.05}s`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div
       className={clsx(
         "rounded-lg border p-4 transition-shadow hover:shadow-md",
         isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+        isLoading && "animate-pulse",
       )}
     >
       <div className="flex items-start gap-4 mb-1">
@@ -83,11 +123,12 @@ function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
           className={clsx(
             "p-2 rounded-md bg-linear-to-br text-white",
             colorConfig.gradient,
+            isLoading && "opacity-50",
           )}
         >
           {icon}
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <p
             className={clsx(
               "text-xs font-medium mb-0.5 truncate",
@@ -96,36 +137,122 @@ function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
           >
             {title}
           </p>
-          <p
-            className={clsx(
-              "text-xl font-bold mb-2",
-              isDark ? "text-white" : "text-gray-900",
-            )}
-          >
-            {value}
-          </p>
+          {isLoading ? (
+            <div className="h-8 flex items-center">
+              <div
+                className={clsx(
+                  "h-6 w-24 rounded animate-pulse",
+                  isDark ? "bg-gray-700" : "bg-gray-200",
+                )}
+              />
+            </div>
+          ) : (
+            <p
+              className={clsx(
+                "text-xl font-bold mb-2 truncate",
+                isDark ? "text-white" : "text-gray-900",
+              )}
+            >
+              {value || "0"}
+            </p>
+          )}
         </div>
       </div>
 
       <div className="h-10">
-        <ResponsiveContainer
-          width="100%"
-          height="100%"
-          minWidth={0}
-          minHeight={0}
-        >
-          <LineChart data={chartData}>
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke={colorConfig.stroke}
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        {isLoading ? (
+          <SkeletonSparkline />
+        ) : (
+          chartData &&
+          chartData.length > 0 && (
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={0}
+              minHeight={0}
+            >
+              <LineChart data={chartData}>
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke={colorConfig.stroke}
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )
+        )}
       </div>
     </div>
+  );
+}
+
+// Skeleton version of the entire component
+function GAOverviewSkeleton() {
+  const { isDark } = useThemeClasses();
+  const { t } = useTranslation("dashboard");
+
+  const skeletonKPIs = [
+    { color: "blue" as const, icon: <Users className="w-4 h-4" /> },
+    { color: "purple" as const, icon: <Activity className="w-4 h-4" /> },
+    { color: "amber" as const, icon: <Eye className="w-4 h-4" /> },
+    { color: "red" as const, icon: <Clock className="w-4 h-4" /> },
+    { color: "emerald" as const, icon: <Target className="w-4 h-4" /> },
+  ];
+
+  return (
+    <section>
+      <div
+        className={clsx(
+          "rounded-xl border p-5",
+          isDark
+            ? "bg-gray-900/50 border-gray-800"
+            : "bg-white border-gray-200",
+        )}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <div className="flex-1 min-w-0">
+            <h2
+              className={clsx(
+                "text-sm font-semibold",
+                isDark ? "text-white" : "text-gray-900",
+              )}
+            >
+              {t("google_analytics_overview")}
+            </h2>
+            <p
+              className={clsx(
+                "text-xs",
+                isDark ? "text-gray-400" : "text-gray-500",
+              )}
+            >
+              {t("ga_desc")}
+            </p>
+          </div>
+          <InfoTooltip
+            content={t("google_analytics_overview_desc")}
+            title={t("google_analytics_overview")}
+          />
+        </div>
+
+        <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
+          <div className="grid grid-flow-col auto-cols-50 gap-3 lg:grid-flow-row lg:grid-cols-5 lg:auto-cols-auto">
+            {skeletonKPIs.map((kpi, index) => (
+              <KPICard
+                key={index}
+                title=""
+                value=""
+                icon={kpi.icon}
+                sparklineData={[]}
+                color={kpi.color}
+                isLoading={true}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -137,7 +264,7 @@ export default function GAOverview() {
     (state) => state.auth,
   );
 
-  const { data } = useGetGoogleAnalyticsViewsQuery({
+  const { data, isLoading, isFetching } = useGetGoogleAnalyticsViewsQuery({
     startDate,
     endDate,
     dmoId,
@@ -145,44 +272,50 @@ export default function GAOverview() {
     externalApiId: websiteId,
   });
 
+  // Show skeleton while loading
+  if (isLoading || isFetching) {
+    return <GAOverviewSkeleton />;
+  }
+
   const result = transformAnalyticsData(data);
 
   const kpis: KPICardProps[] = [
     {
       title: t("users"),
-      value: result?.activeUsers?.total?.toString(),
+      value: result?.activeUsers?.total?.toString() || "0",
       icon: <Users className="w-4 h-4" />,
-      sparklineData: result?.activeUsers?.sparklineData,
+      sparklineData: result?.activeUsers?.sparklineData || [],
       color: "blue",
     },
     {
       title: t("sessions"),
-      value: result?.sessions.total.toString(),
+      value: result?.sessions?.total?.toString() || "0",
       icon: <Activity className="w-4 h-4" />,
-      sparklineData: result?.sessions.sparklineData,
+      sparklineData: result?.sessions?.sparklineData || [],
       color: "purple",
     },
     {
       title: t("page_views"),
-      value: result?.pageviews?.total?.toString(),
+      value: result?.pageviews?.total?.toString() || "0",
       icon: <Eye className="w-4 h-4" />,
-      sparklineData: result?.pageviews?.sparklineData,
+      sparklineData: result?.pageviews?.sparklineData || [],
       color: "amber",
     },
     {
       title: t("avg_duration"),
-      value: normalizeTime(
-        result?.averageSessionDuration?.total / data?.length,
-      ),
+      value:
+        data && data.length > 0
+          ? normalizeTime(result?.averageSessionDuration?.total / data?.length)
+          : "0:00",
       icon: <Clock className="w-4 h-4" />,
-      sparklineData: result?.averageSessionDuration?.sparklineData,
+      sparklineData: result?.averageSessionDuration?.sparklineData || [],
       color: "red",
     },
     {
       title: t("conversions"),
-      value: result?.conversions?.total?.toString(),
+      value: result?.conversions?.total?.toString() || "0",
       icon: <Target className="w-4 h-4" />,
-      sparklineData: result?.conversions?.sparklineData,
+      sparklineData: result?.conversions?.sparklineData || [],
       color: "emerald",
     },
   ];
@@ -223,7 +356,7 @@ export default function GAOverview() {
         </div>
 
         <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
-          <div className="grid grid-flow-col auto-cols-[200px] gap-3 lg:grid-flow-row lg:grid-cols-5 lg:auto-cols-auto">
+          <div className="grid grid-flow-col auto-cols-50 gap-3 lg:grid-flow-row lg:grid-cols-5 lg:auto-cols-auto">
             {kpis.map((kpi, index) => (
               <KPICard key={index} {...kpi} />
             ))}
