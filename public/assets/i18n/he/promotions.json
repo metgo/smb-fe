@@ -87,5 +87,9 @@
   "secondary_banner": "באנר משני",
   "footer_spotlight": "הדגשת כותרת תחתונה",
   "delete_promotion": "מחק קידום",
-  "delete_promotion_confirm": "האם אתה בטוח שברצונך למחוק את הקידום הזה? פעולה זו אינה הפיכה."
+  "delete_promotion_confirm": "האם אתה בטוח שברצונך למחוק את הקידום הזה? פעולה זו אינה הפיכה.",
+  "unpublished_changes": "שינויים שלא פורסמו",
+  "unpublished_changes_confirm": "יש לך שינויים שטרם פורסמו. אם תעזוב עכשיו, הם יאבדו. האם אתה בטוח שברצונך לעזוב?",
+  "leave_anyway": "עזוב בכל זאת",
+  "stay": "הישאר"
 }

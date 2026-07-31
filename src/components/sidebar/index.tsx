@@ -38,6 +38,7 @@ import {
   AlertTriangle,
   CalendarArrowDown,
   ShoppingBag,
+  // BarChart3,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -94,6 +95,17 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       isEnabled: true,
     },
+    // ...(isSuperadmin
+    //   ? [
+    //       {
+    //         id: "stats-summary",
+    //         path: routes.statsSummary,
+    //         label: t("stats_summary") || "Stats Summary",
+    //         icon: BarChart3,
+    //         isEnabled: true,
+    //       },
+    //     ]
+    //   : []),
     {
       id: "businesses",
       path: routes.businessMgmt,
