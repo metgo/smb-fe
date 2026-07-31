@@ -550,6 +550,15 @@ export default function OrdersMgmtPage() {
       render: (order: IOrder) => (
         <div className="text-sm text-gray-500">
           {formatOrderDate(order?.createdAt, language)}
+          {order?.createdAt && (
+            <>
+              {" "}
+              {new Date(order.createdAt).toLocaleTimeString(language, {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </>
+          )}
         </div>
       ),
     },
