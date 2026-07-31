@@ -73,7 +73,7 @@ interface ThemeClasses {
   cardClasses: string;
   inputClasses: string;
   selectInputClasses: string;
-  tnBgClasses: string;
+  exportBtnBgClasses: string;
 }
 
 interface PageStats {
