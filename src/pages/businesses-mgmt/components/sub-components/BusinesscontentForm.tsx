@@ -27,7 +27,7 @@ export const BusinessContentForm = ({
   isEditMode = false,
 }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
-  const { isDark } = useThemeClasses()
+  const { isDark } = useThemeClasses();
   const {
     bgSecondary,
     textPrimary,
@@ -39,9 +39,14 @@ export const BusinessContentForm = ({
 
   const { allWebsites } = useCommon();
   const [checkAvailability] = useInitBusinessCreateMutation();
-  const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
-  const [checkResponse, setCheckResponse] = useState<{ associatedWebsiteIds: string[]; slug: string } | null>(null);
-  console.log("🚀 ~ BusinessContentForm ~ checkResponse:", checkResponse)
+  const [availabilityStatus, setAvailabilityStatus] = useState<
+    "available" | "unavailable" | null
+  >(null);
+  const [checkResponse, setCheckResponse] = useState<{
+    associatedWebsiteIds: string[];
+    slug: string;
+  } | null>(null);
+  console.log("🚀 ~ BusinessContentForm ~ checkResponse:", checkResponse);
 
   // Get correct field name based on current global language
   const getFieldName = (baseField: string): string => {
@@ -79,22 +84,26 @@ export const BusinessContentForm = ({
 
     setAvailabilityStatus(null);
     try {
-      const res = await checkAvailability({ name: businessName, dmoId, authorityId, checkOnly: true }).unwrap();
-      console.log('Check availability response:', res);
+      const res = await checkAvailability({
+        name: businessName,
+        dmoId,
+        authorityId,
+        checkOnly: true,
+      }).unwrap();
+      console.log("Check availability response:", res);
       if (res?.isAvailable) {
-        setAvailabilityStatus('available');
+        setAvailabilityStatus("available");
         setCheckResponse(null);
-      }
-      else {
-        setAvailabilityStatus('unavailable');
+      } else {
+        setAvailabilityStatus("unavailable");
         setCheckResponse({
           associatedWebsiteIds: res?.associatedWebsiteIds || [],
-          slug: res?.slug || ''
+          slug: res?.slug || "",
         });
       }
     } catch (error: any) {
-      console.log('Check availability error:', error);
-      setAvailabilityStatus('unavailable');
+      console.log("Check availability error:", error);
+      setAvailabilityStatus("unavailable");
       setCheckResponse(null);
     }
   };
@@ -117,25 +126,36 @@ export const BusinessContentForm = ({
             onBlur={handleNameBlur}
             placeholder={t("title_placeholder")}
             disabled={isBusinessContext && isEditMode}
-            className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border-2 ${availabilityStatus === 'available'
-                ? 'border-green-500'
-                : availabilityStatus === 'unavailable'
-                  ? 'border-red-500'
+            className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border-2 ${
+              availabilityStatus === "available"
+                ? "border-green-500"
+                : availabilityStatus === "unavailable"
+                  ? "border-red-500"
                   : borderColor
-              } rounded-xl px-4 py-3 pr-12 focus:outline-none transition-colors ${isBusinessContext && isEditMode ? 'opacity-60 cursor-not-allowed' : ''
-              }`}
+            } rounded-xl px-4 py-3 pr-12 focus:outline-none transition-colors ${
+              isBusinessContext && isEditMode
+                ? "opacity-60 cursor-not-allowed"
+                : ""
+            }`}
             dir={dir}
           />
         </div>
         {isBusinessContext && !isEditMode && availabilityStatus && (
-          <p className={`text-sm mt-2 flex items-center gap-1.5 ${availabilityStatus === 'available' ? 'text-green-500' : 'text-red-500'
-            }`}>
-            {availabilityStatus === 'available' ? (
+          <p
+            className={`text-sm mt-2 flex items-center gap-1.5 ${
+              availabilityStatus === "available"
+                ? "text-green-500"
+                : "text-red-500"
+            }`}
+          >
+            {availabilityStatus === "available" ? (
               <Check className="w-4 h-4" />
             ) : (
               <Info className="w-4 h-4" />
             )}
-            {availabilityStatus === 'available' ? t("business_name_available") : t("business_name_unavailable")}
+            {availabilityStatus === "available"
+              ? t("business_name_available")
+              : t("business_name_unavailable")}
           </p>
         )}
       </div>
@@ -195,49 +215,63 @@ export const BusinessContentForm = ({
       </FormFieldWrapper>
 
       {availabilityStatus === "unavailable" && (
-        <ModalWrapper onClose={() => setAvailabilityStatus(null)} height="h-[45vh]" maxWidth="max-w-lg">
+        <ModalWrapper
+          onClose={() => setAvailabilityStatus(null)}
+          height="h-[95vh]"
+          maxWidth="max-w-lg"
+        >
           <div className="flex flex-col items-center text-center px-6 py-4 h-full justify-center">
             {/* Icon */}
-            <div className={`flex items-center justify-center w-14 h-14 rounded-full mb-4 ${isDark ? 'bg-amber-500/20' : 'bg-amber-50'
-              }`}>
+            <div
+              className={`flex items-center justify-center w-14 h-14 rounded-full mb-4 ${
+                isDark ? "bg-amber-500/20" : "bg-amber-50"
+              }`}
+            >
               <Info className="w-7 h-7 text-amber-500" />
             </div>
 
             {/* Heading */}
             <h3 className={`text-lg font-semibold ${textSecondary} mb-2`}>
-              {t("business_already_exists_title", "We've already built this business for you")}
+              {t(
+                "business_already_exists_title",
+                "We've already built this business for you",
+              )}
             </h3>
 
             {/* Body */}
             <p className={`text-sm ${textSecondary} max-w-sm mb-5`}>
               {t(
                 "business_already_exists_body",
-                "Please contact our support team below, or take a look at the business we've already set up."
+                "Please contact our support team below, or take a look at the business we've already set up.",
               )}
             </p>
 
             {/* Website links */}
-            {checkResponse?.associatedWebsiteIds && checkResponse?.associatedWebsiteIds?.length > 0  && (
-              <div className="flex flex-col gap-2 w-full max-w-xs mb-4">
-                {checkResponse?.associatedWebsiteIds?.map((websiteId) => {
-                  const website = allWebsites?.find((w) => w._id === websiteId);
-                  if (!website) return null;
-                  const businessUrl = `${website.websiteUrl}/business-details/${checkResponse.slug}`;
-                  return (
-                    <a
-                      key={websiteId}
-  href={businessUrl}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="flex items-center justify-center gap-2 w-full rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 transition-colors"
->
-  <ExternalLink className="w-4 h-4" />
-  {t("view_business_on", "View on")} {businessUrl}
-</a>
-                  );
-                })}
-              </div>
-            )}
+            {checkResponse?.associatedWebsiteIds &&
+              checkResponse?.associatedWebsiteIds?.length > 0 && (
+                <div className="w-full mb-4">
+                  {checkResponse?.associatedWebsiteIds?.slice(0, 1).map((websiteId) => {
+                    const website = allWebsites?.find(
+                      (w) => w._id === websiteId,
+                    );
+                    if (!website) return null;
+                    const businessUrl = `${website.websiteUrl}/business-details/${checkResponse.slug}`;
+                    const domain = new URL(businessUrl).hostname;
+                    return (
+                      <a
+                        key={websiteId}
+                        href={businessUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-all duration-200 hover:shadow-md hover:shadow-green-600/30"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t("view_business_on", "View on")} {domain}</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
 
             {/* Contact support */}
             <div className={`w-full max-w-xs pt-4 border-t ${borderColor}`}>
