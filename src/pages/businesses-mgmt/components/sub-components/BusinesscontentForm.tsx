@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCommon } from "@/hooks/useCommon";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 import { useInitBusinessCreateMutation } from "@/store/api/businessMutationApi";
 import { Check, ExternalLink, Info, Mail, Phone } from "lucide-react";
@@ -36,8 +37,11 @@ export const BusinessContentForm = ({
     language,
   } = useThemeClasses();
 
+  const { allWebsites } = useCommon();
   const [checkAvailability] = useInitBusinessCreateMutation();
   const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
+  const [checkResponse, setCheckResponse] = useState<{ associatedWebsiteIds: string[]; slug: string } | null>(null);
+  console.log("🚀 ~ BusinessContentForm ~ checkResponse:", checkResponse)
 
   // Get correct field name based on current global language
   const getFieldName = (baseField: string): string => {
@@ -76,15 +80,22 @@ export const BusinessContentForm = ({
     setAvailabilityStatus(null);
     try {
       const res = await checkAvailability({ name: businessName, dmoId, authorityId, checkOnly: true }).unwrap();
-      setAvailabilityStatus('available');
+      console.log('Check availability response:', res);
       if (res?.isAvailable) {
         setAvailabilityStatus('available');
+        setCheckResponse(null);
       }
       else {
         setAvailabilityStatus('unavailable');
+        setCheckResponse({
+          associatedWebsiteIds: res?.associatedWebsiteIds || [],
+          slug: res?.slug || ''
+        });
       }
     } catch (error: any) {
+      console.log('Check availability error:', error);
       setAvailabilityStatus('unavailable');
+      setCheckResponse(null);
     }
   };
 
@@ -205,15 +216,28 @@ export const BusinessContentForm = ({
               )}
             </p>
 
-            {/* Dummy external link */}
-            <a
-              href="#"
-              onClick={(e) => e.preventDefault()}
-              className="flex items-center justify-center gap-2 w-full max-w-xs rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 mb-4 transition-colors"
-            >
-              <ExternalLink className="w-4 h-4" />
-              {t("view_business", "Take a Look")}
-            </a>
+            {/* Website links */}
+            {checkResponse?.associatedWebsiteIds && checkResponse?.associatedWebsiteIds?.length > 0  && (
+              <div className="flex flex-col gap-2 w-full max-w-xs mb-4">
+                {checkResponse?.associatedWebsiteIds?.map((websiteId) => {
+                  const website = allWebsites?.find((w) => w._id === websiteId);
+                  if (!website) return null;
+                  const businessUrl = `${website.websiteUrl}/business-details/${checkResponse.slug}`;
+                  return (
+                    <a
+                      key={websiteId}
+  href={businessUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex items-center justify-center gap-2 w-full rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 transition-colors"
+>
+  <ExternalLink className="w-4 h-4" />
+  {t("view_business_on", "View on")} {businessUrl}
+</a>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Contact support */}
             <div className={`w-full max-w-xs pt-4 border-t ${borderColor}`}>
