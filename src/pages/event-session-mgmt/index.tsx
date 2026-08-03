@@ -23,7 +23,7 @@ import type { TourStep } from "@/components/tour";
 import { EVENT_SESSION_TOUR_ID } from "@/components/tour";
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import { useGetEventByIdQuery } from "@/store/api/eventQueryApi";
-import { useGenSessionPrivewLinkQuery } from "@/store/api/eventSessionApi";
+import { useLazyGenSessionPrivewLinkQuery } from "@/store/api/eventSessionApi";
 import { routes } from "@/lib/routes";
 import { BackToListBtn } from "@/components/btns";
 import { getLngWiseStr } from "@/helpers";
@@ -58,20 +58,8 @@ function EventSessionMgmtPageInner() {
     refetch,
   } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
 
-  const [previewArg, setPreviewArg] = useState<string | typeof skipToken>(
-    skipToken,
-  );
-  const {
-    data: previewLinkData,
-    isFetching: isPreviewLoading,
-    refetch: refetchPreviewLink,
-  } = useGenSessionPrivewLinkQuery(previewArg);
-
-  useEffect(() => {
-    if (!previewLinkData?.data?.previewLink) return;
-    const link = previewLinkData?.data?.previewLink;
-    if (link) window.open(link, "_blank", "noopener,noreferrer");
-  }, [previewLinkData]);
+  const [triggerPreviewLink, { isFetching: isPreviewLoading }] =
+    useLazyGenSessionPrivewLinkQuery();
 
   useEffect(() => {
     const eventId = searchParams.get("eventId") || null;
@@ -80,13 +68,11 @@ function EventSessionMgmtPageInner() {
     setWrapperId(wrapperId);
   }, [searchParams]);
 
-  function handlePreview() {
+  async function handlePreview() {
     if (!wrapperId) return;
-    if (previewArg === skipToken) {
-      setPreviewArg(wrapperId);
-    } else {
-      refetchPreviewLink();
-    }
+    const res = await triggerPreviewLink(wrapperId);
+    const link = res.data?.data?.previewLink;
+    if (link) window.open(link, "_blank", "noopener,noreferrer");
   }
 
   const [tab, setTab] = useState<TTabId>("landing");

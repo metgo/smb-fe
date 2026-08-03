@@ -317,5 +317,8 @@
   "toast_session_deleted": "המפגש נמחק בהצלחה!",
   "toast_session_delete_error": "מחיקת המפגש נכשלה.",
   "toast_session_block_deleted": "בלוק המפגש נמחק בהצלחה!",
-  "toast_session_block_delete_error": "מחיקת בלוק המפגש נכשלה."
+  "toast_session_block_delete_error": "מחיקת בלוק המפגש נכשלה.",
+  "toast_session_block_activated": "בלוק המפגש הופעל בהצלחה!",
+  "toast_session_block_deactivated": "בלוק המפגש הושבת בהצלחה!",
+  "toast_session_block_status_error": "עדכון סטטוס בלוק המפגש נכשל."
 }

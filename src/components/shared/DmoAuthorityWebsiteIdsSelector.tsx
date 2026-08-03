@@ -78,13 +78,8 @@ export default function DmoAuthorityWebsiteIdsSelector({
         result.unAssociatedWebsites.push(site);
       }
     }
-
     return result;
   }, [allWebsites, selectedDmoId, selectedAuthorityId]);
-  console.log(
-    "🚀 ~ DmoAuthorityWebsiteIdsSelector ~ associatedWebsites:",
-    associatedWebsites,
-  );
 
   /* ----------------------------
    Helpers

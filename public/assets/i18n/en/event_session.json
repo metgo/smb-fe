@@ -318,5 +318,8 @@
   "toast_session_deleted": "Session deleted successfully!",
   "toast_session_delete_error": "Failed to delete session.",
   "toast_session_block_deleted": "Session block deleted successfully!",
-  "toast_session_block_delete_error": "Failed to delete session block."
+  "toast_session_block_delete_error": "Failed to delete session block.",
+  "toast_session_block_activated": "Session block activated successfully!",
+  "toast_session_block_deactivated": "Session block deactivated successfully!",
+  "toast_session_block_status_error": "Failed to update session block status."
 }
