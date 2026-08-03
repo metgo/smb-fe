@@ -30,6 +30,8 @@ const CREATABLE_ROLES: Partial<Record<UserRole, UserRole[]>> = {
     UserRole.TRAVELLER,
   ],
   [UserRole.DMO]: [UserRole.DMO, UserRole.AUTHORITY, UserRole.TRAVELLER],
+  // Authority users may create Authority users, but only within their own
+  // authority — the picker below locks the authority to their own.
   [UserRole.AUTHORITY]: [UserRole.AUTHORITY, UserRole.TRAVELLER],
 };
 
@@ -77,12 +79,22 @@ const CreateUserWizard = ({
   const { isDark, borderColor } = useThemeClasses();
   const isEdit = !!editUser;
 
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { userRole, user } = useAppSelector((state) => state.auth);
   const { dmosAuthorities } = useCommon();
 
   const allAuthorities = (dmosAuthorities ?? []).flatMap(
     (dmo) => dmo.authorities ?? [],
   );
+
+  // An Authority user may only create Authority users within their own
+  // authority, so the authority picker is locked to their own authority
+  // instead of listing every authority in the system.
+  const isAuthorityCaller =
+    userRole === UserRole.AUTHORITY || userRole === UserRole.AUTHORITY_ADMIN;
+  const ownAuthorityId = user?.authority?.id ?? "";
+
+  const getDefaultAuthorityId = (role: string) =>
+    isAuthorityCaller && role === UserRole.AUTHORITY ? ownAuthorityId : "";
 
   const creatableRoles =
     CREATABLE_ROLES[userRole as UserRole] ??
@@ -101,7 +113,11 @@ const CreateUserWizard = ({
     address: editUser?.address ?? "",
     role: editUser?.role ?? allowedRoleOptions[0]?.value ?? UserRole.TRAVELLER,
     languagePreference: editUser?.languagePreference ?? "en",
-    authorityId: editUser?.authority?._id ?? "",
+    authorityId:
+      editUser?.authority?._id ??
+      getDefaultAuthorityId(
+        editUser?.role ?? allowedRoleOptions[0]?.value ?? UserRole.TRAVELLER,
+      ),
     dmoId: editUser?.dmo?._id ?? "",
   });
 
@@ -266,6 +282,8 @@ const CreateUserWizard = ({
 
         toast.success(t("user_created_success"));
 
+        onSuccess?.();
+
         onClose();
       }
     } catch (err: any) {
@@ -398,10 +416,11 @@ const CreateUserWizard = ({
               value={formData.role}
               onChange={(e) => {
                 if (!isEdit || isSuperadmin) {
+                  const nextRole = e.target.value;
                   setFormData((prev) => ({
                     ...prev,
-                    role: e.target.value,
-                    authorityId: "",
+                    role: nextRole,
+                    authorityId: getDefaultAuthorityId(nextRole),
                     dmoId: "",
                   }));
                 }
@@ -533,92 +552,112 @@ const CreateUserWizard = ({
         {/* Authority — shown only when role is Authority */}
         {formData.role === UserRole.AUTHORITY && (
           <div ref={authorityDropdownRef}>
-            <label className={labelClass}>{t("authority")} *</label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthorityDropdownOpen((o) => !o);
-                  scrollFieldIntoView(authorityDropdownRef);
-                }}
-                className={`${inputClass} flex items-center justify-between gap-2 text-left`}
-              >
-                {formData.authorityId ? (
-                  (() => {
-                    const selected = allAuthorities.find(
-                      (a) => a._id === formData.authorityId,
-                    );
-                    const authorityData = selected || editUser?.authority;
-                    return (
-                      <span className="flex items-center gap-2">
-                        <ImageWithFallback
-                          src={authorityData?.logoPath}
-                          alt={authorityData?.name}
-                          className="w-5 h-5 rounded-full object-cover shrink-0"
-                        />
-                        {authorityData?.name}
-                      </span>
-                    );
-                  })()
-                ) : (
-                  <span className={isDark ? "text-gray-500" : "text-gray-400"}>
-                    {t("select_authority_placeholder")}
-                  </span>
-                )}
-                <svg
-                  className={`w-4 h-4 shrink-0 transition-transform ${authorityDropdownOpen ? "rotate-180" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-
-              {authorityDropdownOpen && (
-                <ul
-                  className={`absolute z-50 w-full bottom-full mb-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto ${
-                    isDark
-                      ? "bg-gray-800 border-gray-600"
-                      : "bg-white border-gray-300"
-                  }`}
-                >
-                  {allAuthorities.map((a) => (
-                    <li
-                      key={a._id}
-                      onClick={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          authorityId: a._id,
-                        }));
-                        setAuthorityDropdownOpen(false);
-                      }}
-                      className={`flex items-center gap-3 px-3 py-2 cursor-pointer text-sm transition-colors ${
-                        formData.authorityId === a._id
-                          ? isDark
-                            ? "bg-teal-700 text-white"
-                            : "bg-teal-50 text-teal-700"
-                          : isDark
-                            ? "text-gray-200 hover:bg-gray-700"
-                            : "text-gray-800 hover:bg-gray-50"
-                      }`}
-                    >
-                      <ImageWithFallback
-                        src={a.logoPath}
-                        alt={a.name}
-                        className="w-6 h-6 rounded-full object-cover shrink-0"
-                      />
-                      {a.name}
-                    </li>
-                  ))}
-                </ul>
+            <label className={labelClass}>
+              {t("authority")} *{" "}
+              {isAuthorityCaller && (
+                <span className="text-xs text-gray-500">{t("locked")}</span>
               )}
-            </div>
+            </label>
+            {isAuthorityCaller ? (
+              <div className={disabledInputClass}>
+                <span className="flex items-center gap-2">
+                  <ImageWithFallback
+                    src={undefined}
+                    alt={user?.authority?.name}
+                    className="w-5 h-5 rounded-full object-cover shrink-0"
+                  />
+                  {user?.authority?.name}
+                </span>
+              </div>
+            ) : (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthorityDropdownOpen((o) => !o);
+                    scrollFieldIntoView(authorityDropdownRef);
+                  }}
+                  className={`${inputClass} flex items-center justify-between gap-2 text-left`}
+                >
+                  {formData.authorityId ? (
+                    (() => {
+                      const selected = allAuthorities.find(
+                        (a) => a._id === formData.authorityId,
+                      );
+                      const authorityData = selected || editUser?.authority;
+                      return (
+                        <span className="flex items-center gap-2">
+                          <ImageWithFallback
+                            src={authorityData?.logoPath}
+                            alt={authorityData?.name}
+                            className="w-5 h-5 rounded-full object-cover shrink-0"
+                          />
+                          {authorityData?.name}
+                        </span>
+                      );
+                    })()
+                  ) : (
+                    <span
+                      className={isDark ? "text-gray-500" : "text-gray-400"}
+                    >
+                      {t("select_authority_placeholder")}
+                    </span>
+                  )}
+                  <svg
+                    className={`w-4 h-4 shrink-0 transition-transform ${authorityDropdownOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {authorityDropdownOpen && (
+                  <ul
+                    className={`absolute z-50 w-full bottom-full mb-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto ${
+                      isDark
+                        ? "bg-gray-800 border-gray-600"
+                        : "bg-white border-gray-300"
+                    }`}
+                  >
+                    {allAuthorities.map((a) => (
+                      <li
+                        key={a._id}
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            authorityId: a._id,
+                          }));
+                          setAuthorityDropdownOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-3 py-2 cursor-pointer text-sm transition-colors ${
+                          formData.authorityId === a._id
+                            ? isDark
+                              ? "bg-teal-700 text-white"
+                              : "bg-teal-50 text-teal-700"
+                            : isDark
+                              ? "text-gray-200 hover:bg-gray-700"
+                              : "text-gray-800 hover:bg-gray-50"
+                        }`}
+                      >
+                        <ImageWithFallback
+                          src={a.logoPath}
+                          alt={a.name}
+                          className="w-6 h-6 rounded-full object-cover shrink-0"
+                        />
+                        {a.name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             {errors.authorityId && (
               <p className={errorClass}>{errors.authorityId}</p>
             )}
