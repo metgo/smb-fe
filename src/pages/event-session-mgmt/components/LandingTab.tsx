@@ -687,6 +687,14 @@ export function LandingTab({
                             setIsCreateBlockWizardOpen(true);
                           },
                         },
+                        {
+                          title: t("delete"),
+                          icon: Trash,
+                          color: "red",
+                          onClick: () => {
+                            setDeleteBlockIndex(blockId);
+                          },
+                        },
                       ]}
                     />
                   </div>
@@ -740,6 +748,7 @@ export function LandingTab({
           onChange={onChange}
           setIsOpen={setIsCreateBlockWizardOpen}
           wrapperId={wrapperId}
+          setEditData={setEditBlockData}
           editData={editBlockData || undefined}
         />
       )}
