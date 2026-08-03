@@ -1,5 +1,6 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import { ReactSelect } from "@/components/form-fields";
 
 interface FilterByStatusProps {
   filters: any;
@@ -17,23 +18,21 @@ const FilterByStatus = ({ filters, setFilters }: FilterByStatusProps) => {
       >
         {t("status")}
       </label>
-      <select
-        value={filters.status}
-        onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-        className={`w-full px-3 py-2 rounded-lg border ${
-          isDark
-            ? "bg-gray-800 border-gray-700 text-gray-200"
-            : "bg-white border-gray-300 text-gray-900"
-        } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-      >
-        <option value="all">{t("all")}</option>
-        <option value="DRAFT">{t("draft")}</option>
-        <option value="PENDING">{t("pending")}</option>
-        <option value="ARCHIVED">{t("archived")}</option>
-        <option value="APPROVED">{t("approved")}</option>
-        <option value="REJECTED">{t("rejected")}</option>
-        <option value="CLOSED">{t("closed")}</option>
-      </select>
+      <ReactSelect
+        isClearable
+        placeholder={t("status")}
+        value={filters.status !== "all" ? filters.status : ""}
+        onChange={(v) => setFilters({ ...filters, status: v || "all" })}
+        items={[
+          { _id: "DRAFT", name: t("draft") },
+          { _id: "PENDING", name: t("pending") },
+          { _id: "ARCHIVED", name: t("archived") },
+          { _id: "APPROVED", name: t("approved") },
+          { _id: "REJECTED", name: t("rejected") },
+          { _id: "CLOSED", name: t("closed") },
+        ]}
+        minWidth={160}
+      />
     </div>
   );
 };

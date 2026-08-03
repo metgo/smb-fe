@@ -9,8 +9,6 @@ import {
   Tag,
   FileText,
   Users,
-  // LanguagesIcon,
-  // Languages as LanguagesIcon,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -25,9 +23,7 @@ import {
   PoiReviewSubmit,
   PoiContactInfo,
   PoiMedia,
-  // PoiTranslateButton,
   PoiContentForm,
-  // PoiTranslateButton,
 } from "./sub-components";
 import {
   ConfirmDialog,
@@ -40,7 +36,6 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { usePoiDraftSaver } from "../hooks/usePoiDraftSaver";
 import { detectLanguage, getLngWiseStr, parseAddress } from "@/helpers";
-import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
 import Attributes from "@/components/details-sections/Attributes";
@@ -65,7 +60,6 @@ export default function CreatePoiWizard({
   const { t: tc } = useTranslation("common");
 
   const { textPrimary, theme, language } = useThemeClasses();
-  const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
@@ -80,12 +74,9 @@ export default function CreatePoiWizard({
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
-    allBlacklistIds: [] as string[],
-    selectedBlacklistIds: [] as string[],
-    allWhitelistIds: [] as string[],
-    selectedWhitelistIds: [] as string[],
-  });
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState<string[]>(
+    [],
+  );
   const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<any>({
@@ -271,6 +262,7 @@ export default function CreatePoiWizard({
       }
       setSelectAuthorityId(editData?.authorityId?._id || "");
       setSelectedDmoId(editData?.dmoId?._id || "");
+      setWebsiteVisibilityIds(editData?.associatedWebsiteIds || []);
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images || []);
@@ -299,6 +291,7 @@ export default function CreatePoiWizard({
   const stepPayloadMap = {
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
+    associatedWebsiteIds: websiteVisibilityIds,
     name: formData.title,
     nameHe: formData.titleHe,
     nameAr: formData.titleAr,
@@ -344,24 +337,6 @@ export default function CreatePoiWizard({
     updatePoi,
     stepPayloadMap,
   });
-
-  const websiteAccessItemPayload = {
-    blacklist: {
-      allItems: websiteVisibilityIds.allBlacklistIds,
-      // Send websites that are UNCHECKED (to add to blacklist/hide)
-      // In this section: CHECK = show, UNCHECK = hide
-      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
-        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
-      ),
-    },
-    whitelist: {
-      allItems: websiteVisibilityIds.allWhitelistIds,
-      // Send ONLY explicitly checked websites from unassociated section
-      // Associated section manages visibility via blacklist only
-      selectedItems: websiteVisibilityIds.selectedWhitelistIds,
-    },
-    purpose: "poi",
-  };
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
@@ -418,10 +393,6 @@ export default function CreatePoiWizard({
     setIsDraftBtnClicked(true);
     const resolvedPoiId = await saveDraft(false);
     if (resolvedPoiId) {
-      await createWebsiteAccessItem({
-        body: websiteAccessItemPayload,
-        itemId: resolvedPoiId,
-      });
       refetch?.();
     }
   };
@@ -526,10 +497,6 @@ export default function CreatePoiWizard({
     };
     const resolvedPoiId = await saveDraft(true, processedFormData);
     if (resolvedPoiId) {
-      await createWebsiteAccessItem({
-        body: websiteAccessItemPayload,
-        itemId: resolvedPoiId,
-      });
       await Promise.all([poiDataRefetch?.(), refetch?.()]);
     }
     setIsPublishing(false);
@@ -552,14 +519,12 @@ export default function CreatePoiWizard({
           <div>
             <PoiBasicInfo
               {...commonProps}
-              poiId={poiId}
               selectedDmoId={selectedDmoId}
               setSelectDmoId={setSelectedDmoId}
               selectedAuthorityId={selectedAuthorityId}
               setSelectAuthorityId={setSelectAuthorityId}
               websiteVisibilityIds={websiteVisibilityIds}
               setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-              poiAssociatedWebsites={editData?.associatedWebsites ?? []}
             />
             <PoiContentForm formData={formData} setFormData={setFormData} />
           </div>

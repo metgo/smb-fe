@@ -184,6 +184,7 @@ export const endpoints = {
 
   // Stats summary
   businessSummary: "/business-summary",
+  poiSummary: "/poi-summary",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

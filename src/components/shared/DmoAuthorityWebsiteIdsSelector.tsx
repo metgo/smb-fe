@@ -34,14 +34,6 @@ export default function DmoAuthorityWebsiteIdsSelector({
   selectedWebsiteIds = [], // Add default value
   setSelectWebsiteIds,
 }: Props) {
-  console.log(
-    "🚀 ~ DmoAuthorityWebsiteIdsSelector ~ selectedAuthorityId:",
-    selectedAuthorityId,
-  );
-  console.log(
-    "🚀 ~ DmoAuthorityWebsiteIdsSelector ~ selectedDmoId:",
-    selectedDmoId,
-  );
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark } = useThemeClasses();

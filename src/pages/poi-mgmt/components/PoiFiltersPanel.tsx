@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FilterChips from "@/components/shared/FilterChips";
-import { FilterByStatus } from "@/components/filter-fields";
+import { FilterByStatus, FilterByUnassigned } from "@/components/filter-fields";
 import type { PoiFilters } from "../hooks/usePoiFilters";
 
 interface PoiFiltersPanelProps {
@@ -28,6 +28,20 @@ export function PoiFiltersPanel({
     >
       <div className="flex flex-wrap items-start gap-4 ml-4 w-full">
         <FilterByStatus filters={filters} setFilters={setFilters} />
+
+        <FilterByUnassigned
+          label={t("dmo")}
+          unassignedLabel={t("unassigned")}
+          value={filters.dmoFilter}
+          onChange={(v) => setFilters({ ...filters, dmoFilter: v })}
+        />
+
+        <FilterByUnassigned
+          label={t("authority")}
+          unassignedLabel={t("unassigned")}
+          value={filters.authorityFilter}
+          onChange={(v) => setFilters({ ...filters, authorityFilter: v })}
+        />
 
         {hasSavedFilters && (
           <div className="flex flex-col min-w-45">

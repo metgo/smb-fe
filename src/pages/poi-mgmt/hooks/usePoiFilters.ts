@@ -5,10 +5,14 @@ const SEARCH_STORAGE_KEY = "poi_mgmt_search";
 
 export interface PoiFilters {
   status: string;
+  dmoFilter: "all" | "unassigned";
+  authorityFilter: "all" | "unassigned";
 }
 
 const defaultFilters: PoiFilters = {
   status: "all",
+  dmoFilter: "all",
+  authorityFilter: "all",
 };
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -23,9 +27,10 @@ function readStorage<T>(key: string, fallback: T): T {
 }
 
 export function usePoiFilters() {
-  const [filters, setFilters] = useState<PoiFilters>(() =>
-    readStorage(FILTER_STORAGE_KEY, defaultFilters),
-  );
+  const [filters, setFilters] = useState<PoiFilters>(() => ({
+    ...defaultFilters,
+    ...readStorage(FILTER_STORAGE_KEY, defaultFilters),
+  }));
 
   const [searchTerm, setSearchTerm] = useState<string>(() =>
     readStorage(SEARCH_STORAGE_KEY, ""),
@@ -63,7 +68,11 @@ export function usePoiFilters() {
   }, []);
 
   const hasSavedFilters = useMemo(
-    () => filters.status !== "all" || searchTerm.trim() !== "",
+    () =>
+      filters.status !== "all" ||
+      filters.dmoFilter !== "all" ||
+      filters.authorityFilter !== "all" ||
+      searchTerm.trim() !== "",
     [filters, searchTerm],
   );
 
