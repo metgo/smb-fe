@@ -191,10 +191,20 @@ export function useLandingPageTab({
     update({ sessions });
   }
 
+  // sessionIds may come back from the API as plain string ids or as
+  // populated session objects, so normalize before comparing/using them.
+  function toSessionId(sessionId: string | { _id: string }): string {
+    return typeof sessionId === "string" ? sessionId : sessionId?._id;
+  }
+
+  function toSessionIds(sessionIds?: (string | { _id: string })[]): string[] {
+    return (sessionIds || []).map(toSessionId).filter(Boolean);
+  }
+
   function getSessionBlock(sessionId: string): ISessionBlock | null {
     if (!config.blocks) return null;
     for (const block of config.blocks) {
-      if (block.sessionIds?.includes(sessionId)) {
+      if (toSessionIds(block.sessionIds).includes(sessionId)) {
         return block;
       }
     }
@@ -207,8 +217,8 @@ export function useLandingPageTab({
     // Get all session IDs that are already assigned to blocks
     const assignedSessionIds = new Set<string>();
     config.blocks?.forEach((block) => {
-      block.sessionIds?.forEach((sessionId) => {
-        assignedSessionIds.add(sessionId);
+      toSessionIds(block.sessionIds).forEach((id) => {
+        assignedSessionIds.add(id);
       });
     });
 
