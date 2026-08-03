@@ -148,6 +148,14 @@ export const BusinessContentForm = ({
   const isRtl = language === "he" || language === "ar";
   const dir = isRtl ? "rtl" : "ltr";
 
+  // Calculate modal height based on number of websites
+  const getModalHeight = () => {
+    const websiteCount = checkResponse?.associatedWebsiteIds?.length || 0;
+    if (websiteCount === 1) return "h-[45vh]";
+    if (websiteCount <= 3) return "h-[55vh]";
+    return "h-[70vh]";
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Title */}
@@ -254,7 +262,7 @@ export const BusinessContentForm = ({
       {availabilityStatus === "unavailable" && (
         <ModalWrapper
           onClose={() => setAvailabilityStatus(null)}
-          height="h-[55vh]"
+          height={getModalHeight()}
           maxWidth="max-w-lg"
         >
           <div className="flex flex-col items-center text-center px-6 py-4 h-full justify-center">
@@ -300,7 +308,7 @@ export const BusinessContentForm = ({
                         href={businessUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg  hover:bg-green-700 text-gray-700 text-sm font-medium transition-all duration-200 hover:shadow-md hover:shadow-green-600/30 w-full"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg   text-gray-700 text-sm font-medium transition-all duration-200 hover:shadow-md hover:shadow-green-600/30 w-full"
                       >
                         {website.logo && (
                           <img
