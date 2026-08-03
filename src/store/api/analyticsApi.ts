@@ -32,8 +32,20 @@ export const analyticsApi = createApi({
       }),
       providesTags: ["Analytics"],
     }),
+
+    getPoiSummary: builder.query<IPoiStatsRes, any>({
+      query: (params) => ({
+        url: endpoints.poiSummary,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Analytics"],
+    }),
   }),
 });
 
-export const { useGetGoogleAnalyticsViewsQuery, useGetBusinessSummaryQuery } =
-  analyticsApi;
+export const {
+  useGetGoogleAnalyticsViewsQuery,
+  useGetBusinessSummaryQuery,
+  useGetPoiSummaryQuery,
+} = analyticsApi;

@@ -3,8 +3,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Building2,
-  Package,
-  Calendar,
   MapPin,
   BarChart3,
   ChevronLeft,
@@ -14,7 +12,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetBusinessSummaryQuery } from "@/store/api/analyticsApi";
+import {
+  useGetBusinessSummaryQuery,
+  useGetPoiSummaryQuery,
+} from "@/store/api/analyticsApi";
 import { useCommon } from "@/hooks/useCommon";
 import { SkeletonCard } from "./components/SkeletonCard";
 import { SkeletonSection } from "./components/SkeletonSection";
@@ -59,10 +60,10 @@ interface StatsResponse {
 
 const ITEM_TYPES = [
   { id: "business", label: "Businesses", icon: Building2 },
-  { id: "product", label: "Products", icon: Package },
-  { id: "event", label: "Events", icon: Calendar },
-  { id: "trip", label: "Trips", icon: MapPin },
   { id: "poi", label: "Points of Interest", icon: MapPin },
+  // { id: "product", label: "Products", icon: Package },
+  // { id: "event", label: "Events", icon: Calendar },
+  // { id: "trip", label: "Trips", icon: MapPin },
 ] as const;
 
 type ItemType = (typeof ITEM_TYPES)[number]["id"];
@@ -71,7 +72,20 @@ const StatsSummaryPage = () => {
   const { t } = useTranslation("common");
   const { isDark, textPrimary } = useThemeClasses();
 
-  const { data, isLoading } = useGetBusinessSummaryQuery({});
+  const [selectedItemType, setSelectedItemType] =
+    useState<ItemType>("business");
+
+  const { data: businessData, isLoading: isBusinessLoading } =
+    useGetBusinessSummaryQuery({}, { skip: selectedItemType !== "business" });
+  const { data: poiData, isLoading: isPoiLoading } = useGetPoiSummaryQuery(
+    {},
+    { skip: selectedItemType !== "poi" },
+  );
+
+  const data = selectedItemType === "poi" ? poiData : businessData;
+  const isLoading =
+    selectedItemType === "poi" ? isPoiLoading : isBusinessLoading;
+
   const { allWebsites, dmosAuthorities } = useCommon();
 
   // Helper functions to match IDs with names and logos
@@ -97,7 +111,7 @@ const StatsSummaryPage = () => {
 
   // Transform API data to include names and logos
   const transformStatsData = (
-    apiData: IBusinessSummaryStatsRes | undefined,
+    apiData: IBusinessSummaryStatsRes | IPoiStatsRes | undefined,
   ): StatsResponse | null => {
     if (!apiData?.datas) return null;
 
@@ -147,8 +161,6 @@ const StatsSummaryPage = () => {
   const statsData = transformStatsData(data);
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedItemType, setSelectedItemType] =
-    useState<ItemType>("business");
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
   );
@@ -397,38 +409,6 @@ const StatsSummaryPage = () => {
             grandTotal={grandTotal}
             insights={statsData?.insights}
           />
-
-          {/* Overview Cards */}
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              title={`${selectedItemType.charAt(0).toUpperCase() + selectedItemType.slice(1)} Total`}
-              value={grandTotal}
-              icon={BarChart3}
-              trend={5.2}
-              trendLabel="vs. last week"
-            />
-            <StatCard
-              title="Active Items"
-              value={Math.floor(grandTotal * 0.7)}
-              icon={BarChart3}
-              trend={3.8}
-              trendLabel="vs. last week"
-            />
-            <StatCard
-              title="Pending Review"
-              value={Math.floor(grandTotal * 0.15)}
-              icon={BarChart3}
-              trend={-2.1}
-              trendLabel="vs. last week"
-            />
-            <StatCard
-              title="New Today"
-              value={Math.floor(grandTotal * 0.1)}
-              icon={BarChart3}
-              trend={8.5}
-              trendLabel="vs. yesterday"
-            />
-          </div> */}
 
           {/* Detailed Data Sections */}
           <div className="space-y-4">

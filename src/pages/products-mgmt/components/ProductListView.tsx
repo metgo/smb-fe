@@ -200,14 +200,8 @@ const ProductListView: React.FC<ProductListViewProps> = ({
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
   const { borderColor, bgSecondary, textPrimary, language } = useThemeClasses();
-  const USER_ROLE = "admin";
 
   const [updateProduct] = useUpdateProductMutation();
-
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    USER_ROLE,
-  );
-
   const handleProductClick = (product: any) => {
     navigate(`${routes.productDetails}?productId=${product?._id}`, {
       replace: true,
@@ -257,7 +251,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
   };
 
   const columns = [
-    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+    { key: "checkbox", label: "", width: "50px" },
 
     columnVisibility?.images && {
       key: "images",

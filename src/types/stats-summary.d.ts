@@ -59,3 +59,27 @@ interface IBusinessSummaryStatsRes {
   message: string;
   statusCode: number;
 }
+
+// ========== Points Stats ==========
+interface IPoiStats {
+  _id: string;
+  item: string;
+  total: number;
+  data: {
+    dmos: IDMOStats[];
+    websites: IWebsiteStats[];
+    status: IStatusCount[];
+    deleted: IStatusCount[];
+  }[];
+  insights: IInsights;
+  summaryDate: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+interface IPoiStatsRes {
+  datas: IPoiStats;
+  message: string;
+  statusCode: number;
+}

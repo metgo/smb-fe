@@ -55,8 +55,6 @@ export default function ExportBusinessButton({
           value = business.associatedWebsites?.[0]?.url || "-";
         } else if (key === "categories" && Array.isArray(value)) {
           value = value.join(", ");
-        } else if (key === "tripCount" && value == null) {
-          value = Math.floor((business.productCount * business.impact) / 10);
         }
         row[t(key)] = value ?? "-";
       }

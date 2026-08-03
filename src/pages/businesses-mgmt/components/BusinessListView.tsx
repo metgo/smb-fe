@@ -1,36 +1,18 @@
-import { AlertCircle, ExternalLink } from "lucide-react";
 import { useState } from "react";
+import { AlertCircle, ExternalLink } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
 import { getPlainTextFromRichText } from "@/helpers";
 import { StatusPill, ScorePill } from "@/components/pills";
 
-export const defaultColumns = {
-  impact: true,
-  name: true,
-  shortDescription: true,
-  contactDetails: true,
-  busiEmail: true,
-  phoneNumber: true,
-  productCount: true,
-  status: true,
-  lifetimeSales: true,
-  tripCount: false,
-  associatedWebsites: false,
-  contactPhone: false,
-  categories: false,
-};
-
-export type ColumnVisibility = typeof defaultColumns;
-
 interface BusinessListViewProps {
-  businesses: any[];
+  businesses: IBusinessesList[];
   isLoading: boolean;
   onBusinessClick: (business: any) => void;
   next: () => void;
   hasMore: boolean;
-  columnVisibility: ColumnVisibility;
+  columnVisibility: IBusinessColumnVisibility;
   t: (key: string) => string;
   selectedBusinesses: Set<string>;
   setSelectedBusinesses: (v: Set<string>) => void;
@@ -52,7 +34,8 @@ export default function BusinessListView({
   const [error, _setError] = useState(false);
 
   const columns = [
-    [{ key: "checkbox", label: "", width: "50px" }],
+    { key: "checkbox", label: "", width: "50px" },
+
     columnVisibility.name && {
       key: "name",
       sortable: true,
@@ -132,14 +115,6 @@ export default function BusinessListView({
       render: (business: any) => <StatusPill status={business.status} />,
     },
 
-    columnVisibility.tripCount && {
-      key: "tripCount",
-      sortable: true,
-      label: t("trips"),
-      render: (business: any) => (
-        <span className={textPrimary}>{business.tripCount ?? 0}</span>
-      ),
-    },
     columnVisibility.impact && {
       key: "impact",
       sortable: true,
@@ -150,6 +125,7 @@ export default function BusinessListView({
         return <ScorePill score={score} />;
       },
     },
+
     columnVisibility.associatedWebsites && {
       key: "associatedWebsites",
       label: t("website"),

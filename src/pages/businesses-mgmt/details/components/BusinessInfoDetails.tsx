@@ -3,10 +3,10 @@ import { type FC } from "react";
 import { AlignLeft, FileText } from "lucide-react";
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
-import { ConnectedWebsites } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
+import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
 
 interface Business {
   shortDescription: string;
@@ -22,7 +22,9 @@ interface Business {
   internalNotes?: string;
   status: string;
   rejectionNote?: string;
-  associatedWebsites: { name: string; url: string }[];
+  dmoId: string;
+  authorityId: string;
+  associatedWebsiteIds: string[];
 }
 
 interface BusinessInfoDetailsProps {
@@ -79,14 +81,12 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         isDark={isDark}
         preWrap={true} // preserves line breaks
       />
-      {/* Website Connections */}
-      {business?.associatedWebsites &&
-        business?.associatedWebsites.length > 0 && (
-          <ConnectedWebsites
-            t={t}
-            associatedWebsites={business?.associatedWebsites}
-          />
-        )}
+
+      <ConnectedDmoAuthorityWebsites
+        dmoId={business?.dmoId}
+        authorityId={business?.authorityId}
+        websiteIds={business?.associatedWebsiteIds}
+      />
       {/* Internal Notes */}
       {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
         <div
