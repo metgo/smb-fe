@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
@@ -68,16 +68,53 @@ export const BusinessContentForm = ({
     setAvailabilityStatus(null);
   };
 
+  // Auto-trigger availability check when all three fields become available
+  useEffect(() => {
+    if (!isBusinessContext || isEditMode) return;
+
+    const businessName = formData[titleField];
+    const hasAllRequiredFields = businessName?.trim() && dmoId?.trim() && authorityId?.trim();
+
+    if (!hasAllRequiredFields) {
+      return;
+    }
+
+    const checkAvailabilityAsync = async () => {
+      try {
+        const res = await checkAvailability({
+          name: businessName,
+          dmoId,
+          authorityId,
+          checkOnly: true,
+        }).unwrap();
+        if (res?.isAvailable) {
+          setAvailabilityStatus("available");
+          setCheckResponse(null);
+        } else {
+          setAvailabilityStatus("unavailable");
+          setCheckResponse({
+            associatedWebsiteIds: res?.associatedWebsiteIds || [],
+            slug: res?.slug || "",
+          });
+        }
+      } catch (error: any) {
+        console.log("Check availability error:", error);
+        setAvailabilityStatus("unavailable");
+        setCheckResponse(null);
+      }
+    };
+
+    checkAvailabilityAsync();
+  }, [dmoId, authorityId, isBusinessContext, isEditMode, checkAvailability]);
+
   // Check availability on blur (when user leaves the field)
   const handleNameBlur = async () => {
     if (!isBusinessContext || isEditMode) return;
 
     const businessName = formData[titleField];
-    if (!businessName?.trim()) {
-      setAvailabilityStatus(null);
-      return;
-    }
-    if (!dmoId?.trim() || !authorityId?.trim()) {
+
+    // Only fire API when all three fields are available
+    if (!businessName?.trim() || !dmoId?.trim() || !authorityId?.trim()) {
       setAvailabilityStatus(null);
       return;
     }
@@ -90,7 +127,6 @@ export const BusinessContentForm = ({
         authorityId,
         checkOnly: true,
       }).unwrap();
-      console.log("Check availability response:", res);
       if (res?.isAvailable) {
         setAvailabilityStatus("available");
         setCheckResponse(null);
@@ -217,7 +253,7 @@ export const BusinessContentForm = ({
       {availabilityStatus === "unavailable" && (
         <ModalWrapper
           onClose={() => setAvailabilityStatus(null)}
-          height="h-[95vh]"
+          height="h-[55vh]"
           maxWidth="max-w-lg"
         >
           <div className="flex flex-col items-center text-center px-6 py-4 h-full justify-center">
