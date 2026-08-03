@@ -12,10 +12,6 @@ import {
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
-import {
-  useInitPoiCreateMutation,
-  useUpdatePoiMutation,
-} from "@/store/api/poiMutationApi";
 
 import {
   PoiBasicInfo,
@@ -59,7 +55,7 @@ export default function CreatePoiWizard({
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
 
-  const { textPrimary, theme, language } = useThemeClasses();
+  const { textPrimary, isDark, language } = useThemeClasses();
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
@@ -157,9 +153,6 @@ export default function CreatePoiWizard({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
-
-  const [updatePoi, { isLoading: isSaving }] = useUpdatePoiMutation();
-  const [initPoiCreate, { isLoading: isCreating }] = useInitPoiCreateMutation();
 
   const totalSteps = 6;
 
@@ -260,8 +253,8 @@ export default function CreatePoiWizard({
             .join(", "),
         );
       }
-      setSelectAuthorityId(editData?.authorityId?._id || "");
-      setSelectedDmoId(editData?.dmoId?._id || "");
+      setSelectAuthorityId(editData?.authorityId || "");
+      setSelectedDmoId(editData?.dmoId || "");
       setWebsiteVisibilityIds(editData?.associatedWebsiteIds || []);
 
       if (opMode === IOpMode.EDIT) {
@@ -289,8 +282,8 @@ export default function CreatePoiWizard({
   const addr = parseAddress(address);
 
   const stepPayloadMap = {
-    authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
+    authorityId: selectedAuthorityId,
     associatedWebsiteIds: websiteVisibilityIds,
     name: formData.title,
     nameHe: formData.titleHe,
@@ -325,7 +318,7 @@ export default function CreatePoiWizard({
     completionPercent,
   };
 
-  const { markDirty, saveDraft } = usePoiDraftSaver({
+  const { markDirty, saveDraft, isCreating, isSaving } = usePoiDraftSaver({
     opMode,
     onClose,
     refetch,
@@ -333,8 +326,6 @@ export default function CreatePoiWizard({
     currentStep,
     poiId,
     setPoiId,
-    initPoiCreate,
-    updatePoi,
     stepPayloadMap,
   });
 
@@ -621,7 +612,7 @@ export default function CreatePoiWizard({
               {opMode === IOpMode.EDIT ? t("edit_poi") : t("create_poi")}
             </h2>
             <p
-              className={`text-xs md:text-sm truncate ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`text-xs md:text-sm truncate ${isDark ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
               {steps[currentStep - 1]?.title}
@@ -640,9 +631,7 @@ export default function CreatePoiWizard({
                   r="22"
                   fill="none"
                   strokeWidth="5"
-                  className={
-                    theme === "dark" ? "stroke-gray-700" : "stroke-gray-200"
-                  }
+                  className={isDark ? "stroke-gray-700" : "stroke-gray-200"}
                 />
                 <circle
                   cx="28"

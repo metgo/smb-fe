@@ -262,6 +262,7 @@ export const {
   useUpdateEventSessionMutation,
   useDeleteEventSessionMutation,
   useGenSessionPrivewLinkQuery,
+  useLazyGenSessionPrivewLinkQuery,
   useGetCapacityReportQuery,
   useEventSessionRegListQuery,
   useEventSessionTargetAudienceQuery,

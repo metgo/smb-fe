@@ -12,6 +12,7 @@ import {
   useDeleteSessionBlockMutation,
   useDeleteSessionMutation,
   useInitCreateSessionWrapperMutation,
+  useCreateLandingPageSessionBlockMutation,
 } from "@/store/api/eventSessionApi";
 import { useGetAllSessionTicketQuery } from "@/store/api/eventQueryApi";
 import { DEFAULT_CONFIG } from "../data";
@@ -65,6 +66,8 @@ export function useLandingPageTab({
   const [deleteSession, { isLoading: isDeletingSession }] =
     useDeleteSessionMutation();
   const [initLandingPage] = useInitCreateSessionWrapperMutation();
+  const [createLandingPageSessionBlock, { isLoading: isUpdatingBlockStatus }] =
+    useCreateLandingPageSessionBlockMutation();
 
   const { data: ticketRes, refetch } = useGetAllSessionTicketQuery(
     eventId ? { eventId, wrapperId: wrapperId || "" } : skipToken,
@@ -355,6 +358,43 @@ export function useLandingPageTab({
     setDeleteBlockIndex(null);
   }
 
+  async function toggleBlockActive(blockIndex: number) {
+    const block = config.blocks[blockIndex];
+    if (!block?._id || !wrapperId) return;
+    const nextIsActive = !block.isActive;
+
+    try {
+      await createLandingPageSessionBlock({
+        wrapperId,
+        data: {
+          name: block.name,
+          description: block.description,
+          bookingLimit: block.bookingLimit,
+          sessionIds: block.sessionIds,
+          isActive: nextIsActive,
+          blockId: block._id,
+        },
+        method: "PATCH",
+      }).unwrap();
+
+      update({
+        blocks: config.blocks.map((s, i) =>
+          i === blockIndex ? { ...s, isActive: nextIsActive } : s,
+        ),
+      });
+
+      toast.success(
+        t(
+          nextIsActive
+            ? "toast_session_block_activated"
+            : "toast_session_block_deactivated",
+        ),
+      );
+    } catch {
+      toast.error(t("toast_session_block_status_error"));
+    }
+  }
+
   async function handleAddSessionBtn() {
     let finalWrapperId = wrapperId;
 
@@ -396,6 +436,7 @@ export function useLandingPageTab({
     isUpdating,
     isDeletingSessionBlock,
     isDeletingSession,
+    isUpdatingBlockStatus,
 
     // Data
     tickets,
@@ -426,6 +467,7 @@ export function useLandingPageTab({
     toggleTicket,
     handleSubmit,
     confirmDeleteSessionBlock,
+    toggleBlockActive,
     handleFileSelect,
     deleteFile,
     resetImage,

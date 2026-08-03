@@ -111,6 +111,7 @@ export function LandingTab({
     toggleTicket,
     handleSubmit,
     confirmDeleteSessionBlock,
+    toggleBlockActive,
     handleFileSelect,
     deleteFile,
     handleAddSessionBtn,
@@ -469,6 +470,16 @@ export function LandingTab({
                 <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
                   {t("live_sessions_title")}
                   <span className="text-red-500"> *</span>
+                  {config?.sessions?.length ? (
+                    <span
+                      className={clsx(
+                        "ml-1.5 text-[12.5px] font-semibold",
+                        textTertiary,
+                      )}
+                    >
+                      ({config.sessions.length})
+                    </span>
+                  ) : null}
                 </h3>
               </div>
               <TooltipWrapper
@@ -498,74 +509,81 @@ export function LandingTab({
               {t("live_sessions_help")}
             </p>
 
-            {config?.sessions?.map((e, sessionIdx) => {
-              const assignedBlock = getSessionBlock(e._id || "");
-              const isAssigned = !!assignedBlock;
+            <div
+              className={clsx(
+                (config?.sessions?.length || 0) > 5 &&
+                  "max-h-76 overflow-y-auto pr-1",
+              )}
+            >
+              {config?.sessions?.map((e, sessionIdx) => {
+                const assignedBlock = getSessionBlock(e._id || "");
+                const isAssigned = !!assignedBlock;
 
-              return (
-                <div
-                  key={sessionIdx}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2.5 py-2.25 px-0.5">
-                    <div className="flex items-center gap-2.5 text-sm font-semibold">
-                      <ImageWithFallback
-                        src={e?.images?.[0]?.image}
-                        alt={e.name}
-                        className="rounded w-8 h-8 object-cover"
-                      />
-                      <div className="flex1">
-                        <div className="flex items-center gap-1">
-                          <p className="">{e.name}</p>
-                          {isAssigned && (
-                            <div
-                              className={clsx(
-                                "flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full",
-                                isDark ? "text-blue-400" : "text-blue-600",
-                              )}
-                            >
-                              <Link className="w-3 h-3" />
-                            </div>
-                          )}
+                return (
+                  <div
+                    key={sessionIdx}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2.5 py-2.25 px-0.5">
+                      <div className="flex items-center gap-2.5 text-sm font-semibold">
+                        <ImageWithFallback
+                          src={e?.images?.[0]?.image}
+                          alt={e.name}
+                          className="rounded w-8 h-8 object-cover"
+                        />
+                        <div className="flex1">
+                          <div className="flex items-center gap-1">
+                            <p className="">{e.name}</p>
+                            {isAssigned && (
+                              <div
+                                className={clsx(
+                                  "flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full",
+                                  isDark ? "text-blue-400" : "text-blue-600",
+                                )}
+                              >
+                                <Link className="w-3 h-3" />
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500 line-clamp-1">
+                            {e.description}
+                          </span>
                         </div>
-                        <span className="text-xs text-gray-500 line-clamp-1">
-                          {e.description}
-                        </span>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ActionIconButtons
-                      isDark={isDark}
-                      actions={[
-                        {
-                          title: t("edit"),
-                          icon: PenBox,
-                          color: "blue",
-                          onClick: () => {
-                            setEditSessionData(e);
-                            setIsCreateWizardOpen(true);
+                    <div className="flex items-center gap-1">
+                      <ActionIconButtons
+                        isDark={isDark}
+                        actions={[
+                          {
+                            title: t("edit"),
+                            icon: PenBox,
+                            color: "blue",
+                            onClick: () => {
+                              setEditSessionData(e);
+                              setIsCreateWizardOpen(true);
+                            },
                           },
-                        },
-                        {
-                          title: isAssigned
-                            ? t("session_assigned_warning")
-                            : t("delete"),
-                          icon: Trash,
-                          color: "red",
-                          disabled: isAssigned,
-                          onClick: () => {
-                            if (!isAssigned) {
-                              setDeleteIndex(sessionIdx);
-                            }
+                          {
+                            title: isAssigned
+                              ? t("session_assigned_warning")
+                              : t("delete"),
+                            icon: Trash,
+                            color: "red",
+                            disabled: isAssigned,
+                            onClick: () => {
+                              if (!isAssigned) {
+                                setDeleteIndex(sessionIdx);
+                              }
+                            },
                           },
-                        },
-                      ]}
-                    />
+                        ]}
+                      />
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {/* Assign Sessions into Block */}
@@ -575,6 +593,16 @@ export function LandingTab({
                 <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
                   {t("assign_sessions_into_block")}
                   <span className="text-red-500"> *</span>
+                  {config?.blocks?.length ? (
+                    <span
+                      className={clsx(
+                        "ml-1.5 text-[12.5px] font-semibold",
+                        textTertiary,
+                      )}
+                    >
+                      ({config.blocks.length})
+                    </span>
+                  ) : null}
                 </h3>
               </div>
               <TooltipWrapper
@@ -613,54 +641,58 @@ export function LandingTab({
               </p>
             )}
 
-            {config?.blocks?.map((e, blockId) => (
-              <div key={blockId} className="flex items-center justify-between">
-                <label className="flex items-center gap-2.5 py-2.25 px-0.5 text-sm font-semibold cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className={clsx(
-                      "w-4.25 h-4.25",
-                      isDark ? "accent-blue-400" : "accent-blue-600",
-                    )}
-                    checked={e.isActive}
-                    onChange={() =>
-                      update({
-                        blocks: config.blocks.map((s, i) =>
-                          i === blockId ? { ...s, isActive: !e.isActive } : s,
-                        ),
-                      })
-                    }
-                  />
-                  <div className="flex-1">
-                    <span>{e.name}</span>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className={clsx("text-xs", textTertiary)}>
-                        {t("booking_limit")}: {e.bookingLimit}
-                      </span>
-                      <span className={clsx("text-xs", textTertiary)}>
-                        {t("assigned_sessions")}: {e.sessionIds?.length || 0}
-                      </span>
+            <div
+              className={clsx(
+                (config?.blocks?.length || 0) > 5 &&
+                  "max-h-76 overflow-y-auto pr-1",
+              )}
+            >
+              {config?.blocks?.map((e, blockId) => (
+                <div
+                  key={blockId}
+                  className="flex items-center justify-between"
+                >
+                  <label className="flex items-center gap-2.5 py-2.25 px-0.5 text-sm font-semibold cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className={clsx(
+                        "w-4.25 h-4.25",
+                        isDark ? "accent-blue-400" : "accent-blue-600",
+                      )}
+                      checked={e.isActive}
+                      onChange={() => toggleBlockActive(blockId)}
+                    />
+                    <div className="flex-1">
+                      <span>{e.name}</span>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className={clsx("text-xs", textTertiary)}>
+                          {t("booking_limit")}: {e.bookingLimit}
+                        </span>
+                        <span className={clsx("text-xs", textTertiary)}>
+                          {t("assigned_sessions")}: {e.sessionIds?.length || 0}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </label>
-                <div className="flex items-center gap-1">
-                  <ActionIconButtons
-                    isDark={isDark}
-                    actions={[
-                      {
-                        title: t("edit"),
-                        icon: PenBox,
-                        color: "blue",
-                        onClick: () => {
-                          setEditBlockData(e);
-                          setIsCreateBlockWizardOpen(true);
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <ActionIconButtons
+                      isDark={isDark}
+                      actions={[
+                        {
+                          title: t("edit"),
+                          icon: PenBox,
+                          color: "blue",
+                          onClick: () => {
+                            setEditBlockData(e);
+                            setIsCreateBlockWizardOpen(true);
+                          },
                         },
-                      },
-                    ]}
-                  />
+                      ]}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className={CARD}>

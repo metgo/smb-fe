@@ -317,5 +317,8 @@
   "toast_session_deleted": "تم حذف الجلسة بنجاح!",
   "toast_session_delete_error": "فشل حذف الجلسة.",
   "toast_session_block_deleted": "تم حذف كتلة الجلسة بنجاح!",
-  "toast_session_block_delete_error": "فشل حذف كتلة الجلسة."
+  "toast_session_block_delete_error": "فشل حذف كتلة الجلسة.",
+  "toast_session_block_activated": "تم تفعيل كتلة الجلسة بنجاح!",
+  "toast_session_block_deactivated": "تم إلغاء تفعيل كتلة الجلسة بنجاح!",
+  "toast_session_block_status_error": "فشل تحديث حالة كتلة الجلسة."
 }
