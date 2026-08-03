@@ -637,7 +637,7 @@ export class OrdersService {
       productInfo?.map(pro => ({
         id: pro._id.toString(),
         price: pro?.price?.sellingPrice,
-        name: pro?.name,
+        name: pro?.nameHe || pro?.name || pro?.nameAr,
       })),
     );
     const ticketInvoice = await Promise.all(
@@ -1864,7 +1864,7 @@ export class OrdersService {
     const orderEmailFields = {
       ...emailFields,
       BUTTON_LINK: externalApi?.websiteUrl,
-      BUSINESSNAME: eventDetails[0].name || '',
+      BUSINESSNAME: eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr || '',
       EVENT_DATE: eventDate,
       EVENT_START_TIME: eventStartTime || '',
       EVENT_END_TIME: eventEndTime || '',
@@ -2115,7 +2115,7 @@ export class OrdersService {
                   from_name: externalApi?.name,
                   mergeVars: {
                     ...orderEmailFields,
-                    EVENT_NAME: eventDetails[0].name || '',
+                    EVENT_NAME: eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr || '',
                     PRODUCTS_HTML: productHtml,
                     BUYERNAME: group.buyerName || '',
                     TOTALAMOUNT: product.price * product.quantity,
@@ -2232,7 +2232,7 @@ export class OrdersService {
                       BUYEREMAIL: email || '',
                       CUSTOMER_NAME: group.buyerName || '',
                       CUSTOMER_EMAIL: email || '',
-                      EVENT_NAME: eventDetails[0]?.name || '',
+                      EVENT_NAME: eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr || '',
                       BOOKING_LINK: purchaserVerifyLink,
                       PURCHASER_VERIFY_LINK: purchaserVerifyLink,
                       TOKEN_EXPIRY_DAYS: String(ttlDays),
@@ -2323,7 +2323,7 @@ export class OrdersService {
         try {
           const creatorMergeVars = {
             ...orderEmailFields,
-            EVENT_NAME: eventDetails[0]?.name || '',
+            EVENT_NAME: eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr || '',
             TOTALAMOUNT: eventCreatorTotalAmount,
             BUYERNAME: order?.firstName,
             PRODUCTS_HTML: productsHtmlForEventCreator,
@@ -2340,7 +2340,7 @@ export class OrdersService {
             templatedId: DynamicEmailTemplate.TicketConfirmationForEventCreator,
             from_email: externalApi?.companyDetails?.email,
             from_name: externalApi?.name,
-            subject: `הודעת מכירת כרטיס - ${eventDetails[0]?.name}`,
+            subject: `הודעת מכירת כרטיס - ${eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr}`,
             mergeVars: creatorMergeVars,
           });
           this.logger.info('[EMAIL]: EVENT CREATOR EMAIL SENT', { eventCreatorEmailForCreator });
@@ -2425,7 +2425,7 @@ export class OrdersService {
       emailToProductsMap[email].products.push({
         quantity,
         image: product?.images[0]?.image,
-        name: product?.name,
+        name: product?.nameHe || product?.name || product?.nameAr,
         price,
         deliveryFee,
         businessName,
@@ -2553,13 +2553,13 @@ export class OrdersService {
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
                       <td style="padding: 0; vertical-align: middle;">
-                        <img src="${product.images?.[0]?.image || ''}" alt="${product?.name
+                        <img src="${product.images?.[0]?.image || ''}" alt="${product?.nameHe || product?.name || product?.nameAr
 }"
                           style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                       </td>
                       <td style="padding: 0 10px; vertical-align: middle;" width="100%">
                         <span
-                          style="display: block; font-size: 16px; color: #333333;">${product?.name
+                          style="display: block; font-size: 16px; color: #333333;">${product?.nameHe || product?.name || product?.nameAr
 }</span>
                         <span style="display: block; font-size: 14px; color: #666666;">כמות:
                             ${quantity}</span>
