@@ -203,7 +203,21 @@ export function useLandingPageTab({
 
   function hasAvailableSessionsForBlock(): boolean {
     if (!config.sessions || config.sessions.length === 0) return false;
-    return true;
+
+    // Get all session IDs that are already assigned to blocks
+    const assignedSessionIds = new Set<string>();
+    config.blocks?.forEach((block) => {
+      block.sessionIds?.forEach((sessionId) => {
+        assignedSessionIds.add(sessionId);
+      });
+    });
+
+    // Check if there are any sessions that are not assigned to any block
+    const hasUnassignedSessions = config.sessions.some(
+      (session) => !assignedSessionIds.has(session._id || ""),
+    );
+
+    return hasUnassignedSessions;
   }
 
   async function confirmDeleteEventSession() {

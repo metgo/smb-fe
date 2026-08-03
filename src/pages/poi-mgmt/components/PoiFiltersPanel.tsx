@@ -3,6 +3,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FilterChips from "@/components/shared/FilterChips";
 import { FilterByStatus, FilterByUnassigned } from "@/components/filter-fields";
 import type { PoiFilters } from "../hooks/usePoiFilters";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface PoiFiltersPanelProps {
   filters: PoiFilters;
@@ -19,6 +20,7 @@ export function PoiFiltersPanel({
 }: PoiFiltersPanelProps) {
   const { t } = useTranslation("poi");
   const { isDark } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
 
   return (
     <div
@@ -29,19 +31,23 @@ export function PoiFiltersPanel({
       <div className="flex flex-wrap items-start gap-4 ml-4 w-full">
         <FilterByStatus filters={filters} setFilters={setFilters} />
 
-        <FilterByUnassigned
-          label={t("dmo")}
-          unassignedLabel={t("unassigned")}
-          value={filters.dmoFilter}
-          onChange={(v) => setFilters({ ...filters, dmoFilter: v })}
-        />
+        {isSuperadmin && (
+          <>
+            <FilterByUnassigned
+              label={t("dmo")}
+              unassignedLabel={t("unassigned")}
+              value={filters.dmoFilter}
+              onChange={(v) => setFilters({ ...filters, dmoFilter: v })}
+            />
 
-        <FilterByUnassigned
-          label={t("authority")}
-          unassignedLabel={t("unassigned")}
-          value={filters.authorityFilter}
-          onChange={(v) => setFilters({ ...filters, authorityFilter: v })}
-        />
+            <FilterByUnassigned
+              label={t("authority")}
+              unassignedLabel={t("unassigned")}
+              value={filters.authorityFilter}
+              onChange={(v) => setFilters({ ...filters, authorityFilter: v })}
+            />
+          </>
+        )}
 
         {hasSavedFilters && (
           <div className="flex flex-col min-w-45">

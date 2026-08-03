@@ -16,6 +16,7 @@ interface BlockSessionAssignModalProps {
   setIsOpen: (v: boolean) => void;
   wrapperId: string | null;
   editData?: ISessionBlock;
+  setEditData?: (data: ISessionBlock | null) => void;
 }
 
 export default function BlockSessionAssignModal({
@@ -23,6 +24,7 @@ export default function BlockSessionAssignModal({
   config,
   wrapperId,
   editData,
+  setEditData,
 }: BlockSessionAssignModalProps) {
   const { t } = useTranslation("event_session");
   const [createLandingPageSessionBlock, { isLoading: isCreating }] =
@@ -36,12 +38,31 @@ export default function BlockSessionAssignModal({
     editData ? editData.sessionIds : [],
   );
 
-  const sessionOptions: MultiSelectOption[] = config.sessions.map(
-    (session) => ({
+  const sessionOptions: MultiSelectOption[] = (() => {
+    // Get all session IDs that are already assigned to blocks
+    const assignedSessionIds = new Set<string>();
+    config.blocks?.forEach((block) => {
+      // In edit mode, exclude the current block's sessions from the assigned check
+      if (editData && block._id === editData._id) return;
+      block.sessionIds?.forEach((sessionId) => {
+        assignedSessionIds.add(sessionId);
+      });
+    });
+
+    // Filter sessions based on create/edit mode
+    const filteredSessions = editData
+      ? // Edit mode: show all sessions
+        config.sessions
+      : // Create mode: show only unassigned sessions
+        config.sessions.filter(
+          (session) => !assignedSessionIds.has(session._id || ""),
+        );
+
+    return filteredSessions.map((session) => ({
       label: session.name,
       value: session._id,
-    }),
-  );
+    }));
+  })();
 
   useEffect(() => {
     if (editData) {
@@ -49,6 +70,13 @@ export default function BlockSessionAssignModal({
       setDescription(editData.description);
       setBookingLimit(editData.bookingLimit);
       setSessionIds(editData.sessionIds);
+    } else {
+      // Reset form fields when switching to create mode
+      setName("");
+      setDescription("");
+      setBookingLimit(0);
+      setSessionIds([]);
+      setBookingLimitError(false);
     }
   }, [editData]);
 
@@ -88,7 +116,10 @@ export default function BlockSessionAssignModal({
 
   return (
     <ModalWrapper
-      onClose={() => setIsOpen(false)}
+      onClose={() => {
+        setIsOpen(false);
+        setEditData?.(null);
+      }}
       height="max-sm:h-[90vh] md:h-max p-4"
       maxWidth="max-w-2xl"
     >

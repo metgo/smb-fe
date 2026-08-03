@@ -4,6 +4,7 @@ import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import type { BusinessFilters } from "../hooks/useBusinessFilters";
 import { FilterByStatus, FilterByUnassigned } from "@/components/filter-fields";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface BusinessFiltersPanelProps {
   filters: BusinessFilters;
@@ -22,6 +23,7 @@ export function BusinessFiltersPanel({
 }: BusinessFiltersPanelProps) {
   const { t } = useTranslation("businesses");
   const { isDark } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
 
   return (
     <div
@@ -60,19 +62,23 @@ export function BusinessFiltersPanel({
           />
         </div>
 
-        <FilterByUnassigned
-          label={t("dmo")}
-          unassignedLabel={t("unassigned")}
-          value={filters.dmoFilter}
-          onChange={(v) => setFilters({ ...filters, dmoFilter: v })}
-        />
+        {isSuperadmin && (
+          <>
+            <FilterByUnassigned
+              label={t("dmo")}
+              unassignedLabel={t("unassigned")}
+              value={filters.dmoFilter}
+              onChange={(v) => setFilters({ ...filters, dmoFilter: v })}
+            />
 
-        <FilterByUnassigned
-          label={t("authority")}
-          unassignedLabel={t("unassigned")}
-          value={filters.authorityFilter}
-          onChange={(v) => setFilters({ ...filters, authorityFilter: v })}
-        />
+            <FilterByUnassigned
+              label={t("authority")}
+              unassignedLabel={t("unassigned")}
+              value={filters.authorityFilter}
+              onChange={(v) => setFilters({ ...filters, authorityFilter: v })}
+            />
+          </>
+        )}
 
         {hasSavedFilters && (
           <div className="flex flex-col w-full sm:w-auto">

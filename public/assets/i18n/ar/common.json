@@ -158,6 +158,9 @@
   "delete_event": "حذف الفعالية",
   "delete_event_confirm": "هل أنت متأكد من حذف هذه الفعالية؟",
 
+  "delete_session_block": "حذف مجموعة الجلسات",
+  "delete_session_block_confirm": "هل أنت متأكد من حذف مجموعة الجلسات هذه؟",
+
   "logo_required": "الشعار (مطلوب)",
   "upload_logo": "رفع الشعار",
 
