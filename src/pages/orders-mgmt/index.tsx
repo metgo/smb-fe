@@ -52,9 +52,8 @@ import { toast } from "sonner";
 import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
-import { formatOrderDate } from "@/helpers";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { formatILS } from "@/helpers/formatter";
+import { formatDateTime, formatILS } from "@/helpers/formatter";
 import { ORDER_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
@@ -549,16 +548,7 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm text-gray-500">
-          {formatOrderDate(order?.createdAt, language)}
-          {order?.createdAt && (
-            <>
-              {" "}
-              {new Date(order.createdAt).toLocaleTimeString(language, {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </>
-          )}
+          {formatDateTime(order?.createdAt, language)}
         </div>
       ),
     },

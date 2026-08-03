@@ -404,5 +404,8 @@
   "deactivate_website": "Deactivate Website",
   "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?",
   "pending_approvals": "Pending Approvals",
-  "service_unavailable": "This service is unavailable at the moment"
+  "service_unavailable": "This service is unavailable at the moment",
+  "selected_dmo_authority": "Selected Dmo Authority",
+  "connected_websites": "Connected Websites",
+  "no_connected_dmo_authority_websites": "No connected DMO, Authority, or Websites"
 }

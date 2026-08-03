@@ -393,5 +393,8 @@
   "deactivate_website": "تعطيل الموقع",
   "deactivate_website_confirm": "بمجرد التعطيل، سيرى الزوار شاشة \"قيد الإنشاء\" بدلاً من موقعك الفعلي. هل أنت متأكد من رغبتك في التعطيل؟",
   "pending_approvals": "الموافقات المعلقة",
-  "service_unavailable": "هذه الخدمة غير متاحة في الوقت الحالي"
+  "service_unavailable": "هذه الخدمة غير متاحة في الوقت الحالي",
+  "selected_dmo_authority": "منظمة تسويق الوجهة والسلطة المحددة",
+  "connected_websites": "المواقع المرتبطة",
+  "no_connected_dmo_authority_websites": "لا توجد منظمة تسويق وجهة أو سلطة أو مواقع مرتبطة"
 }
