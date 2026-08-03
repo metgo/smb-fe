@@ -84,6 +84,15 @@ export default function Sidebar() {
 
   const isVendorReconciliation = ["superadmin", "traveller"].includes(userRole);
 
+  // Orders endpoints currently only allow superadmin/traveller (backend @Roles) —
+  // dmo/dmoadmin/authority/authorityAdmin would only hit 403s, so hide the whole group.
+  const isDmoOrAuthorityRole = [
+    "dmo",
+    "dmoadmin",
+    "authority",
+    "authorityAdmin",
+  ].includes(userRole);
+
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -563,12 +572,14 @@ export default function Sidebar() {
                   (item.id === "local-economy" || item.id === "site-management")
                 ),
             )
+            ?.filter((item) => !(isDmoOrAuthorityRole && item.id === "orders"))
             ?.map((item) => ({
               ...item,
               subItems: item.subItems?.filter(
                 (sub) =>
                   !(isTraveller && sub.id === "content-mgmt") &&
                   !(isTraveller && sub.id === "users") &&
+                  !(isTraveller && sub.id === "all-orders-summary") &&
                   !(sub.id === "dynamic-pages" && !isSuperadmin),
               ),
             }))
