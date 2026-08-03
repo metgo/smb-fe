@@ -3,6 +3,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FilterChips from "@/components/shared/FilterChips";
 import { FilterByStatus, FilterByUnassigned } from "@/components/filter-fields";
 import type { PoiFilters } from "../hooks/usePoiFilters";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface PoiFiltersPanelProps {
   filters: PoiFilters;
