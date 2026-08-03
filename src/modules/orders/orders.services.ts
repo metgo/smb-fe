@@ -2398,11 +2398,13 @@ export class OrdersService {
         p => p._id.toString() === orderItem.itemId.toString(),
       );
 
+      if (!product) return;
+
       const business = businessDetails.find(
         busi => busi._id.toString() === product.businessId.toString(),
       );
 
-      if (!product) return;
+      if (!business) return;
 
       if (!emailToProductsMap[email]) {
         emailToProductsMap[email] = {
