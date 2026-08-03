@@ -19,6 +19,16 @@ interface BlockSessionAssignModalProps {
   setEditData?: (data: ISessionBlock | null) => void;
 }
 
+// sessionIds may come back from the API as plain string ids or as
+// populated session objects, so normalize before comparing/using them.
+function toSessionId(sessionId: string | { _id: string }): string {
+  return typeof sessionId === "string" ? sessionId : sessionId?._id;
+}
+
+function toSessionIds(sessionIds?: (string | { _id: string })[]): string[] {
+  return (sessionIds || []).map(toSessionId).filter(Boolean);
+}
+
 export default function BlockSessionAssignModal({
   setIsOpen,
   config,
@@ -35,7 +45,7 @@ export default function BlockSessionAssignModal({
   const [bookingLimit, setBookingLimit] = useState(0);
   const [bookingLimitError, setBookingLimitError] = useState(false);
   const [sessionIds, setSessionIds] = useState<string[]>(
-    editData ? editData.sessionIds : [],
+    editData ? toSessionIds(editData.sessionIds) : [],
   );
 
   const sessionOptions: MultiSelectOption[] = (() => {
@@ -44,19 +54,16 @@ export default function BlockSessionAssignModal({
     config.blocks?.forEach((block) => {
       // In edit mode, exclude the current block's sessions from the assigned check
       if (editData && block._id === editData._id) return;
-      block.sessionIds?.forEach((sessionId) => {
-        assignedSessionIds.add(sessionId);
+      toSessionIds(block.sessionIds).forEach((id) => {
+        assignedSessionIds.add(id);
       });
     });
 
-    // Filter sessions based on create/edit mode
-    const filteredSessions = editData
-      ? // Edit mode: show all sessions
-        config.sessions
-      : // Create mode: show only unassigned sessions
-        config.sessions.filter(
-          (session) => !assignedSessionIds.has(session._id || ""),
-        );
+    // Show only sessions not assigned to any other block (current block's
+    // own sessions are already excluded from assignedSessionIds above)
+    const filteredSessions = config.sessions.filter(
+      (session) => !assignedSessionIds.has(session._id || ""),
+    );
 
     return filteredSessions.map((session) => ({
       label: session.name,
@@ -69,7 +76,7 @@ export default function BlockSessionAssignModal({
       setName(editData.name);
       setDescription(editData.description);
       setBookingLimit(editData.bookingLimit);
-      setSessionIds(editData.sessionIds);
+      setSessionIds(toSessionIds(editData.sessionIds));
     } else {
       // Reset form fields when switching to create mode
       setName("");
