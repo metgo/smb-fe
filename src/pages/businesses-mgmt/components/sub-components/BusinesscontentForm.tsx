@@ -294,39 +294,43 @@ export const BusinessContentForm = ({
             {/* Website links */}
             {checkResponse?.associatedWebsiteIds &&
               checkResponse?.associatedWebsiteIds?.length > 0 && (
-                <div className="w-full mb-4 space-y-2">
-                  {checkResponse?.associatedWebsiteIds?.map((websiteId) => {
-                    const website = allWebsites?.find(
-                      (w) => w._id === websiteId,
-                    );
-                    if (!website) return null;
-                    const businessUrl = `${website.websiteUrl}/business-details/${checkResponse.slug}`;
-                    const domain = new URL(businessUrl).hostname;
-                    return (
-                      <a
-                        key={websiteId}
-                        href={businessUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg   text-gray-700 text-sm font-medium transition-all duration-200 hover:shadow-md hover:shadow-green-600/30 w-full"
-                      >
-                        {website.logo && (
-                          <img
-                            src={website.logo}
-                            alt={website.name}
-                            className="w-6 h-6 object-contain shrink-0"
+                <div className="w-full mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {checkResponse?.associatedWebsiteIds?.map((websiteId) => {
+                      const website = allWebsites?.find(
+                        (w) => w._id === websiteId,
+                      );
+                      if (!website) return null;
+                      const businessUrl = `${website.websiteUrl}/business-details/${checkResponse.slug}`;
+                      return (
+                        <a
+                          key={websiteId}
+                          href={businessUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-all duration-200 hover:shadow-md ${
+                            isDark
+                              ? "bg-green-900/40 hover:bg-green-900/50 text-green-100"
+                              : "bg-green-100 hover:bg-green-200 text-green-900"
+                          }`}
+                        >
+                          <ExternalLink
+                            className={`w-4 h-4 shrink-0 ${isDark ? "text-green-400" : "text-green-600"}`}
                           />
-                        )}
-                        <ExternalLink className="w-4 h-4 shrink-0" />
-                        <div className="flex-1 text-left">
-                          <div className="text-xs opacity-90">
+                          {website.logo && (
+                            <img
+                              src={website.logo}
+                              alt={website.name}
+                              className="w-6 h-6 object-contain shrink-0"
+                            />
+                          )}
+                          <div className="text-sm font-medium text-center line-clamp-1">
                             {website.name}
                           </div>
-                          <div className="text-sm">{domain}</div>
-                        </div>
-                      </a>
-                    );
-                  })}
+                        </a>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
