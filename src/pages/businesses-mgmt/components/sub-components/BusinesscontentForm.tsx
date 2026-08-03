@@ -73,7 +73,8 @@ export const BusinessContentForm = ({
     if (!isBusinessContext || isEditMode) return;
 
     const businessName = formData[titleField];
-    const hasAllRequiredFields = businessName?.trim() && dmoId?.trim() && authorityId?.trim();
+    const hasAllRequiredFields =
+      businessName?.trim() && dmoId?.trim() && authorityId?.trim();
 
     if (!hasAllRequiredFields) {
       return;
@@ -285,8 +286,8 @@ export const BusinessContentForm = ({
             {/* Website links */}
             {checkResponse?.associatedWebsiteIds &&
               checkResponse?.associatedWebsiteIds?.length > 0 && (
-                <div className="w-full mb-4">
-                  {checkResponse?.associatedWebsiteIds?.slice(0, 1).map((websiteId) => {
+                <div className="w-full mb-4 space-y-2">
+                  {checkResponse?.associatedWebsiteIds?.map((websiteId) => {
                     const website = allWebsites?.find(
                       (w) => w._id === websiteId,
                     );
@@ -299,10 +300,22 @@ export const BusinessContentForm = ({
                         href={businessUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-all duration-200 hover:shadow-md hover:shadow-green-600/30"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg  hover:bg-green-700 text-gray-700 text-sm font-medium transition-all duration-200 hover:shadow-md hover:shadow-green-600/30 w-full"
                       >
-                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                        <span>{t("view_business_on", "View on")} {domain}</span>
+                        {website.logo && (
+                          <img
+                            src={website.logo}
+                            alt={website.name}
+                            className="w-6 h-6 object-contain shrink-0"
+                          />
+                        )}
+                        <ExternalLink className="w-4 h-4 shrink-0" />
+                        <div className="flex-1 text-left">
+                          <div className="text-xs opacity-90">
+                            {website.name}
+                          </div>
+                          <div className="text-sm">{domain}</div>
+                        </div>
                       </a>
                     );
                   })}
