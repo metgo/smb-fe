@@ -7,10 +7,17 @@ import { SortOrder } from 'src/common/enum';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 
 export class GetAllApprovedBusinessesRequest extends LocaleFilterQuery {
+  // OLD — replaced by identifierId (below), which resolves the site directly
+  // via ExternalApi + associatedWebsiteIds instead of campaign campCode matching.
+  // @ApiProperty({ type: String, required: true })
+  // @IsString()
+  // @IsNotEmpty()
+  //   campCode: string;
+
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()
-    campCode: string;
+    identifierId: string;
 
   @ApiProperty({
     required: false,

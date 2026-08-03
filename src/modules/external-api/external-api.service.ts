@@ -55,6 +55,12 @@ export class ExternalApiServices {
     }
   }
 
+  async findByPrimaryCampId(campaignId: string) {
+    return this.ExternalApiModel.findOne({ primaryCampIds: campaignId })
+      .select('_id identifierId')
+      .lean();
+  }
+
   async findByIdentifierId(identifierId: string) {
     try {
       const populate = {

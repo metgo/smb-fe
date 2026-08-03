@@ -26,8 +26,7 @@ export class PointOfInterestsController {
       description: ServerSuccess.LISTED,
     },
     softBlockExtraDtoFields: true,
-    operation:
-      'Get all approved point of interests by campCode or identifierId',
+    operation: 'Get all approved point of interests by identifierId',
   })
   @HttpCode(HttpStatus.OK)
   @Get('point-of-interests')

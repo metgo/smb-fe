@@ -32,7 +32,7 @@ export class BusinessTourismController {
       description: ServerSuccess.BUSINESS_LISTED,
     },
     softBlockExtraDtoFields: true,
-    operation: 'Get all approved business',
+    operation: 'Get all approved business by identifierId',
   })
   @HttpCode(HttpStatus.OK)
   @Get('businesses')

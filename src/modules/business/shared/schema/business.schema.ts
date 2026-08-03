@@ -10,6 +10,7 @@ import { BankAccount } from 'src/modules/bank-account/bank-account.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { SocialMedia } from 'src/modules/socialMedia/schema/socialMedia.schema';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
@@ -175,6 +176,14 @@ export class Business extends AuditableSchema {
     default: null,
   })
     dmoId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: ExternalApi.name,
+    required: false,
+    default: [],
+  })
+    associatedWebsiteIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: {

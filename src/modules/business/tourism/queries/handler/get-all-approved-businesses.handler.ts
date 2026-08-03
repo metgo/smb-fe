@@ -1,8 +1,10 @@
+import { NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
 
 import { CommonStatus, SortOrder } from 'src/common/enum';
+import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import {
@@ -11,11 +13,13 @@ import {
   normalizeHebrewSearch,
 } from 'src/core/helper/atlas-search.util';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllApprovedBusinessesQuery } from '../get-all-approved-businesses.query';
-import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
+// OLD (campCode/campaign-based filtering, replaced by associatedWebsiteIds match):
+// import { CampaignService } from 'src/modules/campaign/campaign.service';
 
 @QueryHandler(GetAllApprovedBusinessesQuery)
 export class GetAllApprovedBusinessesHandler
@@ -27,8 +31,11 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
     private TagModel: Model<Tags>,
     @InjectModel(BussCategory.name)
     private CategoryModel: Model<BussCategory>,
-    private campaignService: CampaignService,
+    @InjectModel(ExternalApi.name)
+    private ExternalApiModel: Model<ExternalApi>,
     private readonly businessService: BusinessService,
+    // OLD:
+    // private campaignService: CampaignService,
   ) {}
 
   async execute(queries: GetAllApprovedBusinessesQuery): Promise<any> {
@@ -43,43 +50,55 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
         bussSubCategoriesId,
         sortBy,
         sortOrder,
-        campCode,
+        identifierId,
+        // campCode, // OLD — no longer accepted; identifierId is now required
         locale,
       } = queries.query;
 
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        campCode,
-      );
+      const siteSetting = await this.ExternalApiModel.findOne({
+        identifierId,
+      }).select('_id');
 
-      if (
-        !campDetails?.dmoIds?.length
-        && !campDetails?.authorityIds?.length
-        && !campDetails?.businessIds?.length
-      ) {
-        return { totalData: 0, data: [] };
+      if (!siteSetting) {
+        throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
       }
+
+      // OLD campaign-based resolution (replaced by direct associatedWebsiteIds match below):
+      // const campDetails = await this.campaignService.findCampaignAndReturn(
+      //   'code',
+      //   campCode,
+      // );
+      //
+      // if (
+      //   !campDetails?.dmoIds?.length
+      //   && !campDetails?.authorityIds?.length
+      //   && !campDetails?.businessIds?.length
+      // ) {
+      //   return { totalData: 0, data: [] };
+      // }
 
       let findQuery: any = {
         status: CommonStatus.APPROVED,
         isActive: true,
         isDeleted: { $ne: true },
+        associatedWebsiteIds: siteSetting._id,
       };
 
-      const orConditions = [];
-
-      if (campDetails?.dmoIds?.length) {
-        orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
-      }
-      if (campDetails?.authorityIds?.length) {
-        orConditions.push({ authorityId: { $in: campDetails.authorityIds } });
-      }
-      if (campDetails?.businessIds?.length) {
-        orConditions.push({ businessId: { $in: campDetails.businessIds } });
-      }
-      if (orConditions.length) {
-        findQuery = { ...findQuery, $or: orConditions };
-      }
+      // OLD $or conditions built from campaign dmoIds/authorityIds/businessIds:
+      // const orConditions = [];
+      //
+      // if (campDetails?.dmoIds?.length) {
+      //   orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
+      // }
+      // if (campDetails?.authorityIds?.length) {
+      //   orConditions.push({ authorityId: { $in: campDetails.authorityIds } });
+      // }
+      // if (campDetails?.businessIds?.length) {
+      //   orConditions.push({ businessId: { $in: campDetails.businessIds } });
+      // }
+      // if (orConditions.length) {
+      //   findQuery = { ...findQuery, $or: orConditions };
+      // }
 
       if (bussCategoriesId) {
         findQuery = {

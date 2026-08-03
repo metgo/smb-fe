@@ -1,18 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum, IsNotEmpty, IsOptional, IsString,
+} from 'class-validator';
 
 import { SortOrder } from 'src/common/enum';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 
 export class GetAllPOIsRequest extends LocaleFilterQuery {
-  @ApiProperty({ type: String, required: false })
-  @IsString()
-  @IsOptional()
-    campCode: string;
+  // OLD — campCode was previously accepted as an alternative to identifierId;
+  // now identifierId (below) is required and resolves the site directly via
+  // ExternalApi + associatedWebsiteIds.
+  // @ApiProperty({ type: String, required: false })
+  // @IsString()
+  // @IsOptional()
+  //   campCode: string;
 
-  @ApiProperty({ type: String, required: false })
+  @ApiProperty({ type: String, required: true })
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
     identifierId: string;
 
   @ApiProperty({ required: false, isArray: true, type: String })
