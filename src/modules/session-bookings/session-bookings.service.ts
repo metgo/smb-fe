@@ -562,6 +562,21 @@ export class SessionBookingsService {
         phone: payload.phone,
       };
 
+      // ── 1. Release this purchaser's own stale ACTIVE holds for this wrapper ──
+      // Without this, a retry/double-click/back-navigation leaves a dangling hold
+      // that gets counted against the purchaser's own next attempt in
+      // calculateSpotsLeft(), causing a false "No spots available" 409.
+      await this.sessionBookingModel.updateMany(
+        {
+          wrapperId,
+          'purchaserInfo.email': purchaserInfo.email,
+          status: 'ACTIVE',
+          isDeleted: { $ne: true },
+        },
+        { $set: { status: 'CANCELLED', updatedAt: new Date() } },
+        { session: mongoSession },
+      );
+
       // ── 2. Atomically check availability for ALL sessions ────────────────────
       const holdExpiresAt = new Date();
       const ttlMinutes = HOLD_TTL_MINUTES + (3 * (sessions.length - 1)); // 7 + (3 × extraSessions)
@@ -633,6 +648,8 @@ export class SessionBookingsService {
             slot.capacity,
             wrapperId,
             sessionData.sessionId,
+            undefined,
+            purchaserInfo.email,
           );
 
           return { sessionData, spotsLeft };
@@ -851,6 +868,7 @@ export class SessionBookingsService {
             slot.capacity,
             hold.wrapperId,
             hold.sessionId,
+            holdObjectIds,
           );
           if (spotsLeft <= 0) {
             throw new ConflictException(
@@ -1375,6 +1393,8 @@ export class SessionBookingsService {
     capacity: number,
     wrapperId?: string,
     sessionId?: string,
+    excludeHoldIds?: ObjectId[],
+    excludeEmail?: string,
   ): Promise<number> {
     try {
       const query: any = {
@@ -1396,11 +1416,27 @@ export class SessionBookingsService {
         status: { $in: ['CONFIRMED', 'ATTENDED'] },
       });
 
-      const activeHoldsCount = await this.sessionBookingModel.countDocuments({
+      const activeHoldsQuery: any = {
         ...query,
         status: 'ACTIVE',
         holdExpiresAt: { $gt: new Date() },
-      });
+      };
+
+      // Exclude the holds currently being confirmed — they aren't "other"
+      // demand competing for the spot, they're about to become CONFIRMED.
+      if (excludeHoldIds?.length) {
+        activeHoldsQuery._id = { $nin: excludeHoldIds };
+      }
+
+      // Exclude this purchaser's own active holds — a retry/resubmit within
+      // the same transaction shouldn't self-conflict. (The stale-hold cleanup
+      // in createBatchSessionHolds runs in the same uncommitted transaction,
+      // so this count wouldn't see it anyway without this explicit exclusion.)
+      if (excludeEmail) {
+        activeHoldsQuery['purchaserInfo.email'] = { $ne: excludeEmail };
+      }
+
+      const activeHoldsCount = await this.sessionBookingModel.countDocuments(activeHoldsQuery);
 
       return Math.max(0, capacity - confirmedCount - activeHoldsCount);
     } catch (err) {

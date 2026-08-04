@@ -2208,7 +2208,13 @@ export class OrdersService {
                             <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name}</span>
                             <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity}</span>
                             <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 8px;">₪${product?.price}</span>
-                            <a href="${purchaserVerifyLink}" style="display: block; font-size: 14px; color: ${externalApi?.primaryColor || '#0d9488'}; text-decoration: underline; cursor: pointer; font-weight: 500;">בקר והזמן מפגש</a>
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin-top: 4px;">
+                              <tr>
+                                <td style="background: ${externalApi?.primaryColor || '#0d9488'}; border-radius: 6px;" align="center">
+                                  <a href="${purchaserVerifyLink}" style="display: inline-block; padding: 10px 18px; font-size: 14px; color: #ffffff; text-decoration: none; font-weight: 500;">בקר והזמן מפגש</a>
+                                </td>
+                              </tr>
+                            </table>
                           </td>
                           <td style="padding: 0 10px 0 0; vertical-align: middle; width: 120px; text-align: center;">
                             ${product?.qrCodeUrl ? `<img src="${product?.qrCodeUrl}" alt="Booking QR Code" width="104" height="104" style="width: 104px; height: 104px; border: 3px solid ${externalApi?.primaryColor || '#0d9488'}; border-radius: 8px; display: block; margin: 0 auto;">` : ''}
