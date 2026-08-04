@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Connection, Model } from 'mongoose';
+import { ClientSession, Connection, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -535,192 +535,226 @@ export class SessionBookingsService {
       }
     }
 
-    // ── Now start the transaction for atomic hold creation ──────────────────
-    const mongoSession = await this.connection.startSession();
-    mongoSession.startTransaction();
+    // ── Atomic hold creation, retried on transient write conflicts ───────────
+    // Concurrent /hold requests from the same purchaser (e.g. rapid time-switch
+    // clicks racing each other) can both try to cancel the same stale hold
+    // document in the same instant — MongoDB throws a WriteConflict
+    // (TransientTransactionError) for one of them, which is expected and safe
+    // to retry, per MongoDB's own transaction-retry guidance.
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const mongoSession = await this.connection.startSession();
+      mongoSession.startTransaction();
 
-    try {
-      // ── 0. Fetch wrapper to get actual slot capacities ─────────────────────
-      let wrapper: any;
       try {
-        wrapper = await this.connection
-          .collection('sessionwrappers')
-          .findOne({ _id: new ObjectId(wrapperId), isDeleted: { $ne: true } });
-      } catch {
-        await mongoSession.abortTransaction();
-        throw new NotFoundException('Session wrapper not found');
+        // eslint-disable-next-line no-await-in-loop
+        const result = await this.attemptCreateBatchSessionHolds(mongoSession, payload, wrapperId, sessions);
+        return result;
+      } catch (err) {
+        // eslint-disable-next-line no-await-in-loop
+        await mongoSession.abortTransaction().catch(() => {});
+
+        const isTransient = (err as any)?.errorLabels?.includes?.('TransientTransactionError')
+          || (typeof (err as any)?.hasErrorLabel === 'function' && (err as any).hasErrorLabel('TransientTransactionError'));
+
+        if (isTransient && attempt < MAX_ATTEMPTS) {
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+
+        this.logger.error('[SESSION_BOOKINGS]: Batch hold creation failed (ROLLED BACK)', {
+          err: err instanceof Error ? err.message : String(err),
+          sessionCount: sessions.length,
+          attempt,
+        });
+        exceptionHandling(err);
+      } finally {
+        // eslint-disable-next-line no-await-in-loop
+        await mongoSession.endSession();
       }
+    }
+  }
 
-      if (!wrapper) {
-        await mongoSession.abortTransaction();
-        throw new NotFoundException('Session wrapper not found');
+  /**
+   * One attempt at the atomic hold-creation transaction. Throws on any
+   * failure (including transient write conflicts) so the caller can decide
+   * whether to retry. Does not abort/end the session — the caller owns that.
+   */
+  private async attemptCreateBatchSessionHolds(
+    mongoSession: ClientSession,
+    payload: InvitePayload,
+    wrapperId: string,
+    sessions: Array<{ sessionId: string; sessionName: string; slotDate: string; slotTime: string; room?: string }>,
+  ): Promise<any> {
+    // ── 0. Fetch wrapper to get actual slot capacities ─────────────────────
+    let wrapper: any;
+    try {
+      wrapper = await this.connection
+        .collection('sessionwrappers')
+        .findOne({ _id: new ObjectId(wrapperId), isDeleted: { $ne: true } });
+    } catch {
+      throw new NotFoundException('Session wrapper not found');
+    }
+
+    if (!wrapper) {
+      throw new NotFoundException('Session wrapper not found');
+    }
+
+    const purchaserInfo = {
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+    };
+
+    // ── 1. Release this purchaser's own stale ACTIVE holds for this wrapper ──
+    // Without this, a retry/double-click/back-navigation leaves a dangling hold
+    // that gets counted against the purchaser's own next attempt in
+    // calculateSpotsLeft(), causing a false "No spots available" 409.
+    await this.sessionBookingModel.updateMany(
+      {
+        wrapperId,
+        'purchaserInfo.email': purchaserInfo.email,
+        status: 'ACTIVE',
+        isDeleted: { $ne: true },
+      },
+      { $set: { status: 'CANCELLED', updatedAt: new Date() } },
+      { session: mongoSession },
+    );
+
+    // ── 2. Atomically check availability for ALL sessions ────────────────────
+    const holdExpiresAt = new Date();
+    const ttlMinutes = HOLD_TTL_MINUTES + (3 * (sessions.length - 1)); // 7 + (3 × extraSessions)
+    holdExpiresAt.setMinutes(holdExpiresAt.getMinutes() + ttlMinutes);
+
+    // ── 2a. Validate block selection limits if blocks exist ─────────────────
+    const blocks = wrapper.blocks || [];
+    if (blocks.length > 0) {
+      const activeBlocks = blocks.filter((block: any) => block.isActive);
+
+      const violation = activeBlocks.find((block: any) => {
+        const blockSessionIds = new Set((block.sessionIds || []).map((id: any) => id.toString()));
+        const selectedInBlock = sessions.filter(s => blockSessionIds.has(s.sessionId));
+        return selectedInBlock.length > block.bookingLimit;
+      });
+
+      if (violation) {
+        const blockSessionIds = new Set((violation.sessionIds || []).map((id: any) => id.toString()));
+        const selectedInBlock = sessions.filter(s => blockSessionIds.has(s.sessionId));
+        throw new BadRequestException(
+          `You can only select up to ${violation.bookingLimit} session(s) from "${violation.name}". You selected ${selectedInBlock.length}.`,
+        );
       }
+    }
 
-      const purchaserInfo = {
-        name: payload.name,
-        email: payload.email,
-        phone: payload.phone,
-      };
-
-      // ── 1. Release this purchaser's own stale ACTIVE holds for this wrapper ──
-      // Without this, a retry/double-click/back-navigation leaves a dangling hold
-      // that gets counted against the purchaser's own next attempt in
-      // calculateSpotsLeft(), causing a false "No spots available" 409.
-      await this.sessionBookingModel.updateMany(
-        {
-          wrapperId,
-          'purchaserInfo.email': purchaserInfo.email,
-          status: 'ACTIVE',
-          isDeleted: { $ne: true },
-        },
-        { $set: { status: 'CANCELLED', updatedAt: new Date() } },
-        { session: mongoSession },
+    // Validate all sessions first
+    sessions.forEach(sessionData => {
+      const sessionInWrapper = (wrapper.sessions || []).find(
+        (s: any) => s._id.toString() === sessionData.sessionId,
       );
 
-      // ── 2. Atomically check availability for ALL sessions ────────────────────
-      const holdExpiresAt = new Date();
-      const ttlMinutes = HOLD_TTL_MINUTES + (3 * (sessions.length - 1)); // 7 + (3 × extraSessions)
-      holdExpiresAt.setMinutes(holdExpiresAt.getMinutes() + ttlMinutes);
-
-      // ── 2a. Validate block selection limits if blocks exist ─────────────────
-      const blocks = wrapper.blocks || [];
-      if (blocks.length > 0) {
-        const activeBlocks = blocks.filter((block: any) => block.isActive);
-
-        const violation = activeBlocks.find((block: any) => {
-          const blockSessionIds = new Set((block.sessionIds || []).map((id: any) => id.toString()));
-          const selectedInBlock = sessions.filter(s => blockSessionIds.has(s.sessionId));
-          return selectedInBlock.length > block.bookingLimit;
-        });
-
-        if (violation) {
-          const blockSessionIds = new Set((violation.sessionIds || []).map((id: any) => id.toString()));
-          const selectedInBlock = sessions.filter(s => blockSessionIds.has(s.sessionId));
-          await mongoSession.abortTransaction();
-          throw new BadRequestException(
-            `You can only select up to ${violation.bookingLimit} session(s) from "${violation.name}". You selected ${selectedInBlock.length}.`,
-          );
-        }
+      if (!sessionInWrapper) {
+        throw new BadRequestException(
+          `Session "${sessionData.sessionId}" not found in wrapper`,
+        );
       }
 
-      // Validate all sessions first
-      sessions.forEach(sessionData => {
+      const dateObj = (sessionInWrapper.dates || []).find(
+        (d: any) => d.date === sessionData.slotDate,
+      );
+      const slot = (dateObj?.slots || []).find(
+        (s: any) => s.time === sessionData.slotTime,
+      );
+
+      if (!slot) {
+        throw new BadRequestException(
+          `Slot ${sessionData.slotTime} on ${sessionData.slotDate} not found`,
+        );
+      }
+    });
+
+    // Check availability for all sessions in parallel
+    const spotsChecks = await Promise.all(
+      sessions.map(async sessionData => {
         const sessionInWrapper = (wrapper.sessions || []).find(
           (s: any) => s._id.toString() === sessionData.sessionId,
         );
-
-        if (!sessionInWrapper) {
-          throw new BadRequestException(
-            `Session "${sessionData.sessionId}" not found in wrapper`,
-          );
-        }
-
         const dateObj = (sessionInWrapper.dates || []).find(
           (d: any) => d.date === sessionData.slotDate,
         );
-        const slot = (dateObj?.slots || []).find(
+        const slot = (dateObj.slots || []).find(
           (s: any) => s.time === sessionData.slotTime,
         );
 
-        if (!slot) {
-          throw new BadRequestException(
-            `Slot ${sessionData.slotTime} on ${sessionData.slotDate} not found`,
-          );
-        }
-      });
+        const spotsLeft = await this.calculateSpotsLeft(
+          sessionData.slotDate,
+          sessionData.slotTime,
+          slot.capacity,
+          wrapperId,
+          sessionData.sessionId,
+          undefined,
+          purchaserInfo.email,
+        );
 
-      // Check availability for all sessions in parallel
-      const spotsChecks = await Promise.all(
-        sessions.map(async sessionData => {
-          const sessionInWrapper = (wrapper.sessions || []).find(
-            (s: any) => s._id.toString() === sessionData.sessionId,
-          );
-          const dateObj = (sessionInWrapper.dates || []).find(
-            (d: any) => d.date === sessionData.slotDate,
-          );
-          const slot = (dateObj.slots || []).find(
-            (s: any) => s.time === sessionData.slotTime,
-          );
+        return { sessionData, spotsLeft };
+      }),
+    );
 
-          const spotsLeft = await this.calculateSpotsLeft(
-            sessionData.slotDate,
-            sessionData.slotTime,
-            slot.capacity,
-            wrapperId,
-            sessionData.sessionId,
-            undefined,
-            purchaserInfo.email,
-          );
+    // Verify all have availability
+    spotsChecks.forEach(({ sessionData, spotsLeft }) => {
+      if (spotsLeft <= 0) {
+        throw new ConflictException(
+          `No spots available for ${sessionData.sessionId} on ${sessionData.slotDate} at ${sessionData.slotTime}`,
+        );
+      }
+    });
 
-          return { sessionData, spotsLeft };
-        }),
-      );
+    // Create all holds in parallel using native MongoDB insert
+    const docsToInsert = sessions.map(sessionData => ({
+      wrapperId,
+      sessionId: sessionData.sessionId,
+      sessionName: sessionData.sessionName,
+      slotDate: sessionData.slotDate,
+      slotTime: sessionData.slotTime,
+      room: sessionData.room,
+      purchaserInfo,
+      inviteCode: payload.code || null,
+      holdExpiresAt,
+      status: 'ACTIVE',
+      createdAt: new Date(),
+      isDeleted: false,
+    }));
 
-      // Verify all have availability
-      spotsChecks.forEach(({ sessionData, spotsLeft }) => {
-        if (spotsLeft <= 0) {
-          throw new ConflictException(
-            `No spots available for ${sessionData.sessionId} on ${sessionData.slotDate} at ${sessionData.slotTime}`,
-          );
-        }
-      });
+    const insertResult = await this.connection
+      .collection('sessionbookings')
+      .insertMany(docsToInsert, { session: mongoSession });
 
-      // Create all holds in parallel using native MongoDB insert
-      const docsToInsert = sessions.map(sessionData => ({
-        wrapperId,
-        sessionId: sessionData.sessionId,
-        sessionName: sessionData.sessionName,
-        slotDate: sessionData.slotDate,
-        slotTime: sessionData.slotTime,
-        room: sessionData.room,
-        purchaserInfo,
-        inviteCode: payload.code || null,
-        holdExpiresAt,
-        status: 'ACTIVE',
-        createdAt: new Date(),
-        isDeleted: false,
-      }));
+    const allHolds = docsToInsert.map((doc, idx) => ({
+      _id: insertResult.insertedIds[idx],
+      ...doc,
+    }));
 
-      const insertResult = await this.connection
-        .collection('sessionbookings')
-        .insertMany(docsToInsert, { session: mongoSession });
+    // ── 3. Commit transaction ──────────────────────────────────────────────
+    await mongoSession.commitTransaction();
 
-      const allHolds = docsToInsert.map((doc, idx) => ({
-        _id: insertResult.insertedIds[idx],
-        ...doc,
-      }));
+    this.logger.info('[SESSION_BOOKINGS]: Batch holds created (ATOMIC)', {
+      sessionCount: sessions.length,
+      ttlMinutes,
+      email: payload.email,
+      holdIds: allHolds.map((h: any) => h._id),
+    });
 
-      // ── 3. Commit transaction ──────────────────────────────────────────────
-      await mongoSession.commitTransaction();
-
-      this.logger.info('[SESSION_BOOKINGS]: Batch holds created (ATOMIC)', {
+    return {
+      success: true,
+      message: `${sessions.length} session holds created successfully`,
+      data: {
+        holdIds: allHolds.map((h: any) => h._id),
+        expiresAt: holdExpiresAt,
+        expiresIn: `${ttlMinutes} minutes`,
         sessionCount: sessions.length,
         ttlMinutes,
-        email: payload.email,
-        holdIds: allHolds.map((h: any) => h._id),
-      });
-
-      return {
-        success: true,
-        message: `${sessions.length} session holds created successfully`,
-        data: {
-          holdIds: allHolds.map((h: any) => h._id),
-          expiresAt: holdExpiresAt,
-          expiresIn: `${ttlMinutes} minutes`,
-          sessionCount: sessions.length,
-          ttlMinutes,
-        },
-      };
-    } catch (err) {
-      await mongoSession.abortTransaction();
-      this.logger.error('[SESSION_BOOKINGS]: Batch hold creation failed (ROLLED BACK)', {
-        err: err instanceof Error ? err.message : String(err),
-        sessionCount: sessions.length,
-      });
-      exceptionHandling(err);
-    } finally {
-      await mongoSession.endSession();
-    }
+      },
+    };
   }
 
   // ── Confirmation ────────────────────────────────────────────────────────────
