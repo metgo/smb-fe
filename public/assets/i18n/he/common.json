@@ -78,7 +78,7 @@
   "site_management": "ניהול אתר",
   "website_settings": "הגדרות אתר",
   "home": "דף הבית",
-  "promotions": "מבצעים",
+  "promotions": "קידום",
   "primary_category": "קטגוריה ראשית",
 
   "blog": "בלוג",
@@ -166,6 +166,9 @@
   "leave": "עזוב",
   "delete_event": "מחיקת אירוע",
   "delete_event_confirm": "האם אתה בטוח שברצונך למחוק את האירוע הזה?",
+
+  "delete_session_block": "מחיקת קבוצת מפגשים",
+  "delete_session_block_confirm": "האם אתה בטוח שברצונך למחוק קבוצת מפגשים זו?",
 
   "logo_required": "לוגו (חובה)",
   "upload_logo": "העלה לוגו",
@@ -408,5 +411,8 @@
   "deactivate_website": "השבתת אתר",
   "deactivate_website_confirm": "לאחר השבתה, מבקרי האתר יראו מסך \"בנייה\" במקום האתר הפעיל. האם אתה בטוח שברצונך להשבית?",
   "pending_approvals": "אישורים ממתינים",
-  "service_unavailable": "השירות אינו זמין כרגע"
+  "service_unavailable": "השירות אינו זמין כרגע",
+  "selected_dmo_authority": "DMO ורשות נבחרים",
+  "connected_websites": "אתרים מחוברים",
+  "no_connected_dmo_authority_websites": "אין DMO, רשות או אתרים מחוברים"
 }

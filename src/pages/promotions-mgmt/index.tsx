@@ -5,6 +5,7 @@ import { Plus, SlidersHorizontal, Home, Image, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence } from "framer-motion";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useBlocker } from "react-router-dom";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useState, useCallback, useEffect, useRef } from "react";
 
@@ -45,7 +46,7 @@ export default function PromotionsMgmtPage() {
     useThemeClasses();
   const { associatedWebsite } = useAppSelector((state) => state.auth);
 
-  const [externalApiId, setExternalApiId] = useState<string | undefined>("");
+  const [externalApiId, setExternalApiId] = useState<string | undefined>();
   const [deletePromoId, setDeletePromoId] = useState<string>("");
   const [orderedPromotions, setOrderedPromotions] = useState<IPromotionsRes[]>(
     [],
@@ -70,10 +71,12 @@ export default function PromotionsMgmtPage() {
   const [togglePromotion] = useTogglePromotionStatusMutation();
 
   const isInitialized = useRef(false);
+  const savedGroupRef = useRef<string | null>(null);
 
   // Reset initialization flag when the selected website changes
   useEffect(() => {
     isInitialized.current = false;
+    savedGroupRef.current = null;
   }, [externalApiId]);
 
   // Sync ordered list, applying groupConfig order on first load
@@ -211,6 +214,39 @@ export default function PromotionsMgmtPage() {
     }),
   });
 
+  const currentGroupSnapshot = JSON.stringify(
+    buildGroupPayload().placementGroup.filter(
+      (item) => item.promotions.length > 0,
+    ),
+  );
+
+  // Snapshot the published state once data has loaded/hydrated (with or without an existing group)
+  useEffect(() => {
+    if (!data || isCofigLoading || !isInitialized.current) return;
+    if (savedGroupRef.current === null) {
+      savedGroupRef.current = currentGroupSnapshot;
+    }
+  }, [data, isCofigLoading, isInitialized.current, currentGroupSnapshot]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isDirty =
+    savedGroupRef.current !== null &&
+    savedGroupRef.current !== currentGroupSnapshot;
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
   const handlePublish = async () => {
     if (!externalApiId) return;
     const payload = buildGroupPayload();
@@ -222,6 +258,7 @@ export default function PromotionsMgmtPage() {
       placementGroup: filteredPlacementGroup,
     });
     if (res.data) {
+      savedGroupRef.current = JSON.stringify(filteredPlacementGroup);
       toast.success(tToast("promotion_group_publish_success"));
     } else {
       toast.error(tToast("promotion_group_publish_failed"));
@@ -409,6 +446,8 @@ export default function PromotionsMgmtPage() {
 
         {showWizard && (
           <CreatePromotionWizard
+            selectedExternalApiId={externalApiId || ""}
+            selectedPlacement={selectedPlacement || ""}
             onClose={() => {
               setShowWizard(false);
               setEditingPromotion(undefined);
@@ -432,6 +471,17 @@ export default function PromotionsMgmtPage() {
             handleDelete(deletePromoId);
             setConfirmOpen(false);
           }}
+        />
+
+        <ConfirmDialog
+          open={blocker.state === "blocked"}
+          title={t("unpublished_changes")}
+          message={t("unpublished_changes_confirm")}
+          confirmText={t("leave_anyway")}
+          cancelText={t("stay")}
+          variant="warning"
+          onCancel={() => blocker.state === "blocked" && blocker.reset()}
+          onConfirm={() => blocker.state === "blocked" && blocker.proceed()}
         />
       </div>
     </DndProvider>

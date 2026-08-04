@@ -95,24 +95,15 @@ export const eventMutationApi = createApi({
       invalidatesTags: ["Event"],
     }),
 
-    updateSession: builder.mutation<
-      { data: EventSession },
-      { sessionId: string; body: UpdateSessionPayload }
+    resendTicketEmailToCustomer: builder.mutation<
+      any,
+      { ordersId: string[]; emailRecipient: "CUSTOMER" }
     >({
-      query: ({ sessionId, body }) => ({
-        url: `${endpoints.eventSessions}/${sessionId}`,
-        method: "PATCH",
-        data: body,
+      query: (payload) => ({
+        url: endpoints.resendTicketEmailToCustomer,
+        method: "POST",
+        data: payload,
       }),
-      invalidatesTags: ["Event"],
-    }),
-
-    deleteSession: builder.mutation<any, { sessionId: string }>({
-      query: ({ sessionId }) => ({
-        url: `${endpoints.eventSessions}/${sessionId}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: ["Event"],
     }),
   }),
 });
@@ -125,7 +116,6 @@ export const {
   useCreateTicketMutation,
   useDeleteEventMutation,
   useUpdateEventTicketStatusMutation,
-  useCreateSessionMutation,
-  useUpdateSessionMutation,
-  useDeleteSessionMutation,
+
+  useResendTicketEmailToCustomerMutation,
 } = eventMutationApi;

@@ -9,15 +9,9 @@ import {
   Tag,
   FileText,
   Users,
-  // LanguagesIcon,
-  // Languages as LanguagesIcon,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
-import {
-  useInitPoiCreateMutation,
-  useUpdatePoiMutation,
-} from "@/store/api/poiMutationApi";
 
 import {
   PoiBasicInfo,
@@ -25,9 +19,7 @@ import {
   PoiReviewSubmit,
   PoiContactInfo,
   PoiMedia,
-  // PoiTranslateButton,
   PoiContentForm,
-  // PoiTranslateButton,
 } from "./sub-components";
 import {
   ConfirmDialog,
@@ -40,7 +32,6 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { usePoiDraftSaver } from "../hooks/usePoiDraftSaver";
 import { detectLanguage, getLngWiseStr, parseAddress } from "@/helpers";
-import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
 import Attributes from "@/components/details-sections/Attributes";
@@ -64,8 +55,7 @@ export default function CreatePoiWizard({
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
 
-  const { textPrimary, theme, language } = useThemeClasses();
-  const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
+  const { textPrimary, isDark, language } = useThemeClasses();
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
@@ -80,12 +70,9 @@ export default function CreatePoiWizard({
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
-    allBlacklistIds: [] as string[],
-    selectedBlacklistIds: [] as string[],
-    allWhitelistIds: [] as string[],
-    selectedWhitelistIds: [] as string[],
-  });
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState<string[]>(
+    [],
+  );
   const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<any>({
@@ -166,9 +153,6 @@ export default function CreatePoiWizard({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
-
-  const [updatePoi, { isLoading: isSaving }] = useUpdatePoiMutation();
-  const [initPoiCreate, { isLoading: isCreating }] = useInitPoiCreateMutation();
 
   const totalSteps = 6;
 
@@ -269,8 +253,9 @@ export default function CreatePoiWizard({
             .join(", "),
         );
       }
-      setSelectAuthorityId(editData?.authorityId?._id || "");
-      setSelectedDmoId(editData?.dmoId?._id || "");
+      setSelectAuthorityId(editData?.authorityId || "");
+      setSelectedDmoId(editData?.dmoId || "");
+      setWebsiteVisibilityIds(editData?.associatedWebsiteIds || []);
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images || []);
@@ -297,8 +282,9 @@ export default function CreatePoiWizard({
   const addr = parseAddress(address);
 
   const stepPayloadMap = {
-    authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
+    authorityId: selectedAuthorityId,
+    associatedWebsiteIds: websiteVisibilityIds,
     name: formData.title,
     nameHe: formData.titleHe,
     nameAr: formData.titleAr,
@@ -332,7 +318,7 @@ export default function CreatePoiWizard({
     completionPercent,
   };
 
-  const { markDirty, saveDraft } = usePoiDraftSaver({
+  const { markDirty, saveDraft, isCreating, isSaving } = usePoiDraftSaver({
     opMode,
     onClose,
     refetch,
@@ -340,28 +326,8 @@ export default function CreatePoiWizard({
     currentStep,
     poiId,
     setPoiId,
-    initPoiCreate,
-    updatePoi,
     stepPayloadMap,
   });
-
-  const websiteAccessItemPayload = {
-    blacklist: {
-      allItems: websiteVisibilityIds.allBlacklistIds,
-      // Send websites that are UNCHECKED (to add to blacklist/hide)
-      // In this section: CHECK = show, UNCHECK = hide
-      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
-        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
-      ),
-    },
-    whitelist: {
-      allItems: websiteVisibilityIds.allWhitelistIds,
-      // Send ONLY explicitly checked websites from unassociated section
-      // Associated section manages visibility via blacklist only
-      selectedItems: websiteVisibilityIds.selectedWhitelistIds,
-    },
-    purpose: "poi",
-  };
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
@@ -418,10 +384,6 @@ export default function CreatePoiWizard({
     setIsDraftBtnClicked(true);
     const resolvedPoiId = await saveDraft(false);
     if (resolvedPoiId) {
-      await createWebsiteAccessItem({
-        body: websiteAccessItemPayload,
-        itemId: resolvedPoiId,
-      });
       refetch?.();
     }
   };
@@ -526,10 +488,6 @@ export default function CreatePoiWizard({
     };
     const resolvedPoiId = await saveDraft(true, processedFormData);
     if (resolvedPoiId) {
-      await createWebsiteAccessItem({
-        body: websiteAccessItemPayload,
-        itemId: resolvedPoiId,
-      });
       await Promise.all([poiDataRefetch?.(), refetch?.()]);
     }
     setIsPublishing(false);
@@ -552,14 +510,12 @@ export default function CreatePoiWizard({
           <div>
             <PoiBasicInfo
               {...commonProps}
-              poiId={poiId}
               selectedDmoId={selectedDmoId}
               setSelectDmoId={setSelectedDmoId}
               selectedAuthorityId={selectedAuthorityId}
               setSelectAuthorityId={setSelectAuthorityId}
               websiteVisibilityIds={websiteVisibilityIds}
               setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-              poiAssociatedWebsites={editData?.associatedWebsites ?? []}
             />
             <PoiContentForm formData={formData} setFormData={setFormData} />
           </div>
@@ -656,7 +612,7 @@ export default function CreatePoiWizard({
               {opMode === IOpMode.EDIT ? t("edit_poi") : t("create_poi")}
             </h2>
             <p
-              className={`text-xs md:text-sm truncate ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`text-xs md:text-sm truncate ${isDark ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
               {steps[currentStep - 1]?.title}
@@ -675,9 +631,7 @@ export default function CreatePoiWizard({
                   r="22"
                   fill="none"
                   strokeWidth="5"
-                  className={
-                    theme === "dark" ? "stroke-gray-700" : "stroke-gray-200"
-                  }
+                  className={isDark ? "stroke-gray-700" : "stroke-gray-200"}
                 />
                 <circle
                   cx="28"

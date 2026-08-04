@@ -122,3 +122,29 @@ class IOrdersRes {
 
   products: ProductDto[];
 }
+
+interface IOrderColumnVisibility {
+  name: boolean;
+  email: boolean;
+  phone: boolean;
+  status: boolean;
+  paymentStatus: boolean;
+  paymentMethod: boolean;
+  totalOrderAmount: boolean;
+  productCount: boolean;
+  deliveryFee: boolean;
+  createdAt: boolean;
+  _id: boolean;
+  website: boolean;
+  dmos: boolean;
+  authorities: boolean;
+}
+
+interface IOrderSummaryColumnVisibility {
+  businessName: boolean;
+  businessAddressCity: boolean;
+  businessAddressLocation: boolean;
+  totalNoOfOrders: boolean;
+  totalAmount: boolean;
+  totalAmountPaidByCreditCard: boolean;
+}

@@ -44,6 +44,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { StatusPill } from "@/components/pills";
 import { ActionIconButtons } from "@/components/btns";
 import TicketsModal from "./TicketsModal";
+import LandingPagesModal from "./LandingPagesModal";
 import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
 
@@ -126,6 +127,13 @@ export default function EventsWithViewMode({
     eventDays: [],
     externalTicketLink: "",
     isTicketLinkExist: false,
+  });
+
+  const [isLandingPagesModalOpen, setIsLandingPagesModalOpen] = useState(false);
+  const [selectedEventForLanding, setSelectedEventForLanding] = useState<{
+    eventId: string;
+  }>({
+    eventId: "",
   });
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -668,22 +676,21 @@ export default function EventsWithViewMode({
                       setIsTicketsModalOpen(true);
                     },
                   },
-                  {
-                    title:
-                      event?.hasExternalTicket || event.ticketCount === 0
-                        ? t("create_ticket_for_this_event")
-                        : t("create_landing_page"),
-                    icon: LayoutList,
-                    color: "yellow",
-                    onClick: () => {
-                      if (event?.hasExternalTicket || event.ticketCount === 0)
-                        return;
-                      window.open(
-                        `${routes.eventSessionMgmt}?eventId=${event?._id}`,
-                        "_blank",
-                      );
-                    },
-                  },
+                  ...(event?.hasExternalTicket || event.ticketCount === 0
+                    ? []
+                    : [
+                        {
+                          title: t("create_landing_page"),
+                          icon: LayoutList,
+                          color: "yellow" as const,
+                          onClick: () => {
+                            setSelectedEventForLanding({
+                              eventId: event._id,
+                            });
+                            setIsLandingPagesModalOpen(true);
+                          },
+                        },
+                      ]),
                 ]}
               />
             ),
@@ -853,6 +860,14 @@ export default function EventsWithViewMode({
           {...selectedEvent}
           eventsRefetch={refetch}
           setIsOpen={setIsTicketsModalOpen}
+        />
+      )}
+
+      {isLandingPagesModalOpen && (
+        <LandingPagesModal
+          {...selectedEventForLanding}
+          eventsRefetch={refetch}
+          setIsOpen={setIsLandingPagesModalOpen}
         />
       )}
     </>

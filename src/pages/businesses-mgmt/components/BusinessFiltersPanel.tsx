@@ -1,8 +1,10 @@
 import { useTranslation } from "react-i18next";
+
+import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import FilterChips from "@/components/shared/FilterChips";
-import { FilterByStatus } from "@/components/filter-fields";
 import type { BusinessFilters } from "../hooks/useBusinessFilters";
+import { FilterByStatus, FilterByUnassigned } from "@/components/filter-fields";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface BusinessFiltersPanelProps {
   filters: BusinessFilters;
@@ -21,6 +23,7 @@ export function BusinessFiltersPanel({
 }: BusinessFiltersPanelProps) {
   const { t } = useTranslation("businesses");
   const { isDark } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
 
   return (
     <div
@@ -32,32 +35,50 @@ export function BusinessFiltersPanel({
       <div className="flex flex-wrap items-start gap-3 px-3 w-full">
         <FilterByStatus filters={filters} setFilters={setFilters} />
 
-        <div className="flex flex-col flex-1 min-w-35">
+        <div className="flex flex-col min-w-45">
           <label
             className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
             {t("has_products")}
           </label>
-          <select
-            value={filters.hasProductFilter}
-            onChange={(e) =>
+          <ReactSelect
+            isClearable
+            placeholder={t("has_products")}
+            value={
+              filters.hasProductFilter !== "all" ? filters.hasProductFilter : ""
+            }
+            onChange={(v) =>
               setFilters({
                 ...filters,
-                hasProductFilter: e.target
-                  .value as BusinessFilters["hasProductFilter"],
+                hasProductFilter: (v ||
+                  "all") as BusinessFilters["hasProductFilter"],
               })
             }
-            className={`w-full px-2 py-1.5 text-sm rounded-lg border ${
-              isDark
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-          >
-            <option value="all">{t("all")}</option>
-            <option value="yes">{t("yes")}</option>
-            <option value="no">{t("no")}</option>
-          </select>
+            items={[
+              { _id: "yes", name: t("yes") },
+              { _id: "no", name: t("no") },
+            ]}
+            minWidth={160}
+          />
         </div>
+
+        {isSuperadmin && (
+          <>
+            <FilterByUnassigned
+              label={t("dmo")}
+              unassignedLabel={t("unassigned")}
+              value={filters.dmoFilter}
+              onChange={(v) => setFilters({ ...filters, dmoFilter: v })}
+            />
+
+            <FilterByUnassigned
+              label={t("authority")}
+              unassignedLabel={t("unassigned")}
+              value={filters.authorityFilter}
+              onChange={(v) => setFilters({ ...filters, authorityFilter: v })}
+            />
+          </>
+        )}
 
         {hasSavedFilters && (
           <div className="flex flex-col w-full sm:w-auto">
@@ -67,30 +88,9 @@ export function BusinessFiltersPanel({
               {t("active_filters")}
             </label>
             <div className="flex gap-2 items-center flex-wrap">
-              <div className="flex flex-wrap gap-1.5">
-                {Object.entries(filters).map(
-                  ([key, value]) =>
-                    value !== "all" && (
-                      <FilterChips
-                        key={key}
-                        label={t(
-                          value === "yes" || value === "no"
-                            ? value
-                            : value.toLowerCase(),
-                        )}
-                        onRemove={() =>
-                          setFilters({
-                            ...filters,
-                            [key]: "all",
-                          } as BusinessFilters)
-                        }
-                      />
-                    ),
-                )}
-              </div>
               <button
                 onClick={clearFilter}
-                className="px-2.5 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors shrink-0"
+                className="px-2.5 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors shrink-0 cursor-pointer"
               >
                 {t("clear_all")}
               </button>

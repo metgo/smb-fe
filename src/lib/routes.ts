@@ -57,6 +57,7 @@ export const routes = {
   publicSession: "/verify-session",
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
+  statsSummary: "/stats-summary",
 };
 
 export type RouteKey = keyof typeof routes;

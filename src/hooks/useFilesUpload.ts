@@ -62,7 +62,7 @@ export function useFilesUpload({
       .filter((img) => img.status === "success")
       .map((img) => ({ image: img.gcsURL!, isPrimary: img.isPrimary }));
     onChange(payload);
-  }, [images, onChange]);
+  }, [images]);
 
   /* ─── File selection → immediate upload ─────────────────────────── */
   const handleImageUpload = useCallback(

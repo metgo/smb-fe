@@ -22,6 +22,8 @@ import {
 
 interface CreatePromotionWizardProps {
   onClose: () => void;
+  selectedExternalApiId: string;
+  selectedPlacement: string;
   existingPromotion?: IPromotionsRes;
 }
 
@@ -34,6 +36,8 @@ const availablePlacements = [
 export default function CreatePromotionWizard({
   onClose,
   existingPromotion,
+  selectedExternalApiId,
+  selectedPlacement,
 }: CreatePromotionWizardProps) {
   const { t } = useTranslation("promotions");
   const { t: tToast } = useTranslation("toast");
@@ -70,7 +74,9 @@ export default function CreatePromotionWizard({
 
   const [currentStep, setCurrentStep] = useState(0);
   const [editingLang, setEditingLang] = useState<Language>("en");
-  const [externalApiId, setExternalApiId] = useState<string | undefined>("");
+  const [externalApiId, setExternalApiId] = useState<string | undefined>(
+    selectedExternalApiId,
+  );
 
   /* ── Media URL inputs ───────────────────────────────────────────── */
   const [desktopUrlValue, setDesktopUrlValue] = useState("");
@@ -96,7 +102,11 @@ export default function CreatePromotionWizard({
 
   /* ── Form data ──────────────────────────────────────────────────── */
   const [formData, setFormData] = useState({
-    placement: existingPromotion?.placement || availablePlacements[0] || "",
+    placement:
+      selectedPlacement ||
+      existingPromotion?.placement ||
+      availablePlacements[0] ||
+      "",
     active: existingPromotion?.isActive ?? true,
     mediaType,
     title: existingPromotion

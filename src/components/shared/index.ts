@@ -5,7 +5,6 @@ import BulkActionBar from "./BulkActionBar";
 import EntityCard from "./EntityCard";
 import RouterProgressBar from "./RouterProgressBar";
 import ConfirmDialog from "./ConfirmDialog";
-import DmoAuthorityWebsiteSelector from "./DmoAuthorityWebsiteSelector";
 import FilterChips from "./FilterChips";
 import IdleLogout from "./IdleLogout";
 import ImageWithFallback from "./ImageWithFallback";
@@ -26,9 +25,11 @@ import WizardStepper from "./WizardStepper";
 import ShowColumns from "./ShowColumns";
 import UploadZone from "./UploadZone";
 import DmoAuthorityWebsiteIdsSelector from "./DmoAuthorityWebsiteIdsSelector";
+import { CopyableId } from "./CopyableId";
 
 export {
   Spinner,
+  CopyableId,
   SplashLoader,
   RouterProgressBar,
   UploadZone,
@@ -52,7 +53,6 @@ export {
   ImageWithFallback,
   ConnectedWebsites,
   ReordableDataTable,
-  DmoAuthorityWebsiteSelector,
   DmoAuthorityWebsiteIdsSelector,
   WizardStepper,
   GridCard,

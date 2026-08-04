@@ -53,6 +53,7 @@ export const endpoints = {
 
   //orders
   orders: "/orders",
+  orderStats: "/orders/stats",
   orderDetails: "/order-details",
   orderSummary: "/orders-summary",
   orderProducts: "/order-products",
@@ -85,12 +86,16 @@ export const endpoints = {
   eventsStats: "/events-stats",
   upcomingEvents: "/upcoming-events",
   contentManagementEvents: "/content-management-events",
-
-  // event sessions
   tickets: "/tickets",
   eventTickets: "/event-tickets",
+  resendTicketEmailToCustomer: "/resend-order-emails",
+
+  // event sessions
+  initWrapperCreate: "/event-sessions/initialize",
   eventSessions: "/event-sessions",
   eventSessionPreviwLink: "/event-sessions/preview-link",
+  createWrapperSessionBlock: "/event-sessions/blocks",
+  createWrapperSession: "/event-sessions/sessions",
   ticketsForEventSession: "/event-sessions/tickets-without-sessions",
   eventSessionCapacityReport: "/event-sessions/capacity-report",
   eventSessionReg: "/event-sessions/registrations",
@@ -176,6 +181,10 @@ export const endpoints = {
 
   // Website error report
   websiteCrashes: "/website-crashes",
+
+  // Stats summary
+  businessSummary: "/business-summary",
+  poiSummary: "/poi-summary",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

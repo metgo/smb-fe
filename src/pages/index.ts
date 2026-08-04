@@ -32,6 +32,7 @@ import WebsiteCrashDetailsPage from "./website-crashes/details";
 import EventSessionMgmtPage from "./event-session-mgmt";
 import TripsMgmtPage from "./trips-mgmt";
 import TripDetailsPage from "./trips-mgmt/details";
+import StatsSummaryPage from "./stats-summary";
 
 export {
   AuthPage,
@@ -68,4 +69,5 @@ export {
   PoiDetailsPage,
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
+  StatsSummaryPage,
 };

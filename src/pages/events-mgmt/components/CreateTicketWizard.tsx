@@ -408,10 +408,10 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
             <FormFieldWrapper
               label={t("greeting_message")}
               error={errors.greeting}
-              inputHintText={`${editData?.greeting?.length ?? 0}/100 ${t("max_characters")}`}
+              inputHintText={`${editData?.greeting?.length ?? 0}/500 ${t("max_characters")}`}
             >
               <textarea
-                maxLength={50}
+                maxLength={500}
                 value={editData?.greeting ?? ""}
                 onChange={(e) => {
                   setEditData((prev: ITicketPayload) => ({
@@ -421,7 +421,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
                   clearError("greeting");
                 }}
                 placeholder={t("greeting_message_placeholder")}
-                rows={2}
+                rows={4}
                 className={clsx(
                   "w-full px-4 py-2.5 rounded-lg border transition-colors",
                   inputClasses,
