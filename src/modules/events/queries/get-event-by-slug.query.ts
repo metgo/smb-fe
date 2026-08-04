@@ -1,8 +1,8 @@
-import { GetByCampCodeQueryRequest } from 'src/common/request/get-by-camp-code.request';
+import { GetEventBySlugRequest } from '../requests/get-event-by-slug.request';
 
 export class GetEventBySlugQuery {
   constructor(
     public readonly slug: string,
-    public readonly query: GetByCampCodeQueryRequest,
+    public readonly query: GetEventBySlugRequest,
   ) {}
 }

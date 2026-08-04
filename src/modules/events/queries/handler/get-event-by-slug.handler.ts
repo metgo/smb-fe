@@ -6,15 +6,39 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
-import { CommonStatus } from 'src/common/enum';
+import { CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { localizeItem } from 'src/common/localise-items';
 import { GetEventBySlugQuery } from '../get-event-by-slug.query';
-import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { TicketStatus } from 'src/modules/tickets/tickets.type';
 import { GetAllTicketsQuery } from 'src/modules/tickets/queries/get-all-tickets.query';
 import { GetAllTicketsRequest } from 'src/modules/tickets/requests/get-all-tickets.request';
 import { EventsAudit } from '../../schema/events-audit.schema';
 import { sanitizeImages } from 'src/core/helper/image.util';
+
+function localizeAccessibility(item: any, locale: Locale) {
+  const { hebrewName, ...rest } = item;
+  return {
+    ...rest,
+    name: locale === Locale.HEBREW ? hebrewName || rest.name : rest.name,
+  };
+}
+
+function sanitizeTicket(ticket: any) {
+  const {
+    createdAt,
+    updatedAt,
+    createdBy,
+    updatedBy,
+    deletedBy,
+    deletedAt,
+    isDeleted,
+    userId,
+    __v,
+    ...rest
+  } = ticket;
+  return rest;
+}
 
 @QueryHandler(GetEventBySlugQuery)
 export class GetEventBySlugHandler
@@ -24,22 +48,13 @@ implements IQueryHandler<GetEventBySlugQuery> {
     private readonly logger: Logger,
     @InjectModel(EventsAudit.name)
     private EventsAuditModel: Model<EventsAudit>,
-    private campaignService: CampaignService,
     private readonly queryBus: QueryBus,
   ) {}
 
   async execute(queries: GetEventBySlugQuery): Promise<any> {
     try {
       const { slug, query } = queries;
-
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        query.campCode,
-      );
-
-      if (!campDetails?.dmoIds?.length && !campDetails?.authorityIds?.length) {
-        return {};
-      }
+      const { locale } = query;
 
       const today = new Date();
 
@@ -62,19 +77,6 @@ implements IQueryHandler<GetEventBySlugQuery> {
       };
 
       const orConditions = [];
-
-      // Check if event is in campaign's whitelist
-      if (campDetails?.whitelist?.event?.length) {
-        orConditions.push({ eventId: { $in: campDetails.whitelist.event } });
-      }
-
-      if (campDetails?.dmoIds?.length) {
-        orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
-      }
-
-      if (campDetails?.authorityIds?.length) {
-        orConditions.push({ authorityId: { $in: campDetails.authorityIds } });
-      }
 
       if (orConditions.length) {
         findQuery = {
@@ -108,14 +110,20 @@ implements IQueryHandler<GetEventBySlugQuery> {
         new GetAllTicketsQuery(ticketRequest),
       );
 
-      const { eventId, ...rest } = event;
+      const {
+        eventId, groupTypesId, accessibilitiesId, ...rest
+      } = event;
+
+      const localizedEvent: any = await localizeItem(rest, locale);
 
       const newEvent = {
-        ...rest,
+        ...localizedEvent,
         _id: eventId,
         images: sanitizeImages(rest.images),
+        groupTypesId: (groupTypesId || []).map(item => localizeAccessibility(item, locale)),
+        accessibilitiesId: (accessibilitiesId || []).map(item => localizeAccessibility(item, locale)),
         payment: {
-          ticketIds: tickets,
+          ticketIds: tickets.map(sanitizeTicket),
         },
       };
       return newEvent;

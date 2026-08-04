@@ -19,6 +19,7 @@ import { GetEventBySlugQuery } from '../queries/get-event-by-slug.query';
 import { GetSearchRecommendationQuery } from '../queries/get-search-recommendation.query';
 import { GetAllEventsBusinessIdRequest } from '../requests/get-all-events-businessId.request';
 import { GetAllEventsByBusinessIdQuery } from '../queries/get-all-events-by-businessId.query';
+import { GetEventBySlugRequest } from '../requests/get-event-by-slug.request';
 
 @Controller('events')
 export class EventController {
@@ -94,7 +95,7 @@ export class EventController {
   @Get(':slug')
   async getEventsBySlug(
     @Param('slug') slug: string,
-    @Query() query: GetByCampCodeQueryRequest,
+    @Query() query: GetEventBySlugRequest,
   ) {
     return await this.queryBus.execute(new GetEventBySlugQuery(slug, query));
   }
