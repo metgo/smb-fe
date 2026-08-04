@@ -51,37 +51,16 @@ import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
 import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
-// import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
-import { formatOrderDate } from "@/helpers";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { formatILS } from "@/helpers/formatter";
+import { formatDateTime, formatILS } from "@/helpers/formatter";
+import { ORDER_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
 
-// Default columns configuration
-const defaultColumns = {
-  name: true,
-  email: true,
-  phone: true,
-  status: true,
-  paymentStatus: true,
-  paymentMethod: false,
-  totalOrderAmount: true,
-  productCount: true,
-  deliveryFee: true,
-  createdAt: true,
-  _id: false,
-  website: true,
-  dmos: true,
-  authorities: true,
-};
+const { defaultColumns, columnDefinitions } = ORDER_COLUMNS;
 
 type ColumnVisibility = typeof defaultColumns;
-
-// Static defs for ShowColumns — keys must match defaultColumns keys so
-// columnVisibility lookups work and all columns (including hidden ones) appear.
-const columnSettingsDefs = Object.keys(defaultColumns).map((key) => ({ key }));
 
 export default function OrdersMgmtPage() {
   const { t } = useTranslation("orders");
@@ -569,7 +548,7 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm text-gray-500">
-          {formatOrderDate(order?.createdAt, language)}
+          {formatDateTime(order?.createdAt, language)}
         </div>
       ),
     },
@@ -929,12 +908,14 @@ export default function OrdersMgmtPage() {
                   <ShowColumns
                     t={t}
                     viewMode="list"
-                    columnDefinitions={columnSettingsDefs}
+                    columnDefinitions={columnDefinitions}
                     columnVisibility={columnVisibility}
                     showColumnSettings={showColumnSettings}
                     setShowColumnSettings={setShowColumnSettings}
                     setColumnVisibility={setColumnVisibility}
-                    resetToDefault={() => setColumnVisibility(defaultColumns)}
+                    resetToDefault={() =>
+                      setColumnVisibility(ORDER_COLUMNS.defaultColumns)
+                    }
                   />
                   <ExportOrdersButton
                     orders={combinedOrders}

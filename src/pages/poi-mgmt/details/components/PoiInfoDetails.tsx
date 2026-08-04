@@ -3,10 +3,10 @@ import { type FC } from "react";
 import { AlignLeft, FileText } from "lucide-react";
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
-import { ConnectedWebsites } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
+import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
 
 interface PoiInfoDetailsProps {
   t: (key: string) => string;
@@ -58,9 +58,13 @@ const PoiInfoDetails: FC<PoiInfoDetailsProps> = ({ t, poi }) => {
         isDark={isDark}
         preWrap={true}
       />
-      {poi?.associatedWebsites?.length > 0 && (
-        <ConnectedWebsites t={t} associatedWebsites={poi.associatedWebsites} />
-      )}
+
+      <ConnectedDmoAuthorityWebsites
+        dmoId={poi?.dmoId}
+        authorityId={poi?.authorityId}
+        websiteIds={poi?.associatedWebsiteIds || []}
+      />
+
       {userRole === UserRole.SUPERADMIN && poi?.internalNotes && (
         <div
           className={`p-4 rounded-lg ${isDark ? "bg-yellow-900/20 border border-yellow-800" : "bg-yellow-50 border border-yellow-200"}`}

@@ -6,11 +6,15 @@ const SEARCH_STORAGE_KEY = "businesses_mgmt_search";
 export interface BusinessFilters {
   status: string;
   hasProductFilter: "all" | "yes" | "no";
+  dmoFilter: "all" | "unassigned";
+  authorityFilter: "all" | "unassigned";
 }
 
 const defaultFilters: BusinessFilters = {
   status: "all",
   hasProductFilter: "all",
+  dmoFilter: "all",
+  authorityFilter: "all",
 };
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -33,9 +37,10 @@ function readStorage<T>(key: string, fallback: T): T {
 
 export function useBusinessFilters() {
   // Load once on mount
-  const [filters, setFilters] = useState<BusinessFilters>(() =>
-    readStorage(FILTER_STORAGE_KEY, defaultFilters),
-  );
+  const [filters, setFilters] = useState<BusinessFilters>(() => ({
+    ...defaultFilters,
+    ...readStorage(FILTER_STORAGE_KEY, defaultFilters),
+  }));
 
   const [searchTerm, setSearchTerm] = useState<string>(() =>
     readStorage(SEARCH_STORAGE_KEY, ""),
@@ -79,6 +84,8 @@ export function useBusinessFilters() {
     return (
       filters.status !== "all" ||
       filters.hasProductFilter !== "all" ||
+      filters.dmoFilter !== "all" ||
+      filters.authorityFilter !== "all" ||
       searchTerm.trim() !== ""
     );
   }, [filters, searchTerm]);

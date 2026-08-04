@@ -9,6 +9,7 @@ interface IEventDate {
 }
 
 interface IEventSession {
+  _id: string;
   name: string;
   tagline?: string;
   description?: string;
@@ -21,17 +22,27 @@ interface IEventSession {
   isActive: boolean;
 }
 
+interface ISessionBlock {
+  _id: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  bookingLimit: number;
+  sessionIds: string[];
+}
+
 interface IAdminConfig {
   eventId: string;
   brand: string;
   themeId: string;
   headline: string;
   subhead: string;
+  greeting?: string;
   images: IImage[];
   isActive: boolean;
-  selectionMode: "radio" | "checkbox";
-  liveEventIds: string[];
+  bookingLimit: number;
   ticketIds: string[];
+  blocks: ISessionBlock[];
   sessions: IEventSession[];
 }
 

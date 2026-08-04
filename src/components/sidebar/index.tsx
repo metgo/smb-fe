@@ -7,7 +7,6 @@ import {
   Calendar,
   MapPin,
   Map,
-  Sparkles,
   Wallet,
   Globe,
   Settings,
@@ -19,9 +18,9 @@ import {
   Receipt,
   Megaphone,
   FileText,
-  Rss,
-  SlidersHorizontal,
-  Layout,
+  // Rss,
+  // SlidersHorizontal,
+  // Layout,
   Users,
   File,
   UserCircle,
@@ -38,6 +37,7 @@ import {
   AlertTriangle,
   CalendarArrowDown,
   ShoppingBag,
+  // BarChart3,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -83,6 +83,15 @@ export default function Sidebar() {
 
   const isVendorReconciliation = ["superadmin", "traveller"].includes(userRole);
 
+  // Orders endpoints currently only allow superadmin/traveller (backend @Roles) —
+  // dmo/dmoadmin/authority/authorityAdmin would only hit 403s, so hide the whole group.
+  const isDmoOrAuthorityRole = [
+    "dmo",
+    "dmoadmin",
+    "authority",
+    "authorityAdmin",
+  ].includes(userRole);
+
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -94,6 +103,17 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       isEnabled: true,
     },
+    // ...(isSuperadmin
+    //   ? [
+    //       {
+    //         id: "stats-summary",
+    //         path: routes.statsSummary,
+    //         label: t("stats_summary") || "Stats Summary",
+    //         icon: BarChart3,
+    //         isEnabled: true,
+    //       },
+    //     ]
+    //   : []),
     {
       id: "businesses",
       path: routes.businessMgmt,
@@ -136,7 +156,7 @@ export default function Sidebar() {
                 path: routes.vendorReconciliationMgmt,
                 label: t("vendor_reconciliation") || "Vendor Reconciliation",
                 icon: Receipt,
-                isEnabled: false,
+                isEnabled: true,
               },
             ]
           : []),
@@ -188,13 +208,6 @@ export default function Sidebar() {
       label: t("trips") || "Trips",
       icon: Map,
       isEnabled: true,
-    },
-    {
-      id: "fun-days",
-      path: routes.funDays,
-      label: t("fun_days") || "Fun Days",
-      icon: Sparkles,
-      isEnabled: false,
     },
     {
       id: "local-economy",
@@ -256,27 +269,27 @@ export default function Sidebar() {
           isEnabled: true,
         },
 
-        {
-          id: "news-feed",
-          path: routes.dashboard,
-          label: t("news_feed") || "News Feed",
-          icon: Rss,
-          isEnabled: false,
-        },
-        {
-          id: "feed-settings",
-          path: routes.dashboard,
-          label: t("feed_settings") || "Feed Settings",
-          icon: SlidersHorizontal,
-          isEnabled: false,
-        },
-        {
-          id: "mini-site",
-          path: routes.dashboard,
-          label: t("mini_site") || "Mini-site",
-          icon: Layout,
-          isEnabled: false,
-        },
+        // {
+        //   id: "news-feed",
+        //   path: routes.dashboard,
+        //   label: t("news_feed") || "News Feed",
+        //   icon: Rss,
+        //   isEnabled: false,
+        // },
+        // {
+        //   id: "feed-settings",
+        //   path: routes.dashboard,
+        //   label: t("feed_settings") || "Feed Settings",
+        //   icon: SlidersHorizontal,
+        //   isEnabled: false,
+        // },
+        // {
+        //   id: "mini-site",
+        //   path: routes.dashboard,
+        //   label: t("mini_site") || "Mini-site",
+        //   icon: Layout,
+        //   isEnabled: false,
+        // },
       ],
     },
     {
@@ -551,12 +564,14 @@ export default function Sidebar() {
                   (item.id === "local-economy" || item.id === "site-management")
                 ),
             )
+            ?.filter((item) => !(isDmoOrAuthorityRole && item.id === "orders"))
             ?.map((item) => ({
               ...item,
               subItems: item.subItems?.filter(
                 (sub) =>
                   !(isTraveller && sub.id === "content-mgmt") &&
                   !(isTraveller && sub.id === "users") &&
+                  !(isTraveller && sub.id === "all-orders-summary") &&
                   !(sub.id === "dynamic-pages" && !isSuperadmin),
               ),
             }))

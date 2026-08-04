@@ -128,7 +128,7 @@ interface ProductFormData {
   serviceLocation: string;
 }
 
-interface IColumnVisibility {
+interface IProductColumnVisibility {
   images: boolean;
   name: boolean;
   businessId: boolean;
@@ -140,4 +140,5 @@ interface IColumnVisibility {
   impact: boolean;
   quantity: boolean;
   updatedAt: boolean;
+  createdAt: boolean;
 }

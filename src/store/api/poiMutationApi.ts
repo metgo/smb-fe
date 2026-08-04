@@ -13,11 +13,11 @@ export const poiMutationApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ["POI"],
   endpoints: (builder) => ({
-    initPoiCreate: builder.mutation<any, void>({
-      query: () => ({
+    initPoiCreate: builder.mutation<any, any>({
+      query: (payload) => ({
         url: endpoints.pois,
         method: "POST",
-        data: { name: "" },
+        data: payload,
       }),
       invalidatesTags: ["POI"],
     }),

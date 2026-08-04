@@ -158,6 +158,9 @@
   "delete_event": "حذف الفعالية",
   "delete_event_confirm": "هل أنت متأكد من حذف هذه الفعالية؟",
 
+  "delete_session_block": "حذف مجموعة الجلسات",
+  "delete_session_block_confirm": "هل أنت متأكد من حذف مجموعة الجلسات هذه؟",
+
   "logo_required": "الشعار (مطلوب)",
   "upload_logo": "رفع الشعار",
 
@@ -406,5 +409,8 @@
   "business_already_exists_title": "لقد قمنا بالفعل ببناء هذا النشاط التجاري لك",
   "business_already_exists_body": "يرجى التواصل مع فريق الدعم لدينا أدناه، أو انظر إلى النشاط التجاري الذي قمنا بإنشاؤه بالفعل.",
   "view_business_on": "عرض على",
-  "contact_support_label": "أو اتصل بفريق الدعم لدينا"
+  "contact_support_label": "أو اتصل بفريق الدعم لدينا",
+  "selected_dmo_authority": "منظمة تسويق الوجهة والسلطة المحددة",
+  "connected_websites": "المواقع المرتبطة",
+  "no_connected_dmo_authority_websites": "لا توجد منظمة تسويق وجهة أو سلطة أو مواقع مرتبطة"
 }

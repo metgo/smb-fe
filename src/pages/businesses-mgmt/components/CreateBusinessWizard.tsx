@@ -48,7 +48,6 @@ import {
   parseAddress,
   removeNulls,
 } from "@/helpers";
-import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import {
   Attributes,
@@ -133,7 +132,6 @@ function CreateBusinessWizardInner({
     [],
   );
 
-  const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
@@ -182,12 +180,9 @@ function CreateBusinessWizardInner({
   // Business Media States
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
-  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
-    allBlacklistIds: [] as string[],
-    selectedBlacklistIds: [] as string[],
-    allWhitelistIds: [] as string[],
-    selectedWhitelistIds: [] as string[],
-  });
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState<string[]>(
+    [],
+  );
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
   );
@@ -603,6 +598,7 @@ function CreateBusinessWizardInner({
       }
       setSelectAuthorityId(editData?.authorityId || "");
       setSelectedDmoId(editData?.dmoId || "");
+      setWebsiteVisibilityIds(editData?.associatedWebsiteIds || []);
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images);
@@ -630,6 +626,7 @@ function CreateBusinessWizardInner({
     // step 1:
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
+    associatedWebsiteIds: websiteVisibilityIds,
     name: formData.name,
     nameAr: formData.nameAr,
     nameHe: formData.nameHe,
@@ -822,10 +819,6 @@ function CreateBusinessWizardInner({
     setIsDraftBtnClicked(true);
     const resolvedBusinessId = await saveDraft(false);
     if (resolvedBusinessId) {
-      await createWebsiteAccessItem({
-        body: websiteAccessItemPayload,
-        itemId: resolvedBusinessId,
-      });
       // Refetch after save draft completes
       // Don't await to prevent blocking the UI
       if (businessDataRefetch) {
@@ -874,11 +867,6 @@ function CreateBusinessWizardInner({
     const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
     const resolvedBusinessId = await saveDraft(true, processedFormData);
     if (resolvedBusinessId) {
-      await createWebsiteAccessItem({
-        body: websiteAccessItemPayload,
-        itemId: resolvedBusinessId,
-      });
-
       await Promise.all([refetch?.(), businessDataRefetch?.()]);
     }
     setIsPublishing(false);
@@ -890,23 +878,6 @@ function CreateBusinessWizardInner({
     }
   }, [opMode, editData?._id, businessId]);
 
-  const websiteAccessItemPayload = {
-    blacklist: {
-      allItems: websiteVisibilityIds.allBlacklistIds,
-      // Send websites that are UNCHECKED (to add to blacklist/hide)
-      // In this section: CHECK = show, UNCHECK = hide
-      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
-        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
-      ),
-    },
-    whitelist: {
-      allItems: websiteVisibilityIds.allWhitelistIds,
-      // Send ONLY explicitly checked websites from unassociated section
-      // Associated section manages visibility via blacklist only
-      selectedItems: websiteVisibilityIds.selectedWhitelistIds,
-    },
-    purpose: "business",
-  };
   const renderStep = () => {
     const commonProps = {
       theme,
@@ -953,13 +924,13 @@ function CreateBusinessWizardInner({
             {...commonProps}
             businessId={businessId}
             setBusinessId={setBusinessId}
-            selectedDmoId={selectedDmoId}
+          selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
             selectedAuthorityId={selectedAuthorityId}
             setSelectAuthorityId={setSelectAuthorityId}
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-            businessAssociatedWebsites={editData?.associatedWebsites ?? []}
+            // businessAssociatedWebsites={editData?.associatedWebsites ?? []}
             isEditMode={opMode === IOpMode.EDIT}
           />
         );

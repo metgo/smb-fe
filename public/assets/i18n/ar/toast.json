@@ -74,5 +74,8 @@
   "trip_status_updated_faild": "فشل تحديث حالة الرحلة",
   "trip_updated_success": "تم تحديث الرحلة بنجاح!",
   "trip_created_success": "تم إنشاء الرحلة بنجاح!",
-  "trip_create_failed": "فشل إنشاء الرحلة"
+  "trip_create_failed": "فشل إنشاء الرحلة",
+
+  "ticket_email_resend_success": "تمت إعادة إرسال بريد التذكرة الإلكتروني بنجاح",
+  "ticket_email_resend_failed": "فشل في إعادة إرسال بريد التذكرة الإلكتروني"
 }

@@ -35,55 +35,7 @@ import { formatILS } from "@/helpers/formatter";
 
 import { useProductFilters } from "./hooks/useProductFilters";
 import { useProductListData } from "./hooks/useProductListData";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const COLUMNS_STORAGE_KEY = "productsTableColumns";
-
-type IColumnVisibility = {
-  images: boolean;
-  name: boolean;
-  businessId: boolean;
-  shortDescription: boolean;
-  description: boolean;
-  actions: boolean;
-  status: boolean;
-  price: boolean;
-  impact: boolean;
-  quantity: boolean;
-  updatedAt: boolean;
-};
-
-const defaultColumns: IColumnVisibility = {
-  images: true,
-  name: true,
-  businessId: true,
-  shortDescription: false,
-  description: true,
-  actions: true,
-  status: true,
-  price: true,
-  impact: true,
-  quantity: true,
-  updatedAt: false,
-};
-
-const columnDefinitions: Array<{
-  key: keyof IColumnVisibility;
-  isDefault: boolean;
-}> = [
-  { key: "images", isDefault: true },
-  { key: "name", isDefault: true },
-  { key: "businessId", isDefault: true },
-  { key: "shortDescription", isDefault: false },
-  { key: "description", isDefault: true },
-  { key: "status", isDefault: true },
-  { key: "price", isDefault: true },
-  { key: "actions", isDefault: true },
-  { key: "impact", isDefault: true },
-  { key: "quantity", isDefault: true },
-  { key: "updatedAt", isDefault: false },
-];
+import { PRODUCT_COLUMNS } from "@/lib/utils";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -97,10 +49,10 @@ export default function ProductsMgmtPage() {
   const urlBusinessName = searchParams?.get("businessName");
   const urlBusinessNameProduct = searchParams?.get("businessNameProduct");
 
-  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { startDate, endDate } = useAppSelector((state) => state.auth);
   const { isDark, bgSecondary, borderColor, language } = useThemeClasses();
+  const { defaultColumns, columnDefinitions, COLUMNS_STORAGE_KEY } =
+    PRODUCT_COLUMNS;
 
   // ─── Filter & Search (persisted to localStorage) ─────────────────────
   const {
@@ -136,7 +88,7 @@ export default function ProductsMgmtPage() {
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [columnVisibility, setColumnVisibility] =
-    useState<IColumnVisibility>(defaultColumns);
+    useState<IProductColumnVisibility>(defaultColumns);
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
@@ -180,8 +132,6 @@ export default function ProductsMgmtPage() {
             locale: language,
             limit: 20,
             page: 1,
-            dmoId,
-            authorityId,
             startDate,
             endDate,
           }
@@ -196,7 +146,7 @@ export default function ProductsMgmtPage() {
   } = useRemoteSelectData({
     initialData: businessData?.data,
     debounceMs: 400,
-    searchParams: { locale: language, dmoId, authorityId, startDate, endDate },
+    searchParams: { locale: language, startDate, endDate },
     lazySearch: async (params) => {
       const res = await getBusinessList(params).unwrap();
       return { data: res?.data };

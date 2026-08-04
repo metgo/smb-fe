@@ -40,45 +40,12 @@ import type { TourStep } from "@/components/tour";
 
 import { useBusinessFilters } from "./hooks/useBusinessFilters";
 import { useBusinessListData } from "./hooks/useBusinessListData";
+import { BUSINESS_COLUMNS } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const COLUMNS_STORAGE_KEY = "businessesTableColumns";
-
-const defaultColumns: IBusinessColumnVisibility = {
-  impact: true,
-  name: true,
-  shortDescription: true,
-  contactDetails: true,
-  busiEmail: true,
-  phoneNumber: true,
-  productCount: true,
-  status: true,
-  lifetimeSales: true,
-  tripCount: false,
-  associatedWebsites: false,
-  contactPhone: false,
-  categories: false,
-};
-
-const columnDefinitions: Array<{
-  key: keyof IBusinessColumnVisibility;
-  isDefault: boolean;
-}> = [
-  { key: "impact", isDefault: true },
-  { key: "name", isDefault: true },
-  { key: "shortDescription", isDefault: true },
-  { key: "contactDetails", isDefault: true },
-  { key: "busiEmail", isDefault: true },
-  { key: "phoneNumber", isDefault: true },
-  { key: "productCount", isDefault: true },
-  { key: "status", isDefault: true },
-  { key: "lifetimeSales", isDefault: true },
-  { key: "tripCount", isDefault: false },
-  { key: "associatedWebsites", isDefault: false },
-  { key: "contactPhone", isDefault: false },
-  { key: "categories", isDefault: false },
-];
+const { defaultColumns, columnDefinitions, COLUMNS_STORAGE_KEY } =
+  BUSINESS_COLUMNS;
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -250,7 +217,7 @@ function BusinessesMgmtPageInner() {
   );
 
   const resetToDefault = useCallback(() => {
-    setColumnVisibility(defaultColumns);
+    setColumnVisibility(BUSINESS_COLUMNS.defaultColumns);
   }, []);
 
   const promptBulkDelete = useCallback(() => {

@@ -9,6 +9,7 @@ type TStatus =
 type EventStatus = "draft" | "pending" | "approved";
 type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
 type TCampaign = "CASH_IN" | "CASH_BACK" | "MINI_SITE";
+type TMethod = "POST" | "PUT" | "DELETE" | "PATCH" | "GET";
 
 type TGeoLocation = {
   lat: string;
@@ -215,4 +216,12 @@ interface IDoucment {
 
 interface IDocumentRes extends IPagination {
   data: Array<IDoucment>;
+}
+
+interface IPoiColumnVisibility {
+  impact: boolean;
+  name: boolean;
+  shortDescription: boolean;
+  address: boolean;
+  status: boolean;
 }
