@@ -15,13 +15,11 @@ import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { uploadWithProgress } from "@/helpers";
 import {
-  useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
   useOpenDisputeMutation,
   // useRespondDisputeMutation,
   // useBulkApproveOrderProductsMutation,
-  useGetReconciliationStatsQuery,
   useBulkMarkOrderAsCompletedMutation,
   useFinalizeClosedOrdersMutation,
   usePreviewFinalizeClosedOrdersQuery,
@@ -36,6 +34,7 @@ import {
 import MonthFilter from "@/pages/orders-mgmt/components/MonthFilter";
 import FilterButton from "@/components/btns/FilterButton";
 import clsx from "clsx";
+import { useVendorMonthlyReportData } from "../../hooks/useVendorMonthlyReportData";
 
 interface OrderProduct {
   _id: string;
@@ -196,15 +195,12 @@ export const VendorMonthlyReport = () => {
     textTertiary,
     isDark,
   } = useThemeClasses();
-  const { dmoId, authorityId, userRole } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { userRole } = useAppSelector((state) => state.auth);
   const adminView = userRole === "superadmin";
 
   const businessSearchDebounceRef = useRef<ReturnType<
     typeof setTimeout
   > | null>(null);
-  const [orders, setOrders] = useState<MonthlyOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<MonthlyOrder | null>(null);
@@ -217,7 +213,6 @@ export const VendorMonthlyReport = () => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [_disputedCount, setDisputedCount] = useState(0);
 
-  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     status: "all",
     reconciliationStatus: "all",
@@ -233,62 +228,24 @@ export const VendorMonthlyReport = () => {
   const [showBusinessDropdown, setShowBusinessDropdown] = useState(false);
   const [isSearchingBusinesses, setIsSearchingBusinesses] = useState(false);
   const [selectedBusinessName, setSelectedBusinessName] = useState("");
-  const isLoadingNextPageRef = useRef(false);
   const [searchBusinessesTrigger] = useLazyGetBusinessForProductQuery();
 
-  const apiParams = useMemo(() => {
-    const params: any = {
-      page,
-      limit: 20,
-      dmoId,
-      authorityId,
-    };
-
-    if (filters.businessId) params.vendorId = filters.businessId;
-    if (filters.status !== "all") {
-      params.status = filters.status;
-    }
-    if (filters.reconciliationStatus !== "all") {
-      params.reconciliationStatus = filters.reconciliationStatus;
-    }
-
-    if (searchTerm) params.search = searchTerm;
-
-    if (filters.month !== "all" && filters.month !== "custom") {
-      const [month, year] = filters.month.split("-");
-
-      // format from the Date's own local year/month/day, not
-      // toISOString() - that converts to UTC first, which silently shifts
-      // the date back a day for any timezone ahead of UTC (midnight local
-      // time is still "yesterday evening" in UTC)
-      const formatLocalDate = (d: Date) => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
-      };
-
-      const firstDay = new Date(Number(year), Number(month) - 1, 1);
-      const lastDay = new Date(Number(year), Number(month), 0);
-
-      params.startDate = formatLocalDate(firstDay);
-      params.endDate = formatLocalDate(lastDay);
-    }
-
-    // Custom date range
-    if (filters.month === "custom") {
-      if (filters.startDate) params.startDate = filters.startDate;
-      if (filters.endDate) params.endDate = filters.endDate;
-    }
-    return params;
-  }, [page, filters, searchTerm, dmoId, authorityId]);
-
   const {
-    data: orderProductsData,
+    combinedOrders,
+    reconciliationStats,
     isLoading,
     isFetching,
-    refetch: refetchOrders,
-  } = useGetOrderProductsQuery(apiParams);
+    refetchFromPage1,
+    refetchStats: refetchReconciliationStats,
+    hasMore,
+    fetchNextPage,
+  } = useVendorMonthlyReportData(filters, searchTerm);
+
+  const orders = useMemo(
+    () => combinedOrders.map(mapOrderProductList),
+    [combinedOrders],
+  );
+
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
     useGetOrderProductDetailsQuery(detailsOrderId as string, {
       skip: !detailsOrderId,
@@ -310,8 +267,6 @@ export const VendorMonthlyReport = () => {
   } = usePreviewFinalizeClosedOrdersQuery(undefined, {
     skip: !showCloseAllOrdersModal,
   });
-  const { data: reconciliationStats, refetch: refetchReconciliationStats } =
-    useGetReconciliationStatsQuery(apiParams);
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const websiteMap = useMemo(() => {
@@ -440,49 +395,6 @@ export const VendorMonthlyReport = () => {
   }, [searchParams, adminView]);
 
   useEffect(() => {
-    if (orderProductsData?.data) {
-      const mappedOrders = orderProductsData.data.map(mapOrderProductList);
-
-      if (page === 1) {
-        setOrders(mappedOrders);
-      } else {
-        setOrders((prev) => {
-          const existingIds = new Set(prev.map((o: MonthlyOrder) => o._id));
-          const newOrders = mappedOrders.filter(
-            (o: MonthlyOrder) => !existingIds.has(o._id),
-          );
-          return [...prev, ...newOrders];
-        });
-      }
-    }
-  }, [orderProductsData, page]);
-
-  const hasMore = orderProductsData?.meta?.hasNextPage ?? false;
-
-  const loadNextPage = () => {
-    if (!hasMore || isLoading || isFetching || isLoadingNextPageRef.current)
-      return;
-    isLoadingNextPageRef.current = true;
-    setPage((prev) => prev + 1);
-  };
-
-  useEffect(() => {
-    isLoadingNextPageRef.current = isLoading || isFetching;
-  }, [isLoading, isFetching]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [
-    searchTerm,
-    filters.status,
-    filters.reconciliationStatus,
-    filters.month,
-    filters.startDate,
-    filters.endDate,
-    filters.businessId,
-  ]);
-
-  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest(".business-search-container")) {
@@ -580,7 +492,7 @@ export const VendorMonthlyReport = () => {
       toast.success(t("dispute_submitted"));
       setShowDisputeModal(false);
       setSelectedOrder(null);
-      refetchOrders();
+      refetchFromPage1();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -668,7 +580,7 @@ export const VendorMonthlyReport = () => {
       toast.success(t("order_cancelled"));
       setShowCancelModal(false);
       setSelectedOrder(null);
-      refetchOrders();
+      refetchFromPage1();
       refetchReconciliationStats();
     } catch (error) {
       toast.error(t("cancel_failed"));
@@ -705,7 +617,7 @@ export const VendorMonthlyReport = () => {
     setShowAdminDisputeModal(false);
     setSelectedOrder(null);
     setDetailsOrderId(null);
-    refetchOrders();
+    refetchFromPage1();
   };
 
   const handleSelectionChange = (newSelection: Set<string>) => {
@@ -743,7 +655,7 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("orders_mark_as_completed"));
       setSelectedItems(new Set());
-      refetchOrders();
+      refetchFromPage1();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -785,7 +697,7 @@ export const VendorMonthlyReport = () => {
 
       setShowCloseAllOrdersModal(false);
       toast.success(t("orders_closed_successfully"));
-      refetchOrders();
+      refetchFromPage1();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -1024,7 +936,7 @@ export const VendorMonthlyReport = () => {
     },
   ];
 
-  if (isLoading && page === 1) {
+  if (isLoading && orders.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -1349,7 +1261,7 @@ export const VendorMonthlyReport = () => {
         storageKey="vendorMonthlyReportColumnOrder"
         columns={columns}
         hasMore={hasMore}
-        next={loadNextPage}
+        next={fetchNextPage}
         selectedItems={adminView ? selectedItems : undefined}
         onSelectionChange={adminView ? handleSelectionChange : undefined}
       />

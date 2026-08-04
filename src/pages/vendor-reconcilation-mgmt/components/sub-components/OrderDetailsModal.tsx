@@ -98,7 +98,7 @@ export default function OrderDetailsModal({
                     ) &&
                       userRole === UserRole.TRAVELLER && (
                         <>
-                          Your dispute has been{" "}
+                          {t("your_dispute_has_been")}{" "}
                           <span
                             className={
                               order.reconciliationStatus === "approved"
@@ -110,7 +110,7 @@ export default function OrderDetailsModal({
                                   : "text-red-600"
                             }
                           >
-                            {order.reconciliationStatus}
+                            {t(order.reconciliationStatus)}
                           </span>
                         </>
                       )}
