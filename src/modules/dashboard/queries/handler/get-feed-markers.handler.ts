@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
-import { SortOrder } from 'src/common/enum';
+import { SortOrder, CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
@@ -11,9 +11,11 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
+import { TripStatus } from 'src/modules/trips/trips.types';
 import { PointOfInterestsAudit } from 'src/modules/point-of-interests/schema/point-of-interest-audit.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
-import { FindByIdAndPopulateQuery } from 'src/modules/campaign/queries/find-by-id-and-populate.query';
+// OLD (identifierId used to resolve via ExternalApi.primaryCampIds[0] -> Campaign):
+// import { FindByIdAndPopulateQuery } from 'src/modules/campaign/queries/find-by-id-and-populate.query';
 import { GetBusinessRawQuery } from '../get-business-raw-query.query';
 import { GetEventRawQuery } from '../get-event-raw-query.query';
 import { GetTripRawQuery } from '../get-trip-raw-query.query';
@@ -47,28 +49,64 @@ export class GetFeedMarkersHandler implements IQueryHandler<GetFeedMarkersQuery>
         throw new BadRequestException('Please enter identifierId or campcode');
       }
 
-      let campDetails;
+      // OLD — identifierId used to resolve via ExternalApi.primaryCampIds[0] ->
+      // Campaign, then feed campDetails into the same dmoId/authorityId/
+      // businessId (+ whitelist/blacklist) matching used by campCode below.
+      // Replaced by a direct associatedWebsiteIds match — same pattern as the
+      // businesses/POIs list endpoints and the site-config homepage feed.
+      //
+      // let campDetails;
+      //
+      // if (identifierId) {
+      //   const externalApi = await this.ExternalApiModel.findOne({
+      //     identifierId,
+      //   }).select('_id primaryCampIds');
+      //
+      //   if (!externalApi) {
+      //     throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
+      //   }
+      //
+      //   campDetails = await this.queryBus.execute(
+      //     new FindByIdAndPopulateQuery(externalApi.primaryCampIds[0]),
+      //   );
+      // }
+      //
+      // if (campCode) {
+      //   campDetails = await this.campaignService.findCampaignAndReturn(
+      //     'code',
+      //     campCode,
+      //   );
+      // }
 
       if (identifierId) {
-        const externalApi = await this.ExternalApiModel.findOne({
+        const siteSetting = await this.ExternalApiModel.findOne({
           identifierId,
-        }).select('_id primaryCampIds');
+        }).select('_id');
 
-        if (!externalApi) {
+        if (!siteSetting) {
           throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
         }
 
-        campDetails = await this.queryBus.execute(
-          new FindByIdAndPopulateQuery(externalApi.primaryCampIds[0]),
+        const [businesses, poi, events, trips] = await Promise.all([
+          this.getBusinessMarkersByWebsite(siteSetting._id),
+          this.getPOIMarkersByWebsite(siteSetting._id),
+          this.getEventMarkersByWebsite(siteSetting._id),
+          this.getTripMarkersByWebsite(siteSetting._id),
+        ]);
+
+        const data = [...businesses, ...poi, ...events, ...trips].filter(
+          item => item.geoLocation?.lat && item.geoLocation?.long,
         );
+
+        return { data, totalData: data.length };
       }
 
-      if (campCode) {
-        campDetails = await this.campaignService.findCampaignAndReturn(
-          'code',
-          campCode,
-        );
-      }
+      // Fallback for frontends still sending campCode instead of identifierId —
+      // campCode remains fully optional and functional, unchanged from before.
+      const campDetails = await this.campaignService.findCampaignAndReturn(
+        'code',
+        campCode,
+      );
 
       const [businesses, poi, events, trips] = await Promise.all([
         this.getBusinessMarkers(campDetails),
@@ -85,6 +123,156 @@ export class GetFeedMarkersHandler implements IQueryHandler<GetFeedMarkersQuery>
     } catch (err) {
       exceptionHandling(err);
     }
+  }
+
+  private async getBusinessMarkersByWebsite(websiteId: any) {
+    try {
+      const select = '_id slug geoLocation primaryCategoryId businessId';
+
+      const result = await queryhandler<BusinessesAudit>(
+        this.BusinessesAuditModel,
+        {
+          findQuery: {
+            status: CommonStatus.APPROVED,
+            isDeleted: { $ne: true },
+            isActive: true,
+            associatedWebsiteIds: websiteId,
+          },
+          select,
+          sort: 'createdAt',
+          sortOrder: SortOrder.DESC,
+          isLean: true,
+        },
+      );
+
+      return result.data.map((item: any) => ({
+        _id: item._id,
+        businessId: item.businessId,
+        slug: item.slug,
+        serviceType: ServicesTypes.BUSINESS,
+        geoLocation: item.geoLocation ?? { lat: null, long: null },
+        primaryCategoryId: item.primaryCategoryId,
+      }));
+    } catch (err) {
+      exceptionHandling(err);
+    }
+    return [];
+  }
+
+  private async getPOIMarkersByWebsite(websiteId: any) {
+    try {
+      const select = '_id slug geoLocation primaryCategoryId pointOfInterestId';
+
+      const result = await queryhandler<PointOfInterestsAudit>(
+        this.PointOfInterestsAuditModel,
+        {
+          findQuery: {
+            status: CommonStatus.APPROVED,
+            isDeleted: { $ne: true },
+            isActive: true,
+            associatedWebsiteIds: websiteId,
+          },
+          select,
+          sort: 'createdAt',
+          sortOrder: SortOrder.DESC,
+          isLean: true,
+        },
+      );
+
+      return result.data.map((item: any) => ({
+        _id: item._id,
+        slug: item.slug,
+        serviceType: ServicesTypes.POINT_OF_INTEREST,
+        geoLocation: item.geoLocation ?? { lat: null, long: null },
+        primaryCategoryId: item.primaryCategoryId,
+      }));
+    } catch (err) {
+      exceptionHandling(err);
+    }
+    return [];
+  }
+
+  private async getEventMarkersByWebsite(websiteId: any) {
+    try {
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+
+      const select = '_id slug geoLocation eventId';
+
+      const result = await queryhandler<EventsAudit>(this.EventsAuditModel, {
+        findQuery: {
+          status: CommonStatus.APPROVED,
+          isDeleted: { $ne: true },
+          isActive: true,
+          associatedWebsiteIds: websiteId,
+          $or: [
+            { dayDescription: { $exists: false } },
+            { dayDescription: { $size: 0 } },
+            { dayDescription: { $elemMatch: { date: { $gte: today } } } },
+          ],
+        },
+        select,
+        sort: 'createdAt',
+        sortOrder: SortOrder.DESC,
+        isLean: true,
+      });
+
+      return result.data.map((item: any) => ({
+        _id: item._id,
+        slug: item.slug,
+        serviceType: ServicesTypes.EVENT,
+        geoLocation: item.geoLocation ?? { lat: null, long: null },
+        primaryCategoryId: '6566e208a77d2a477266d2b3',
+      }));
+    } catch (err) {
+      exceptionHandling(err);
+    }
+    return [];
+  }
+
+  private async getTripMarkersByWebsite(websiteId: any) {
+    try {
+      const pipeline: any[] = [
+        {
+          $match: {
+            associatedWebsiteIds: websiteId,
+            status: TripStatus.APPROVED,
+            isDeleted: { $ne: true },
+          },
+        },
+        {
+          $addFields: {
+            serviceType: {
+              $cond: {
+                if: '$isTrip',
+                then: ServicesTypes.TRIPS,
+                else: ServicesTypes.FUNDAY,
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            slug: 1,
+            serviceType: 1,
+          },
+        },
+      ];
+
+      const trips = await this.TripModel.aggregate(pipeline).exec();
+
+      return trips.map((trip: any) => ({
+        _id: trip._id,
+        slug: trip.slug,
+        serviceType: trip.serviceType,
+        geoLocation: { lat: null, long: null },
+        primaryCategoryId: '6566e31ca77d2a477266d2d6',
+      }));
+    } catch (err) {
+      exceptionHandling(err);
+    }
+    return [];
   }
 
   private async getBusinessMarkers(campDetails: any) {
