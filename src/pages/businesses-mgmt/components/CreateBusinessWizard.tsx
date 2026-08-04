@@ -924,13 +924,12 @@ function CreateBusinessWizardInner({
             {...commonProps}
             businessId={businessId}
             setBusinessId={setBusinessId}
-          selectedDmoId={selectedDmoId}
+            selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
             selectedAuthorityId={selectedAuthorityId}
             setSelectAuthorityId={setSelectAuthorityId}
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-            // businessAssociatedWebsites={editData?.associatedWebsites ?? []}
             isEditMode={opMode === IOpMode.EDIT}
           />
         );
