@@ -7,7 +7,6 @@ import {
   Calendar,
   MapPin,
   Map,
-  Sparkles,
   Wallet,
   Globe,
   Settings,
@@ -19,9 +18,9 @@ import {
   Receipt,
   Megaphone,
   FileText,
-  Rss,
-  SlidersHorizontal,
-  Layout,
+  // Rss,
+  // SlidersHorizontal,
+  // Layout,
   Users,
   File,
   UserCircle,
@@ -37,6 +36,9 @@ import {
   CheckSquare,
   AlertTriangle,
   MessageCircle,
+  CalendarArrowDown,
+  ShoppingBag,
+  // BarChart3,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -68,6 +70,7 @@ export default function Sidebar() {
   const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelector(
     (state) => state.ui,
   );
+
   const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
 
   // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin, siteManager)
@@ -77,6 +80,17 @@ export default function Sidebar() {
     "dmo",
     "dmoadmin",
     "siteManager",
+  ].includes(userRole);
+
+  const isVendorReconciliation = ["superadmin", "traveller"].includes(userRole);
+
+  // Orders endpoints currently only allow superadmin/traveller (backend @Roles) —
+  // dmo/dmoadmin/authority/authorityAdmin would only hit 403s, so hide the whole group.
+  const isDmoOrAuthorityRole = [
+    "dmo",
+    "dmoadmin",
+    "authority",
+    "authorityAdmin",
   ].includes(userRole);
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -90,6 +104,17 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       isEnabled: true,
     },
+    // ...(isSuperadmin
+    //   ? [
+    //       {
+    //         id: "stats-summary",
+    //         path: routes.statsSummary,
+    //         label: t("stats_summary") || "Stats Summary",
+    //         icon: BarChart3,
+    //         isEnabled: true,
+    //       },
+    //     ]
+    //   : []),
     {
       id: "businesses",
       path: routes.businessMgmt,
@@ -106,10 +131,37 @@ export default function Sidebar() {
     },
     {
       id: "orders",
-      path: routes.ordersMgmt,
+      path: "#orders",
       label: t("orders") || "Orders",
       icon: ShoppingCart,
       isEnabled: true,
+      subItems: [
+        {
+          id: "all-orders",
+          path: routes.ordersMgmt,
+          label: t("orders") || "All Orders",
+          icon: ShoppingBag,
+          isEnabled: true,
+        },
+        {
+          id: "all-orders-summary",
+          path: routes.ordersSummaryMgmt,
+          label: t("order_summary") || "Orders Summary",
+          icon: CalendarArrowDown,
+          isEnabled: true,
+        },
+        ...(isVendorReconciliation
+          ? [
+              {
+                id: "vendor-reconciliation",
+                path: routes.vendorReconciliationMgmt,
+                label: t("vendor_reconciliation") || "Vendor Reconciliation",
+                icon: Receipt,
+                isEnabled: true,
+              },
+            ]
+          : []),
+      ],
     },
     {
       id: "events",
@@ -119,13 +171,21 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
+      id: "notifications",
+      path: routes.notificationMgmt,
+      label: t("notifications") || "Notifications",
+      icon: BellIcon,
+      isEnabled: true,
+    },
+
+    {
       id: "poi",
       path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
       isEnabled: true,
     },
-     {
+    {
       id: "chat",
       path: routes.chat,
       label: t("chat") || "Chat",
@@ -133,10 +193,10 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "notifications",
-      path: routes.notificationMgmt,
-      label: t("notifications") || "Notifications",
-      icon: BellIcon,
+      id: "article",
+      path: routes.articleMgmt,
+      label: t("article") || "Article",
+      icon: FileText,
       isEnabled: true,
     },
     ...(isAdminRole
@@ -156,13 +216,6 @@ export default function Sidebar() {
       label: t("trips") || "Trips",
       icon: Map,
       isEnabled: true,
-    },
-    {
-      id: "fun-days",
-      path: routes.funDays,
-      label: t("fun_days") || "Fun Days",
-      icon: Sparkles,
-      isEnabled: false,
     },
     {
       id: "local-economy",
@@ -223,34 +276,28 @@ export default function Sidebar() {
           icon: Megaphone,
           isEnabled: true,
         },
-        {
-          id: "article",
-          path: routes.articleMgmt,
-          label: t("article") || "Article",
-          icon: FileText,
-          isEnabled: true,
-        },
-        {
-          id: "news-feed",
-          path: routes.dashboard,
-          label: t("news_feed") || "News Feed",
-          icon: Rss,
-          isEnabled: false,
-        },
-        {
-          id: "feed-settings",
-          path: routes.dashboard,
-          label: t("feed_settings") || "Feed Settings",
-          icon: SlidersHorizontal,
-          isEnabled: false,
-        },
-        {
-          id: "mini-site",
-          path: routes.dashboard,
-          label: t("mini_site") || "Mini-site",
-          icon: Layout,
-          isEnabled: false,
-        },
+
+        // {
+        //   id: "news-feed",
+        //   path: routes.dashboard,
+        //   label: t("news_feed") || "News Feed",
+        //   icon: Rss,
+        //   isEnabled: false,
+        // },
+        // {
+        //   id: "feed-settings",
+        //   path: routes.dashboard,
+        //   label: t("feed_settings") || "Feed Settings",
+        //   icon: SlidersHorizontal,
+        //   isEnabled: false,
+        // },
+        // {
+        //   id: "mini-site",
+        //   path: routes.dashboard,
+        //   label: t("mini_site") || "Mini-site",
+        //   icon: Layout,
+        //   isEnabled: false,
+        // },
       ],
     },
     {
@@ -373,7 +420,7 @@ export default function Sidebar() {
   };
 
   const isItemActive = (path: string) =>
-    location.pathname.slice(0, 5) === path.slice(0, 5);
+    location.pathname === path || location.pathname.startsWith(path + "/");
 
   const isExpanded = (path: string) => expandedItems.includes(path);
 
@@ -525,12 +572,14 @@ export default function Sidebar() {
                   (item.id === "local-economy" || item.id === "site-management")
                 ),
             )
+            ?.filter((item) => !(isDmoOrAuthorityRole && item.id === "orders"))
             ?.map((item) => ({
               ...item,
               subItems: item.subItems?.filter(
                 (sub) =>
                   !(isTraveller && sub.id === "content-mgmt") &&
                   !(isTraveller && sub.id === "users") &&
+                  !(isTraveller && sub.id === "all-orders-summary") &&
                   !(sub.id === "dynamic-pages" && !isSuperadmin),
               ),
             }))

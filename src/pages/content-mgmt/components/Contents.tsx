@@ -13,12 +13,9 @@ import {
   Spinner,
   ViewModeToggle,
 } from "@/components/shared";
-import { ReactSelect } from "@/components/form-fields";
-import {
-  useGetBusinessForProductQuery,
-  useLazyGetBusinessForProductQuery,
-} from "@/store/api/businessQueryApi";
-import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
+// import { ReactSelect } from "@/components/form-fields"; // Commented out - unused after product filters disabled for TRAVELLER
+import { useGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
+// import { useRemoteSelectData } from "@/hooks/useRemoteSelectData"; // Commented out - unused after product filters disabled for TRAVELLER
 import { useAppSelector } from "@/hooks/hooks";
 
 interface Filters {
@@ -64,7 +61,7 @@ const ALL_FILTER_OPTIONS = [
   "Businesses",
   "Products",
   // "Trips",
-  "Events",
+  // "Events", // Events disabled for TRAVELLER purpose
   "POI",
 ];
 
@@ -72,7 +69,7 @@ const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
   Businesses: "business",
   Products: "product",
   Trips: "trip",
-  Events: "event",
+  // Events: "event", // Events disabled for TRAVELLER purpose
   POI: "poi",
 };
 
@@ -181,11 +178,9 @@ const Contents = ({
   templateContents,
   hiddenTabs = [],
 }: ContentsProps) => {
-  console.log("🚀 ~ Contents ~ hiddenTabs:", hiddenTabs);
   const FILTER_OPTIONS = ALL_FILTER_OPTIONS.filter(
     (tab) => !hiddenTabs.includes(tab),
   );
-  console.log("🚀 ~ Contents ~ FILTER_OPTIONS:", FILTER_OPTIONS);
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
 
@@ -210,21 +205,22 @@ const Contents = ({
       startDate,
       endDate,
     });
-  const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
-  const {
-    items: businesses,
-    search: searchBusiness,
-    isSearching,
-  } = useRemoteSelectData({
-    initialData: businessData?.data,
-    debounceMs: 400,
-    searchParams: { locale: language, dmoId, authorityId, startDate, endDate },
-    lazySearch: async (params) => {
-      const res = await getBusinessList(params).unwrap();
-      return { data: res?.data };
-    },
-  });
+  // Commented out - unused after product filters disabled for TRAVELLER
+  // const {
+  //   items: businesses,
+  //   search: searchBusiness,
+  //   isSearching,
+  // } = useRemoteSelectData({
+  //   initialData: businessData?.data,
+  //   debounceMs: 400,
+  //   searchParams: { locale: language, dmoId, authorityId, startDate, endDate },
+  //   lazySearch: async (params) => {
+  //     const res = await getBusinessList(params).unwrap();
+  //     return { data: res?.data };
+  //   },
+  // });
+  const businesses = businessData?.data;
   // ─── Derive assigned IDs and view categories from templateContents ────────
   // templateContents uses IContentTemplate: { topic, groups: [{ category, contents: [{ _id, contentType }] }] }
   // const assignedBusinessIds = useMemo(() => {
@@ -523,7 +519,8 @@ const Contents = ({
                 )}
 
                 {/* ── Product filters ── */}
-                {currentTab === "Products" && (
+                {/* Products disabled for TRAVELLER purpose - commented out */}
+                {/* {currentTab === "Products" && (
                   <div className="flex flex-col min-w-45">
                     <label
                       className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -547,10 +544,10 @@ const Contents = ({
                       isLoading={isSearching || _isBusinessesLoading}
                     />
                   </div>
-                )}
+                )} */}
 
-                {/* ── Assignment status filter (Businesses + Products) ── */}
-                {(currentTab === "Businesses" || currentTab === "Products") && (
+                {/* ── Assignment status filter (Businesses only - Products disabled for TRAVELLER) ── */}
+                {currentTab === "Businesses" && (
                   <>
                     <div className="flex flex-col sm:col-span-4">
                       <label
@@ -605,8 +602,8 @@ const Contents = ({
                   </>
                 )}
 
-                {/* ── Sort order (Businesses + Products) ── */}
-                {(currentTab === "Businesses" || currentTab === "Products") && (
+                {/* ── Sort order (Businesses only - Products disabled for TRAVELLER) ── */}
+                {currentTab === "Businesses" && (
                   <div className="flex flex-col sm:col-span-4">
                     <label
                       className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -654,7 +651,8 @@ const Contents = ({
                   </div>
                 )}
                 {/* ── Event filters ── */}
-                {currentTab === "Events" && (
+                {/* Events disabled for TRAVELLER purpose - commented out */}
+                {/* {currentTab === "Events" && (
                   <div className="flex flex-col min-w-45">
                     <label className={`block text-sm mb-2 `}>
                       {t("registration")}
@@ -719,19 +717,16 @@ const Contents = ({
                       />
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* ── Active Filter Chips ── */}
               {(currentTab === "Businesses" &&
                 (filters.hasProductFilter !== "all" ||
                   filters.primaryCategory !== "all")) ||
-              (currentTab === "Products" && filters.businessId) ||
-              (currentTab === "Events" &&
-                ((filters.registrationFilter &&
-                  filters.registrationFilter !== "all") ||
-                  filters.dateRangeFilter.start ||
-                  filters.dateRangeFilter.end)) ? (
+              /* Products disabled for TRAVELLER purpose - commented out */
+              /* Events disabled for TRAVELLER purpose - commented out */
+              false ? (
                 <div className="flex flex-col items-start gap-1">
                   <label
                     className={`block text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -748,13 +743,16 @@ const Contents = ({
                         // Only show chips relevant to current tab
                         if (currentTab === "Businesses" && key === "businessId")
                           return null;
+                        /* Products disabled for TRAVELLER purpose - commented out
                         if (currentTab === "Products" && key !== "businessId")
                           return null;
-                        if (
-                          currentTab === "Events" &&
-                          key !== "registrationFilter"
-                        )
-                          return null;
+                        */
+                        // Events disabled for TRAVELLER purpose - commented out
+                        // if (
+                        //   currentTab === "Events" &&
+                        //   key !== "registrationFilter"
+                        // )
+                        //   return null;
 
                         let displayValue = value;
                         if (key === "hasProductFilter")
@@ -790,7 +788,8 @@ const Contents = ({
                           />
                         );
                       })}
-                      {currentTab === "Events" &&
+                      {/* Events disabled for TRAVELLER purpose - commented out */}
+                      {/* {currentTab === "Events" &&
                         (filters.dateRangeFilter.start ||
                           filters.dateRangeFilter.end) && (
                           <FilterChips
@@ -802,7 +801,7 @@ const Contents = ({
                               }))
                             }
                           />
-                        )}
+                        )} */}
                     </div>
                     <button
                       onClick={clearFilter}
@@ -873,20 +872,6 @@ const Contents = ({
                 }
                 categoryName={item?.primaryCategoryId?.name}
                 address={item?.address}
-                startDate={
-                  currentTab === "Events"
-                    ? item?.dayDescription?.[0]?.date
-                    : undefined
-                }
-                startTime={
-                  currentTab === "Events"
-                    ? item?.dayDescription?.[0]?.startTime
-                    : undefined
-                }
-                isFree={currentTab === "Events" ? item?.isFree : undefined}
-                eventType={
-                  currentTab === "Events" ? item?.eventType : undefined
-                }
                 viewMode={viewMode}
                 isExpanded={isExpanded}
                 isSelected={selectedItems.has(item._id)}

@@ -37,6 +37,7 @@ type TicketErrors = {
   ticketDays: string[];
   markedPrice?: string;
   sellingPrice?: string;
+  quantity?: string;
 };
 
 const MODAL_TITLES: Record<TTicketOpMode, string> = {
@@ -110,6 +111,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
       else if (field === "description") next.description = undefined;
       else if (field === "markedPrice") next.markedPrice = undefined;
       else if (field === "sellingPrice") next.sellingPrice = undefined;
+      else if (field === "quantity") next.quantity = undefined;
       else if (field.startsWith("day-")) {
         const idx = Number(field.split("-")[1]);
         const days = [...next.ticketDays];
@@ -163,6 +165,12 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
         isValid = false;
         firstInvalidKey ??= "sellingPrice";
       }
+    }
+
+    if (!editData?.quantity?.initial || editData.quantity.initial <= 0) {
+      newErrors.quantity = t("quantity_required");
+      isValid = false;
+      firstInvalidKey ??= "quantity";
     }
 
     setErrors(newErrors);
@@ -400,10 +408,10 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
             <FormFieldWrapper
               label={t("greeting_message")}
               error={errors.greeting}
-              inputHintText={`${editData?.greeting?.length ?? 0}/100 ${t("max_characters")}`}
+              inputHintText={`${editData?.greeting?.length ?? 0}/500 ${t("max_characters")}`}
             >
               <textarea
-                maxLength={50}
+                maxLength={500}
                 value={editData?.greeting ?? ""}
                 onChange={(e) => {
                   setEditData((prev: ITicketPayload) => ({
@@ -413,7 +421,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
                   clearError("greeting");
                 }}
                 placeholder={t("greeting_message_placeholder")}
-                rows={2}
+                rows={4}
                 className={clsx(
                   "w-full px-4 py-2.5 rounded-lg border transition-colors",
                   inputClasses,
@@ -707,25 +715,37 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
 
           {/* ── Quantity ──────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div
+              ref={(el) => {
+                sectionRefs.current["quantity"] = el;
+              }}
+            >
               <label className={`block text-sm mb-2 ${textSecondary}`}>
-                {t("quantity")}
+                {t("quantity")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
                 min={1}
                 value={editData?.quantity?.initial ?? ""}
-                onChange={(e) =>
+                onChange={(e) => {
                   setEditData((prev: ITicketPayload) => ({
                     ...prev,
                     quantity: {
                       ...prev.quantity,
                       initial: parseInt(e.target.value) || 0,
                     },
-                  }))
-                }
-                className={`w-full px-4 py-2.5 rounded-lg border ${inputClasses}`}
+                  }));
+                  clearError("quantity");
+                }}
+                className={clsx(
+                  "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                  inputClasses,
+                  errors.quantity && "field-error",
+                )}
               />
+              {errors.quantity && (
+                <p className="mt-1 text-sm text-red-500">{errors.quantity}</p>
+              )}
             </div>
             <div>
               <label className={`block text-sm mb-2 ${textSecondary}`}>

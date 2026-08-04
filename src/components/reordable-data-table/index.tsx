@@ -114,7 +114,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       ([entry]) => {
         if (entry.isIntersecting) next?.();
       },
-      { root: container, threshold: 0 },
+      { root: container, threshold: 0, rootMargin: "50px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
@@ -513,12 +513,12 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 </td>
               </tr>
             ) : (
-              sortedData.map((item) => {
+              sortedData.map((item, index) => {
                 const isSelected = Boolean(selectedItems?.has(item[rowKey]));
 
                 return (
                   <tr
-                    key={String(item[rowKey])}
+                    key={index}
                     // FIX: only fire row navigation when clicking a non-pinned cell.
                     // We guard this at the <td> level below instead of stopping
                     // propagation there, so the tr handler is intentionally simple.

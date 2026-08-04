@@ -30,7 +30,7 @@ const HISTORY_LIMIT = 10;
 const HISTORY_SKELETON_ROWS = 4;
 
 interface NotifyTabProps {
-  wrapperId: string;
+  wrapperId: string | null;
 }
 
 export function NotifyTab({ wrapperId }: NotifyTabProps) {
@@ -182,7 +182,7 @@ export function NotifyTab({ wrapperId }: NotifyTabProps) {
   const count = new Set(recipients.map((r) => r.email)).size;
 
   async function send() {
-    if (!subject.trim() || !count) return;
+    if (!subject.trim() || !count || !wrapperId) return;
     try {
       await sendSessionNotification({
         wrapperId,

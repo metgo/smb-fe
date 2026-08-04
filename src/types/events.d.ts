@@ -335,3 +335,38 @@ interface IEventBusiness {
   name: string;
   logoUrl: string;
 }
+
+interface IEventTicket {
+  _id: string;
+  createdAt: string;
+  vendorId: string;
+  status: string;
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string | null;
+  paymentMode: string[];
+  paymentDate: string | null;
+  ticketName: string;
+  ticketImage: { image: string }[];
+  orderProductId?: string;
+  amount?: number;
+  quantity?: number;
+  paymentStatus?: string;
+}
+
+interface IEventColumnVisibility {
+  image: boolean;
+  name: boolean;
+  status: boolean;
+  dayDescription: boolean;
+  ticketCount: boolean;
+  wrapperCount: boolean;
+  associatedWebsiteIds: boolean;
+  address: boolean;
+  pricing: boolean;
+  hasExternalTicket: boolean;
+  ticketBuyLink: boolean;
+  updatedAt: boolean;
+  createdAt: boolean;
+}

@@ -49,7 +49,9 @@ import {
   EventSessionMgmtPage,
   TripsMgmtPage,
   TripDetailsPage,
+  StatsSummaryPage,
 } from "@/pages";
+import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
 import RouterProgressBar from "./components/shared/RouterProgressBar";
@@ -67,6 +69,7 @@ import {
 } from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
+import { VendorReconciliationMgmt } from "./pages/vendor-reconcilation-mgmt";
 import DocumentsManagement from "./pages/documents-mgmt";
 import PublicTicketPage from "./pages/public-ticket";
 import PublicSessionPage from "./pages/public-session";
@@ -539,6 +542,11 @@ function App() {
               element: <AnalyticsDashboardPage />,
             },
             { path: routes.chat, element: <ChatPage /> },
+            {
+              path: routes.statsSummary,
+              element: <StatsSummaryPage />,
+            },
+
             { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
             { path: routes.businessDetails, element: <BusinessDetailsPage /> },
             {
@@ -546,6 +554,12 @@ function App() {
               element: <PendingApprovalsPage />,
             },
 
+            { path: routes.articleMgmt, element: <ArticlesManagement /> },
+            { path: routes.articleDetails, element: <ArticleDetails /> },
+            {
+              path: routes.vendorReconciliationMgmt,
+              element: <VendorReconciliationMgmt />,
+            },
             { path: routes.articleMgmt, element: <ArticlesManagement /> },
             { path: routes.articleDetails, element: <ArticleDetails /> },
 
@@ -582,6 +596,10 @@ function App() {
             { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
 
             { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
+            {
+              path: routes.ordersSummaryMgmt,
+              element: <OrdersSummaryMgmtPage />,
+            },
             {
               path: routes.notificationMgmt,
               element: <NotificationsMgmtPage />,

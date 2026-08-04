@@ -6,6 +6,10 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
+import {
+  useInitPoiCreateMutation,
+  useUpdatePoiMutation,
+} from "@/store/api/poiMutationApi";
 
 interface UsePoiDraftSaverProps {
   opMode: IOpMode;
@@ -15,8 +19,6 @@ interface UsePoiDraftSaverProps {
   currentStep: number;
   poiId: string;
   setPoiId: (id: string) => void;
-  initPoiCreate: () => any;
-  updatePoi: (args: { poiId: string; body: any }) => any;
   stepPayloadMap: any;
 }
 
@@ -28,12 +30,14 @@ export function usePoiDraftSaver({
   currentStep,
   poiId,
   setPoiId,
-  initPoiCreate,
-  updatePoi,
   stepPayloadMap,
 }: UsePoiDraftSaverProps) {
   const navigate = useNavigate();
   const { isTraveller } = useUserRoles();
+
+  const [updatePoi, { isLoading: isSaving }] = useUpdatePoiMutation();
+  const [initPoiCreate, { isLoading: isCreating }] = useInitPoiCreateMutation();
+
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   const { t } = useTranslation("toast");
   const { t: tp } = useTranslation("poi");
@@ -48,7 +52,10 @@ export function usePoiDraftSaver({
         let internalPoiId: string | undefined;
 
         if (opMode !== IOpMode.EDIT) {
-          const res = await initPoiCreate().unwrap();
+          const res = await initPoiCreate({
+            dmoId: stepPayloadMap?.dmoId,
+            authorityId: stepPayloadMap?.authorityId,
+          }).unwrap();
           internalPoiId = res?.id;
           setPoiId(res?.id);
         }
@@ -107,6 +114,8 @@ export function usePoiDraftSaver({
   );
 
   return {
+    isCreating,
+    isSaving,
     poiId,
     markDirty,
     saveDraft,

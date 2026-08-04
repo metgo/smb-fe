@@ -43,6 +43,7 @@ import { websiteConfigApi } from "./api/websiteConfigApi";
 import { websiteCrashApi } from "./api/websiteCrashApi";
 import { sessionQueryApi } from "./api/sessionQueryApi";
 import { sessionMutationApi } from "./api/sessionMutationApi";
+import { reconciliationQueryApi } from "./api/reconciliationQueryApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
 
 export const store = configureStore({
@@ -97,6 +98,7 @@ export const store = configureStore({
     [websiteCrashApi.reducerPath]: websiteCrashApi.reducer,
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
+    [reconciliationQueryApi.reducerPath]: reconciliationQueryApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -137,6 +139,7 @@ export const store = configureStore({
       websiteCrashApi.middleware,
       sessionQueryApi.middleware,
       sessionMutationApi.middleware,
+      reconciliationQueryApi.middleware,
       nprogressMiddleware,
     ),
 });

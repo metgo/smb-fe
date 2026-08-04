@@ -138,8 +138,6 @@ export default function CreateEventWizardNew({
             setAccessiblitiesId={wizard.setAccessiblitiesId}
             selectedGroupTypesId={wizard.selectedGroupTypesId}
             setGroupTypesId={wizard.setGroupTypesId}
-            selectedSubCategoriesId={wizard.selectedSubCategoriesId}
-            setSubCategoriesId={wizard.setSubCategoriesId}
             websiteVisibilityIds={wizard.websiteVisibilityIds}
             setWebsiteVisibilityIds={wizard.setWebsiteVisibilityIds}
             selectedBusinessId={wizard.selectedBusinessId}

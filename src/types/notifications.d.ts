@@ -21,6 +21,7 @@ interface INotification {
   };
   status: TItemStatus;
   itemId: string;
+  orderProductId?: string;
   notifType: TNotifType;
   itemType: TItemType;
   isRead: boolean;
@@ -51,4 +52,5 @@ interface INotificationStats {
   warning: number;
   error: number;
   urgent: number;
+  dispute: number;
 }

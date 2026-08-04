@@ -8,6 +8,7 @@ interface InputFieldProps {
   error?: string;
   fieldRef?: React.RefObject<HTMLInputElement | null>;
   maxLength?: number;
+  type?: string;
 }
 
 const InputField = ({
@@ -18,12 +19,14 @@ const InputField = ({
   error,
   fieldRef,
   maxLength,
+  type = "text",
 }: InputFieldProps) => {
   return (
     <input
       ref={fieldRef}
-      type="text"
+      type={type}
       value={value}
+      min={1}
       maxLength={maxLength}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}

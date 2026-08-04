@@ -1,12 +1,16 @@
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useSearchParams } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
+import { Layout, Users, Bell, ClipboardList, Compass, Eye } from "lucide-react";
+
 import {
   LandingTab,
   CapacityTab,
   NotifyTab,
   RegistrationsTab,
 } from "./components";
-import { useTranslation } from "react-i18next";
 import { store } from "./data";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -15,20 +19,16 @@ import {
   ImageWithFallback,
   ConfirmDialog,
 } from "@/components/shared";
-import { Layout, Users, Bell, ClipboardList, Compass, Eye } from "lucide-react";
-import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 import { EVENT_SESSION_TOUR_ID } from "@/components/tour";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import { useGetEventByIdQuery } from "@/store/api/eventQueryApi";
-import { useGenSessionPrivewLinkQuery } from "@/store/api/eventSessionApi";
-import { skipToken } from "@reduxjs/toolkit/query";
-import { useSearchParams } from "react-router-dom";
+import { useLazyGenSessionPrivewLinkQuery } from "@/store/api/eventSessionApi";
 import { routes } from "@/lib/routes";
 import { BackToListBtn } from "@/components/btns";
 import { getLngWiseStr } from "@/helpers";
 
 // ─── Tab → tour step mapping ──────────────────────────────────────────────────
-
 const STEP_TAB_MAP: Partial<Record<string, TTabId>> = {
   landing: "landing",
   capacity: "capacity",
@@ -40,10 +40,11 @@ const STEP_TAB_MAP: Partial<Record<string, TTabId>> = {
 // ─── Inner component (needs TourProvider above it) ────────────────────────────
 function EventSessionMgmtPageInner() {
   const [searchParams] = useSearchParams();
-  const eventId = searchParams.get("eventId") || "";
-  const wrapperId = searchParams.get("wrapperId") || "";
-  const ticketId = searchParams.get("ticketId") || "";
-  const isDuplicate = searchParams.get("isDuplicate") || "";
+  const ticketId = searchParams.get("ticketId") || null;
+  const isDuplicate = searchParams.get("isDuplicate") || null;
+
+  const [wrapperId, setWrapperId] = useState<string | null>(null);
+  const [eventId, setEventId] = useState<string | null>(null);
 
   const { t } = useTranslation("event_session");
   const { t: tt } = useTranslation("tour");
@@ -54,30 +55,24 @@ function EventSessionMgmtPageInner() {
     data: eventDetails,
     isFetching,
     isLoading,
+    refetch,
   } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
 
-  const [previewArg, setPreviewArg] = useState<string | typeof skipToken>(
-    skipToken,
-  );
-  const {
-    data: previewLinkData,
-    isFetching: isPreviewLoading,
-    refetch: refetchPreviewLink,
-  } = useGenSessionPrivewLinkQuery(previewArg);
+  const [triggerPreviewLink, { isFetching: isPreviewLoading }] =
+    useLazyGenSessionPrivewLinkQuery();
 
   useEffect(() => {
-    if (!previewLinkData?.data?.previewLink) return;
-    const link = previewLinkData?.data?.previewLink;
-    if (link) window.open(link, "_blank", "noopener,noreferrer");
-  }, [previewLinkData]);
+    const eventId = searchParams.get("eventId") || null;
+    const wrapperId = searchParams.get("wrapperId") || null;
+    setEventId(eventId);
+    setWrapperId(wrapperId);
+  }, [searchParams]);
 
-  function handlePreview() {
+  async function handlePreview() {
     if (!wrapperId) return;
-    if (previewArg === skipToken) {
-      setPreviewArg(wrapperId);
-    } else {
-      refetchPreviewLink();
-    }
+    const res = await triggerPreviewLink(wrapperId);
+    const link = res.data?.data?.previewLink;
+    if (link) window.open(link, "_blank", "noopener,noreferrer");
   }
 
   const [tab, setTab] = useState<TTabId>("landing");
@@ -189,7 +184,6 @@ function EventSessionMgmtPageInner() {
   const tabs = [
     { id: "landing", label: t("tab_landing"), icon: Layout },
     { id: "capacity", label: t("tab_capacity"), icon: Users },
-    // { id: "analytics", label: t("tab_analytics"), icon: BarChart2 },
     { id: "notify", label: t("tab_notify"), icon: Bell },
     { id: "regs", label: t("tab_regs"), icon: ClipboardList },
   ];
@@ -298,10 +292,12 @@ function EventSessionMgmtPageInner() {
               onChange={onChange}
               eventId={eventId}
               wrapperId={wrapperId}
+              setWrapperId={setWrapperId}
               ticketId={ticketId}
               isDuplicate={isDuplicate === "true"}
               onDirtyChange={setIsLandingDirty}
               isLoading={isFetching || isLoading}
+              refetch={refetch}
             />
           )}
           {tab === "capacity" && <CapacityTab wrapperId={wrapperId} />}

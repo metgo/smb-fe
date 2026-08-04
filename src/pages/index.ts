@@ -33,6 +33,7 @@ import EventSessionMgmtPage from "./event-session-mgmt";
 import TripsMgmtPage from "./trips-mgmt";
 import TripDetailsPage from "./trips-mgmt/details";
 import ChatPage from "./chat";
+import StatsSummaryPage from "./stats-summary";
 
 export {
   ChatPage,
@@ -70,4 +71,5 @@ export {
   PoiDetailsPage,
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
+  StatsSummaryPage,
 };

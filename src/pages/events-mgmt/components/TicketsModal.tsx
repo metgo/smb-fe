@@ -134,20 +134,6 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
 
   const hasTickets = tickets?.length > 0;
 
-  // ─── Computed: derived values ─────────────────────────────────────────
-  // const eventDaysForTickets = useMemo<EventDay[]>(() => {
-  //   if (isMultiDay) return eventDays;
-  //   return [
-  //     {
-  //       id: "1",
-  //       date: startDate,
-  //       startTime: eventDays[0]?.startTime ?? "09:00",
-  //       endTime: eventDays[0]?.endTime ?? "17:00",
-  //       description: "",
-  //     },
-  //   ];
-  // }, [isMultiDay, eventDays, startDate]);
-
   useEffect(() => {
     setHasExternalTicket(isTicketLinkExist);
     setTicketBuyLink(externalTicketLink);
@@ -169,12 +155,13 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
         eventsRefetch();
         setIsOpen(false);
       }}
-      height="h-max min-h-[60vh]"
+      height="md:min-h-[60vh]"
+      maxWidth="max-w-3xl"
       showSpinner={isFetching || isLoading}
     >
       <div className="p-8 space-y-4">
         {/* ── Header ───────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row items-center justify-between">
           <h2 className={`text-2xl font-bold ${textPrimary}`}>
             {t("event_tickets")}
           </h2>
@@ -242,9 +229,12 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                 <button
                   type="button"
                   onClick={updateTicketPurchaseLink}
+                  disabled={isEventUpdating || ticketBuyLink === ""}
                   className={clsx(
-                    "bg-green-600 hover:bg-green-500 rounded-lg px-4 py-2 text-white",
-                    isEventUpdating ? " cursor-not-allowed" : " cursor-pointer",
+                    "rounded-lg px-4 py-2 text-white",
+                    isEventUpdating || ticketBuyLink === ""
+                      ? "cursor-not-allowed bg-green-300"
+                      : "cursor-pointer bg-green-600 hover:bg-green-500",
                   )}
                 >
                   {t("submit")}
@@ -306,7 +296,7 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
 
             {/* ── Ticket list ───────────────────────────────────────────────── */}
             {hasTickets && !isDeleting && (
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto mb-10 md:mb-8">
                 {tickets.map((ticket: any) => (
                   <div
                     key={ticket._id}

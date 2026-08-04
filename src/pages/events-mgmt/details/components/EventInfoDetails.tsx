@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 import {
   FileText,
   AlignLeft,
@@ -10,8 +11,7 @@ import {
 import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
-import DmoAuthDetails from "@/components/details-sections/DmoAuthDetails";
-import { useTranslation } from "react-i18next";
+import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
 
 interface EventInfoDetailsProps {
   t: (key: string) => string;
@@ -86,10 +86,10 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
         preWrap={true} // preserves line breaks
       />
 
-      <DmoAuthDetails
+      <ConnectedDmoAuthorityWebsites
         dmoId={eventDetails?.dmoId}
         authorityId={eventDetails?.authorityId}
-        associatedWebsiteIds={eventDetails?.associatedWebsiteIds}
+        websiteIds={eventDetails?.associatedWebsiteIds}
       />
 
       {/* Internal Notes */}

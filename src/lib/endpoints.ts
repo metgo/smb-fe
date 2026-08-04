@@ -53,18 +53,29 @@ export const endpoints = {
 
   //orders
   orders: "/orders",
+  orderStats: "/orders/stats",
   orderDetails: "/order-details",
-
   orderSummary: "/orders-summary",
+  orderProducts: "/order-products",
+  orderProductsDetails: "/order-products/details",
+  cancelOrderProduct: "/cancel-order-product",
+  approveOrderProduct: "/approve-order-product",
+  openDispute: "/orders/dispute",
+  respondDispute: "/disputes/respond",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",
-  orderStatus: "/orders",
   orderProductStatus: "/admin/orderProduct",
   orderConfirmation: "/admin/send-success-emails",
   productsStats: "/products-stat",
   cancleOrderProduct: "/cancel-order-product",
   updateOrderStatus: "/update-order-status",
+  bulkApprove: "/orders/bulk-approve",
+  reconciliationStats: "/orders/reconciliation-stats",
+  bulkMarkAsComplete: "/orders/bulk-order-product-status",
+  finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
+  previewFinaliseApprovedOrders:
+    "/admin/monthly-reports/finalize-closed-orders/preview",
 
   // public
   publicEventTicket: "/public/event-tickets",
@@ -75,12 +86,16 @@ export const endpoints = {
   eventsStats: "/events-stats",
   upcomingEvents: "/upcoming-events",
   contentManagementEvents: "/content-management-events",
-
-  // event sessions
   tickets: "/tickets",
   eventTickets: "/event-tickets",
+  resendTicketEmailToCustomer: "/resend-order-emails",
+
+  // event sessions
+  initWrapperCreate: "/event-sessions/initialize",
   eventSessions: "/event-sessions",
   eventSessionPreviwLink: "/event-sessions/preview-link",
+  createWrapperSessionBlock: "/event-sessions/blocks",
+  createWrapperSession: "/event-sessions/sessions",
   ticketsForEventSession: "/event-sessions/tickets-without-sessions",
   eventSessionCapacityReport: "/event-sessions/capacity-report",
   eventSessionReg: "/event-sessions/registrations",
@@ -118,6 +133,7 @@ export const endpoints = {
   wizardGenerateCategories: "/site-filter-config/wizard/generate-categories",
   wizardAssignEntities: "/site-filter-config/wizard/assign-entities",
   wizardTranslate: "/site-filter-config/wizard/translate",
+  wizardGenerateUnified: "/site-filter-config/wizard/generate-unified",
 
   // Notifications
   notifications: "/notifications",
@@ -165,6 +181,10 @@ export const endpoints = {
 
   // Website error report
   websiteCrashes: "/website-crashes",
+
+  // Stats summary
+  businessSummary: "/business-summary",
+  poiSummary: "/poi-summary",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

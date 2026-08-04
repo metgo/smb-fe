@@ -10,6 +10,7 @@ import {
   CheckCheck,
   X,
   Eye,
+  Siren,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -187,6 +188,8 @@ export default function NotificationsMgmtPage() {
         return <AlertTriangle className={`${iconClass} text-yellow-500`} />;
       case "ERROR":
         return <XCircle className={`${iconClass} text-red-500`} />;
+      case "DISPUTE":
+        return <Siren className={`${iconClass} text-red-500`} />;
     }
   };
 
@@ -475,8 +478,23 @@ export default function NotificationsMgmtPage() {
                         await markNotificationsAsRead(notification._id);
                         refetchNotifStats();
                         refetchNotifList();
+                        // For DISPUTE, use orderProductId as the query parameter
+                        const paramName =
+                          itemType === "DISPUTE"
+                            ? "orderProductId"
+                            : queryParam;
+
+                        const idValue =
+                          itemType === "DISPUTE"
+                            ? notification.orderProductId
+                            : notification.itemId;
+                        const disputeParam =
+                          itemType === "DISPUTE"
+                            ? `&disputeId=${notification.itemId}`
+                            : "";
+
                         navigate(
-                          `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                          `${itemEndpoint[itemType]}?${paramName}=${idValue}${disputeParam}`,
                         );
                       };
 

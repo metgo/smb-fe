@@ -281,5 +281,45 @@
   "wizard_no_instructors": "No instructors added.",
   "wizard_no_rooms": "No rooms added.",
 
-  "ticket_date_time_notice": "The date and time below are based on your selected ticket(s). If you need to change them, please update your ticket selection."
+  "ticket_date_time_notice": "The date and time below are based on your selected ticket(s). If you need to change them, please update your ticket selection.",
+
+  "booking_limit_label": "Session Booking Limit:",
+
+  "landing_pages": "Landing Pages",
+
+  "landing_pages_empty_title": "No Landing Pages Available",
+  "landing_pages_empty_desc": "No landing pages have been created for this event yet",
+
+  "create_session_block": "Create Session Block",
+  "name": "Name",
+  "enter_name": "Enter name",
+  "booking_limit": "Booking Limit",
+  "enter_booking_limit": "Enter booking limit",
+  "description": "Description",
+  "enter_description": "Enter description",
+  "select_sessions": "Select Sessions",
+  "select_sessions_placeholder": "Select sessions...",
+  "create_block": "Create Block",
+
+  "assigned_to_block": "Assigned to block",
+  "session_assigned_warning": "This session is assigned to a block and cannot be deleted",
+  "edit": "Edit",
+  "delete": "Delete",
+
+  "no_sessions_available_for_block": "No sessions available. Please create a new session first.",
+
+  "add_block": "Add Block",
+  "greeting": "Greeting",
+  "booking_limit_exceeded": "Booking limit cannot exceed {{max}}",
+  "max_limit": "Max limit:",
+  "assign_sessions_into_block": "Assign Sessions into Block",
+  "assign_block_help": "Group sessions into blocks for better organization and booking management.",
+  "assigned_sessions": "Assigned Sessions",
+  "toast_session_deleted": "Session deleted successfully!",
+  "toast_session_delete_error": "Failed to delete session.",
+  "toast_session_block_deleted": "Session block deleted successfully!",
+  "toast_session_block_delete_error": "Failed to delete session block.",
+  "toast_session_block_activated": "Session block activated successfully!",
+  "toast_session_block_deactivated": "Session block deactivated successfully!",
+  "toast_session_block_status_error": "Failed to update session block status."
 }

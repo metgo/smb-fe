@@ -361,5 +361,24 @@
   "submit": "שלח",
   "landing_pages": "דפי נחיתה",
   "image": "תמונה",
-  "create_ticket_for_this_event": "יש ליצור תחילה כרטיס עבור אירוע זה."
+  "create_ticket_for_this_event": "יש ליצור תחילה כרטיס עבור אירוע זה.",
+
+  "ticket_reg_detail_title": "פרטי רישום כרטיס",
+  "customer_information": "פרטי לקוח",
+  "full_name": "שם מלא",
+  "email": "אימייל",
+  "phone": "טלפון",
+  "registration_date": "תאריך רישום",
+  "ticket_information": "פרטי כרטיס",
+  "ticket_name": "שם הכרטיס",
+  "ticket_id": "מזהה כרטיס",
+  "quantity": "כמות",
+  "amount": "סכום",
+  "status": "סטטוס",
+  "payment_status": "סטטוס תשלום",
+  "payment_information": "פרטי תשלום",
+  "payment_mode": "אמצעי תשלום",
+  "payment_date": "תאריך תשלום",
+  "order_product_id": "מזהה מוצר בהזמנה",
+  "resend_email_to_customer": "שלח שוב אימייל ללקוח"
 }

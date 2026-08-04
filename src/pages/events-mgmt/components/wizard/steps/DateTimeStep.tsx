@@ -136,10 +136,28 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
   const startDateRef = useRef<HTMLDivElement>(null);
   const addressRef = useRef<HTMLDivElement>(null);
   const onlineLinkRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Track if this is the first render to prevent auto-scrolling to errors on mount
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      // Always scroll to the top of this section when the user first arrives
+      if (containerRef.current) {
+        containerRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+      return;
+    }
+
+    // On subsequent renders, handle scrolling to validation errors if any exist
     const errorKeys = Object.keys(errors);
-    if (!errorKeys.length) return;
+    if (errorKeys.length === 0) return;
+
     const refs: Record<string, React.RefObject<any>> = {
       address: addressRef,
       startDate: startDateRef,
@@ -233,7 +251,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
     })();
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div ref={containerRef} className="space-y-6 max-w-3xl mx-auto">
       {/* ── Duration toggle ──────────────────────────────────────────── */}
       <div>
         <label className={`block text-sm mb-2 ${textSecondary}`}>

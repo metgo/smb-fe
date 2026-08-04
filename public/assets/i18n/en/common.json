@@ -73,8 +73,11 @@
   "news_feed": "News Feed",
   "feed_settings": "Feed Settings",
   "mini_site": "Mini-site",
+  "mini_campaigns": "Mini-Campaigns",
   "dynamic_pages": "Dynamic Pages",
   "my_profile": "My Profile",
+  "order_summary": "Orders Summary",
+  "vendor_reconciliation": "Vendor Reconciliation",
   "settings": "Settings",
   "documents": "Email Template Images",
   "version": "Version",
@@ -149,6 +152,9 @@
   "leave": "Leave",
   "delete_event": "Delete Event",
   "delete_event_confirm": "Are you sure you want to delete this event?",
+
+  "delete_session_block": "Delete Session Block",
+  "delete_session_block_confirm": "Are you sure you want to delete this session block?",
 
   "images": "Images",
   "image_upload_info": "Image upload has started. Please wait…",
@@ -401,5 +407,8 @@
   "deactivate_website": "Deactivate Website",
   "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?",
   "pending_approvals": "Pending Approvals",
-  "service_unavailable": "This service is unavailable at the moment"
+  "service_unavailable": "This service is unavailable at the moment",
+  "selected_dmo_authority": "Selected Dmo Authority",
+  "connected_websites": "Connected Websites",
+  "no_connected_dmo_authority_websites": "No connected DMO, Authority, or Websites"
 }

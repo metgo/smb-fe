@@ -1,10 +1,11 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
-  AlarmCheck,
+  // AlarmCheck,
   AlertCircle,
   AlertTriangle,
   Bell,
   Info,
+  Siren,
   XCircle,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -28,17 +29,24 @@ const NotificationStatsCards = ({ stats }: { stats: INotificationStats }) => {
       color: "purple",
     },
     {
+      label: t("dispute"),
+      value: stats.dispute,
+      icon: Siren,
+      color: "red",
+    },
+    {
       label: t("action_required"),
       value: stats.action,
       icon: AlertCircle,
       color: "amber",
     },
-    {
-      label: t("urgent"),
-      value: stats.urgent,
-      icon: AlarmCheck,
-      color: "orange",
-    },
+    // {
+    //   label: t("urgent"),
+    //   value: stats.urgent,
+    //   icon: AlarmCheck,
+    //   color: "orange",
+    // },
+    // Backend is not sending urgent value
     {
       label: t("info"),
       value: stats.info,
@@ -118,7 +126,7 @@ const NotificationStatsCards = ({ stats }: { stats: INotificationStats }) => {
                 <p
                   className={`text-sm font-bold leading-none ${hasValue ? textPrimary : textTertiary}`}
                 >
-                  {stat.value.toLocaleString()}
+                  {stat?.value?.toLocaleString()}
                 </p>
                 <p
                   className={`text-[10px] font-medium mt-0.5 truncate ${textTertiary}`}
