@@ -237,7 +237,7 @@ export const VendorMonthlyReport = () => {
     reconciliationStats,
     isLoading,
     isFetching,
-    refetchFromPage1,
+    refetch,
     refetchStats: refetchReconciliationStats,
     hasMore,
     fetchNextPage,
@@ -494,8 +494,8 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("dispute_submitted"));
       setShowDisputeModal(false);
-      setSelectedOrder(null);
-      refetchFromPage1();
+      closeDetails();
+      refetch();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -582,8 +582,8 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("order_cancelled"));
       setShowCancelModal(false);
-      setSelectedOrder(null);
-      refetchFromPage1();
+      closeDetails();
+      refetch();
       refetchReconciliationStats();
     } catch (error) {
       toast.error(t("cancel_failed"));
@@ -620,7 +620,7 @@ export const VendorMonthlyReport = () => {
     setShowAdminDisputeModal(false);
     setSelectedOrder(null);
     setDetailsOrderId(null);
-    refetchFromPage1();
+    refetch();
   };
 
   const handleSelectionChange = (newSelection: Set<string>) => {
@@ -659,7 +659,7 @@ export const VendorMonthlyReport = () => {
       toast.success(t("orders_mark_as_completed"));
       setSelectedItems(new Set());
       setShowBulkCompleteConfirm(false);
-      refetchFromPage1();
+      refetch();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -701,7 +701,7 @@ export const VendorMonthlyReport = () => {
 
       setShowCloseAllOrdersModal(false);
       toast.success(t("orders_closed_successfully"));
-      refetchFromPage1();
+      refetch();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -912,6 +912,7 @@ export const VendorMonthlyReport = () => {
           {order.status !== "canceled" &&
             order.reconciliationStatus !== "disputed" &&
             order.reconciliationStatus !== "closed" &&
+            order.reconciliationStatus !== "approved" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -1297,10 +1298,15 @@ export const VendorMonthlyReport = () => {
           loading={isDetailsLoading}
           onClose={closeDetails}
           onDispute={() => {
+            // Arriving here via a notification deep-link only sets
+            // detailsOrderId, not selectedOrder - so DisputeModal (gated on
+            // selectedOrder) would silently no-op without this sync.
+            setSelectedOrder(displayedOrder);
             setShowOrderDetails(false);
             setShowDisputeModal(true);
           }}
           onCancel={() => {
+            setSelectedOrder(displayedOrder);
             setShowOrderDetails(false);
             setShowCancelModal(true);
           }}
@@ -1331,7 +1337,7 @@ export const VendorMonthlyReport = () => {
           order={selectedOrder}
           onClose={() => {
             setShowDisputeModal(false);
-            setSelectedOrder(null);
+            closeDetails();
           }}
           onSubmit={handleSubmitDispute}
         />
@@ -1343,7 +1349,7 @@ export const VendorMonthlyReport = () => {
           // loading={isCancelling}
           onClose={() => {
             setShowCancelModal(false);
-            setSelectedOrder(null);
+            closeDetails();
           }}
           onSubmit={handleSubmitCancel}
         />

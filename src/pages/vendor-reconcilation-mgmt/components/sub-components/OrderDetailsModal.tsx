@@ -335,7 +335,8 @@ export default function OrderDetailsModal({
             {order.reconciliationStatus !== "disputed" &&
               userRole === "traveller" &&
               order.status !== "canceled" &&
-              order.reconciliationStatus !== "closed" && (
+              order.reconciliationStatus !== "closed" &&
+              order.reconciliationStatus !== "approved" && (
                 <button
                   onClick={onDispute}
                   className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"

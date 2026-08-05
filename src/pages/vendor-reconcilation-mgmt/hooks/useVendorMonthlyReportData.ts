@@ -118,19 +118,6 @@ export function useVendorMonthlyReportData(
     setPage((prev) => prev + 1);
   }, [orderProductsData?.meta?.hasNextPage, isFetching]);
 
-  // Mutations should always land on page 1 so the effect of the change is
-  // immediately visible, regardless of how far the user had scrolled -
-  // refetching in place would silently re-request whatever page the user
-  // last scrolled to, and updates to already-loaded rows on earlier pages
-  // never merge in (the accumulator only appends unseen ids).
-  const refetchFromPage1 = useCallback(() => {
-    if (page === 1) {
-      refetch();
-    } else {
-      setPage(1);
-    }
-  }, [page, refetch]);
-
   return {
     combinedOrders,
     reconciliationStats,
@@ -138,7 +125,6 @@ export function useVendorMonthlyReportData(
     isFetching,
     isStatsLoading,
     refetch,
-    refetchFromPage1,
     refetchStats,
     hasMore: !!orderProductsData?.meta?.hasNextPage,
     totalData: orderProductsData?.totalData as number | undefined,
