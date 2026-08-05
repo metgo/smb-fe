@@ -85,8 +85,8 @@ export async function getCommonEmailFields(
       // Banners
       FOOTER_BANNER: getImg('FOOTER_BANNER', 'footer/footer-banner.png'),
       FOOTER_BANNER_MOBILE: getImg('FOOTER_BANNER_MOBILE', 'footer/footer-banner-mobile.png'),
-      BANNER_IMG: getImg('BANNER_IMG', 'footer/banner-web.png'),
-      MOBILE_BANNER_IMG: getImg('MOBILE_BANNER_IMG', 'footer/banner-mobile.png'),
+      BANNER_IMG: dbImages.BANNER_IMG || dbImages.FOOTER_BANNER || `${bucketUrl}footer/banner-web.png`,
+      MOBILE_BANNER_IMG: dbImages.MOBILE_BANNER_IMG || dbImages.FOOTER_BANNER_MOBILE || `${bucketUrl}footer/banner-mobile.png`,
       FOOTER_BANNER_MINISITE_BANNER: getImg('FOOTER_BANNER_MINISITE_BANNER', 'footer/footer-banner-mini-site.png'),
     },
   };

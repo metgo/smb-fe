@@ -2080,7 +2080,7 @@ export class OrdersService {
           await Promise.all(
             group.products.map(async (product: any) => {
               const productHtml = `
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" class="tcc-card-desktop" style="margin-bottom: 20px;">
               <tr>
                 <td style="padding: 10px; background: #f9f9f9; direction: rtl; border-radius: 20px;">
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -2102,6 +2102,21 @@ export class OrdersService {
                       </td>
                     </tr>
                   </table>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" class="tcc-card-mobile" style="display: none; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 14px; background: #f9f9f9; direction: rtl; border-radius: 20px; text-align: center;">
+                  <img src="${product?.image || ''}" alt="${product?.name}" style="width: 100%; max-width: 220px; height: auto; border-radius: 8px; display: block; margin: 0 auto 12px;">
+                  <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name}</span>
+                  <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity}</span>
+                  <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 12px;">₪${product?.price}</span>
+                  ${product?.qrCodeUrl ? `
+                    ${product?.qrCodeUrl.split('|').map((qrUrl, idx) => `
+                      <img src="${qrUrl}" alt="QR Code ${idx + 1}" style="width: 160px; max-width: 60%; height: auto; border: 3px solid ${externalApi?.primaryColor}; border-radius: 8px; display: block; margin: 0 auto 10px;">
+                    `).join('')}
+                  ` : ''}
                 </td>
               </tr>
             </table>
@@ -2195,8 +2210,11 @@ export class OrdersService {
                   });
 
                   // Build single product HTML
+                  // Two structurally-separate cards (desktop 3-column row vs. mobile
+                  // 2-row layout) toggled via CSS, since table cell reordering isn't
+                  // reliably supported across email clients (esp. Outlook desktop).
                   const productHtml = `
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" class="lsb-card-desktop" style="margin-bottom: 20px;">
                   <tr>
                     <td style="padding: 14px; background: #f9f9f9; direction: rtl; border-radius: 20px;">
                       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="direction: rtl;">
@@ -2221,6 +2239,24 @@ export class OrdersService {
                           </td>
                         </tr>
                       </table>
+                    </td>
+                  </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" class="lsb-card-mobile" style="display: none; margin-bottom: 20px;">
+                  <tr>
+                    <td style="padding: 14px; background: #f9f9f9; direction: rtl; border-radius: 20px; text-align: center;">
+                      <img src="${product?.image || ''}" alt="${product?.name}" style="width: 100%; max-width: 220px; height: auto; border-radius: 8px; display: block; margin: 0 auto 12px;">
+                      <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name}</span>
+                      <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity}</span>
+                      <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 8px;">₪${product?.price}</span>
+                      <table cellpadding="0" cellspacing="0" border="0" style="margin: 4px auto 16px;">
+                        <tr>
+                          <td style="background: ${externalApi?.primaryColor || '#0d9488'}; border-radius: 6px;" align="center">
+                            <a href="${purchaserVerifyLink}" style="display: inline-block; padding: 10px 18px; font-size: 14px; color: #ffffff; text-decoration: none; font-weight: 500;">בקר והזמן מפגש</a>
+                          </td>
+                        </tr>
+                      </table>
+                      ${product?.qrCodeUrl ? `<img src="${product?.qrCodeUrl}" alt="Booking QR Code" style="width: 160px; max-width: 60%; height: auto; border: 3px solid ${externalApi?.primaryColor || '#0d9488'}; border-radius: 8px; display: block; margin: 0 auto;">` : ''}
                     </td>
                   </tr>
                 </table>
