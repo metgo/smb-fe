@@ -754,7 +754,7 @@ export const VendorMonthlyReport = () => {
       },
       closed: {
         bg: isDark ? "bg-red-800" : "bg-red-100",
-        text: isDark ? "text-red-400" : "text-red-800",
+        text: isDark ? "text-whit" : "text-red-800",
         icon: CheckCircle,
         label: t("closed"),
       },
