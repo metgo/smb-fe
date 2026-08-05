@@ -30,6 +30,7 @@ import {
   ReordableDataTable,
   FilterChips,
   ImageWithFallback,
+  ConfirmDialog,
 } from "@/components/shared";
 import MonthFilter from "@/pages/orders-mgmt/components/MonthFilter";
 import FilterButton from "@/components/btns/FilterButton";
@@ -209,6 +210,8 @@ export const VendorMonthlyReport = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
   const [showCloseAllOrdersModal, setShowCloseAllOrdersModal] = useState(false);
+  const [showBulkCompleteConfirm, setShowBulkCompleteConfirm] =
+    useState(false);
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [_disputedCount, setDisputedCount] = useState(0);
@@ -254,7 +257,8 @@ export const VendorMonthlyReport = () => {
   const [openDispute] = useOpenDisputeMutation();
   // const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
-  const [bulkMarkOrderAsCompleted] = useBulkMarkOrderAsCompletedMutation();
+  const [bulkMarkOrderAsCompleted, { isLoading: isBulkCompleting }] =
+    useBulkMarkOrderAsCompletedMutation();
   // const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
   const [finalizeClosedOrders, { isLoading: isClosingAllOrders }] =
     useFinalizeClosedOrdersMutation();
@@ -655,6 +659,7 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("orders_mark_as_completed"));
       setSelectedItems(new Set());
+      setShowBulkCompleteConfirm(false);
       refetchFromPage1();
       refetchReconciliationStats();
     } catch (error: any) {
@@ -1065,7 +1070,7 @@ export const VendorMonthlyReport = () => {
               stats.orderProductProcessing > 0 ||
               stats.orderProductShipped > 0) && (
               <button
-                onClick={handleBulkMarkOrderCompleted}
+                onClick={() => setShowBulkCompleteConfirm(true)}
                 className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
@@ -1364,6 +1369,17 @@ export const VendorMonthlyReport = () => {
           onConfirm={handleCloseAllOrders}
         />
       )}
+
+      <ConfirmDialog
+        open={showBulkCompleteConfirm}
+        title={t("mark_orders_completed_confirm_title")}
+        message={t("mark_orders_completed_confirm_message")}
+        confirmText={t("approve_pending_orders")}
+        variant="warning"
+        loading={isBulkCompleting}
+        onCancel={() => setShowBulkCompleteConfirm(false)}
+        onConfirm={handleBulkMarkOrderCompleted}
+      />
     </div>
   );
 };
