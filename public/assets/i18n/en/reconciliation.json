@@ -178,7 +178,7 @@
   "product_label": "Product",
   "amount_label": "Amount",
   "order_status": "Order Status",
-  "approve_pending_orders": "Mark as Completed",
+  "approve_pending_orders": "Complete Orders",
   "vendor_business": "Vendor / Business",
   "search_vendors": "Search vendors...",
   "selected_vendor": "Selected",

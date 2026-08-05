@@ -210,8 +210,7 @@ export const VendorMonthlyReport = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
   const [showCloseAllOrdersModal, setShowCloseAllOrdersModal] = useState(false);
-  const [showBulkCompleteConfirm, setShowBulkCompleteConfirm] =
-    useState(false);
+  const [showBulkCompleteConfirm, setShowBulkCompleteConfirm] = useState(false);
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [_disputedCount, setDisputedCount] = useState(0);
@@ -1071,10 +1070,17 @@ export const VendorMonthlyReport = () => {
               stats.orderProductShipped > 0) && (
               <button
                 onClick={() => setShowBulkCompleteConfirm(true)}
-                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+                className={clsx(
+                  "px-4 py-2 rounded-lg cursor-pointer border transition-colors flex items-center gap-2",
+                  isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-600",
+                )}
               >
                 <CheckCircle className="w-4 h-4" />
-                {t("approve_pending_orders")}
+                <span className="hidden md:block">
+                  {t("approve_pending_orders")}
+                </span>
               </button>
             )}
 
