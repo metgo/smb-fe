@@ -752,9 +752,18 @@ export const VendorMonthlyReport = () => {
         icon: XCircle,
         label: t("rejected"),
       },
+      closed: {
+        bg: isDark ? "bg-red-800" : "bg-red-100",
+        text: isDark ? "text-red-400" : "text-red-800",
+        icon: CheckCircle,
+        label: t("closed"),
+      },
     };
 
-    const badge = badges[status] || badges.pending || badges.processing;
+    const badge =
+      badges[(status || "").toLowerCase().trim()] ||
+      badges.pending ||
+      badges.processing;
     if (!badge) {
       return <span>{status}</span>;
     }
