@@ -4,6 +4,7 @@ import { getPermittedUsersToMessage, MOCK_USERS } from "../mockDb";
 import type { MockUser } from "../mockDb";
 import { UserRole } from "@/enums/user.types";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,14 +12,14 @@ interface ModalProps {
 }
 
 // Modal Wrapper for styling consistency
-const ModalWrapper: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({
-  isOpen,
-  onClose,
-  title,
-  children,
-}) => {
+const ModalWrapper: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}> = ({ isOpen, onClose, title, children }) => {
   const { isDark, borderColor, textPrimary } = useThemeClasses();
-  
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -34,13 +35,17 @@ const ModalWrapper: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs transition-opacity duration-300">
-      <div className={`relative w-full max-w-md ${isDark ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-2xl border ${borderColor} overflow-hidden flex flex-col max-h-[90vh]`}>
+      <div
+        className={`relative w-full max-w-md ${isDark ? "bg-gray-900" : "bg-white"} rounded-xl shadow-2xl border ${borderColor} overflow-hidden flex flex-col max-h-[90vh]`}
+      >
         {/* Header */}
-        <div className={`flex items-center justify-between p-4 border-b ${borderColor} ${isDark ? 'bg-gray-900/50' : 'bg-gray-50/50'}`}>
+        <div
+          className={`flex items-center justify-between p-4 border-b ${borderColor} ${isDark ? "bg-gray-900/50" : "bg-gray-50/50"}`}
+        >
           <h3 className={`text-lg font-bold ${textPrimary}`}>{title}</h3>
           <button
             onClick={onClose}
-            className={`p-1 ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} rounded-lg transition-colors cursor-pointer`}
+            className={`p-1 ${isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-700"} rounded-lg transition-colors cursor-pointer`}
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -59,8 +64,14 @@ interface NewDmModalProps extends ModalProps {
   onStartChat: (recipientId: string) => void;
 }
 
-export const NewDmModal: React.FC<NewDmModalProps> = ({ isOpen, onClose, currentUser, onStartChat }) => {
-  const { isDark, borderColor, inputClasses, textPrimary, textSecondary } = useThemeClasses();
+export const NewDmModal: React.FC<NewDmModalProps> = ({
+  isOpen,
+  onClose,
+  currentUser,
+  onStartChat,
+}) => {
+  const { isDark, borderColor, inputClasses, textPrimary, textSecondary } =
+    useThemeClasses();
   const [search, setSearch] = useState("");
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +82,9 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({ isOpen, onClose, current
 
   const filtered = permitted.filter((u) => {
     const term = search.toLowerCase();
-    const nameMatch = `${u.firstName} ${u.lastName}`.toLowerCase().includes(term);
+    const nameMatch = `${u.firstName} ${u.lastName}`
+      .toLowerCase()
+      .includes(term);
     const emailMatch = u.email.toLowerCase().includes(term);
     const roleMatch = u.role.toLowerCase().includes(term);
     return nameMatch || emailMatch || roleMatch;
@@ -102,20 +115,29 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({ isOpen, onClose, current
                   onStartChat(user.id);
                   onClose();
                 }}
-                className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} cursor-pointer`}
+                className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors ${isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"} cursor-pointer`}
               >
                 <img
-                  src={user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.firstName}`}
+                  src={
+                    user.avatar ||
+                    `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.firstName}`
+                  }
                   alt={user.firstName}
-                  className={`w-10 h-10 rounded-full border ${borderColor} ${isDark ? 'bg-gray-800' : 'bg-gray-50'} shrink-0`}
+                  className={`w-10 h-10 rounded-full border ${borderColor} ${isDark ? "bg-gray-800" : "bg-gray-50"} shrink-0`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold ${textPrimary} truncate`}>
+                  <p
+                    className={`text-sm font-semibold ${textPrimary} truncate`}
+                  >
                     {user.firstName} {user.lastName}
                   </p>
-                  <p className={`text-xs ${textSecondary} truncate`}>{user.email}</p>
+                  <p className={`text-xs ${textSecondary} truncate`}>
+                    {user.email}
+                  </p>
                 </div>
-                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${isDark ? 'bg-teal-900/30 text-teal-400' : 'bg-teal-50 text-teal-700'} capitalize`}>
+                <span
+                  className={`px-2 py-0.5 text-xs font-semibold rounded-full ${isDark ? "bg-teal-900/30 text-teal-400" : "bg-teal-50 text-teal-700"} capitalize`}
+                >
                   {user.role}
                 </span>
               </button>
@@ -134,11 +156,21 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({ isOpen, onClose, current
 // 2. NEW GROUP MODAL
 interface NewGroupModalProps extends ModalProps {
   currentUser: MockUser | null;
-  onGroupCreated: (groupName: string, description: string, memberIds: string[]) => void;
+  onGroupCreated: (
+    groupName: string,
+    description: string,
+    memberIds: string[],
+  ) => void;
 }
 
-export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, currentUser, onGroupCreated }) => {
-  const { isDark, borderColor, inputClasses, textPrimary, textSecondary } = useThemeClasses();
+export const NewGroupModal: React.FC<NewGroupModalProps> = ({
+  isOpen,
+  onClose,
+  currentUser,
+  onGroupCreated,
+}) => {
+  const { isDark, borderColor, inputClasses, textPrimary, textSecondary } =
+    useThemeClasses();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [search, setSearch] = useState("");
@@ -148,7 +180,11 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
   const permitted = getPermittedUsersToMessage(currentUser);
 
   // Group creation is only for ADMIN, SUPERADMIN, DMO, AUTHORITY. Travellers cannot.
-  const isEligible = currentUser && ["superadmin", "admin", "dmo", "authority", "authorityAdmin"].includes(currentUser.role);
+  const isEligible =
+    currentUser &&
+    ["superadmin", "admin", "dmo", "authority", "authorityAdmin"].includes(
+      currentUser.role,
+    );
 
   const filtered = permitted.filter((u) => {
     const term = search.toLowerCase();
@@ -207,7 +243,9 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
     <ModalWrapper isOpen={isOpen} onClose={onClose} title="Create Group Chat">
       <div className="space-y-4 text-left">
         {error && (
-          <div className={`p-3 text-xs ${isDark ? 'bg-red-950/20 text-red-400 border-red-900' : 'bg-red-50 text-red-600 border-red-200'} rounded-lg`}>
+          <div
+            className={`p-3 text-xs ${isDark ? "bg-red-950/20 text-red-400 border-red-900" : "bg-red-50 text-red-600 border-red-200"} rounded-lg`}
+          >
             {error}
           </div>
         )}
@@ -215,7 +253,9 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
         {/* Inputs */}
         <div className="space-y-3">
           <div>
-            <label className={`block text-xs font-semibold ${textSecondary} mb-1`}>
+            <label
+              className={`block text-xs font-semibold ${textSecondary} mb-1`}
+            >
               Group Name * ({name.length}/60)
             </label>
             <input
@@ -232,7 +272,9 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
           </div>
 
           <div>
-            <label className={`block text-xs font-semibold ${textSecondary} mb-1`}>
+            <label
+              className={`block text-xs font-semibold ${textSecondary} mb-1`}
+            >
               Description (Optional)
             </label>
             <textarea
@@ -247,7 +289,9 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
 
         {/* Member selection */}
         <div>
-          <label className={`block text-xs font-semibold ${textSecondary} mb-1`}>
+          <label
+            className={`block text-xs font-semibold ${textSecondary} mb-1`}
+          >
             Add Members (Selected: {selectedMembers.length})
           </label>
           <div className="relative mb-2">
@@ -261,7 +305,9 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
             />
           </div>
 
-          <div className={`max-h-[160px] overflow-y-auto space-y-1.5 border ${borderColor} rounded-lg p-2 custom-scrollbar`}>
+          <div
+            className={`max-h-[160px] overflow-y-auto space-y-1.5 border ${borderColor} rounded-lg p-2 custom-scrollbar`}
+          >
             {filtered.length > 0 ? (
               filtered.map((user) => {
                 const isSelected = selectedMembers.includes(user.id);
@@ -270,29 +316,43 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
                     key={user.id}
                     type="button"
                     onClick={() => toggleMember(user.id)}
-                    className={`w-full flex items-center justify-between p-1.5 rounded-md text-left transition-colors ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'} cursor-pointer`}
+                    className={`w-full flex items-center justify-between p-1.5 rounded-md text-left transition-colors ${isDark ? "hover:bg-gray-800" : "hover:bg-gray-50"} cursor-pointer`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <img src={user.avatar} className={`w-8 h-8 rounded-full ${isDark ? 'bg-gray-800 border-gray-850' : 'bg-gray-50 border-gray-100'}`} alt="" />
+                      <img
+                        src={user.avatar}
+                        className={`w-8 h-8 rounded-full ${isDark ? "bg-gray-800 border-gray-850" : "bg-gray-50 border-gray-100"}`}
+                        alt=""
+                      />
                       <div className="min-w-0">
-                        <p className={`text-xs font-semibold ${textPrimary} truncate`}>
+                        <p
+                          className={`text-xs font-semibold ${textPrimary} truncate`}
+                        >
                           {user.firstName} {user.lastName}
                         </p>
-                        <p className="text-[10px] text-gray-400 capitalize truncate">{user.role}</p>
+                        <p className="text-[10px] text-gray-400 capitalize truncate">
+                          {user.role}
+                        </p>
                       </div>
                     </div>
-                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                      isSelected 
-                        ? "bg-teal-500 border-teal-500 text-white" 
-                        : isDark ? 'border-gray-700' : 'border-gray-300'
-                    }`}>
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                        isSelected
+                          ? "bg-teal-500 border-teal-500 text-white"
+                          : isDark
+                            ? "border-gray-700"
+                            : "border-gray-300"
+                      }`}
+                    >
                       {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                     </div>
                   </button>
                 );
               })
             ) : (
-              <p className="text-center py-4 text-xs text-gray-400">No contacts found.</p>
+              <p className="text-center py-4 text-xs text-gray-400">
+                No contacts found.
+              </p>
             )}
           </div>
         </div>
@@ -311,17 +371,28 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({ isOpen, onClose, c
 // 3. NEW BROADCAST CHANNEL MODAL
 interface NewBroadcastModalProps extends ModalProps {
   currentUser: MockUser | null;
-  onBroadcastCreated: (channelName: string, description: string, targetRole: UserRole) => void;
+  onBroadcastCreated: (
+    channelName: string,
+    description: string,
+    targetRole: UserRole,
+  ) => void;
 }
 
-export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({ isOpen, onClose, currentUser, onBroadcastCreated }) => {
-  const { isDark, borderColor, inputClasses, textSecondary } = useThemeClasses();
+export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
+  isOpen,
+  onClose,
+  currentUser,
+  onBroadcastCreated,
+}) => {
+  const { isDark, borderColor, inputClasses, textSecondary } =
+    useThemeClasses();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [targetRole, setTargetRole] = useState<UserRole>("dmo");
   const [error, setError] = useState("");
 
-  const isEligible = currentUser && ["superadmin", "admin"].includes(currentUser.role);
+  const isEligible =
+    currentUser && ["superadmin", "admin"].includes(currentUser.role);
 
   const handleCreate = () => {
     if (!name.trim()) {
@@ -341,7 +412,8 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({ isOpen, on
         <div className="text-center py-6 space-y-4">
           <ShieldAlert className="w-12 h-12 text-destructive mx-auto" />
           <p className={`text-sm ${textSecondary}`}>
-            Only SUPERADMIN and ADMIN roles are authorized to create broadcast channels.
+            Only SUPERADMIN and ADMIN roles are authorized to create broadcast
+            channels.
           </p>
         </div>
       </ModalWrapper>
@@ -349,16 +421,24 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({ isOpen, on
   }
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="New Broadcast Channel">
+    <ModalWrapper
+      isOpen={isOpen}
+      onClose={onClose}
+      title="New Broadcast Channel"
+    >
       <div className="space-y-4 text-left">
         {error && (
-          <div className={`p-3 text-xs ${isDark ? 'bg-red-950/20 text-red-400 border-red-900' : 'bg-red-50 text-red-600 border-red-200'} rounded-lg`}>
+          <div
+            className={`p-3 text-xs ${isDark ? "bg-red-950/20 text-red-400 border-red-900" : "bg-red-50 text-red-600 border-red-200"} rounded-lg`}
+          >
             {error}
           </div>
         )}
 
         <div>
-          <label className={`block text-xs font-semibold ${textSecondary} mb-1`}>
+          <label
+            className={`block text-xs font-semibold ${textSecondary} mb-1`}
+          >
             Channel Name *
           </label>
           <input
@@ -374,22 +454,30 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({ isOpen, on
         </div>
 
         <div>
-          <label className={`block text-xs font-semibold ${textSecondary} mb-1`}>
+          <label
+            className={`block text-xs font-semibold ${textSecondary} mb-1`}
+          >
             Target Audience Role
           </label>
           <select
             value={targetRole}
             onChange={(e) => setTargetRole(e.target.value as UserRole)}
-            className={`w-full px-3 py-2 border ${borderColor} ${isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'} rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer`}
+            className={`w-full px-3 py-2 border ${borderColor} ${isDark ? "bg-gray-800 text-white" : "bg-white text-gray-900"} rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer`}
           >
-            <option value="dmo">DMO (Destination Marketing Organization)</option>
+            <option value="dmo">
+              DMO (Destination Marketing Organization)
+            </option>
             <option value="authority">AUTHORITY (Local Authority)</option>
-            <option value="traveller">TRAVELLER (Business Owner/End-user)</option>
+            <option value="traveller">
+              TRAVELLER (Business Owner/End-user)
+            </option>
           </select>
         </div>
 
         <div>
-          <label className={`block text-xs font-semibold ${textSecondary} mb-1`}>
+          <label
+            className={`block text-xs font-semibold ${textSecondary} mb-1`}
+          >
             Description (Optional)
           </label>
           <textarea
@@ -417,13 +505,20 @@ interface SilenceUserModalProps extends ModalProps {
   onSilence: (userId: string, duration: string, reason: string) => void;
 }
 
-export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({ isOpen, onClose, onSilence }) => {
+export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
+  isOpen,
+  onClose,
+  onSilence,
+}) => {
+  const { isDark, inputClasses, textSecondary } = useThemeClasses();
   const [selectedUser, setSelectedUser] = useState("");
   const [duration, setDuration] = useState("24h");
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
 
-  const nonAdmins = MOCK_USERS.filter((u) => !["superadmin", "admin"].includes(u.role));
+  const nonAdmins = MOCK_USERS.filter(
+    (u) => !["superadmin", "admin"].includes(u.role),
+  );
 
   const handleSilence = () => {
     if (!selectedUser) {
@@ -442,16 +537,27 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Silence User Globally">
+    <ModalWrapper
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Silence User Globally"
+    >
       <div className="space-y-4 text-left">
         {error && (
-          <div className="p-3 text-xs bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900 rounded-lg">
+          <div
+            className={clsx(
+              "p-3 text-xs rounded-lg border",
+              isDark
+                ? "bg-red-950/20 text-red-400 border-red-900"
+                : "bg-red-50 text-red-600 border-red-200",
+            )}
+          >
             {error}
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          <label className={clsx("block text-xs font-semibold mb-1", textSecondary)}>
             Select User
           </label>
           <select
@@ -460,7 +566,10 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({ isOpen, onCl
               setSelectedUser(e.target.value);
               setError("");
             }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer"
+            className={clsx(
+              "w-full px-3 py-2 border rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer",
+              inputClasses,
+            )}
           >
             <option value="">-- Choose User --</option>
             {nonAdmins.map((u) => (
@@ -472,13 +581,16 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({ isOpen, onCl
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          <label className={clsx("block text-xs font-semibold mb-1", textSecondary)}>
             Silence Duration
           </label>
           <select
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer"
+            className={clsx(
+              "w-full px-3 py-2 border rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer",
+              inputClasses,
+            )}
           >
             <option value="1h">1 Hour</option>
             <option value="24h">24 Hours (1 Day)</option>
@@ -488,7 +600,7 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({ isOpen, onCl
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          <label className={clsx("block text-xs font-semibold mb-1", textSecondary)}>
             Reason *
           </label>
           <input
@@ -499,13 +611,16 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({ isOpen, onCl
               setReason(e.target.value);
               setError("");
             }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            className={clsx(
+              "w-full px-3 py-2 border rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+              inputClasses,
+            )}
           />
         </div>
 
         <button
           onClick={handleSilence}
-          className="w-full py-2 bg-destructive text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
+          className="w-full py-2 bg-destructive hover:bg-destructive/90 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
         >
           Silence User
         </button>
@@ -519,7 +634,13 @@ interface DeleteMessageModalProps extends ModalProps {
   onConfirm: (reason: string) => void;
 }
 
-export const DeleteMessageModal: React.FC<DeleteMessageModalProps> = ({ isOpen, onClose, onConfirm }) => {
+export const DeleteMessageModal: React.FC<DeleteMessageModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+}) => {
+  const { isDark, borderColor, inputClasses, textSecondary, textTertiary, hoverBg } =
+    useThemeClasses();
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
 
@@ -535,20 +656,32 @@ export const DeleteMessageModal: React.FC<DeleteMessageModalProps> = ({ isOpen, 
   };
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Delete Message Moderation">
+    <ModalWrapper
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Delete Message Moderation"
+    >
       <div className="space-y-4 text-left">
-        <p className="text-xs text-gray-600 dark:text-gray-400">
-          As an Admin, deleting messages replaces the content globally and logs the action in the audit log. A deletion reason is mandatory.
+        <p className={clsx("text-xs", textTertiary)}>
+          As an Admin, deleting messages replaces the content globally and logs
+          the action in the audit log. A deletion reason is mandatory.
         </p>
-        
+
         {error && (
-          <div className="p-3 text-xs bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900 rounded-lg">
+          <div
+            className={clsx(
+              "p-3 text-xs rounded-lg border",
+              isDark
+                ? "bg-red-950/20 text-red-400 border-red-900"
+                : "bg-red-50 text-red-600 border-red-200",
+            )}
+          >
             {error}
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          <label className={clsx("block text-xs font-semibold mb-1", textSecondary)}>
             Reason for Deletion *
           </label>
           <input
@@ -559,20 +692,28 @@ export const DeleteMessageModal: React.FC<DeleteMessageModalProps> = ({ isOpen, 
               setReason(e.target.value);
               setError("");
             }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+            className={clsx(
+              "w-full px-3 py-2 border rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+              inputClasses,
+            )}
           />
         </div>
 
         <div className="flex gap-3 justify-end mt-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+            className={clsx(
+              "px-4 py-2 text-sm font-semibold border rounded-lg cursor-pointer transition-colors",
+              borderColor,
+              textSecondary,
+              hoverBg,
+            )}
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
-            className="px-4 py-2 text-sm font-semibold bg-destructive text-white rounded-lg hover:bg-destructive/95 cursor-pointer"
+            className="px-4 py-2 text-sm font-semibold bg-destructive text-white rounded-lg hover:bg-destructive/90 cursor-pointer transition-colors"
           >
             Delete message
           </button>

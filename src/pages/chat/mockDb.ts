@@ -1,5 +1,11 @@
 import type { UserRole } from "@/enums/user.types";
-import type { Message, Conversation, Attachment, SilenceState, ModerationLogEntry } from "./types";
+import type {
+  Message,
+  Conversation,
+  Attachment,
+  SilenceState,
+  ModerationLogEntry,
+} from "./types";
 
 // Predefined mock users for demonstrating the permission matrix & hierarchy restrictions
 export interface MockUser {
@@ -113,7 +119,9 @@ export const MOCK_USERS: MockUser[] = [
 ];
 
 // Helper to filter users according to the hierarchy restrictions
-export function getPermittedUsersToMessage(currentUser: MockUser | null): MockUser[] {
+export function getPermittedUsersToMessage(
+  currentUser: MockUser | null,
+): MockUser[] {
   if (!currentUser) return [];
 
   // SUPERADMIN can see and message everyone except themselves
@@ -123,7 +131,9 @@ export function getPermittedUsersToMessage(currentUser: MockUser | null): MockUs
 
   // ADMIN can message any admin, dmo, authority, or traveller
   if (currentUser.role === "admin") {
-    return MOCK_USERS.filter((u) => u.id !== currentUser.id && u.role !== "superadmin");
+    return MOCK_USERS.filter(
+      (u) => u.id !== currentUser.id && u.role !== "superadmin",
+    );
   }
 
   // DMO: role level 3 and below (DMO, AUTHORITY, TRAVELLER), plus their manager (ADMIN)
@@ -133,14 +143,18 @@ export function getPermittedUsersToMessage(currentUser: MockUser | null): MockUs
       // can see direct manager (ADMIN)
       if (u.id === currentUser.managerId) return true;
       // DMOs under the same admin can see each other
-      if (u.role === "dmo" && u.managerId === currentUser.managerId) return true;
+      if (u.role === "dmo" && u.managerId === currentUser.managerId)
+        return true;
       // Else they must be DMO, AUTHORITY, or TRAVELLER
       return ["dmo", "authority", "traveller"].includes(u.role);
     });
   }
 
   // AUTHORITY: role level 4 and below (AUTHORITY, TRAVELLER), plus their manager (DMO)
-  if (currentUser.role === "authority" || currentUser.role === "authorityAdmin") {
+  if (
+    currentUser.role === "authority" ||
+    currentUser.role === "authorityAdmin"
+  ) {
     return MOCK_USERS.filter((u) => {
       if (u.id === currentUser.id) return false;
       // can see direct manager (DMO)
@@ -155,9 +169,11 @@ export function getPermittedUsersToMessage(currentUser: MockUser | null): MockUs
     return MOCK_USERS.filter((u) => {
       if (u.id === currentUser.id) return false;
       // assigned authority
-      if (u.role === "authority" && u.authorityId === currentUser.authorityId) return true;
+      if (u.role === "authority" && u.authorityId === currentUser.authorityId)
+        return true;
       // other travellers in same authority scope
-      if (u.role === "traveller" && u.authorityId === currentUser.authorityId) return true;
+      if (u.role === "traveller" && u.authorityId === currentUser.authorityId)
+        return true;
       return false;
     });
   }
@@ -196,7 +212,8 @@ const INITIAL_CONVERSATIONS: Conversation[] = [
     id: "conv-3",
     type: "broadcast",
     name: "DMO Announcement Channel",
-    description: "Broadcast policy updates to all Destination Marketing Organizations",
+    description:
+      "Broadcast policy updates to all Destination Marketing Organizations",
     members: ["user-admin-1", "user-dmo-1", "user-dmo-2", "user-dmo-3"],
     creatorId: "user-admin-1",
     targetRole: "dmo",
@@ -288,7 +305,10 @@ export class MockChatDatabase {
 
   // Load Database
   static getConversations(): Conversation[] {
-    const convs = this.getStored<Conversation[]>(STORAGE_KEYS.CONVERSATIONS, INITIAL_CONVERSATIONS);
+    const convs = this.getStored<Conversation[]>(
+      STORAGE_KEYS.CONVERSATIONS,
+      INITIAL_CONVERSATIONS,
+    );
     const msgs = this.getAllMessages();
 
     // Map last message to each conversation
@@ -301,7 +321,10 @@ export class MockChatDatabase {
         // Or if message has a targetConversationId property
         return (m as any).conversationId === c.id;
       });
-      const sorted = convMsgs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      const sorted = convMsgs.sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      );
       return {
         ...c,
         lastMessage: sorted[sorted.length - 1],
@@ -332,7 +355,10 @@ export class MockChatDatabase {
         if (convId === "conv-3" && m.id.startsWith("msg-3-")) return true;
         return (m as any).conversationId === convId;
       })
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      .sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      );
   }
 
   static addMessage(convId: string, message: Message): void {
@@ -345,7 +371,11 @@ export class MockChatDatabase {
     this.setStored(STORAGE_KEYS.MESSAGES, msgs);
 
     // Trigger custom events so other tabs or observers update
-    window.dispatchEvent(new CustomEvent("metgo_chat_message_received", { detail: { convId, message: extendedMessage } }));
+    window.dispatchEvent(
+      new CustomEvent("metgo_chat_message_received", {
+        detail: { convId, message: extendedMessage },
+      }),
+    );
   }
 
   static updateMessage(message: Message): void {
@@ -354,7 +384,9 @@ export class MockChatDatabase {
     if (idx !== -1) {
       msgs[idx] = { ...msgs[idx], ...message };
       this.setStored(STORAGE_KEYS.MESSAGES, msgs);
-      window.dispatchEvent(new CustomEvent("metgo_chat_message_updated", { detail: { message } }));
+      window.dispatchEvent(
+        new CustomEvent("metgo_chat_message_updated", { detail: { message } }),
+      );
     }
   }
 
@@ -397,7 +429,12 @@ export class MockChatDatabase {
     return entry;
   }
 
-  static silenceUser(userId: string, duration: string, reason: string, silencedBy: string): void {
+  static silenceUser(
+    userId: string,
+    duration: string,
+    reason: string,
+    silencedBy: string,
+  ): void {
     const silences = this.getSilencedUsers();
     let expiresAt = "permanent";
 
@@ -437,15 +474,23 @@ export class MockChatDatabase {
     this.addModerationLog({
       id: `log-${Date.now()}`,
       actorId: silencedBy,
-      actorName: actorUser ? `${actorUser.firstName} ${actorUser.lastName}` : silencedBy,
+      actorName: actorUser
+        ? `${actorUser.firstName} ${actorUser.lastName}`
+        : silencedBy,
       targetId: userId,
-      targetName: targetUser ? `${targetUser.firstName} ${targetUser.lastName}` : userId,
+      targetName: targetUser
+        ? `${targetUser.firstName} ${targetUser.lastName}`
+        : userId,
       action: "silence_user",
       reason: `Duration: ${duration}. Reason: ${reason}`,
       timestamp: new Date().toISOString(),
     });
 
-    window.dispatchEvent(new CustomEvent("metgo_chat_user_silenced", { detail: { userId, silence: newSilence } }));
+    window.dispatchEvent(
+      new CustomEvent("metgo_chat_user_silenced", {
+        detail: { userId, silence: newSilence },
+      }),
+    );
   }
 
   static unsilenceUser(userId: string, actorId: string): void {
@@ -460,15 +505,21 @@ export class MockChatDatabase {
     this.addModerationLog({
       id: `log-${Date.now()}`,
       actorId,
-      actorName: actorUser ? `${actorUser.firstName} ${actorUser.lastName}` : actorId,
+      actorName: actorUser
+        ? `${actorUser.firstName} ${actorUser.lastName}`
+        : actorId,
       targetId: userId,
-      targetName: targetUser ? `${targetUser.firstName} ${targetUser.lastName}` : userId,
+      targetName: targetUser
+        ? `${targetUser.firstName} ${targetUser.lastName}`
+        : userId,
       action: "unsilence_user",
       reason: "Manually unsilenced or expired",
       timestamp: new Date().toISOString(),
     });
 
-    window.dispatchEvent(new CustomEvent("metgo_chat_user_unsilenced", { detail: { userId } }));
+    window.dispatchEvent(
+      new CustomEvent("metgo_chat_user_unsilenced", { detail: { userId } }),
+    );
   }
 
   // Moderation Audit Logs
@@ -487,7 +538,10 @@ export class MockChatDatabase {
   static startDirectChat(userAId: string, userBId: string): Conversation {
     const convs = this.getConversations();
     const existing = convs.find(
-      (c) => c.type === "dm" && c.members.includes(userAId) && c.members.includes(userBId),
+      (c) =>
+        c.type === "dm" &&
+        c.members.includes(userAId) &&
+        c.members.includes(userBId),
     );
 
     if (existing) return existing;
@@ -503,16 +557,33 @@ export class MockChatDatabase {
 
     convs.push(newConv);
     this.saveConversations(convs);
-    window.dispatchEvent(new CustomEvent("metgo_chat_conversation_created", { detail: { conversation: newConv } }));
+    window.dispatchEvent(
+      new CustomEvent("metgo_chat_conversation_created", {
+        detail: { conversation: newConv },
+      }),
+    );
     return newConv;
   }
 
-  static createGroupChat(name: string, description: string, creatorId: string, memberIds: string[], customAvatar?: string): Conversation {
+  static createGroupChat(
+    name: string,
+    description: string,
+    creatorId: string,
+    memberIds: string[],
+    customAvatar?: string,
+  ): Conversation {
     const convs = this.getConversations();
-    
+
     // Auto-generate initials avatar if not customized
-    const initials = name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
-    const avatar = customAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${initials}`;
+    const initials = name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+    const avatar =
+      customAvatar ||
+      `https://api.dicebear.com/7.x/initials/svg?seed=${initials}`;
 
     const newConv: Conversation = {
       id: `conv-group-${Date.now()}`,
@@ -541,18 +612,34 @@ export class MockChatDatabase {
     };
     this.addMessage(newConv.id, sysMsg);
 
-    window.dispatchEvent(new CustomEvent("metgo_chat_conversation_created", { detail: { conversation: newConv } }));
+    window.dispatchEvent(
+      new CustomEvent("metgo_chat_conversation_created", {
+        detail: { conversation: newConv },
+      }),
+    );
     return newConv;
   }
 
-  static createBroadcastChannel(name: string, description: string, creatorId: string, targetRole: UserRole): Conversation {
+  static createBroadcastChannel(
+    name: string,
+    description: string,
+    creatorId: string,
+    targetRole: UserRole,
+  ): Conversation {
     const convs = this.getConversations();
-    
+
     // Subscribe all users of targetRole
-    const targetUsers = MOCK_USERS.filter((u) => u.role === targetRole).map((u) => u.id);
+    const targetUsers = MOCK_USERS.filter((u) => u.role === targetRole).map(
+      (u) => u.id,
+    );
     const members = Array.from(new Set([creatorId, ...targetUsers]));
 
-    const initials = name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+    const initials = name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
     const avatar = `https://api.dicebear.com/7.x/initials/svg?seed=${initials}&backgroundColor=b6e3f4`;
 
     const newConv: Conversation = {
@@ -581,7 +668,11 @@ export class MockChatDatabase {
     };
     this.addMessage(newConv.id, sysMsg);
 
-    window.dispatchEvent(new CustomEvent("metgo_chat_conversation_created", { detail: { conversation: newConv } }));
+    window.dispatchEvent(
+      new CustomEvent("metgo_chat_conversation_created", {
+        detail: { conversation: newConv },
+      }),
+    );
     return newConv;
   }
 }
