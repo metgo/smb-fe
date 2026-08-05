@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { AlertTriangle, Download } from "lucide-react";
+import { useMemo, useState } from "react";
+import { AlertTriangle, Download, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
@@ -31,6 +31,16 @@ export const AdminDisputeResponseModal = ({
     useGetDisputeDetailsQuery(actualDisputeId as string, {
       skip: !actualDisputeId,
     });
+
+  // Oldest first, so the timeline reads top-to-bottom as "raised" then
+  // any subsequent "reopened" entries in the order they happened.
+  const disputeHistory = useMemo(() => {
+    if (!disputeDetails?.history?.length) return [];
+    return [...disputeDetails.history].sort(
+      (a: any, b: any) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+  }, [disputeDetails?.history]);
 
   const [responseToVendor, setResponseToVendor] = useState("");
   const [resolutionAction, setResolutionAction] = useState("");
@@ -207,65 +217,208 @@ export const AdminDisputeResponseModal = ({
               </div>
             </div>
           ) : disputeDetails ? (
-            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 space-y-4">
-              <div>
-                <h3
-                  className={`text-sm font-semibold text-orange-900 dark:text-orange-200 mb-3`}
-                >
-                  {t("dispute_information")}
-                </h3>
+            <div className="space-y-3">
+              {/* Original dispute, as raised - unchanged regardless of reopens */}
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-orange-900 dark:text-orange-200">
+                    {t("dispute_information")}
+                  </h3>
+                  {disputeDetails.reopenCount > 0 && (
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-200/70 dark:bg-amber-800/50 text-amber-800 dark:text-amber-200">
+                      {t("reopened")} {disputeDetails.reopenCount}x
+                    </span>
+                  )}
+                </div>
+
+                {/* Raised By */}
+                <div>
+                  <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">
+                    {t("raised_by")}
+                  </div>
+                  <div className="text-sm font-medium text-orange-900 dark:text-orange-100">
+                    {disputeDetails.raisedBy?.firstName}{" "}
+                    {disputeDetails.raisedBy?.lastName}
+                  </div>
+                  <div className="text-xs text-orange-700 dark:text-orange-300">
+                    {disputeDetails.raisedBy?.email}
+                  </div>
+                </div>
+
+                {/* Reason */}
+                <div>
+                  <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">
+                    {t("reason")}
+                  </div>
+                  <div className="text-sm font-medium text-orange-900 dark:text-orange-100 capitalize">
+                    {disputeDetails.reason?.replace(/_/g, " ")}
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">
+                    {t("description")}
+                  </div>
+                  <div className="text-sm text-orange-900 dark:text-orange-100">
+                    {disputeDetails.description}
+                  </div>
+                </div>
+
+                {/* Attachments */}
+                {disputeDetails.attachments?.length > 0 && (
+                  <div>
+                    <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">
+                      {t("attachments")}
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1">
+                      {disputeDetails.attachments.map(
+                        (attachment: string, idx: number) => (
+                          <a
+                            key={idx}
+                            href={attachment}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            <Download className="w-3 h-3" />
+                            {t("attachment")} {idx + 1}
+                          </a>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Raised By */}
-              <div>
+              {/* Admin's previous response - shown as-is when this dispute was already responded to once before being reopened */}
+              {disputeDetails.resolution && (
                 <div
-                  className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
+                  className={`border rounded-lg p-4 space-y-1.5 ${
+                    disputeDetails.resolution.action === "accept"
+                      ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
+                      : "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
+                  }`}
                 >
-                  {t("raised_by")}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <h3
+                      className={`text-sm font-semibold ${
+                        disputeDetails.resolution.action === "accept"
+                          ? "text-green-900 dark:text-green-200"
+                          : "text-red-900 dark:text-red-200"
+                      }`}
+                    >
+                      {t("previous_response")}
+                    </h3>
+                    <span
+                      className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                        disputeDetails.resolution.action === "accept"
+                          ? "bg-green-200/70 dark:bg-green-800/50 text-green-800 dark:text-green-200"
+                          : "bg-red-200/70 dark:bg-red-800/50 text-red-800 dark:text-red-200"
+                      }`}
+                    >
+                      {disputeDetails.resolution.action === "accept"
+                        ? t("approve_dispute")
+                        : t("reject_dispute")}
+                    </span>
+                  </div>
+                  <p
+                    className={`text-sm ${
+                      disputeDetails.resolution.action === "accept"
+                        ? "text-green-900 dark:text-green-100"
+                        : "text-red-900 dark:text-red-100"
+                    }`}
+                  >
+                    {disputeDetails.resolution.vendorFacingResponse}
+                  </p>
+                  {disputeDetails.resolution.respondedAt && (
+                    <div
+                      className={`text-[11px] ${
+                        disputeDetails.resolution.action === "accept"
+                          ? "text-green-700 dark:text-green-400"
+                          : "text-red-700 dark:text-red-400"
+                      }`}
+                    >
+                      {formatDate(disputeDetails.resolution.respondedAt)}
+                    </div>
+                  )}
                 </div>
-                <div
-                  className={`text-sm font-medium text-orange-900 dark:text-orange-100`}
-                >
-                  {disputeDetails.raisedBy?.firstName}{" "}
-                  {disputeDetails.raisedBy?.lastName}
-                </div>
-                <div className={`text-xs text-orange-700 dark:text-orange-300`}>
-                  {disputeDetails.raisedBy?.email}
-                </div>
-              </div>
+              )}
 
-              {/* Reason */}
-              <div>
-                <div
-                  className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
-                >
-                  {t("reason")}
-                </div>
-                <div
-                  className={`text-sm font-medium text-orange-900 dark:text-orange-100 capitalize`}
-                >
-                  {disputeDetails.reason?.replace(/_/g, " ")}
-                </div>
-              </div>
+              {/* Reopen history - new info added by the vendor after reopening */}
+              {disputeHistory.length > 0 && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-3">
+                    {t("reopened")} ({disputeHistory.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {disputeHistory.map((entry: any, idx: number) => {
+                      const name = [
+                        entry.performedBy?.firstName,
+                        entry.performedBy?.lastName,
+                      ]
+                        .filter(Boolean)
+                        .join(" ");
 
-              {/* Description */}
-              <div>
-                <div
-                  className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
-                >
-                  {t("description")}
+                      return (
+                        <div
+                          key={idx}
+                          className={`relative pl-3 border-l-2 border-amber-300 dark:border-amber-700 ${
+                            idx < disputeHistory.length - 1 ? "pb-3" : ""
+                          }`}
+                        >
+                          <span className="absolute -left-1.25 top-0.5 w-2 h-2 rounded-full bg-amber-500" />
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                              <RotateCcw className="w-3 h-3" />
+                              {t("reopened")} #{idx + 1}
+                            </span>
+                            <span className="text-[11px] text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                              {formatDate(entry.createdAt)}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
+                            {name || entry.performedBy?.email || "—"}
+                          </div>
+                          {entry.reason && (
+                            <span className="inline-block mt-1.5 text-[11px] font-medium capitalize px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200">
+                              {entry.reason.replace(/_/g, " ")}
+                            </span>
+                          )}
+                          {entry.description && (
+                            <p className="text-xs text-amber-900 dark:text-amber-100 mt-1.5">
+                              {entry.description}
+                            </p>
+                          )}
+                          {entry.attachments?.length > 0 && (
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
+                              {entry.attachments.map(
+                                (attachment: string, i: number) => (
+                                  <a
+                                    key={i}
+                                    href={attachment}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+                                  >
+                                    <Download className="w-3 h-3" />
+                                    {t("attachment")} {i + 1}
+                                  </a>
+                                ),
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className={`text-sm text-orange-900 dark:text-orange-100`}>
-                  {disputeDetails.description}
-                </div>
-              </div>
+              )}
 
               {/* Product Details */}
               {disputeDetails.product && (
-                <div className="border-t border-orange-200 dark:border-orange-700 pt-3">
-                  <div
-                    className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}
-                  >
+                <div className={`${bgSecondary} rounded-lg p-4`}>
+                  <div className={`text-xs ${textTertiary} mb-2`}>
                     {t("product_in_dispute")}
                   </div>
                   <div className="flex gap-3">
@@ -277,15 +430,11 @@ export const AdminDisputeResponseModal = ({
                       />
                     )}
                     <div>
-                      <div
-                        className={`text-sm font-medium text-orange-900 dark:text-orange-100`}
-                      >
+                      <div className={`text-sm font-medium ${textPrimary}`}>
                         {disputeDetails.product?.name}
                       </div>
                       {disputeDetails.orderProduct && (
-                        <div
-                          className={`text-xs text-orange-700 dark:text-orange-300`}
-                        >
+                        <div className={`text-xs ${textTertiary}`}>
                           {t("qty")}: {disputeDetails.orderProduct.quantity} |{" "}
                           {t("amount")}: ₪{disputeDetails.orderProduct.amount}
                         </div>
@@ -294,34 +443,6 @@ export const AdminDisputeResponseModal = ({
                   </div>
                 </div>
               )}
-
-              {/* Attachments */}
-              {disputeDetails.attachments &&
-                disputeDetails.attachments.length > 0 && (
-                  <div className="border-t border-orange-200 dark:border-orange-700 pt-3">
-                    <div
-                      className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}
-                    >
-                      {t("attachments")}
-                    </div>
-                    <div className="space-y-2">
-                      {disputeDetails.attachments.map(
-                        (attachment: any, idx: number) => (
-                          <a
-                            key={idx}
-                            href={attachment}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline text-sm"
-                          >
-                            <Download className="w-3 h-3" />
-                            {t("attachment")} {idx + 1}
-                          </a>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
             </div>
           ) : null}
 

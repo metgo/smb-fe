@@ -28,6 +28,13 @@ export interface RespondDisputeRequest {
   vendorFacingResponse: string;
 }
 
+export interface ReopenDisputeRequest {
+  disputeId: string;
+  reason: string;
+  description: string;
+  attachments: string[];
+}
+
 export interface BulkApproveOrderProductsRequest {
   approveAllDisputed: boolean;
 }
@@ -126,6 +133,19 @@ export const reconciliationQueryApi = createApi({
       }),
     }),
 
+    // POST /disputes/reopen/:disputeId
+    reopenDispute: builder.mutation<void, ReopenDisputeRequest>({
+      query: (body) => ({
+        url: `${endpoints.reopenDispute}/${body.disputeId}`,
+        method: "POST",
+        data: {
+          reason: body.reason,
+          description: body.description,
+          attachments: body.attachments,
+        },
+      }),
+    }),
+
     // POST /orders/bulk-approve
     bulkApproveOrderProducts: builder.mutation<
       void,
@@ -188,6 +208,7 @@ export const {
   useApproveOrderProductMutation,
   useOpenDisputeMutation,
   useRespondDisputeMutation,
+  useReopenDisputeMutation,
   useGetDisputeDetailsQuery,
   useBulkApproveOrderProductsMutation,
   useBulkMarkOrderAsCompletedMutation,

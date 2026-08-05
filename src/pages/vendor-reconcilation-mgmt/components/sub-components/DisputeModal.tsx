@@ -8,6 +8,7 @@ interface DisputeModalProps {
   order: MonthlyOrder;
   onClose: () => void;
   onSubmit: (reason: string, details: string, files: File[]) => void;
+  isReopen?: boolean;
 }
 
 const disputeReasons = [
@@ -25,6 +26,7 @@ export default function DisputeModal({
   order,
   onClose,
   onSubmit,
+  isReopen = false,
 }: DisputeModalProps) {
   const { t } = useTranslation("reconciliation");
   const { theme } = useAppSelector((state) => state.settings);
@@ -124,7 +126,7 @@ export default function DisputeModal({
             </div>
             <div>
               <h2 className={`text-xl font-bold ${textPrimary}`}>
-                {t("open_dispute")}
+                {isReopen ? t("reopen_dispute_btn") : t("open_dispute")}
               </h2>
               <p className={`text-sm ${textTertiary}`}>
                 {t("order_number")} #{order._id}
@@ -344,7 +346,7 @@ export default function DisputeModal({
             onClick={handleSubmit}
             className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
           >
-            {t("submit_dispute")}
+            {isReopen ? t("reopen_dispute_btn") : t("submit_dispute")}
           </button>
         </div>
       </div>

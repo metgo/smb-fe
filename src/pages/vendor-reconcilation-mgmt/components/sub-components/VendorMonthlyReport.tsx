@@ -18,6 +18,7 @@ import {
   useGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
   useOpenDisputeMutation,
+  useReopenDisputeMutation,
   // useRespondDisputeMutation,
   // useBulkApproveOrderProductsMutation,
   useBulkMarkOrderAsCompletedMutation,
@@ -175,7 +176,11 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
     deliveryMethod: d?.deliveryInformation?.deliveryMethod || "",
     deliveryAddress: address,
     specialInstructions: d?.deliveryInformation?.specialInstructions || "",
-    disputeId: d.orderInformation?.disputeId,
+    // The details endpoint nests disputeId under orderInformation, but the
+    // list endpoint (mapOrderProductList) puts it top-level - fall back to
+    // that shape too so we never end up substituting the orderProductId for
+    // a real disputeId downstream.
+    disputeId: d.orderInformation?.disputeId || (d as any).disputeId,
   };
 }
 
@@ -205,8 +210,10 @@ export const VendorMonthlyReport = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<MonthlyOrder | null>(null);
+  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder)
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [isReopenDisputeFlow, setIsReopenDisputeFlow] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
   const [showCloseAllOrdersModal, setShowCloseAllOrdersModal] = useState(false);
@@ -254,6 +261,7 @@ export const VendorMonthlyReport = () => {
     });
   const [cancelOrderProduct] = useCancelOrderProductMutation();
   const [openDispute] = useOpenDisputeMutation();
+  const [reopenDispute] = useReopenDisputeMutation();
   // const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkMarkOrderAsCompleted, { isLoading: isBulkCompleting }] =
@@ -458,6 +466,72 @@ export const VendorMonthlyReport = () => {
     }
     setSelectedOrder(order);
     setShowDisputeModal(true);
+  };
+
+  const handleReopenDispute = (order: MonthlyOrder) => {
+    if (userRole !== "traveller") {
+      toast.error(t("only_traveller_can_open_disputes"));
+      return;
+    }
+    setSelectedOrder(order);
+    setShowOrderDetails(false);
+    setIsReopenDisputeFlow(true);
+    setShowDisputeModal(true);
+  };
+
+  const handleSubmitReopenDispute = async (
+    reason: string,
+    details: string,
+    files: File[],
+  ) => {
+    if (!selectedOrder) return;
+    // The order's _id is an orderProduct id, not a dispute id - sending it
+    // to /disputes/reopen/:disputeId 404s with "dispute not found", so bail
+    // out with a clear error instead of silently substituting it.
+    if (!selectedOrder.disputeId) {
+      toast.error(t("reopen_dispute_failed"));
+      return;
+    }
+    try {
+      const attachmentUrls: string[] = [];
+
+      // Upload files if any
+      if (files.length > 0) {
+        for (const file of files) {
+          const res = await createSignedUrl([
+            { originalName: file.name, mimeType: file.type },
+          ]);
+          const { signedUrl, gcsURL } = res.data[0] as {
+            signedUrl: string;
+            gcsURL: string;
+          };
+
+          await uploadWithProgress(file, signedUrl, () => {});
+          attachmentUrls.push(gcsURL);
+        }
+      }
+
+      await reopenDispute({
+        disputeId: selectedOrder.disputeId,
+        reason,
+        description: details,
+        attachments: attachmentUrls,
+      }).unwrap();
+
+      toast.success(t("dispute_reopened"));
+      setShowDisputeModal(false);
+      setIsReopenDisputeFlow(false);
+      closeDetails();
+      refetch();
+      refetchReconciliationStats();
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      if (errorMessage?.includes("role")) {
+        toast.error(t("only_traveller_can_open_disputes"));
+      } else {
+        toast.error(t("reopen_dispute_failed"));
+      }
+    }
   };
 
   const handleSubmitDispute = async (
@@ -1305,6 +1379,7 @@ export const VendorMonthlyReport = () => {
             setShowOrderDetails(false);
             setShowDisputeModal(true);
           }}
+          onReopenDispute={() => handleReopenDispute(displayedOrder)}
           onCancel={() => {
             setSelectedOrder(displayedOrder);
             setShowOrderDetails(false);
@@ -1335,11 +1410,15 @@ export const VendorMonthlyReport = () => {
       {showDisputeModal && selectedOrder && (
         <DisputeModal
           order={selectedOrder}
+          isReopen={isReopenDisputeFlow}
           onClose={() => {
             setShowDisputeModal(false);
+            setIsReopenDisputeFlow(false);
             closeDetails();
           }}
-          onSubmit={handleSubmitDispute}
+          onSubmit={
+            isReopenDisputeFlow ? handleSubmitReopenDispute : handleSubmitDispute
+          }
         />
       )}
 

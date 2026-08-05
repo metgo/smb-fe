@@ -10,6 +10,7 @@ interface OrderDetailsModalProps {
   order: MonthlyOrder;
   onClose: () => void;
   onDispute: () => void;
+  onReopenDispute: () => void;
   onCancel: () => void;
   // onApprove: () => void;
   // onReject: () => void;
@@ -21,6 +22,7 @@ export default function OrderDetailsModal({
   order,
   onClose,
   onDispute,
+  onReopenDispute,
   onCancel,
   // onApprove,
   // onReject,
@@ -332,11 +334,21 @@ export default function OrderDetailsModal({
                   {t("cancel_order")}
                 </button>
               )}
+            {order.reconciliationStatus === "rejected" &&
+              userRole === "traveller" && (
+                <button
+                  onClick={onReopenDispute}
+                  className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
+                >
+                  {t("reopen_dispute_btn")}
+                </button>
+              )}
             {order.reconciliationStatus !== "disputed" &&
               userRole === "traveller" &&
               order.status !== "canceled" &&
               order.reconciliationStatus !== "closed" &&
-              order.reconciliationStatus !== "approved" && (
+              order.reconciliationStatus !== "approved" &&
+              order.reconciliationStatus !== "rejected" && (
                 <button
                   onClick={onDispute}
                   className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
