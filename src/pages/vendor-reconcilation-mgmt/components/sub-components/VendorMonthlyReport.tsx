@@ -57,12 +57,7 @@ interface OrderProduct {
     platformFee: number;
     disputeId?: string;
     reconciliationStatus?:
-      | "pending"
-      | "approved"
-      | "canceled"
-      | "disputed"
-      | "rejected"
-      | "closed";
+      "pending" | "approved" | "canceled" | "disputed" | "rejected" | "closed";
     vendorFacingResponse?: string;
   };
   customerInformation: {
@@ -210,7 +205,7 @@ export const VendorMonthlyReport = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<MonthlyOrder | null>(null);
-  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder)
+  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [isReopenDisputeFlow, setIsReopenDisputeFlow] = useState(false);
@@ -246,6 +241,7 @@ export const VendorMonthlyReport = () => {
     isFetching,
     refetch,
     refetchStats: refetchReconciliationStats,
+    scopeParams,
     hasMore,
     fetchNextPage,
   } = useVendorMonthlyReportData(filters, searchTerm);
@@ -726,8 +722,11 @@ export const VendorMonthlyReport = () => {
 
   const handleBulkMarkOrderCompleted = async () => {
     try {
+      // act on exactly what's currently shown - same DMO/Authority/vendor/
+      // date scope as the list itself, not silently the real current month
       await bulkMarkOrderAsCompleted({
         markAllAsCompleted: true,
+        ...scopeParams,
       }).unwrap();
 
       toast.success(t("orders_mark_as_completed"));
@@ -1417,7 +1416,9 @@ export const VendorMonthlyReport = () => {
             closeDetails();
           }}
           onSubmit={
-            isReopenDisputeFlow ? handleSubmitReopenDispute : handleSubmitDispute
+            isReopenDisputeFlow
+              ? handleSubmitReopenDispute
+              : handleSubmitDispute
           }
         />
       )}

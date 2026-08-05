@@ -129,5 +129,12 @@ export function useVendorMonthlyReportData(
     hasMore: !!orderProductsData?.meta?.hasNextPage,
     totalData: orderProductsData?.totalData as number | undefined,
     fetchNextPage,
+    scopeParams: {
+      dmoId: queryParams.dmoId,
+      authorityId: queryParams.authorityId,
+      vendorId: queryParams.vendorId,
+      startDate: queryParams.startDate,
+      endDate: queryParams.endDate,
+    },
   };
 }

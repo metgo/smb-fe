@@ -38,9 +38,17 @@ export interface ReopenDisputeRequest {
 export interface BulkApproveOrderProductsRequest {
   approveAllDisputed: boolean;
 }
+
 export interface BulkMarkAsCompletedRequest {
   markAllAsCompleted: boolean;
+  vendorId?: string;
+  externalApiId?: string;
+  dmoId?: string;
+  authorityId?: string;
+  startDate?: string;
+  endDate?: string;
 }
+
 export interface FinalizeClosedOrdersRequest {
   confirmFinalize: boolean;
 }
