@@ -182,7 +182,7 @@
   "customRange": "نطاق مخصص",
   "shipped": "تم الشحن",
   "closed": "مغلق",
-  "close_all_orders": "إغلاق جميع الطلبات",
+  "close_all_orders": "إتمام عمليات الدفع",
   "orders_closed_successfully": "تم إغلاق جميع الطلبات بنجاح",
   "close_orders_failed": "فشل إغلاق الطلبات",
   "close_all_orders_target_month": "سيؤدي هذا إلى إغلاق وإنهاء جميع الطلبات القابلة للدفع لشهر {{month}}",
@@ -191,5 +191,6 @@
   "close_all_orders_confirm": "إغلاق طلبات {{month}}",
   "close_all_orders_checking_older_months": "جارٍ التحقق من الأشهر القديمة التي تم حلها...",
   "close_all_orders_also_includes": "سيؤدي هذا أيضًا إلى إغلاق هذه الأشهر القديمة، التي تم حلها بالكامل الآن:",
-  "close_all_orders_preview_error": "تعذر التحقق من الأشهر القديمة التي تم حلها - يرجى المحاولة مرة أخرى قبل التأكيد."
+  "close_all_orders_preview_error": "تعذر التحقق من الأشهر القديمة التي تم حلها - يرجى المحاولة مرة أخرى قبل التأكيد.",
+  "close_all_orders_disputed_notice": "سيتم ترحيل الطلبات التي لا تزال محل نزاع إلى الشهر التالي ولن يحصل المورد على دفعة مقابلها. سيتم تحديد جميع الطلبات الأخرى على أنها مدفوعة."
 }

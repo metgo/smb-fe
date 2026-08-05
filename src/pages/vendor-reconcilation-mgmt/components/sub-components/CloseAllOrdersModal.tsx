@@ -124,6 +124,10 @@ export default function CloseAllOrdersModal({
         <p className={`text-sm ${textTertiary}`}>
           {t("close_all_orders_ignores_filter_notice")}
         </p>
+
+        <p className={`text-sm ${textTertiary}`}>
+          {t("close_all_orders_disputed_notice")}
+        </p>
       </div>
 
       {/* Actions */}

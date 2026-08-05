@@ -186,7 +186,7 @@
   "customRange": "Custom Range",
   "shipped": "Shipped",
   "closed": "Closed",
-  "close_all_orders": "Close All Orders",
+  "close_all_orders": "Finalize Payouts",
   "orders_closed_successfully": "All orders closed successfully",
   "close_orders_failed": "Failed to close orders",
   "close_all_orders_target_month": "This will close and finalize all payable orders for {{month}}",
@@ -195,5 +195,6 @@
   "close_all_orders_confirm": "Close {{month}} Orders",
   "close_all_orders_checking_older_months": "Checking for older resolved months...",
   "close_all_orders_also_includes": "This will also close these older months, now fully resolved:",
-  "close_all_orders_preview_error": "Couldn't check for older resolved months - please try again before confirming."
+  "close_all_orders_preview_error": "Couldn't check for older resolved months - please try again before confirming.",
+  "close_all_orders_disputed_notice": "Orders still under dispute will be carried forward to next month and the vendor will not receive payment for them. All other orders will be marked as Paid."
 }

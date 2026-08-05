@@ -184,7 +184,7 @@
   "customRange": "טווח מותאם אישית",
   "shipped": "שנשלח",
   "closed": "סגור",
-  "close_all_orders": "סגור את כל ההזמנות",
+  "close_all_orders": "סיום תשלומים",
   "orders_closed_successfully": "כל ההזמנות סגורות בהצלחה",
   "close_orders_failed": "סגירת הזמנות נכשלה",
   "close_all_orders_target_month": "פעולה זו תסגור ותסופסק תשלום עבור כל ההזמנות של {{month}}",
@@ -193,5 +193,6 @@
   "close_all_orders_confirm": "סגור הזמנות {{month}}",
   "close_all_orders_checking_older_months": "בודק חודשים ישנים שנפתרו...",
   "close_all_orders_also_includes": "פעולה זו תסגור גם את החודשים הישנים הבאים, שכעת נפתרו במלואם:",
-  "close_all_orders_preview_error": "לא ניתן היה לבדוק חודשים ישנים שנפתרו - נסו שוב לפני האישור."
+  "close_all_orders_preview_error": "לא ניתן היה לבדוק חודשים ישנים שנפתרו - נסו שוב לפני האישור.",
+  "close_all_orders_disputed_notice": "הזמנות שעדיין במחלוקת יועברו לחודש הבא והספק לא יקבל תשלום עבורן. כל שאר ההזמנות יסומנו כשולמו."
 }
