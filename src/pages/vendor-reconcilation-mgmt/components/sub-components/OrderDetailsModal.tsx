@@ -335,8 +335,6 @@ export default function OrderDetailsModal({
             {order.reconciliationStatus !== "disputed" &&
               userRole === "traveller" &&
               order.status !== "canceled" &&
-              order.reconciliationStatus !== "approved" &&
-              order.reconciliationStatus !== "rejected" &&
               order.reconciliationStatus !== "closed" && (
                 <button
                   onClick={onDispute}

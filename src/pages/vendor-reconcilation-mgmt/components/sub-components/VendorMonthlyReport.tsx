@@ -906,9 +906,7 @@ export const VendorMonthlyReport = () => {
           onClick={(e) => e.stopPropagation()}
         >
           {order.status !== "canceled" &&
-            order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "disputed" &&
-            order.reconciliationStatus !== "rejected" &&
             order.reconciliationStatus !== "closed" &&
             userRole === "traveller" && (
               <button
