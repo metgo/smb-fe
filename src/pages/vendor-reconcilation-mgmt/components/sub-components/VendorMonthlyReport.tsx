@@ -909,6 +909,7 @@ export const VendorMonthlyReport = () => {
             order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "disputed" &&
             order.reconciliationStatus !== "rejected" &&
+            order.reconciliationStatus !== "closed" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -931,6 +932,7 @@ export const VendorMonthlyReport = () => {
             order.reconciliationStatus !== "disputed" &&
             order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "rejected" &&
+            order.reconciliationStatus !== "closed" &&
             order.status !== "completed" && (
               <button
                 onClick={() => handleCancelOrder(order)}

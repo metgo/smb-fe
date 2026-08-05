@@ -323,7 +323,8 @@ export default function OrderDetailsModal({
               order.reconciliationStatus !== "disputed" &&
               order.status !== "completed" &&
               order.reconciliationStatus !== "approved" &&
-              order.reconciliationStatus !== "rejected" && (
+              order.reconciliationStatus !== "rejected" &&
+              order.reconciliationStatus !== "closed" && (
                 <button
                   onClick={onCancel}
                   className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
@@ -335,7 +336,8 @@ export default function OrderDetailsModal({
               userRole === "traveller" &&
               order.status !== "canceled" &&
               order.reconciliationStatus !== "approved" &&
-              order.reconciliationStatus !== "rejected" && (
+              order.reconciliationStatus !== "rejected" &&
+              order.reconciliationStatus !== "closed" && (
                 <button
                   onClick={onDispute}
                   className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
