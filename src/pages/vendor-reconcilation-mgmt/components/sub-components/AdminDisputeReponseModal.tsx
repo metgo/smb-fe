@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, Download, RotateCcw } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Download,
+  RotateCcw,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
@@ -32,15 +38,55 @@ export const AdminDisputeResponseModal = ({
       skip: !actualDisputeId,
     });
 
-  // Oldest first, so the timeline reads top-to-bottom as "raised" then
-  // any subsequent "reopened" entries in the order they happened.
-  const disputeHistory = useMemo(() => {
-    if (!disputeDetails?.history?.length) return [];
-    return [...disputeDetails.history].sort(
-      (a: any, b: any) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  // Merge the original raise, the admin's response (if any), and every
+  // reopen into a single chronological timeline - oldest first, so it
+  // reads top-to-bottom the way the dispute actually unfolded.
+  const disputeTimeline = useMemo(() => {
+    if (!disputeDetails) return [];
+    const entries: Array<{
+      kind: "raised" | "responded" | "reopened";
+      createdAt: string;
+      performedBy?: { firstName?: string; lastName?: string; email?: string };
+      reason?: string;
+      description?: string;
+      attachments?: string[];
+      action?: string;
+    }> = [
+      {
+        kind: "raised",
+        createdAt: disputeDetails.createdAt,
+        performedBy: disputeDetails.raisedBy,
+        reason: disputeDetails.reason,
+        description: disputeDetails.description,
+        attachments: disputeDetails.attachments,
+      },
+    ];
+
+    if (disputeDetails.resolution) {
+      entries.push({
+        kind: "responded",
+        createdAt: disputeDetails.resolution.respondedAt,
+        performedBy: disputeDetails.respondedBy,
+        description: disputeDetails.resolution.vendorFacingResponse,
+        action: disputeDetails.resolution.action,
+      });
+    }
+
+    (disputeDetails.history || []).forEach((entry: any) => {
+      entries.push({
+        kind: "reopened",
+        createdAt: entry.createdAt,
+        performedBy: entry.performedBy,
+        reason: entry.reason,
+        description: entry.description,
+        attachments: entry.attachments,
+      });
+    });
+
+    return entries.sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
-  }, [disputeDetails?.history]);
+  }, [disputeDetails]);
 
   const [responseToVendor, setResponseToVendor] = useState("");
   const [resolutionAction, setResolutionAction] = useState("");
@@ -218,9 +264,9 @@ export const AdminDisputeResponseModal = ({
             </div>
           ) : disputeDetails ? (
             <div className="space-y-3">
-              {/* Original dispute, as raised - unchanged regardless of reopens */}
-              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
+              {/* Unified timeline: original raise, admin's response (if any), and every reopen, in the order they happened */}
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-orange-900 dark:text-orange-200">
                     {t("dispute_information")}
                   </h3>
@@ -231,189 +277,138 @@ export const AdminDisputeResponseModal = ({
                   )}
                 </div>
 
-                {/* Raised By */}
-                <div>
-                  <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">
-                    {t("raised_by")}
-                  </div>
-                  <div className="text-sm font-medium text-orange-900 dark:text-orange-100">
-                    {disputeDetails.raisedBy?.firstName}{" "}
-                    {disputeDetails.raisedBy?.lastName}
-                  </div>
-                  <div className="text-xs text-orange-700 dark:text-orange-300">
-                    {disputeDetails.raisedBy?.email}
-                  </div>
-                </div>
+                <div className="space-y-3">
+                  {disputeTimeline.map((entry, idx) => {
+                    const name = [
+                      entry.performedBy?.firstName,
+                      entry.performedBy?.lastName,
+                    ]
+                      .filter(Boolean)
+                      .join(" ");
+                    const isLast = idx === disputeTimeline.length - 1;
+                    const isRejected =
+                      entry.kind === "responded" && entry.action !== "accept";
 
-                {/* Reason */}
-                <div>
-                  <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">
-                    {t("reason")}
-                  </div>
-                  <div className="text-sm font-medium text-orange-900 dark:text-orange-100 capitalize">
-                    {disputeDetails.reason?.replace(/_/g, " ")}
-                  </div>
-                </div>
+                    const accent =
+                      entry.kind === "responded"
+                        ? isRejected
+                          ? {
+                              line: "border-red-300 dark:border-red-700",
+                              dot: "bg-red-500",
+                              label: "text-red-800 dark:text-red-200",
+                              badge:
+                                "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200",
+                              body: "text-red-900 dark:text-red-100",
+                              meta: "text-red-700 dark:text-red-400",
+                            }
+                          : {
+                              line: "border-green-300 dark:border-green-700",
+                              dot: "bg-green-500",
+                              label: "text-green-800 dark:text-green-200",
+                              badge:
+                                "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200",
+                              body: "text-green-900 dark:text-green-100",
+                              meta: "text-green-700 dark:text-green-400",
+                            }
+                        : entry.kind === "reopened"
+                          ? {
+                              line: "border-amber-300 dark:border-amber-700",
+                              dot: "bg-amber-500",
+                              label: "text-amber-800 dark:text-amber-200",
+                              badge:
+                                "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200",
+                              body: "text-amber-900 dark:text-amber-100",
+                              meta: "text-amber-700 dark:text-amber-400",
+                            }
+                          : {
+                              line: "border-orange-300 dark:border-orange-700",
+                              dot: "bg-orange-500",
+                              label: "text-orange-800 dark:text-orange-200",
+                              badge:
+                                "bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200",
+                              body: "text-orange-900 dark:text-orange-100",
+                              meta: "text-orange-700 dark:text-orange-400",
+                            };
 
-                {/* Description */}
-                <div>
-                  <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">
-                    {t("description")}
-                  </div>
-                  <div className="text-sm text-orange-900 dark:text-orange-100">
-                    {disputeDetails.description}
-                  </div>
-                </div>
+                    const Icon =
+                      entry.kind === "reopened"
+                        ? RotateCcw
+                        : entry.kind === "responded"
+                          ? isRejected
+                            ? XCircle
+                            : CheckCircle2
+                          : AlertTriangle;
 
-                {/* Attachments */}
-                {disputeDetails.attachments?.length > 0 && (
-                  <div>
-                    <div className="text-xs text-orange-700 dark:text-orange-300 mb-1">
-                      {t("attachments")}
-                    </div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1">
-                      {disputeDetails.attachments.map(
-                        (attachment: string, idx: number) => (
-                          <a
-                            key={idx}
-                            href={attachment}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    const label =
+                      entry.kind === "raised"
+                        ? t("dispute_raised")
+                        : entry.kind === "reopened"
+                          ? t("reopened")
+                          : isRejected
+                            ? t("reject_dispute")
+                            : t("approve_dispute");
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`relative pl-3 border-l-2 ${accent.line} ${
+                          isLast ? "" : "pb-3"
+                        }`}
+                      >
+                        <span
+                          className={`absolute -left-1.25 top-0.5 w-2 h-2 rounded-full ${accent.dot}`}
+                        />
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span
+                            className={`inline-flex items-center gap-1 text-xs font-semibold ${accent.label}`}
                           >
-                            <Download className="w-3 h-3" />
-                            {t("attachment")} {idx + 1}
-                          </a>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Admin's previous response - shown as-is when this dispute was already responded to once before being reopened */}
-              {disputeDetails.resolution && (
-                <div
-                  className={`border rounded-lg p-4 space-y-1.5 ${
-                    disputeDetails.resolution.action === "accept"
-                      ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
-                      : "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <h3
-                      className={`text-sm font-semibold ${
-                        disputeDetails.resolution.action === "accept"
-                          ? "text-green-900 dark:text-green-200"
-                          : "text-red-900 dark:text-red-200"
-                      }`}
-                    >
-                      {t("previous_response")}
-                    </h3>
-                    <span
-                      className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                        disputeDetails.resolution.action === "accept"
-                          ? "bg-green-200/70 dark:bg-green-800/50 text-green-800 dark:text-green-200"
-                          : "bg-red-200/70 dark:bg-red-800/50 text-red-800 dark:text-red-200"
-                      }`}
-                    >
-                      {disputeDetails.resolution.action === "accept"
-                        ? t("approve_dispute")
-                        : t("reject_dispute")}
-                    </span>
-                  </div>
-                  <p
-                    className={`text-sm ${
-                      disputeDetails.resolution.action === "accept"
-                        ? "text-green-900 dark:text-green-100"
-                        : "text-red-900 dark:text-red-100"
-                    }`}
-                  >
-                    {disputeDetails.resolution.vendorFacingResponse}
-                  </p>
-                  {disputeDetails.resolution.respondedAt && (
-                    <div
-                      className={`text-[11px] ${
-                        disputeDetails.resolution.action === "accept"
-                          ? "text-green-700 dark:text-green-400"
-                          : "text-red-700 dark:text-red-400"
-                      }`}
-                    >
-                      {formatDate(disputeDetails.resolution.respondedAt)}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Reopen history - new info added by the vendor after reopening */}
-              {disputeHistory.length > 0 && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-3">
-                    {t("reopened")} ({disputeHistory.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {disputeHistory.map((entry: any, idx: number) => {
-                      const name = [
-                        entry.performedBy?.firstName,
-                        entry.performedBy?.lastName,
-                      ]
-                        .filter(Boolean)
-                        .join(" ");
-
-                      return (
-                        <div
-                          key={idx}
-                          className={`relative pl-3 border-l-2 border-amber-300 dark:border-amber-700 ${
-                            idx < disputeHistory.length - 1 ? "pb-3" : ""
-                          }`}
-                        >
-                          <span className="absolute -left-1.25 top-0.5 w-2 h-2 rounded-full bg-amber-500" />
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                              <RotateCcw className="w-3 h-3" />
-                              {t("reopened")} #{idx + 1}
-                            </span>
-                            <span className="text-[11px] text-amber-600 dark:text-amber-400 whitespace-nowrap">
-                              {formatDate(entry.createdAt)}
-                            </span>
-                          </div>
-                          <div className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
-                            {name || entry.performedBy?.email || "—"}
-                          </div>
-                          {entry.reason && (
-                            <span className="inline-block mt-1.5 text-[11px] font-medium capitalize px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200">
-                              {entry.reason.replace(/_/g, " ")}
-                            </span>
-                          )}
-                          {entry.description && (
-                            <p className="text-xs text-amber-900 dark:text-amber-100 mt-1.5">
-                              {entry.description}
-                            </p>
-                          )}
-                          {entry.attachments?.length > 0 && (
-                            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
-                              {entry.attachments.map(
-                                (attachment: string, i: number) => (
-                                  <a
-                                    key={i}
-                                    href={attachment}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
-                                  >
-                                    <Download className="w-3 h-3" />
-                                    {t("attachment")} {i + 1}
-                                  </a>
-                                ),
-                              )}
-                            </div>
-                          )}
+                            <Icon className="w-3 h-3" />
+                            {label}
+                          </span>
+                          <span
+                            className={`text-[11px] whitespace-nowrap ${accent.meta}`}
+                          >
+                            {formatDate(entry.createdAt)}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className={`text-[11px] mt-0.5 ${accent.meta}`}>
+                          {name || entry.performedBy?.email || "—"}
+                        </div>
+                        {entry.reason && (
+                          <span
+                            className={`inline-block mt-1.5 text-[11px] font-medium capitalize px-2 py-0.5 rounded ${accent.badge}`}
+                          >
+                            {entry.reason.replace(/_/g, " ")}
+                          </span>
+                        )}
+                        {entry.description && (
+                          <p className={`text-xs mt-1.5 ${accent.body}`}>
+                            {entry.description}
+                          </p>
+                        )}
+                        {entry.attachments && entry.attachments.length > 0 && (
+                          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
+                            {entry.attachments.map(
+                              (attachment: string, i: number) => (
+                                <a
+                                  key={i}
+                                  href={attachment}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+                                >
+                                  <Download className="w-3 h-3" />
+                                  {t("attachment")} {i + 1}
+                                </a>
+                              ),
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
 
               {/* Product Details */}
               {disputeDetails.product && (

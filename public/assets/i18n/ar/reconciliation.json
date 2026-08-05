@@ -137,7 +137,7 @@
   "attachments": "المرفقات",
   "attachment": "مرفق",
   "reopened": "أعيد فتحها",
-  "previous_response": "الرد السابق",
+  "dispute_raised": "تم فتح التنازع",
   "custom_response": "رد مخصص للموزع (اختياري)",
   "custom_response_placeholder": "أدخل ردا مخصصا للموزع (اترك فارغا للرد الافتراضي)...",
   "custom_response_helper": "إذا تركت فارغا، سيتم إرسال رد افتراضي بناء على قرارك.",
