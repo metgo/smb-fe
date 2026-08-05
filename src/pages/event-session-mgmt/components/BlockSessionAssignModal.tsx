@@ -68,6 +68,9 @@ export default function BlockSessionAssignModal({
     return filteredSessions.map((session) => ({
       label: session.name,
       value: session._id,
+      image:
+        session.images?.find((img) => img.isPrimary)?.image ||
+        session.images?.[0]?.image,
     }));
   })();
 
