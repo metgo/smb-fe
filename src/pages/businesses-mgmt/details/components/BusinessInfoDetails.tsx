@@ -7,8 +7,10 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
 import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
+import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface Business {
+  slug: string;
   shortDescription: string;
   shortDescriptionAr: string;
   shortDescriptionHe: string;
@@ -86,6 +88,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         dmoId={business?.dmoId}
         authorityId={business?.authorityId}
         websiteIds={business?.associatedWebsiteIds}
+        pathname={clientSitePath.businessDetails + "/" + business?.slug}
       />
       {/* Internal Notes */}
       {userRole === UserRole.SUPERADMIN && business?.internalNotes && (

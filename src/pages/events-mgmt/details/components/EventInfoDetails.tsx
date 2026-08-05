@@ -12,6 +12,7 @@ import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
+import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface EventInfoDetailsProps {
   t: (key: string) => string;
@@ -90,6 +91,7 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
         dmoId={eventDetails?.dmoId}
         authorityId={eventDetails?.authorityId}
         websiteIds={eventDetails?.associatedWebsiteIds}
+        pathname={clientSitePath.eventDetails + "/" + eventDetails?.slug}
       />
 
       {/* Internal Notes */}

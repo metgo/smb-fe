@@ -7,6 +7,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
 import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
+import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface PoiInfoDetailsProps {
   t: (key: string) => string;
@@ -63,6 +64,7 @@ const PoiInfoDetails: FC<PoiInfoDetailsProps> = ({ t, poi }) => {
         dmoId={poi?.dmoId}
         authorityId={poi?.authorityId}
         websiteIds={poi?.associatedWebsiteIds || []}
+        pathname={clientSitePath.poiDetails + "/" + poi?.slug}
       />
 
       {userRole === UserRole.SUPERADMIN && poi?.internalNotes && (

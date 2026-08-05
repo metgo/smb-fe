@@ -19,12 +19,14 @@ interface ConnectedDmoAuthorityWebsitesProps {
   dmoId?: string;
   authorityId?: string;
   websiteIds: string[];
+  pathname: string;
 }
 
 const ConnectedDmoAuthorityWebsites = ({
   dmoId,
   authorityId,
   websiteIds,
+  pathname,
 }: ConnectedDmoAuthorityWebsitesProps) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
@@ -33,7 +35,8 @@ const ConnectedDmoAuthorityWebsites = ({
   const [selectedWebsite, setSelectedWebsite] = useState<any | null>(null);
   const handleWebsiteClick = (website: any) => {
     if (website.url) {
-      window.open(website.url, "_blank");
+      const url = `${website.url}${pathname}`;
+      window.open(url, "_blank");
     }
     toast.success(`${website.name} site opened`, {
       description: `Redirecting to ${website.name}...`,
@@ -299,6 +302,7 @@ const ConnectedDmoAuthorityWebsites = ({
         website={selectedWebsite}
         setSelectedWebsite={setSelectedWebsite}
         isDark={isDark}
+        pathname={pathname}
       />
     </>
   );
