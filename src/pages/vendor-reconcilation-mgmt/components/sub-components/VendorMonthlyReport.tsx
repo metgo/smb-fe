@@ -753,10 +753,10 @@ export const VendorMonthlyReport = () => {
         label: t("rejected"),
       },
       closed: {
-        bg: isDark ? "bg-red-800" : "bg-red-100",
-        text: isDark ? "text-whit" : "text-red-800",
+        bg: isDark ? "bg-green-900/20" : "bg-green-100",
+        text: isDark ? "text-green-400" : "text-green-800",
         icon: CheckCircle,
-        label: t("closed"),
+        label: t("paid"),
       },
     };
 
@@ -1125,7 +1125,7 @@ export const VendorMonthlyReport = () => {
                 <option value="approved">{t("approved")}</option>
                 <option value="disputed">{t("disputed")}</option>
                 <option value="rejected">{t("rejected")}</option>
-                <option value="closed">{t("closed")}</option>
+                <option value="closed">{t("paid")}</option>
               </select>
             </div>
 
@@ -1210,7 +1210,11 @@ export const VendorMonthlyReport = () => {
                   )}
                   {filters.reconciliationStatus !== "all" && (
                     <FilterChips
-                      label={t(filters.reconciliationStatus)}
+                      label={t(
+                        filters.reconciliationStatus === "closed"
+                          ? "paid"
+                          : filters.reconciliationStatus,
+                      )}
                       onRemove={() =>
                         setFilters({ ...filters, reconciliationStatus: "all" })
                       }
