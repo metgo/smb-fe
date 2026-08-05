@@ -84,7 +84,8 @@ export const AdminDisputeResponseModal = ({
     });
 
     return entries.sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
   }, [disputeDetails]);
 
