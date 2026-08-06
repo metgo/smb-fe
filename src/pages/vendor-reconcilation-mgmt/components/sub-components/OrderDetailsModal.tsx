@@ -1,10 +1,14 @@
-import { Package, User, CreditCard, Truck, Info } from "lucide-react";
+import { Package, User, CreditCard, Truck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { UserRole } from "@/enums/user.types";
+import { useGetDisputeDetailsQuery } from "@/store/api/reconciliationQueryApi";
+import DisputeTimeline from "./DisputeTimeline";
+
+const DISPUTE_TIMELINE_STATUSES = ["approved", "rejected", "disputed"];
 
 interface OrderDetailsModalProps {
   order: MonthlyOrder;
@@ -33,6 +37,17 @@ export default function OrderDetailsModal({
   const { isDark } = useThemeClasses();
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const { userRole } = useAppSelector((state) => state.auth);
+
+  // Superadmin already gets the full timeline in AdminDisputeResponseModal -
+  // no need to duplicate it here.
+  const showDisputeTimeline =
+    userRole !== "superadmin" &&
+    DISPUTE_TIMELINE_STATUSES.includes(order.reconciliationStatus);
+  const { data: disputeDetails, isFetching: isLoadingDispute } =
+    useGetDisputeDetailsQuery(order.disputeId as string, {
+      skip: !order.disputeId || !showDisputeTimeline,
+      refetchOnMountOrArgChange: true,
+    });
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
   const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
   const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
@@ -93,48 +108,39 @@ export default function OrderDetailsModal({
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className={textSecondary}>
-                    {["approved", "rejected"].includes(
-                      order.reconciliationStatus,
-                    ) &&
-                      userRole === UserRole.TRAVELLER && (
-                        <>
-                          {t("your_dispute_has_been")}{" "}
-                          <span
-                            className={
-                              order.reconciliationStatus === "approved"
-                                ? isDark
-                                  ? "text-green-400"
-                                  : "text-green-600"
-                                : isDark
-                                  ? "text-red-400"
-                                  : "text-red-600"
-                            }
-                          >
-                            {t(order.reconciliationStatus)}
-                          </span>
-                        </>
-                      )}
-                  </span>
-                  <span className={textSecondary}>
-                    {order.reconciliationStatus === "rejected" &&
-                      order?.vendorFacingResponse &&
-                      userRole === UserRole.TRAVELLER && (
-                        <>
-                          <span className="text-red-400 text-sm flex items-center gap-2">
-                            <div>
-                              <Info className="h-4 w-4" />
-                            </div>
-                            <div>{order.vendorFacingResponse}</div>
-                          </span>
-                        </>
-                      )}
-                  </span>
-                </div>
+                {["approved", "rejected"].includes(
+                  order.reconciliationStatus,
+                ) &&
+                  userRole === UserRole.TRAVELLER && (
+                    <p className={`text-sm ${textSecondary}`}>
+                      {t("your_dispute_has_been")}{" "}
+                      <span
+                        className={
+                          order.reconciliationStatus === "approved"
+                            ? isDark
+                              ? "text-green-400"
+                              : "text-green-600"
+                            : isDark
+                              ? "text-red-400"
+                              : "text-red-600"
+                        }
+                      >
+                        {t(order.reconciliationStatus)}
+                      </span>
+                    </p>
+                  )}
               </div>
             </div>
           </div>
+
+          {/* Dispute Information - full raise/response/reopen timeline,
+              same as what admins see in the dispute resolution modal */}
+          {showDisputeTimeline && (
+            <DisputeTimeline
+              disputeDetails={disputeDetails}
+              isLoading={isLoadingDispute}
+            />
+          )}
 
           {/* Order Information */}
           <div className={`${bgSecondary} rounded-lg p-4`}>
