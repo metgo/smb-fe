@@ -20,6 +20,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { uploadWithProgress } from "@/helpers";
+import { formatDateTime } from "@/helpers/formatter";
 import {
   useGetOrderProductDetailsQuery,
   useLazyGetOrderProductDetailsQuery,
@@ -197,6 +198,7 @@ export type MonthlyOrder = ReturnType<typeof mapOrderProductList> & {
 
 export const VendorMonthlyReport = () => {
   const { t } = useTranslation("reconciliation");
+  const { t:tc } = useTranslation("common");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const {
@@ -207,6 +209,7 @@ export const VendorMonthlyReport = () => {
     textSecondary,
     textTertiary,
     isDark,
+    language,
   } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
   const adminView = userRole === "superadmin";
@@ -909,15 +912,6 @@ export const VendorMonthlyReport = () => {
     return `₪${amount.toLocaleString()}`;
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const columns = [
     {
       key: "product",
@@ -957,7 +951,11 @@ export const VendorMonthlyReport = () => {
       sortable: true,
       label: t("date"),
       render: (order: MonthlyOrder) => (
-        <span className={textSecondary}>{formatDate(order.purchaseDate)}</span>
+        <span className={textSecondary}>
+          {order.purchaseDate
+            ? formatDateTime(order.purchaseDate, language)
+            : "-"}
+        </span>
       ),
     },
     {
@@ -1101,7 +1099,7 @@ export const VendorMonthlyReport = () => {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className={`text-lg font-bold ${textPrimary}`}>
-              {t("vendor_reconciliation")}
+              {tc("vendor_reconciliation")}
             </h1>
             <p className={`text-sm ${textTertiary}`}>
               {t("review_and_approve_orders")}
