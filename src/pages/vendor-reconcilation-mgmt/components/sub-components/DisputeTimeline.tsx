@@ -7,6 +7,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface TimelineEntry {
   kind: "raised" | "responded" | "reopened";
@@ -111,16 +112,78 @@ interface DisputeTimelineProps {
   isLoading?: boolean;
 }
 
+// Accent colors keyed by isDark instead of Tailwind's `dark:` variant -
+// this app toggles light/dark via app state (useThemeClasses/isDark), not
+// a `.dark` class on <html>, so `dark:` utilities silently follow the OS
+// color scheme instead and can end up illegible (light text on a light
+// card) whenever the OS scheme disagrees with the app's own theme.
+function getAccent(
+  isDark: boolean,
+  kind: TimelineEntry["kind"],
+  isRejected: boolean,
+) {
+  if (kind === "responded") {
+    return isRejected
+      ? {
+          line: isDark ? "border-red-700" : "border-red-300",
+          dot: "bg-red-500",
+          label: isDark ? "text-red-200" : "text-red-800",
+          badge: isDark
+            ? "bg-red-900/40 text-red-200"
+            : "bg-red-100 text-red-800",
+          body: isDark ? "text-red-100" : "text-red-900",
+          meta: isDark ? "text-red-400" : "text-red-700",
+        }
+      : {
+          line: isDark ? "border-green-700" : "border-green-300",
+          dot: "bg-green-500",
+          label: isDark ? "text-green-200" : "text-green-800",
+          badge: isDark
+            ? "bg-green-900/40 text-green-200"
+            : "bg-green-100 text-green-800",
+          body: isDark ? "text-green-100" : "text-green-900",
+          meta: isDark ? "text-green-400" : "text-green-700",
+        };
+  }
+  if (kind === "reopened") {
+    return {
+      line: isDark ? "border-amber-700" : "border-amber-300",
+      dot: "bg-amber-500",
+      label: isDark ? "text-amber-200" : "text-amber-800",
+      badge: isDark
+        ? "bg-amber-900/40 text-amber-200"
+        : "bg-amber-100 text-amber-800",
+      body: isDark ? "text-amber-100" : "text-amber-900",
+      meta: isDark ? "text-amber-400" : "text-amber-700",
+    };
+  }
+  return {
+    line: isDark ? "border-orange-700" : "border-orange-300",
+    dot: "bg-orange-500",
+    label: isDark ? "text-orange-200" : "text-orange-800",
+    badge: isDark
+      ? "bg-orange-900/40 text-orange-200"
+      : "bg-orange-100 text-orange-800",
+    body: isDark ? "text-orange-100" : "text-orange-900",
+    meta: isDark ? "text-orange-400" : "text-orange-700",
+  };
+}
+
 export default function DisputeTimeline({
   disputeDetails,
   isLoading,
 }: DisputeTimelineProps) {
   const { t } = useTranslation("reconciliation");
+  const { isDark } = useThemeClasses();
   const timeline = useDisputeTimeline(disputeDetails);
+
+  const cardClass = isDark
+    ? "bg-orange-900/20 border-orange-800"
+    : "bg-orange-50 border-orange-200";
 
   if (isLoading) {
     return (
-      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+      <div className={`${cardClass} border rounded-lg p-4`}>
         <div className="flex items-center justify-center">
           <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
         </div>
@@ -131,13 +194,21 @@ export default function DisputeTimeline({
   if (!disputeDetails) return null;
 
   return (
-    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+    <div className={`${cardClass} border rounded-lg p-4`}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-orange-900 dark:text-orange-200">
+        <h3
+          className={`text-sm font-semibold ${isDark ? "text-orange-200" : "text-orange-900"}`}
+        >
           {t("dispute_information")}
         </h3>
         {disputeDetails.reopenCount > 0 && (
-          <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-200/70 dark:bg-amber-800/50 text-amber-800 dark:text-amber-200">
+          <span
+            className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+              isDark
+                ? "bg-amber-800/50 text-amber-200"
+                : "bg-amber-200/70 text-amber-800"
+            }`}
+          >
             {t("reopened")} {disputeDetails.reopenCount}x
           </span>
         )}
@@ -145,53 +216,16 @@ export default function DisputeTimeline({
 
       <div className="space-y-3">
         {timeline.map((entry, idx) => {
-          const name = [entry.performedBy?.firstName, entry.performedBy?.lastName]
+          const name = [
+            entry.performedBy?.firstName,
+            entry.performedBy?.lastName,
+          ]
             .filter(Boolean)
             .join(" ");
           const isLast = idx === timeline.length - 1;
           const isRejected =
             entry.kind === "responded" && entry.action !== "accept";
-
-          const accent =
-            entry.kind === "responded"
-              ? isRejected
-                ? {
-                    line: "border-red-300 dark:border-red-700",
-                    dot: "bg-red-500",
-                    label: "text-red-800 dark:text-red-200",
-                    badge:
-                      "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200",
-                    body: "text-red-900 dark:text-red-100",
-                    meta: "text-red-700 dark:text-red-400",
-                  }
-                : {
-                    line: "border-green-300 dark:border-green-700",
-                    dot: "bg-green-500",
-                    label: "text-green-800 dark:text-green-200",
-                    badge:
-                      "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200",
-                    body: "text-green-900 dark:text-green-100",
-                    meta: "text-green-700 dark:text-green-400",
-                  }
-              : entry.kind === "reopened"
-                ? {
-                    line: "border-amber-300 dark:border-amber-700",
-                    dot: "bg-amber-500",
-                    label: "text-amber-800 dark:text-amber-200",
-                    badge:
-                      "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200",
-                    body: "text-amber-900 dark:text-amber-100",
-                    meta: "text-amber-700 dark:text-amber-400",
-                  }
-                : {
-                    line: "border-orange-300 dark:border-orange-700",
-                    dot: "bg-orange-500",
-                    label: "text-orange-800 dark:text-orange-200",
-                    badge:
-                      "bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200",
-                    body: "text-orange-900 dark:text-orange-100",
-                    meta: "text-orange-700 dark:text-orange-400",
-                  };
+          const accent = getAccent(isDark, entry.kind, isRejected);
 
           const Icon =
             entry.kind === "reopened"
@@ -257,7 +291,9 @@ export default function DisputeTimeline({
                       href={attachment}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+                      className={`inline-flex items-center gap-1 text-[11px] hover:underline ${
+                        isDark ? "text-blue-400" : "text-blue-600"
+                      }`}
                     >
                       <Download className="w-3 h-3" />
                       {t("attachment")} {i + 1}

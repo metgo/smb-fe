@@ -203,8 +203,9 @@
   "close_all_orders_checking_older_months": "Checking for older resolved months...",
   "close_all_orders_also_includes": "This will also close these older months, now fully resolved:",
   "close_all_orders_preview_error": "Couldn't check for older resolved months - please try again before confirming.",
-  "close_all_orders_disputed_notice": "Orders still under dispute will be carried forward to next month and the vendor will not receive payment for them. All other orders will be marked as Paid.",
+
   "paid": "Paid",
   "mark_orders_completed_confirm_title": "Mark Pending Orders as Completed",
-  "mark_orders_completed_confirm_message": "Clicking OK will change all order statuses to Completed, except orders whose status is Cancelled."
+  "mark_orders_completed_confirm_message": "Clicking OK will change all order statuses to Completed, except orders whose status is Cancelled.",
+  "close_all_orders_disputed_notice": "Orders still under dispute, or not yet marked Completed by the vendor, will be carried forward to next month and the vendor will not receive payment for them yet. Only orders that are Completed and not disputed will be marked as Paid."
 }

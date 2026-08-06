@@ -88,14 +88,20 @@ export default function OrderDetailsModal({
 
         {/* Tabs */}
         {showTabs && (
-          <div className="flex border-b border-gray-200 dark:border-gray-700 mt-4 px-4 shrink-0">
+          <div
+            className={`flex border-b mt-4 px-4 shrink-0 ${
+              isDark ? "border-gray-700" : "border-gray-200"
+            }`}
+          >
             <button
               type="button"
               onClick={() => setActiveTab("info")}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 activeTab === "info"
-                  ? "border-orange-500 text-orange-600 dark:text-orange-400"
-                  : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  ? `border-orange-500 ${isDark ? "text-orange-400" : "text-orange-600"}`
+                  : isDark
+                    ? "border-transparent text-gray-400 hover:text-gray-300"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
               {t("order_product_info")}
@@ -105,8 +111,10 @@ export default function OrderDetailsModal({
               onClick={() => setActiveTab("dispute")}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 activeTab === "dispute"
-                  ? "border-orange-500 text-orange-600 dark:text-orange-400"
-                  : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  ? `border-orange-500 ${isDark ? "text-orange-400" : "text-orange-600"}`
+                  : isDark
+                    ? "border-transparent text-gray-400 hover:text-gray-300"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
               {t("dispute_information")}
@@ -197,12 +205,20 @@ export default function OrderDetailsModal({
                       <span
                         className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                           order.status === "pending"
-                            ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400"
+                            ? isDark
+                              ? "bg-yellow-900/20 text-yellow-400"
+                              : "bg-yellow-100 text-yellow-800"
                             : order.status === "approved"
-                              ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400"
+                              ? isDark
+                                ? "bg-green-900/20 text-green-400"
+                                : "bg-green-100 text-green-800"
                               : order.status === "disputed"
-                                ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400"
-                                : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"
+                                ? isDark
+                                  ? "bg-orange-900/20 text-orange-400"
+                                  : "bg-orange-100 text-orange-800"
+                                : isDark
+                                  ? "bg-red-900/20 text-red-400"
+                                  : "bg-red-100 text-red-800"
                         }`}
                       >
                         {t(order.status)}
@@ -385,7 +401,9 @@ export default function OrderDetailsModal({
               order.reconciliationStatus !== "closed" && (
                 <button
                   onClick={onCancel}
-                  className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                  className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} ${
+                    isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"
+                  } transition-colors`}
                 >
                   {t("cancel_order")}
                 </button>

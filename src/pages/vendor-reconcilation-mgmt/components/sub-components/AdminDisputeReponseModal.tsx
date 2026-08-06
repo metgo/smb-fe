@@ -46,6 +46,7 @@ export const AdminDisputeResponseModal = ({
     order.reconciliationStatus === "approved" ||
     order.reconciliationStatus === "rejected";
 
+  const isDark = theme === "dark";
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
   const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
   const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
@@ -114,8 +115,14 @@ export const AdminDisputeResponseModal = ({
         {/* Header */}
 
         <div className="flex items-center gap-3 shrink-0 px-4 pt-4">
-          <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              isDark ? "bg-orange-900/20" : "bg-orange-100"
+            }`}
+          >
+            <AlertTriangle
+              className={`w-5 h-5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
+            />
           </div>
           <div>
             <h2 className={`text-xl font-bold ${textPrimary}`}>
@@ -128,14 +135,20 @@ export const AdminDisputeResponseModal = ({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700 mt-4 px-4 shrink-0">
+        <div
+          className={`flex border-b mt-4 px-4 shrink-0 ${
+            isDark ? "border-gray-700" : "border-gray-200"
+          }`}
+        >
           <button
             type="button"
             onClick={() => setActiveTab("info")}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
               activeTab === "info"
-                ? "border-orange-500 text-orange-600 dark:text-orange-400"
-                : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                ? `border-orange-500 ${isDark ? "text-orange-400" : "text-orange-600"}`
+                : isDark
+                  ? "border-transparent text-gray-400 hover:text-gray-300"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
             {t("order_product_info")}
@@ -145,8 +158,10 @@ export const AdminDisputeResponseModal = ({
             onClick={() => setActiveTab("dispute")}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
               activeTab === "dispute"
-                ? "border-orange-500 text-orange-600 dark:text-orange-400"
-                : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                ? `border-orange-500 ${isDark ? "text-orange-400" : "text-orange-600"}`
+                : isDark
+                  ? "border-transparent text-gray-400 hover:text-gray-300"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
             {t("dispute_and_resolution")}
@@ -222,14 +237,24 @@ export const AdminDisputeResponseModal = ({
                   <span
                     className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
                       order.reconciliationStatus === "approved"
-                        ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400"
-                        : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"
+                        ? isDark
+                          ? "bg-green-900/20 text-green-400"
+                          : "bg-green-100 text-green-800"
+                        : isDark
+                          ? "bg-red-900/20 text-red-400"
+                          : "bg-red-100 text-red-800"
                     }`}
                   >
                     {t(order.reconciliationStatus)}
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                  <span
+                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                      isDark
+                        ? "bg-red-900/20 text-red-400"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
                     {t("awaiting_response")}
                   </span>
                 )}
@@ -252,11 +277,15 @@ export const AdminDisputeResponseModal = ({
                     <p className={textSecondary}>
                       {t("dispute_already")}{" "}
                       <span
-                        className={
+                        className={`font-semibold ${
                           order.reconciliationStatus === "approved"
-                            ? "text-green-600 dark:text-green-400 font-semibold"
-                            : "text-red-600 dark:text-red-400 font-semibold"
-                        }
+                            ? isDark
+                              ? "text-green-400"
+                              : "text-green-600"
+                            : isDark
+                              ? "text-red-400"
+                              : "text-red-600"
+                        }`}
                       >
                         {order.reconciliationStatus}
                       </span>
@@ -305,10 +334,16 @@ export const AdminDisputeResponseModal = ({
                       </label>
                       <div className="space-y-2">
                         <label
-                          className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                          className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                            isDark ? "hover:bg-gray-800" : "hover:bg-gray-50"
+                          } ${
                             resolutionAction === "accept"
-                              ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                              : `border-gray-300 dark:border-gray-600`
+                              ? isDark
+                                ? "border-green-500 bg-green-900/20"
+                                : "border-green-500 bg-green-50"
+                              : isDark
+                                ? "border-gray-600"
+                                : "border-gray-300"
                           }`}
                         >
                           <input
@@ -324,7 +359,7 @@ export const AdminDisputeResponseModal = ({
                           />
                           <div className="flex-1">
                             <div
-                              className={`text-sm font-semibold text-green-600 dark:text-green-400`}
+                              className={`text-sm font-semibold ${isDark ? "text-green-400" : "text-green-600"}`}
                             >
                               {t("approve_dispute")}
                             </div>
@@ -335,10 +370,16 @@ export const AdminDisputeResponseModal = ({
                         </label>
 
                         <label
-                          className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                          className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                            isDark ? "hover:bg-gray-800" : "hover:bg-gray-50"
+                          } ${
                             resolutionAction === "reject"
-                              ? "border-red-500 bg-red-50 dark:bg-red-900/20"
-                              : `border-gray-300 dark:border-gray-600`
+                              ? isDark
+                                ? "border-red-500 bg-red-900/20"
+                                : "border-red-500 bg-red-50"
+                              : isDark
+                                ? "border-gray-600"
+                                : "border-gray-300"
                           }`}
                         >
                           <input
@@ -354,7 +395,7 @@ export const AdminDisputeResponseModal = ({
                           />
                           <div className="flex-1">
                             <div
-                              className={`text-sm font-semibold text-red-600 dark:text-red-400`}
+                              className={`text-sm font-semibold ${isDark ? "text-red-400" : "text-red-600"}`}
                             >
                               {t("reject_dispute")}
                             </div>
@@ -389,7 +430,9 @@ export const AdminDisputeResponseModal = ({
                 className={`px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
                   resolutionAction === "reject"
                     ? "bg-red-600 hover:bg-red-700 text-white"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                    : isDark
+                      ? "bg-gray-700 text-gray-400"
+                      : "bg-gray-200 text-gray-600"
                 }`}
               >
                 {isLoading && resolutionAction === "reject" && (
@@ -403,7 +446,9 @@ export const AdminDisputeResponseModal = ({
                 className={`px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
                   resolutionAction === "accept"
                     ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                    : isDark
+                      ? "bg-gray-700 text-gray-400"
+                      : "bg-gray-200 text-gray-600"
                 }`}
               >
                 {isLoading && resolutionAction === "accept" && (

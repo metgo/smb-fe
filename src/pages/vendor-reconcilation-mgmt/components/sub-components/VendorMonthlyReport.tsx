@@ -198,7 +198,7 @@ export type MonthlyOrder = ReturnType<typeof mapOrderProductList> & {
 
 export const VendorMonthlyReport = () => {
   const { t } = useTranslation("reconciliation");
-  const { t:tc } = useTranslation("common");
+  const { t: tc } = useTranslation("common");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const {
@@ -276,9 +276,7 @@ export const VendorMonthlyReport = () => {
   const [openDispute] = useOpenDisputeMutation();
   const [reopenDispute] = useReopenDisputeMutation();
   const [fetchOrderDetailsForReopen] = useLazyGetOrderProductDetailsQuery();
-  const [reopenFetchingId, setReopenFetchingId] = useState<string | null>(
-    null,
-  );
+  const [reopenFetchingId, setReopenFetchingId] = useState<string | null>(null);
   // const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkMarkOrderAsCompleted, { isLoading: isBulkCompleting }] =
@@ -292,9 +290,17 @@ export const VendorMonthlyReport = () => {
     data: finalizeSweepPreview,
     isFetching: isFetchingSweepPreview,
     isError: isSweepPreviewError,
+    error: sweepPreviewError,
   } = usePreviewFinalizeClosedOrdersQuery(undefined, {
     skip: !showCloseAllOrdersModal,
   });
+  // surface the backend's own message when it has one (e.g. "can't
+  // finalize yet, vendors still have time") instead of always showing the
+  // generic "couldn't check, try again" text - that generic text is only
+  // right for an actual technical failure, not a deliberate block
+  const sweepPreviewErrorMessage =
+    (sweepPreviewError as any)?.data?.message ?? undefined;
+
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const websiteMap = useMemo(() => {
@@ -1032,7 +1038,11 @@ export const VendorMonthlyReport = () => {
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
-                className="p-1.5 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                className={`p-1.5 rounded transition-colors ${
+                  isDark
+                    ? "text-orange-400 hover:bg-orange-900/20"
+                    : "text-orange-600 hover:bg-orange-50"
+                }`}
                 title={t("dispute")}
               >
                 <AlertTriangle className="w-4 h-4" />
@@ -1043,11 +1053,19 @@ export const VendorMonthlyReport = () => {
               <button
                 onClick={() => handleReopenFromRow(order)}
                 disabled={reopenFetchingId === order._id}
-                className="p-1.5 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`p-1.5 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isDark
+                    ? "text-orange-400 hover:bg-orange-900/20"
+                    : "text-orange-600 hover:bg-orange-50"
+                }`}
                 title={t("reopen_dispute_btn")}
               >
                 {reopenFetchingId === order._id ? (
-                  <div className="w-4 h-4 border-2 border-orange-600 dark:border-orange-400 border-t-transparent rounded-full animate-spin" />
+                  <div
+                    className={`w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ${
+                      isDark ? "border-orange-400" : "border-orange-600"
+                    }`}
+                  />
                 ) : (
                   <RotateCcw className="w-4 h-4" />
                 )}
@@ -1056,7 +1074,11 @@ export const VendorMonthlyReport = () => {
           {order.reconciliationStatus === "disputed" && adminView && (
             <button
               onClick={() => handleApproveDispute(order)}
-              className="p-1.5 rounded-full text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              className={`p-1.5 rounded-full transition-colors ${
+                isDark
+                  ? "text-green-400 hover:bg-green-900/20"
+                  : "text-green-600 hover:bg-green-50"
+              }`}
               title={t("approve")}
             >
               <CheckCircle className="w-5 h-5" />
@@ -1070,7 +1092,11 @@ export const VendorMonthlyReport = () => {
             order.status !== "completed" && (
               <button
                 onClick={() => handleCancelOrder(order)}
-                className="p-1.5 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                className={`p-1.5 rounded transition-colors ${
+                  isDark
+                    ? "text-red-400 hover:bg-red-900/20"
+                    : "text-red-600 hover:bg-red-50"
+                }`}
                 title={t("cancel")}
               >
                 <XCircle className="w-4 h-4" />
@@ -1136,7 +1162,9 @@ export const VendorMonthlyReport = () => {
 
           <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
             <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
-            <div className="text-lg font-bold text-green-600 dark:text-green-400">
+            <div
+              className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+            >
               ₪{(stats.netPayout || 0).toLocaleString()}
             </div>
           </div>
@@ -1147,25 +1175,33 @@ export const VendorMonthlyReport = () => {
             </div>
             <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
               <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" />
+                <Clock
+                  className={`w-3.5 h-3.5 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}
+                />
                 <span className={textSecondary}>
                   {stats.pending} {t("pending")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                <CheckCircle
+                  className={`w-3.5 h-3.5 ${isDark ? "text-green-400" : "text-green-600"}`}
+                />
                 <span className={textSecondary}>
                   {stats.approved} {t("approved")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                <AlertTriangle
+                  className={`w-3.5 h-3.5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
+                />
                 <span className={textSecondary}>
                   {stats.disputed} {t("disputed")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <XCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                <XCircle
+                  className={`w-3.5 h-3.5 ${isDark ? "text-red-400" : "text-red-600"}`}
+                />
                 <span className={textSecondary}>
                   {stats.cancelled} {t("canceled")}
                 </span>
@@ -1517,6 +1553,7 @@ export const VendorMonthlyReport = () => {
           isConfirming={isClosingAllOrders}
           onClose={() => setShowCloseAllOrdersModal(false)}
           onConfirm={handleCloseAllOrders}
+          previewErrorMessage={sweepPreviewErrorMessage}
         />
       )}
 
