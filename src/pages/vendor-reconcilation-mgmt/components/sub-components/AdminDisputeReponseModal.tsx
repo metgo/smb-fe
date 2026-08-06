@@ -40,9 +40,22 @@ export const AdminDisputeResponseModal = ({
 
   // Merge the original raise, the admin's response (if any), and every
   // reopen into a single chronological timeline - oldest first, so it
-  // reads top-to-bottom the way the dispute actually unfolded.
+  // reads top-to-bottom the way the dispute actually unfolded. `history`
+  // entries carry their own `type` ("raised" | "resolved" | "reopened") and
+  // can duplicate the top-level raisedBy/resolution snapshot for the same
+  // event - map by type instead of assuming every history entry is a
+  // reopen, and skip the top-level snapshot whenever history already has
+  // an entry of that type so nothing is shown twice.
   const disputeTimeline = useMemo(() => {
     if (!disputeDetails) return [];
+    const historyEntries: any[] = disputeDetails.history || [];
+    const hasRaisedInHistory = historyEntries.some(
+      (entry) => entry.type === "raised",
+    );
+    const hasResolvedInHistory = historyEntries.some(
+      (entry) => entry.type === "resolved",
+    );
+
     const entries: Array<{
       kind: "raised" | "responded" | "reopened";
       createdAt: string;
@@ -51,18 +64,20 @@ export const AdminDisputeResponseModal = ({
       description?: string;
       attachments?: string[];
       action?: string;
-    }> = [
-      {
+    }> = [];
+
+    if (!hasRaisedInHistory) {
+      entries.push({
         kind: "raised",
         createdAt: disputeDetails.createdAt,
         performedBy: disputeDetails.raisedBy,
         reason: disputeDetails.reason,
         description: disputeDetails.description,
         attachments: disputeDetails.attachments,
-      },
-    ];
+      });
+    }
 
-    if (disputeDetails.resolution) {
+    if (disputeDetails.resolution && !hasResolvedInHistory) {
       entries.push({
         kind: "responded",
         createdAt: disputeDetails.resolution.respondedAt,
@@ -72,15 +87,34 @@ export const AdminDisputeResponseModal = ({
       });
     }
 
-    (disputeDetails.history || []).forEach((entry: any) => {
-      entries.push({
-        kind: "reopened",
-        createdAt: entry.createdAt,
-        performedBy: entry.performedBy,
-        reason: entry.reason,
-        description: entry.description,
-        attachments: entry.attachments,
-      });
+    historyEntries.forEach((entry) => {
+      if (entry.type === "raised") {
+        entries.push({
+          kind: "raised",
+          createdAt: entry.createdAt,
+          performedBy: entry.performedBy,
+          reason: entry.reason,
+          description: entry.description,
+          attachments: entry.attachments,
+        });
+      } else if (entry.type === "resolved") {
+        entries.push({
+          kind: "responded",
+          createdAt: entry.createdAt,
+          performedBy: entry.performedBy,
+          description: entry.vendorFacingResponse,
+          action: entry.action,
+        });
+      } else if (entry.type === "reopened") {
+        entries.push({
+          kind: "reopened",
+          createdAt: entry.createdAt,
+          performedBy: entry.performedBy,
+          reason: entry.reason,
+          description: entry.description,
+          attachments: entry.attachments,
+        });
+      }
     });
 
     return entries.sort(
