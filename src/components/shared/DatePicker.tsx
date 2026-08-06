@@ -14,7 +14,9 @@ interface DatePickerProps {
   placeholder?: string;
   error?: string;
   minDate?: string;
+  maxDate?: string;
   disablePast?: boolean;
+  disableFuture?: boolean;
 }
 
 const MONTHS = [
@@ -48,7 +50,9 @@ export default function DatePicker({
   placeholder = "Select date",
   error,
   minDate,
+  maxDate,
   disablePast = false,
+  disableFuture = false,
 }: DatePickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +64,7 @@ export default function DatePicker({
 
   const todayStr = formatLocalDate(new Date());
   const effectiveMinDate = disablePast ? todayStr : minDate;
+  const effectiveMaxDate = disableFuture ? todayStr : maxDate;
 
   /** Close on outside click */
   useEffect(() => {
@@ -108,11 +113,12 @@ export default function DatePicker({
   };
 
   const isDateDisabled = (day: number) => {
-    if (!effectiveMinDate) return false;
     const d = formatLocalDate(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day),
     );
-    return d < effectiveMinDate;
+    if (effectiveMinDate && d < effectiveMinDate) return true;
+    if (effectiveMaxDate && d > effectiveMaxDate) return true;
+    return false;
   };
 
   const isToday = (day: number) => {
@@ -143,6 +149,7 @@ export default function DatePicker({
     const formatted = formatLocalDate(date);
 
     if (effectiveMinDate && formatted < effectiveMinDate) return;
+    if (effectiveMaxDate && formatted > effectiveMaxDate) return;
 
     onChange(formatted);
     setIsOpen(false);
@@ -281,7 +288,11 @@ export default function DatePicker({
           {/* Today */}
           <button
             onClick={() => {
-              if (!effectiveMinDate || todayStr >= effectiveMinDate) {
+              const withinMin =
+                !effectiveMinDate || todayStr >= effectiveMinDate;
+              const withinMax =
+                !effectiveMaxDate || todayStr <= effectiveMaxDate;
+              if (withinMin && withinMax) {
                 onChange(todayStr);
                 setIsOpen(false);
               }

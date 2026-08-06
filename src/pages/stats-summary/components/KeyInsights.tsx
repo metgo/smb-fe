@@ -6,8 +6,8 @@ interface Insights {
   totalChangePercent: number;
   newBusinesses: number;
   statusChanges: any[];
-  topGrowthDMO: string | null;
-  topGrowthWebsite: string | null;
+  topGrowthDMO: { name: string; growth: number } | null;
+  topGrowthWebsite: { name: string; growth: number } | null;
 }
 
 interface KeyInsightsProps {
@@ -32,10 +32,10 @@ export const KeyInsights = ({
       ? `New businesses: ${insights.newBusinesses.toLocaleString()}`
       : "No new business data",
     insights?.topGrowthDMO
-      ? `Top growing DMO: ${insights.topGrowthDMO}`
+      ? `Top growing DMO: ${insights.topGrowthDMO.name} (+${insights.topGrowthDMO.growth.toLocaleString()})`
       : "No top DMO data",
     insights?.topGrowthWebsite
-      ? `Top growing website: ${insights.topGrowthWebsite}`
+      ? `Top growing website: ${insights.topGrowthWebsite.name} (+${insights.topGrowthWebsite.growth.toLocaleString()})`
       : "No top website data",
   ].filter(Boolean);
 

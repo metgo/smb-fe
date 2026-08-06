@@ -37,7 +37,7 @@ import {
   AlertTriangle,
   CalendarArrowDown,
   ShoppingBag,
-  // BarChart3,
+  BarChart3,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -72,25 +72,11 @@ export default function Sidebar() {
 
   const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
 
-  // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin, siteManager)
-  const isAdminRole = [
-    "superadmin",
-    "authorityAdmin",
-    "dmo",
-    "dmoadmin",
-    "siteManager",
-  ].includes(userRole);
-
   const isVendorReconciliation = ["superadmin", "traveller"].includes(userRole);
 
   // Orders endpoints currently only allow superadmin/traveller (backend @Roles) —
   // dmo/dmoadmin/authority/authorityAdmin would only hit 403s, so hide the whole group.
-  const isDmoOrAuthorityRole = [
-    "dmo",
-    "dmoadmin",
-    "authority",
-    "authorityAdmin",
-  ].includes(userRole);
+  const isDmoOrAuthorityRole = ["dmo", "authority"].includes(userRole);
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -103,17 +89,6 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       isEnabled: true,
     },
-    // ...(isSuperadmin
-    //   ? [
-    //       {
-    //         id: "stats-summary",
-    //         path: routes.statsSummary,
-    //         label: t("stats_summary") || "Stats Summary",
-    //         icon: BarChart3,
-    //         isEnabled: true,
-    //       },
-    //     ]
-    //   : []),
     {
       id: "businesses",
       path: routes.businessMgmt,
@@ -191,7 +166,7 @@ export default function Sidebar() {
       icon: FileText,
       isEnabled: true,
     },
-    ...(isAdminRole
+    ...(isSuperadmin
       ? [
           {
             id: "pending-approvals",
@@ -371,6 +346,13 @@ export default function Sidebar() {
                 path: routes.websiteCrashes,
                 label: "Website Crashes",
                 icon: AlertTriangle,
+                isEnabled: true,
+              },
+              {
+                id: "stats-summary",
+                path: routes.statsSummary,
+                label: t("stats_summary") || "Stats Summary",
+                icon: BarChart3,
                 isEnabled: true,
               },
             ]

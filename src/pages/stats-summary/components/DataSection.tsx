@@ -6,14 +6,16 @@ interface StatData {
   id?: string;
   name: string;
   total: number;
+  prevTotal?: number;
   logo?: string;
   authorities?: Array<{
     id?: string;
     authority: string;
     total: number;
+    prevTotal?: number;
     logo?: string;
   }>;
-  status?: Array<{ name: string; total: number }>;
+  status?: Array<{ name: string; total: number; prevTotal?: number }>;
 }
 
 interface DataSectionProps {
@@ -106,7 +108,7 @@ export const DataSection = ({
         <div
           className={`p-5 pt-0 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
         >
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
             {data.map((item: StatData, index: number) => {
               const percentage =
                 total > 0 ? ((item.total / total) * 100).toFixed(1) : 0;
@@ -121,7 +123,7 @@ export const DataSection = ({
                       <img
                         src={item.logo}
                         alt={item.name}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-10 h-10 rounded object-contain"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
                         }}
@@ -144,10 +146,29 @@ export const DataSection = ({
                     </div>
                   </div>
 
-                  <div
-                    className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
-                  >
-                    {item.total.toLocaleString()}
+                  <div className="flex items-baseline gap-2">
+                    <div
+                      className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
+                    >
+                      {item.total.toLocaleString()}
+                    </div>
+                    {item.prevTotal != null &&
+                      item.prevTotal !== item.total && (
+                        <span
+                          className={`text-xs font-medium ${
+                            item.total > item.prevTotal
+                              ? isDark
+                                ? "text-emerald-400"
+                                : "text-emerald-600"
+                              : isDark
+                                ? "text-red-400"
+                                : "text-red-600"
+                          }`}
+                        >
+                          {item.total > item.prevTotal ? "↑" : "↓"}{" "}
+                          {item.prevTotal.toLocaleString()}
+                        </span>
+                      )}
                   </div>
 
                   {/* Sub Items */}
