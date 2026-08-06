@@ -82,6 +82,7 @@
   "my_profile": "ملفي الشخصي",
   "settings": "الإعدادات",
   "documents": "صور قوالب البريد الإلكتروني",
+  "stats_summary": "ملخص الإحصائيات",
   "version": "الإصدار",
   "max_characters": "الحد الأقصى للحروف",
   "char_count": "{{count}} / {{limit}} حرف",

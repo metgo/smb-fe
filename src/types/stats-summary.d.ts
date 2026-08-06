@@ -2,22 +2,26 @@ interface IAuthorityStats {
   authorityId: string | null;
   authorityName: string;
   total: number;
+  prevTotal: number;
 }
 
 interface IDMOStats {
   dmoId: string | null;
   total: number;
+  prevTotal: number;
   authorities: IAuthorityStats[];
 }
 
 interface IStatusCount {
   name: string;
   total: number;
+  prevTotal: number;
 }
 
 interface IWebsiteStats {
   websiteId: string | null;
   total: number;
+  prevTotal: number;
   status: IStatusCount[];
 }
 
@@ -30,8 +34,14 @@ interface IInsights {
   totalChangePercent: number;
   newBusinesses: number;
   statusChanges: IStatusChange[];
-  topGrowthDMO: string | null;
-  topGrowthWebsite: string | null;
+  topGrowthDMO: {
+    name: string;
+    growth: number;
+  } | null;
+  topGrowthWebsite: {
+    name: string;
+    growth: number;
+  } | null;
 }
 
 interface IStatsSummaryData {
@@ -46,6 +56,7 @@ interface IBusinessStatsRes {
   _id: string;
   item: string;
   total: number;
+  prevTotal: number;
   data: IStatsSummaryData[];
   insights: IInsights;
   summaryDate: string;
@@ -65,6 +76,7 @@ interface IPoiStats {
   _id: string;
   item: string;
   total: number;
+  prevTotal: number;
   data: {
     dmos: IDMOStats[];
     websites: IWebsiteStats[];

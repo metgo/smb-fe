@@ -91,6 +91,7 @@
   "my_profile": "הפרופיל שלי",
   "settings": "הגדרות",
   "documents": "תמונות תבנית אימייל",
+  "stats_summary": "סיכום נתונים סטטיסטיים",
   "version": "גרסה",
   "max_characters": "מקסימום תווים",
   "char_count": "{{count}} / {{limit}} תווים",
