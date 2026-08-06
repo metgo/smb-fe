@@ -164,7 +164,7 @@ export const AdminDisputeResponseModal = ({
                   : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            {t("dispute_and_resolution")}
+            {t("dispute_history")}
           </button>
         </div>
 
