@@ -57,7 +57,12 @@ interface OrderProduct {
     platformFee: number;
     disputeId?: string;
     reconciliationStatus?:
-      "pending" | "approved" | "canceled" | "disputed" | "rejected" | "closed";
+      | "pending"
+      | "approved"
+      | "canceled"
+      | "disputed"
+      | "rejected"
+      | "closed";
     vendorFacingResponse?: string;
   };
   customerInformation: {
@@ -254,6 +259,8 @@ export const VendorMonthlyReport = () => {
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
     useGetOrderProductDetailsQuery(detailsOrderId as string, {
       skip: !detailsOrderId,
+
+      refetchOnMountOrArgChange: true,
     });
   const [cancelOrderProduct] = useCancelOrderProductMutation();
   const [openDispute] = useOpenDisputeMutation();

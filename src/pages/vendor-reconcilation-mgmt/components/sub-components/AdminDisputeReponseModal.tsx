@@ -36,6 +36,8 @@ export const AdminDisputeResponseModal = ({
   const { data: disputeDetails, isLoading: isLoadingDispute } =
     useGetDisputeDetailsQuery(actualDisputeId as string, {
       skip: !actualDisputeId,
+
+      refetchOnMountOrArgChange: true,
     });
 
   // Merge the original raise, the admin's response (if any), and every
