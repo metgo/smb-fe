@@ -1,7 +1,13 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
 import OrderDetailsModal from "./OrderDetailsModal";
 import DisputeModal from "./DisputeModal";
@@ -16,6 +22,7 @@ import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { uploadWithProgress } from "@/helpers";
 import {
   useGetOrderProductDetailsQuery,
+  useLazyGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
   useOpenDisputeMutation,
   useReopenDisputeMutation,
@@ -265,6 +272,10 @@ export const VendorMonthlyReport = () => {
   const [cancelOrderProduct] = useCancelOrderProductMutation();
   const [openDispute] = useOpenDisputeMutation();
   const [reopenDispute] = useReopenDisputeMutation();
+  const [fetchOrderDetailsForReopen] = useLazyGetOrderProductDetailsQuery();
+  const [reopenFetchingId, setReopenFetchingId] = useState<string | null>(
+    null,
+  );
   // const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkMarkOrderAsCompleted, { isLoading: isBulkCompleting }] =
@@ -468,6 +479,7 @@ export const VendorMonthlyReport = () => {
       return;
     }
     setSelectedOrder(order);
+    setIsReopenDisputeFlow(false);
     setShowDisputeModal(true);
   };
 
@@ -480,6 +492,31 @@ export const VendorMonthlyReport = () => {
     setShowOrderDetails(false);
     setIsReopenDisputeFlow(true);
     setShowDisputeModal(true);
+  };
+
+  // Row actions only have the list-mapped order, whose disputeId is
+  // frequently missing - fetch the order's details (whose disputeId is
+  // reliable, same as the OrderDetailsModal path) before opening the
+  // reopen modal, instead of failing with "dispute not found".
+  const handleReopenFromRow = async (order: MonthlyOrder) => {
+    if (userRole !== "traveller") {
+      toast.error(t("only_traveller_can_open_disputes"));
+      return;
+    }
+    setReopenFetchingId(order._id);
+    try {
+      const details = await fetchOrderDetailsForReopen(order._id).unwrap();
+      const mapped = mapOrderProductDetails(details);
+      handleReopenDispute({
+        ...order,
+        ...mapped,
+        disputeId: mapped.disputeId || order.disputeId,
+      });
+    } catch {
+      toast.error(t("reopen_dispute_failed"));
+    } finally {
+      setReopenFetchingId(null);
+    }
   };
 
   const handleSubmitReopenDispute = async (
@@ -993,6 +1030,7 @@ export const VendorMonthlyReport = () => {
             order.reconciliationStatus !== "disputed" &&
             order.reconciliationStatus !== "closed" &&
             order.reconciliationStatus !== "approved" &&
+            order.reconciliationStatus !== "rejected" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -1000,6 +1038,21 @@ export const VendorMonthlyReport = () => {
                 title={t("dispute")}
               >
                 <AlertTriangle className="w-4 h-4" />
+              </button>
+            )}
+          {order.reconciliationStatus === "rejected" &&
+            userRole === "traveller" && (
+              <button
+                onClick={() => handleReopenFromRow(order)}
+                disabled={reopenFetchingId === order._id}
+                className="p-1.5 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t("reopen_dispute_btn")}
+              >
+                {reopenFetchingId === order._id ? (
+                  <div className="w-4 h-4 border-2 border-orange-600 dark:border-orange-400 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <RotateCcw className="w-4 h-4" />
+                )}
               </button>
             )}
           {order.reconciliationStatus === "disputed" && adminView && (

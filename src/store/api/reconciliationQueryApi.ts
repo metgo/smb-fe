@@ -212,6 +212,7 @@ export const reconciliationQueryApi = createApi({
 export const {
   useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
+  useLazyGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
   useApproveOrderProductMutation,
   useOpenDisputeMutation,
