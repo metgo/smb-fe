@@ -43,16 +43,31 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
       ];
 
       try {
-        const business = await this.BusinessesAuditModel.findOne({
+        const baseBusinessFilter = {
           slug,
           status: CommonStatus.APPROVED,
-          isActive: true,
           isDeleted: { $ne: true },
+        };
+
+        // First try to find the latest audit doc with isActive: true
+        let business = await this.BusinessesAuditModel.findOne({
+          ...baseBusinessFilter,
+          isActive: true,
         })
           .sort({ createdAt: -1 })
           .select(select)
           .lean()
           .populate(populate);
+
+        // If no isActive doc found, fall back to the latest audit doc regardless of isActive
+        if (!business) {
+          business = await this.BusinessesAuditModel.findOne(baseBusinessFilter)
+            .sort({ createdAt: -1 })
+            .select(select)
+            .lean()
+            .populate(populate);
+        }
+
         if (!business) {
           throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
         }

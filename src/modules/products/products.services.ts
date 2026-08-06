@@ -99,36 +99,68 @@ export class ProductsService {
           '_id slug logo name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location tagsId',
       };
 
-      let product = await this.ProductsAuditModel.findOne({
+      const baseProductFilter: any = {
         slug,
-        isActive: true,
         status: CommonStatus.APPROVED,
         isDeleted: { $ne: true },
         $or: [
           { 'quantity.remaining': { $gt: 0 } },
           { 'quantity.isUnlimited': true },
         ],
+      };
+
+      // First try to find the latest audit doc with isActive: true
+      let product = await this.ProductsAuditModel.findOne({
+        ...baseProductFilter,
+        isActive: true,
       })
+        .sort({ createdAt: -1 })
         .populate<{ businessId: Business }>(businessPopulate)
         .populate(populate)
         .select(select)
         .lean();
 
+      // If no isActive doc found, fall back to the latest audit doc regardless of isActive
+      if (!product) {
+        product = await this.ProductsAuditModel.findOne(baseProductFilter)
+          .sort({ createdAt: -1 })
+          .populate<{ businessId: Business }>(businessPopulate)
+          .populate(populate)
+          .select(select)
+          .lean();
+      }
+
       if (!product && mongoose.Types.ObjectId.isValid(slug)) {
-        product = await this.ProductsAuditModel.findOne({
+        const baseByIdFilter: any = {
           productId: slug,
-          isActive: true,
           status: CommonStatus.APPROVED,
           isDeleted: { $ne: true },
           $or: [
             { 'quantity.remaining': { $gt: 0 } },
             { 'quantity.isUnlimited': true },
           ],
+        };
+
+        // First try isActive: true by productId
+        product = await this.ProductsAuditModel.findOne({
+          ...baseByIdFilter,
+          isActive: true,
         })
+          .sort({ createdAt: -1 })
           .populate<{ businessId: Business }>(businessPopulate)
           .populate(populate)
           .select(select)
           .lean();
+
+        // Fall back to latest audit doc by productId
+        if (!product) {
+          product = await this.ProductsAuditModel.findOne(baseByIdFilter)
+            .sort({ createdAt: -1 })
+            .populate<{ businessId: Business }>(businessPopulate)
+            .populate(populate)
+            .select(select)
+            .lean();
+        }
       }
 
       if (!product) {

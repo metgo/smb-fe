@@ -60,11 +60,9 @@ implements IQueryHandler<GetEventBySlugQuery> {
 
       today.setUTCHours(0, 0, 0, 0);
 
-      let findQuery: any = {
+      const baseEventFilter: any = {
         slug,
         status: CommonStatus.APPROVED,
-        isActive: true,
-
         dayDescription: {
           $elemMatch: {
             date: {
@@ -72,18 +70,8 @@ implements IQueryHandler<GetEventBySlugQuery> {
             },
           },
         },
-
         isDeleted: { $ne: true },
       };
-
-      const orConditions = [];
-
-      if (orConditions.length) {
-        findQuery = {
-          ...findQuery,
-          $or: orConditions,
-        };
-      }
 
       const populate = [
         {
@@ -95,10 +83,25 @@ implements IQueryHandler<GetEventBySlugQuery> {
       const select
         = '_id location cover images cover name nameHe nameAr address countryCode phoneNumber shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation groupTypesId accessibilitiesId subCategoriesId slug hasExternalTicket ticketBuyLink dayDescription payment eventId';
 
-      const event = await this.EventsAuditModel.findOne(findQuery)
+      // First try the latest audit doc with isActive: true
+      let event = await this.EventsAuditModel.findOne({
+        ...baseEventFilter,
+        isActive: true,
+      })
+        .sort({ createdAt: -1 })
         .populate(populate)
         .lean()
         .select(select);
+
+      // If no isActive doc found, fall back to the latest audit doc regardless of isActive
+      if (!event) {
+        event = await this.EventsAuditModel.findOne(baseEventFilter)
+          .sort({ createdAt: -1 })
+          .populate(populate)
+          .lean()
+          .select(select);
+      }
+
       if (!event) {
         throw new NotFoundException(ServerErrors.EVENT.NOT_FOUND);
       }
