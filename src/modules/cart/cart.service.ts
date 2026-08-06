@@ -648,6 +648,19 @@ export class CartService {
         )?._id;
       }
 
+      await Promise.all(
+        command.vendorProducts.flatMap(vendor => vendor.products.map(async p => {
+          if (p.itemType === OrderItemType.TICKET) {
+            await this.queryBus.execute(new GetTicketByIdQuery(p._id));
+          } else {
+            await this.productsService.getProductInformationForCart({
+              id: p._id,
+              quantity: p.quantity,
+            });
+          }
+        })),
+      );
+
       const vendorProducts = command.vendorProducts.map(vendor => ({
         _id: new mongoose.Types.ObjectId(vendor._id),
         products: vendor.products.map(p => ({

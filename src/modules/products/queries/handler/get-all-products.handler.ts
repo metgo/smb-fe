@@ -72,7 +72,7 @@ implements IQueryHandler<GetAllProductsQuery> {
         return { totalData: 0, products: [] };
       }
 
-      let select = '_id slug name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId';
+      let select = '_id productId slug name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId';
 
       let populate: any = [
         {
@@ -267,10 +267,10 @@ implements IQueryHandler<GetAllProductsQuery> {
 
           const mappedProducts = await Promise.all(
             results.map((product: any) => {
-              const { _id, ...rest } = product;
+              const { _id, productId, ...rest } = product;
               return {
                 ...rest,
-                _id,
+                _id: productId,
                 businessId: {
                   ...rest.businessId,
                   logo: sanitizeImages([rest?.businessId?.logo])[0],
@@ -334,13 +334,13 @@ implements IQueryHandler<GetAllProductsQuery> {
 
       const mappedProducts = await Promise.all(
         productsList.data.map((product: any) => {
-          const { _id, ...rest } = product.toObject
+          const { _id, productId, ...rest } = product.toObject
             ? product.toObject()
             : product;
 
           return {
             ...rest,
-            _id,
+            _id: productId,
             businessId: {
               ...rest.businessId,
               logo: sanitizeImages([rest?.businessId?.logo])[0],
