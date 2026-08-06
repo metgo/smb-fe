@@ -15,6 +15,7 @@ interface QRWebsiteModalProps {
   open: boolean;
   website: Website | null;
   isDark?: boolean;
+  pathname?: string;
   setSelectedWebsite: (v: any) => void;
 }
 
@@ -66,10 +67,13 @@ export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
   open,
   website,
   isDark = false,
+  pathname = "",
   setSelectedWebsite,
 }) => {
   const { t } = useTranslation("businesses");
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
+
+  const fullUrl = website?.url ? `${website.url}${pathname}` : "";
 
   useEffect(() => {
     if (!website?.logo) return;
@@ -121,7 +125,7 @@ export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
           >
             <QRCodeCanvas
               id={`qr-canvas-${website.name}`}
-              value={website.url || ""}
+              value={fullUrl}
               size={220}
               level="Q"
               bgColor={isDark ? "#111827" : "#ffffff"}
@@ -164,7 +168,7 @@ export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
           >
             {t("scanToVisit")}{" "}
             <span className="font-bold text-blue-500 underline">
-              {new URL(website.url).hostname}
+              {new URL(fullUrl).hostname}
             </span>
           </p>
         </div>

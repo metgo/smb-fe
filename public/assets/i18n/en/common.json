@@ -80,6 +80,7 @@
   "vendor_reconciliation": "Vendor Reconciliation",
   "settings": "Settings",
   "documents": "Email Template Images",
+  "stats_summary": "Stats Summary",
   "version": "Version",
   "max_characters": "Max characters",
   "char_count": "{{count}} / {{limit}} characters",
