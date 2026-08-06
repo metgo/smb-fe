@@ -1,15 +1,11 @@
 import clsx from "clsx";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
   Building2,
   MapPin,
   BarChart3,
-  ChevronLeft,
   RefreshCw,
   Download,
-  Calendar as CalendarIcon,
-  ChevronRight,
 } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -17,24 +13,35 @@ import {
   useGetPoiSummaryQuery,
 } from "@/store/api/analyticsApi";
 import { useCommon } from "@/hooks/useCommon";
+import DatePicker from "@/components/shared/DatePicker";
 import { SkeletonCard } from "./components/SkeletonCard";
 import { SkeletonSection } from "./components/SkeletonSection";
 import { KeyInsights } from "./components/KeyInsights";
 import { DataSection } from "./components/DataSection";
 import { CopyableId } from "./components/CopyableId";
 
+/** Local YYYY-MM-DD formatter (no timezone issues) */
+const formatLocalDate = (date: Date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
 interface StatData {
   id?: string;
   name: string;
   total: number;
+  prevTotal?: number;
   logo?: string;
   authorities?: Array<{
     id?: string;
     authority: string;
     total: number;
+    prevTotal?: number;
     logo?: string;
   }>;
-  status?: Array<{ name: string; total: number }>;
+  status?: Array<{ name: string; total: number; prevTotal?: number }>;
 }
 
 interface ItemData {
@@ -53,8 +60,8 @@ interface StatsResponse {
     totalChangePercent: number;
     newBusinesses: number;
     statusChanges: any[];
-    topGrowthDMO: string | null;
-    topGrowthWebsite: string | null;
+    topGrowthDMO: { name: string; growth: number } | null;
+    topGrowthWebsite: { name: string; growth: number } | null;
   };
 }
 
@@ -69,16 +76,20 @@ const ITEM_TYPES = [
 type ItemType = (typeof ITEM_TYPES)[number]["id"];
 
 const StatsSummaryPage = () => {
-  const { t } = useTranslation("common");
   const { isDark, textPrimary } = useThemeClasses();
 
   const [selectedItemType, setSelectedItemType] =
     useState<ItemType>("business");
 
+  const [selectedDate, setSelectedDate] = useState<string>();
+
   const { data: businessData, isLoading: isBusinessLoading } =
-    useGetBusinessSummaryQuery({}, { skip: selectedItemType !== "business" });
+    useGetBusinessSummaryQuery(
+      { date: selectedDate },
+      { skip: selectedItemType !== "business" },
+    );
   const { data: poiData, isLoading: isPoiLoading } = useGetPoiSummaryQuery(
-    {},
+    { date: selectedDate },
     { skip: selectedItemType !== "poi" },
   );
 
@@ -123,6 +134,7 @@ const StatsSummaryPage = () => {
             id: dmo.dmoId || undefined,
             name: dmoInfo?.name || dmo.dmoId || "Unassigned",
             total: dmo.total,
+            prevTotal: dmo.prevTotal,
             logo: dmoInfo?.logoPath,
             authorities: dmo.authorities?.map((auth: IAuthorityStats) => {
               const authInfo = getAuthorityById(auth.authorityId, dmo.dmoId);
@@ -130,6 +142,7 @@ const StatsSummaryPage = () => {
                 id: auth.authorityId || undefined,
                 authority: authInfo?.name || auth.authorityName,
                 total: auth.total,
+                prevTotal: auth.prevTotal,
                 logo: authInfo?.logo,
               };
             }),
@@ -141,6 +154,7 @@ const StatsSummaryPage = () => {
             id: website.websiteId || undefined,
             name: websiteInfo?.name || website.websiteId || "Unassigned",
             total: website.total,
+            prevTotal: website.prevTotal,
             logo: websiteInfo?.logo,
             status: website.status,
           };
@@ -160,7 +174,6 @@ const StatsSummaryPage = () => {
 
   const statsData = transformStatsData(data);
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
   );
@@ -175,12 +188,6 @@ const StatsSummaryPage = () => {
       }
       return newSet;
     });
-  };
-
-  const handleDateChange = (daysOffset: number) => {
-    const newDate = new Date(selectedDate);
-    newDate.setDate(newDate.getDate() - daysOffset);
-    setSelectedDate(newDate);
   };
 
   const getStatusBadge = (statusName: string) => {
@@ -236,13 +243,13 @@ const StatsSummaryPage = () => {
           <h1
             className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}
           >
-            {t("stats_summary") || "Stats Summary"}
+            Stats Summary
           </h1>
           <p
             className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
-            {t("stats_description") ||
-              "Track daily counts, distributions, and actionable insights for all system items."}
+            Track daily counts, distributions, and actionable insights for all
+            system items.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -267,7 +274,7 @@ const StatsSummaryPage = () => {
             }`}
           >
             <Download className="w-4 h-4" />
-            <span>{t("export") || "Export"}</span>
+            <span>Export</span>
           </button>
         </div>
       </div>
@@ -283,55 +290,21 @@ const StatsSummaryPage = () => {
               <label
                 className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}
               >
-                {t("select_date") || "Select Date"}
+                Select Date
               </label>
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleDateChange(1)}
-                  className={`p-2.5 rounded-xl border transition-all ${
-                    isDark
-                      ? "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-                      : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                <div
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border font-medium min-w-45 justify-center ${
-                    isDark
-                      ? "bg-gray-800 border-gray-700 text-white"
-                      : "bg-white border-gray-200 text-gray-900"
-                  }`}
-                >
-                  <CalendarIcon
-                    className={`w-4 h-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                <div className="w-45">
+                  <DatePicker
+                    value={selectedDate ? selectedDate : ""}
+                    onChange={(date) =>
+                      setSelectedDate(date || formatLocalDate(new Date()))
+                    }
+                    disableFuture
                   />
-                  <span>
-                    {selectedDate.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
                 </div>
 
                 <button
-                  onClick={() => handleDateChange(-1)}
-                  disabled={selectedDate >= new Date()}
-                  className={`p-2.5 rounded-xl border transition-all ${
-                    selectedDate >= new Date()
-                      ? "opacity-40 cursor-not-allowed"
-                      : isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={() => setSelectedDate(new Date())}
+                  onClick={() => setSelectedDate(formatLocalDate(new Date()))}
                   className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${
                     isDark
                       ? "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
@@ -352,7 +325,7 @@ const StatsSummaryPage = () => {
             <label
               className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}
             >
-              {t("item_type") || "Item Type"}
+              Item Type
             </label>
             <div className="flex flex-wrap gap-2">
               {ITEM_TYPES.map((type) => {
@@ -436,19 +409,20 @@ const StatsSummaryPage = () => {
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              {auth.logo && (
+                              {auth.logo ? (
                                 <img
                                   src={auth.logo}
                                   alt={auth.authority}
-                                  className="w-4 h-4 rounded-full object-cover"
+                                  className="w-4 h-4 rounded object-fit"
                                   onError={(e) => {
                                     e.currentTarget.style.display = "none";
                                   }}
                                 />
+                              ) : (
+                                <Building2
+                                  className={`w-3.5 h-3.5 ${isDark ? "text-gray-500" : "text-gray-400"}`}
+                                />
                               )}
-                              <Building2
-                                className={`w-3.5 h-3.5 ${isDark ? "text-gray-500" : "text-gray-400"}`}
-                              />
                               <div className="flex items-center gap-2">
                                 <span
                                   className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}
@@ -464,6 +438,23 @@ const StatsSummaryPage = () => {
                               className={`text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-800"}`}
                             >
                               {auth.total.toLocaleString()}
+                              {auth.prevTotal != null &&
+                                auth.prevTotal !== auth.total && (
+                                  <span
+                                    className={`ml-1.5 text-xs font-medium ${
+                                      auth.total > auth.prevTotal
+                                        ? isDark
+                                          ? "text-emerald-400"
+                                          : "text-emerald-600"
+                                        : isDark
+                                          ? "text-red-400"
+                                          : "text-red-600"
+                                    }`}
+                                  >
+                                    ({auth.total > auth.prevTotal ? "↑" : "↓"}{" "}
+                                    {auth.prevTotal.toLocaleString()})
+                                  </span>
+                                )}
                             </span>
                           </div>
                         ))}
@@ -503,6 +494,26 @@ const StatsSummaryPage = () => {
                               className={`text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-800"}`}
                             >
                               {status.total.toLocaleString()}
+                              {status.prevTotal != null &&
+                                status.prevTotal !== status.total && (
+                                  <span
+                                    className={`ml-1.5 text-xs font-medium ${
+                                      status.total > status.prevTotal
+                                        ? isDark
+                                          ? "text-emerald-400"
+                                          : "text-emerald-600"
+                                        : isDark
+                                          ? "text-red-400"
+                                          : "text-red-600"
+                                    }`}
+                                  >
+                                    (
+                                    {status.total > status.prevTotal
+                                      ? "↑"
+                                      : "↓"}{" "}
+                                    {status.prevTotal.toLocaleString()})
+                                  </span>
+                                )}
                             </span>
                           </div>
                         ))}
