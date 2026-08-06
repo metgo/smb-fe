@@ -74,10 +74,10 @@ export default function OrderDetailsModal({
   return (
     <ModalWrapper onClose={onClose} showSpinner={loading} maxWidth="max-w-2xl">
       <div
-        className={`${bgPrimary} rounded-lg max-w-2xl w-full p-4 max-h-[90vh] overflow-y-auto`}
+        className={`${bgPrimary} rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden`}
       >
         {/* Header */}
-        <div>
+        <div className="shrink-0 px-4 pt-4">
           <h2 className={`text-xl font-bold ${textPrimary}`}>
             {t("order_details_title")} - {order._id}
           </h2>
@@ -88,7 +88,7 @@ export default function OrderDetailsModal({
 
         {/* Tabs */}
         {showTabs && (
-          <div className="flex border-b border-gray-200 dark:border-gray-700 mt-4">
+          <div className="flex border-b border-gray-200 dark:border-gray-700 mt-4 px-4 shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab("info")}
@@ -115,7 +115,7 @@ export default function OrderDetailsModal({
         )}
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {(!showTabs || activeTab === "info") && (
             <>
               {/* Product Information */}
@@ -347,7 +347,7 @@ export default function OrderDetailsModal({
 
         {/* Actions */}
         <div
-          className={` bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
+          className={`${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3 shrink-0`}
         >
           {/* <>
             {userRole === "superadmin" &&

@@ -109,11 +109,11 @@ export const AdminDisputeResponseModal = ({
   return (
     <ModalWrapper onClose={onClose} maxWidth="max-w-2xl" height="">
       <div
-        className={`${bgPrimary} rounded-lg  w-full max-h-[90vh] overflow-y-auto p-4`}
+        className={`${bgPrimary} rounded-lg w-full max-h-[90vh] flex flex-col overflow-hidden`}
       >
         {/* Header */}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0 px-4 pt-4">
           <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
@@ -128,7 +128,7 @@ export const AdminDisputeResponseModal = ({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700 mt-4">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 mt-4 px-4 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("info")}
@@ -154,7 +154,7 @@ export const AdminDisputeResponseModal = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {activeTab === "info" && (
             <>
               {/* Order Details */}
@@ -379,7 +379,7 @@ export const AdminDisputeResponseModal = ({
 
         {/* Actions */}
         <div
-          className={` ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-between gap-3`}
+          className={`${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-between gap-3 shrink-0`}
         >
           {!isResolved && activeTab === "dispute" && (
             <div className="flex gap-3">
