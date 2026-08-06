@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Package, User, CreditCard, Truck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
@@ -48,6 +49,11 @@ export default function OrderDetailsModal({
       skip: !order.disputeId || !showDisputeTimeline,
       refetchOnMountOrArgChange: true,
     });
+  // Only vendors get a separate dispute tab (superadmin already has a
+  // dedicated dispute modal) - and only when there's actually dispute
+  // info to show there.
+  const showTabs = showDisputeTimeline;
+  const [activeTab, setActiveTab] = useState<"info" | "dispute">("info");
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
   const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
   const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
@@ -80,219 +86,263 @@ export default function OrderDetailsModal({
           </p>
         </div>
 
+        {/* Tabs */}
+        {showTabs && (
+          <div className="flex border-b border-gray-200 dark:border-gray-700 mt-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab("info")}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                activeTab === "info"
+                  ? "border-orange-500 text-orange-600 dark:text-orange-400"
+                  : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {t("order_product_info")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("dispute")}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                activeTab === "dispute"
+                  ? "border-orange-500 text-orange-600 dark:text-orange-400"
+                  : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {t("dispute_information")}
+            </button>
+          </div>
+        )}
+
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Product Information */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Package className={`w-5 h-5 ${textSecondary}`} />
-              <h3 className={`text-lg font-semibold ${textPrimary}`}>
-                {t("product_information")}
-              </h3>
-            </div>
-            <div className="flex items-start gap-4">
-              <img
-                src={order.productImage}
-                alt={order.productName}
-                className="w-24 h-24 rounded-lg object-cover"
-              />
-              <div className="flex-1">
-                <h4 className={`text-lg font-semibold ${textPrimary} mb-1`}>
-                  {order.productName || "-"}
-                </h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+          {(!showTabs || activeTab === "info") && (
+            <>
+              {/* Product Information */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Package className={`w-5 h-5 ${textSecondary}`} />
+                  <h3 className={`text-lg font-semibold ${textPrimary}`}>
+                    {t("product_information")}
+                  </h3>
+                </div>
+                <div className="flex items-start gap-4">
+                  <img
+                    src={order.productImage}
+                    alt={order.productName}
+                    className="w-24 h-24 rounded-lg object-cover"
+                  />
+                  <div className="flex-1">
+                    <h4 className={`text-lg font-semibold ${textPrimary} mb-1`}>
+                      {order.productName || "-"}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className={textTertiary}>{t("category")}:</span>{" "}
+                        <span className={textSecondary}>
+                          {order.productCategory || "-"}
+                        </span>
+                      </div>
+                    </div>
+                    {["approved", "rejected"].includes(
+                      order.reconciliationStatus,
+                    ) &&
+                      userRole === UserRole.TRAVELLER && (
+                        <p className={`text-sm ${textSecondary}`}>
+                          {t("your_dispute_has_been")}{" "}
+                          <span
+                            className={
+                              order.reconciliationStatus === "approved"
+                                ? isDark
+                                  ? "text-green-400"
+                                  : "text-green-600"
+                                : isDark
+                                  ? "text-red-400"
+                                  : "text-red-600"
+                            }
+                          >
+                            {t(order.reconciliationStatus)}
+                          </span>
+                        </p>
+                      )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Information */}
+              <div className={`${bgSecondary} rounded-lg p-4`}>
+                <h3 className={`text-sm font-semibold ${textPrimary} mb-3`}>
+                  {t("order_information")}
+                </h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className={textTertiary}>{t("category")}:</span>{" "}
-                    <span className={textSecondary}>
-                      {order.productCategory || "-"}
+                    <div className={`${textTertiary} mb-1`}>
+                      {t("order_id_label")}
+                    </div>
+                    <div className={`${textSecondary} font-medium`}>
+                      {order._id}
+                    </div>
+                  </div>
+                  <div>
+                    <div className={`${textTertiary} mb-1`}>
+                      {t("purchase_date")}
+                    </div>
+                    <div className={`${textSecondary} font-medium`}>
+                      {formatDate(order.purchaseDate)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className={`${textTertiary} mb-1`}>{t("status")}</div>
+                    <div className="mt-1">
+                      <span
+                        className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                          order.status === "pending"
+                            ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400"
+                            : order.status === "approved"
+                              ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400"
+                              : order.status === "disputed"
+                                ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400"
+                                : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"
+                        }`}
+                      >
+                        {t(order.status)}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className={`${textTertiary} mb-1`}>
+                      {t("quantity")}
+                    </div>
+                    <div className={`${textSecondary} font-medium`}>
+                      {order.quantity || "-"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className={`${textTertiary} mb-1`}>
+                      {t("unit_price")}
+                    </div>
+                    <div className={`${textSecondary} font-medium`}>
+                      ₪{order.unitPrice.toFixed(2) || "-"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className={`${textTertiary} mb-1`}>{t("total")}</div>
+                    <div className={`${textPrimary} font-bold`}>
+                      ₪{order.totalPrice.toFixed(2) || "-"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Information */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <User className={`w-5 h-5 ${textSecondary}`} />
+                  <h3 className={`text-lg font-semibold ${textPrimary}`}>
+                    {t("customer_information")}
+                  </h3>
+                </div>
+                <div
+                  className={`${bgSecondary} rounded-lg p-4 space-y-2 text-sm`}
+                >
+                  <div className="flex justify-between">
+                    <span className={textTertiary}>{t("name")}</span>
+                    <span className={`${textSecondary} font-medium`}>
+                      {order.customerName || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={textTertiary}>{t("email")}</span>
+                    <span className={`${textSecondary} font-medium`}>
+                      {order.customerEmail || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={textTertiary}>{t("phone")}</span>
+                    <span className={`${textSecondary} font-medium`}>
+                      {order.customerPhone || "-"}
                     </span>
                   </div>
                 </div>
-                {["approved", "rejected"].includes(
-                  order.reconciliationStatus,
-                ) &&
-                  userRole === UserRole.TRAVELLER && (
-                    <p className={`text-sm ${textSecondary}`}>
-                      {t("your_dispute_has_been")}{" "}
-                      <span
-                        className={
-                          order.reconciliationStatus === "approved"
-                            ? isDark
-                              ? "text-green-400"
-                              : "text-green-600"
-                            : isDark
-                              ? "text-red-400"
-                              : "text-red-600"
-                        }
-                      >
-                        {t(order.reconciliationStatus)}
-                      </span>
-                    </p>
-                  )}
               </div>
-            </div>
-          </div>
+
+              {/* Delivery Information */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Truck className={`w-5 h-5 ${textSecondary}`} />
+                  <h3 className={`text-lg font-semibold ${textPrimary}`}>
+                    {t("delivery_information")}
+                  </h3>
+                </div>
+                <div
+                  className={`${bgSecondary} rounded-lg p-4 space-y-2 text-sm`}
+                >
+                  <div className="flex justify-between">
+                    <span className={textTertiary}>{t("delivery_method")}</span>
+                    <span className={`${textSecondary} font-medium`}>
+                      {order.deliveryMethod || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={textTertiary}>
+                      {t("delivery_address")}
+                    </span>
+                    <span
+                      className={`${textSecondary} font-medium text-right ${isRTL ? "text-left" : "text-right"}`}
+                    >
+                      {order.deliveryAddress || "-"}
+                    </span>
+                  </div>
+                  {order.specialInstructions && (
+                    <div className="flex justify-between">
+                      <span className={textTertiary}>
+                        {t("special_instructions")}
+                      </span>
+                      <span className={`${textSecondary} font-medium`}>
+                        {order.specialInstructions}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <CreditCard className={`w-5 h-5 ${textSecondary}`} />
+                  <h3 className={`text-lg font-semibold ${textPrimary}`}>
+                    {t("payment_information")}
+                  </h3>
+                </div>
+                <div
+                  className={`${bgSecondary} rounded-lg p-4 space-y-2 text-sm`}
+                >
+                  <div className="flex justify-between">
+                    <span className={textTertiary}>{t("payment_method")}</span>
+                    <span className={`${textSecondary} font-medium`}>
+                      {order.paymentMethod || "-"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className={textTertiary}>{t("payment_status")}</span>
+                    <span className={`${textSecondary} font-medium`}>
+                      {order.paymentStatus || "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Dispute Information - full raise/response/reopen timeline,
               same as what admins see in the dispute resolution modal */}
-          {showDisputeTimeline && (
+          {showTabs && activeTab === "dispute" && (
             <DisputeTimeline
               disputeDetails={disputeDetails}
               isLoading={isLoadingDispute}
             />
           )}
-
-          {/* Order Information */}
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <h3 className={`text-sm font-semibold ${textPrimary} mb-3`}>
-              {t("order_information")}
-            </h3>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <div className={`${textTertiary} mb-1`}>
-                  {t("order_id_label")}
-                </div>
-                <div className={`${textSecondary} font-medium`}>
-                  {order._id}
-                </div>
-              </div>
-              <div>
-                <div className={`${textTertiary} mb-1`}>
-                  {t("purchase_date")}
-                </div>
-                <div className={`${textSecondary} font-medium`}>
-                  {formatDate(order.purchaseDate)}
-                </div>
-              </div>
-              <div>
-                <div className={`${textTertiary} mb-1`}>{t("status")}</div>
-                <div className="mt-1">
-                  <span
-                    className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      order.status === "pending"
-                        ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400"
-                        : order.status === "approved"
-                          ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400"
-                          : order.status === "disputed"
-                            ? "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400"
-                            : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"
-                    }`}
-                  >
-                    {t(order.status)}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <div className={`${textTertiary} mb-1`}>{t("quantity")}</div>
-                <div className={`${textSecondary} font-medium`}>
-                  {order.quantity || "-"}
-                </div>
-              </div>
-              <div>
-                <div className={`${textTertiary} mb-1`}>{t("unit_price")}</div>
-                <div className={`${textSecondary} font-medium`}>
-                  ₪{order.unitPrice.toFixed(2) || "-"}
-                </div>
-              </div>
-              <div>
-                <div className={`${textTertiary} mb-1`}>{t("total")}</div>
-                <div className={`${textPrimary} font-bold`}>
-                  ₪{order.totalPrice.toFixed(2) || "-"}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Customer Information */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <User className={`w-5 h-5 ${textSecondary}`} />
-              <h3 className={`text-lg font-semibold ${textPrimary}`}>
-                {t("customer_information")}
-              </h3>
-            </div>
-            <div className={`${bgSecondary} rounded-lg p-4 space-y-2 text-sm`}>
-              <div className="flex justify-between">
-                <span className={textTertiary}>{t("name")}</span>
-                <span className={`${textSecondary} font-medium`}>
-                  {order.customerName || "-"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className={textTertiary}>{t("email")}</span>
-                <span className={`${textSecondary} font-medium`}>
-                  {order.customerEmail || "-"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className={textTertiary}>{t("phone")}</span>
-                <span className={`${textSecondary} font-medium`}>
-                  {order.customerPhone || "-"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Delivery Information */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Truck className={`w-5 h-5 ${textSecondary}`} />
-              <h3 className={`text-lg font-semibold ${textPrimary}`}>
-                {t("delivery_information")}
-              </h3>
-            </div>
-            <div className={`${bgSecondary} rounded-lg p-4 space-y-2 text-sm`}>
-              <div className="flex justify-between">
-                <span className={textTertiary}>{t("delivery_method")}</span>
-                <span className={`${textSecondary} font-medium`}>
-                  {order.deliveryMethod || "-"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className={textTertiary}>{t("delivery_address")}</span>
-                <span
-                  className={`${textSecondary} font-medium text-right ${isRTL ? "text-left" : "text-right"}`}
-                >
-                  {order.deliveryAddress || "-"}
-                </span>
-              </div>
-              {order.specialInstructions && (
-                <div className="flex justify-between">
-                  <span className={textTertiary}>
-                    {t("special_instructions")}
-                  </span>
-                  <span className={`${textSecondary} font-medium`}>
-                    {order.specialInstructions}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Payment Information */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <CreditCard className={`w-5 h-5 ${textSecondary}`} />
-              <h3 className={`text-lg font-semibold ${textPrimary}`}>
-                {t("payment_information")}
-              </h3>
-            </div>
-            <div className={`${bgSecondary} rounded-lg p-4 space-y-2 text-sm`}>
-              <div className="flex justify-between">
-                <span className={textTertiary}>{t("payment_method")}</span>
-                <span className={`${textSecondary} font-medium`}>
-                  {order.paymentMethod || "-"}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className={textTertiary}>{t("payment_status")}</span>
-                <span className={`${textSecondary} font-medium`}>
-                  {order.paymentStatus || "-"}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Actions */}
