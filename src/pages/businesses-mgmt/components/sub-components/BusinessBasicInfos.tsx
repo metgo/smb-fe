@@ -35,13 +35,20 @@ interface BusinessBasicInfosProps {
   ) => void;
   errors: FormErrors;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  selectedDmoId: string;
-  setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
+
+  businessId: string;
+  setBusinessId?: (id: string) => void;
   selectedAuthorityId: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
+  selectedDmoId: string;
+  setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
   websiteVisibilityIds: string[];
   setWebsiteVisibilityIds: React.Dispatch<React.SetStateAction<string[]>>;
+  isEditMode?: boolean;
+  onAvailabilityStatusChange?: (
+    status: "available" | "unavailable" | null,
+  ) => void;
 }
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
@@ -55,8 +62,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setSelectDmoId,
   selectedAuthorityId,
   setSelectAuthorityId,
+  setBusinessId,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
+  isEditMode = false,
+  onAvailabilityStatusChange,
 }) => {
   const { isSuperadmin } = useUserRoles();
   const { borderColor, isDark } = useThemeClasses();
@@ -91,7 +101,16 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         dmoSectionRef={dmoSectionRef}
       />
 
-      <BusinessContentForm formData={formData} onChange={handleChange} />
+      <BusinessContentForm
+        formData={formData}
+        onChange={handleChange}
+        onBusinessCreated={setBusinessId}
+        dmoId={selectedDmoId}
+        authorityId={selectedAuthorityId}
+        isBusinessContext={true}
+        isEditMode={isEditMode}
+        onAvailabilityStatusChange={onAvailabilityStatusChange}
+      />
 
       {/* Internal Notes */}
       {isSuperadmin && (
