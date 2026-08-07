@@ -5,6 +5,8 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useEffect, useRef, useState, useCallback } from "react";
 
 import { fmtDate, fmtTime } from "../data";
+import DatePicker from "@/components/shared/DatePicker";
+import SearchInput from "@/components/shared/SearchInput";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useEventSessionRegListQuery } from "@/store/api/eventSessionApi";
@@ -23,6 +25,8 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
 
   const [page, setPage] = useState(1);
   const [registrations, setRegistrations] = useState<IRegistration[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -30,8 +34,21 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
     setRegistrations([]);
   }, [wrapperId]);
 
+  useEffect(() => {
+    setPage(1);
+    setRegistrations([]);
+  }, [searchTerm, selectedDate]);
+
   const { data, isLoading, isFetching } = useEventSessionRegListQuery(
-    wrapperId ? { wrapperId, limit: LIMIT, page } : skipToken,
+    wrapperId
+      ? {
+          wrapperId,
+          limit: LIMIT,
+          page,
+          search: searchTerm,
+          date: selectedDate,
+        }
+      : skipToken,
   );
 
   useEffect(() => {
@@ -87,6 +104,18 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
                 {data?.data?.totalData} {t("registrations")}
               </div>
             )}
+          </div>
+
+          <div className="flex items-center gap-3 mb-3.5">
+            <div className="flex-1">
+              <SearchInput
+                placeholder={t("search_registrations")}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+              />
+            </div>
+
+            <DatePicker value={selectedDate} onChange={setSelectedDate} />
           </div>
 
           {isInitialLoading ? (

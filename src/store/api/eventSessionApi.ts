@@ -80,7 +80,13 @@ export const eventSessionApi = createApi({
 
     eventSessionRegList: builder.query<
       IRegistrationsResponse,
-      { page: number; limit: number; wrapperId: string }
+      {
+        page: number;
+        limit: number;
+        wrapperId: string;
+        search?: string;
+        date?: string;
+      }
     >({
       query: (params) => ({
         url: `${endpoints.eventSessionReg}/${params.wrapperId}`,
@@ -88,6 +94,8 @@ export const eventSessionApi = createApi({
         params: {
           page: params.page,
           limit: params.limit,
+          search: params.search || undefined,
+          date: params.date || undefined,
         },
       }),
       providesTags: ["EventSession"],
@@ -246,6 +254,14 @@ export const eventSessionApi = createApi({
       query: ({ wrapperId, sessionId }) => ({
         url: `${endpoints.eventSessions}/sessions/${wrapperId}/${sessionId}`,
         method: "DELETE",
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
+
+    resendSessionBookNotify: builder.mutation<any, { wrapperId: string; sessionId: string }>({
+      query: ({ wrapperId, sessionId }) => ({
+        url: `${endpoints.eventSessions}/sessions/${wrapperId}/${sessionId}/resend`,
+        method: "POST",
       }),
       invalidatesTags: ["EventSession"],
     }),
