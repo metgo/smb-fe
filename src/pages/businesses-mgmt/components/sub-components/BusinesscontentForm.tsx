@@ -15,6 +15,9 @@ interface ArticleContentFormProps {
   authorityId?: string;
   isBusinessContext?: boolean;
   isEditMode?: boolean;
+  onAvailabilityStatusChange?: (
+    status: "available" | "unavailable" | null,
+  ) => void;
 }
 
 export const BusinessContentForm = ({
@@ -25,6 +28,7 @@ export const BusinessContentForm = ({
   authorityId,
   isBusinessContext = false,
   isEditMode = false,
+  onAvailabilityStatusChange,
 }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
@@ -66,6 +70,7 @@ export const BusinessContentForm = ({
   const handleNameChange = (value: string) => {
     onChange({ [titleField]: value });
     setAvailabilityStatus(null);
+    onAvailabilityStatusChange?.(null);
   };
 
   // Auto-trigger availability check when all three fields become available
@@ -91,17 +96,20 @@ export const BusinessContentForm = ({
         if (res?.isAvailable) {
           setAvailabilityStatus("available");
           setCheckResponse(null);
+          onAvailabilityStatusChange?.("available");
         } else {
           setAvailabilityStatus("unavailable");
           setCheckResponse({
             associatedWebsiteIds: res?.associatedWebsiteIds || [],
             slug: res?.slug || "",
           });
+          onAvailabilityStatusChange?.("unavailable");
         }
       } catch (error: any) {
         console.log("Check availability error:", error);
         setAvailabilityStatus("unavailable");
         setCheckResponse(null);
+        onAvailabilityStatusChange?.("unavailable");
       }
     };
 
@@ -121,6 +129,7 @@ export const BusinessContentForm = ({
     }
 
     setAvailabilityStatus(null);
+    onAvailabilityStatusChange?.(null);
     try {
       const res = await checkAvailability({
         name: businessName,
@@ -131,17 +140,20 @@ export const BusinessContentForm = ({
       if (res?.isAvailable) {
         setAvailabilityStatus("available");
         setCheckResponse(null);
+        onAvailabilityStatusChange?.("available");
       } else {
         setAvailabilityStatus("unavailable");
         setCheckResponse({
           associatedWebsiteIds: res?.associatedWebsiteIds || [],
           slug: res?.slug || "",
         });
+        onAvailabilityStatusChange?.("unavailable");
       }
     } catch (error: any) {
       console.log("Check availability error:", error);
       setAvailabilityStatus("unavailable");
       setCheckResponse(null);
+      onAvailabilityStatusChange?.("unavailable");
     }
   };
 

@@ -35,18 +35,20 @@ interface BusinessBasicInfosProps {
   ) => void;
   errors: FormErrors;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
- 
+
   businessId: string;
   setBusinessId?: (id: string) => void;
   selectedAuthorityId: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
-    selectedDmoId: string;
+  selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
   websiteVisibilityIds: string[];
   setWebsiteVisibilityIds: React.Dispatch<React.SetStateAction<string[]>>;
-    isEditMode?: boolean;
-
+  isEditMode?: boolean;
+  onAvailabilityStatusChange?: (
+    status: "available" | "unavailable" | null,
+  ) => void;
 }
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
@@ -64,6 +66,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   isEditMode = false,
+  onAvailabilityStatusChange,
 }) => {
   const { isSuperadmin } = useUserRoles();
   const { borderColor, isDark } = useThemeClasses();
@@ -106,6 +109,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         authorityId={selectedAuthorityId}
         isBusinessContext={true}
         isEditMode={isEditMode}
+        onAvailabilityStatusChange={onAvailabilityStatusChange}
       />
 
       {/* Internal Notes */}

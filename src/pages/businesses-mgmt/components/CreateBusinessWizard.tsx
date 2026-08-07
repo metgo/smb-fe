@@ -136,6 +136,9 @@ function CreateBusinessWizardInner({
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
+  const [availabilityStatus, setAvailabilityStatus] = useState<
+    "available" | "unavailable" | null
+  >(null);
 
   // When opened from email link with missingFields, start on the step of the first missing field
   const getStepForField = (field: string): number => {
@@ -931,6 +934,7 @@ function CreateBusinessWizardInner({
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
             isEditMode={opMode === IOpMode.EDIT}
+            onAvailabilityStatusChange={setAvailabilityStatus}
           />
         );
 
@@ -1085,7 +1089,9 @@ function CreateBusinessWizardInner({
             >
               <Compass className="w-4 h-4" />
             </button>
-            <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+            {availabilityStatus !== "unavailable" && (
+              <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+            )}
           </div>
         </div>
 
@@ -1120,6 +1126,7 @@ function CreateBusinessWizardInner({
           totalSteps={totalSteps}
           isSaving={isSaving || isCreating}
           isPublishing={isPublishing}
+          isDisabled={availabilityStatus === "unavailable"}
           onPrevious={handlePrevious}
           onNext={handleNext}
           onSaveDraft={handleSaveDraft}
