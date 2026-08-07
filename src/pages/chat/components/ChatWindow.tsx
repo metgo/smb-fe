@@ -1,34 +1,31 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
+import React from "react";
+import clsx from "clsx";
 import {
-  Paperclip,
   Download,
   Trash,
   AlertCircle,
-  RefreshCw,
   CornerDownLeft,
   Search,
   ArrowDown,
   ShieldAlert,
   Check,
   CheckCheck,
+  Edit,
+  Type,
 } from "lucide-react";
-import type { Message, Attachment } from "../types";
-import { MockChatDatabase, MOCK_USERS } from "../mockDb";
-import type { MockUser } from "../mockDb";
+
+// Removed MockChatDatabase imports
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
+import { useChatWindow } from "@/hooks/useChatWindow";
+import CKEditorWrapper from "@/components/wrapper/CKEditorWrapper";
 
 interface ChatWindowProps {
   conversationId: string;
-  currentUser: MockUser | null;
+  currentUser: IChatUser | null;
   highlightMessageId?: string; // used for global search navigation
   onBack: () => void;
+  chatUsers?: any[];
+  conversation?: any;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -36,6 +33,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   currentUser,
   highlightMessageId,
   onBack,
+  chatUsers,
+  conversation,
 }) => {
   const {
     isDark,
@@ -50,477 +49,55 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     inputClasses,
   } = useThemeClasses();
 
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [visibleCount, setVisibleCount] = useState(30);
-  const [text, setText] = useState("");
+  const chatWindow = useChatWindow({
+    conversationId,
+    currentUser,
+    highlightMessageId,
+    conversation,
+    chatUsers,
+  });
 
-  // Attachments State
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
-
-  // Searching within the open conversation (Story 8)
-  const [showSearch, setShowSearch] = useState(false);
-  const [localSearchQuery, setLocalSearchQuery] = useState("");
-  const [localSearchResults, setLocalSearchResults] = useState<string[]>([]); // message IDs that match
-  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
-
-  // Scroll variables
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [showScrollBanner, setShowScrollBanner] = useState(false);
-  const [showJumpButton, setShowJumpButton] = useState(false);
-
-  // Context menus for message actions
-  const [msgContextMenu, setMsgContextMenu] = useState<{
-    x: number;
-    y: number;
-    message: Message;
-  } | null>(null);
-  const [deleteTargetMessage, setDeleteTargetMessage] =
-    useState<Message | null>(null);
-  const [deleteReason, setDeleteReason] = useState("");
-
-  const [reportTargetMessage, setReportTargetMessage] =
-    useState<Message | null>(null);
-  const [reportReason, setReportReason] = useState("Spam");
-
-  // Typing indicators state
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
-
-  // Fetch Conversation info
-  const conversation = useMemo(() => {
-    return MockChatDatabase.getConversation(conversationId);
-  }, [conversationId]);
-
-  // Load message history
-  const loadMessages = useCallback(() => {
-    const thread = MockChatDatabase.getMessagesForConversation(conversationId);
-    setMessages(thread);
-
-    // Mark messages as read by current user (Read receipts)
-    if (currentUser) {
-      let updated = false;
-      thread.forEach((msg) => {
-        if (
-          !msg.isSystem &&
-          msg.senderId !== currentUser.id &&
-          !msg.readBy.includes(currentUser.id)
-        ) {
-          msg.readBy.push(currentUser.id);
-          MockChatDatabase.updateMessage(msg);
-          updated = true;
-        }
-      });
-      if (updated) {
-        // Redraw list
-        setMessages(
-          MockChatDatabase.getMessagesForConversation(conversationId),
-        );
-      }
-    }
-  }, [conversationId, currentUser]);
-
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    setShowScrollBanner(false);
-  };
-
-  useEffect(() => {
-    loadMessages();
-    setVisibleCount(30);
-    setAttachments([]);
-    setShowSearch(false);
-    setLocalSearchQuery("");
-
-    // Setup listener for real-time messages
-    const handleNewMessage = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail.convId === conversationId) {
-        setMessages((prev) => [...prev, detail.message]);
-
-        // Auto scroll helper
-        if (containerRef.current) {
-          const { scrollTop, scrollHeight, clientHeight } =
-            containerRef.current;
-          const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
-          if (isNearBottom) {
-            setTimeout(scrollToBottom, 50);
-          } else {
-            setShowScrollBanner(true);
-          }
-        }
-      }
-    };
-
-    window.addEventListener("metgo_chat_message_received", handleNewMessage);
-    window.addEventListener("metgo_chat_message_updated", loadMessages);
-
-    return () => {
-      window.removeEventListener(
-        "metgo_chat_message_received",
-        handleNewMessage,
-      );
-      window.removeEventListener("metgo_chat_message_updated", loadMessages);
-    };
-  }, [conversationId, currentUser, loadMessages]);
-
-  // Highlight message from search result (Story 8)
-  useEffect(() => {
-    if (highlightMessageId && messages.length > 0) {
-      const el = document.getElementById(`msg-${highlightMessageId}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.classList.add(
-          "bg-teal-500/10",
-          "dark:bg-teal-400/10",
-          "border-teal-500/30",
-        );
-        setTimeout(() => {
-          el.classList.remove(
-            "bg-teal-500/10",
-            "dark:bg-teal-400/10",
-            "border-teal-500/30",
-          );
-        }, 3000);
-      }
-    } else {
-      scrollToBottom();
-    }
-  }, [highlightMessageId, messages.length]);
-
-  // Handle typing simulation
-  useEffect(() => {
-    if (!conversation || !currentUser) return;
-
-    // Simulate other users typing when we open a conversation, to make the app alive
-    const eligibleOthers = conversation.members.filter(
-      (id) => id !== currentUser.id,
-    );
-    if (eligibleOthers.length === 0) return;
-
-    const timer = setTimeout(() => {
-      // Pick a random participant
-      const randomUser = MOCK_USERS.find(
-        (u) =>
-          u.id ===
-          eligibleOthers[Math.floor(Math.random() * eligibleOthers.length)],
-      );
-      if (randomUser) {
-        setTypingUsers([`${randomUser.firstName} ${randomUser.lastName}`]);
-
-        // Disappear after 3 seconds of inactivity
-        setTimeout(() => {
-          setTypingUsers([]);
-        }, 3000);
-      }
-    }, 4000);
-
-    return () => clearTimeout(timer);
-  }, [conversation, currentUser]);
-
-  // Monitor scrolling for infinite scroll & jump button
-  const handleScroll = () => {
-    if (!containerRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-
-    // Jump button visibility (if scrolled up more than 400px)
-    setShowJumpButton(scrollHeight - scrollTop - clientHeight > 400);
-
-    // Infinite scroll upward (lazy-load next 30)
-    if (scrollTop === 0 && messages.length > visibleCount) {
-      const prevHeight = scrollHeight;
-      setVisibleCount((prev) => prev + 30);
-      // Adjust scroll to maintain position after loading older messages
-      setTimeout(() => {
-        if (containerRef.current) {
-          containerRef.current.scrollTop =
-            containerRef.current.scrollHeight - prevHeight;
-        }
-      }, 50);
-    }
-  };
-
-  // Local Search Highlight logic (Story 8)
-  useEffect(() => {
-    if (localSearchQuery.trim().length < 2) {
-      setLocalSearchResults([]);
-      setCurrentSearchIndex(-1);
-      return;
-    }
-
-    const matchedIds = messages
-      .filter(
-        (m) =>
-          !m.isSystem &&
-          !m.isDeleted &&
-          (m.text.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
-            m.attachments?.some((a) =>
-              a.name.toLowerCase().includes(localSearchQuery.toLowerCase()),
-            )),
-      )
-      .map((m) => m.id);
-
-    setLocalSearchResults(matchedIds);
-    if (matchedIds.length > 0) {
-      setCurrentSearchIndex(matchedIds.length - 1);
-      // scroll to it
-      const el = document.getElementById(
-        `msg-${matchedIds[matchedIds.length - 1]}`,
-      );
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else {
-      setCurrentSearchIndex(-1);
-    }
-  }, [localSearchQuery, messages]);
-
-  const handleSearchNext = (dir: "prev" | "next") => {
-    if (localSearchResults.length === 0) return;
-    let nextIdx = currentSearchIndex;
-    if (dir === "next") {
-      nextIdx = (currentSearchIndex + 1) % localSearchResults.length;
-    } else {
-      nextIdx =
-        (currentSearchIndex - 1 + localSearchResults.length) %
-        localSearchResults.length;
-    }
-    setCurrentSearchIndex(nextIdx);
-    const el = document.getElementById(`msg-${localSearchResults[nextIdx]}`);
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
-  };
-
-  // Send Message logic
-  const handleSend = () => {
-    if (!text.trim() && attachments.length === 0) return;
-    if (!currentUser || !conversation) return;
-
-    // Check if silenced
-    const silence = MockChatDatabase.getSilenceState(currentUser.id);
-    if (silence) return;
-
-    // Create Message object
-    const newMsg: Message = {
-      id: `msg-${conversationId}-${Date.now()}`,
-      senderId: currentUser.id,
-      senderName: `${currentUser.firstName} ${currentUser.lastName}`,
-      senderAvatar: currentUser.avatar,
-      senderRole: currentUser.role,
-      text: text.trim(),
-      timestamp: new Date().toISOString(),
-      attachments: attachments.length > 0 ? attachments : undefined,
-      readBy: [currentUser.id],
-    };
-
-    MockChatDatabase.addMessage(conversationId, newMsg);
-    setText("");
-    setAttachments([]);
-    setTimeout(scrollToBottom, 50);
-
-    // Simulate real-time mock responses to DMs to make the app interactive (Wow factor!)
-    if (conversation.type === "dm") {
-      const otherUser = MOCK_USERS.find(
-        (u) => u.id !== currentUser.id && conversation.members.includes(u.id),
-      );
-      if (otherUser) {
-        setTimeout(() => {
-          // Trigger typing indicator
-          setTypingUsers([`${otherUser.firstName} ${otherUser.lastName}`]);
-
-          setTimeout(() => {
-            setTypingUsers([]);
-            // Add automated mock reply
-            const replyMsg: Message = {
-              id: `msg-${conversationId}-${Date.now() + 1}`,
-              senderId: otherUser.id,
-              senderName: `${otherUser.firstName} ${otherUser.lastName}`,
-              senderAvatar: otherUser.avatar,
-              senderRole: otherUser.role,
-              text: `Thanks for messaging. I got your request regarding: "${newMsg.text.slice(0, 30)}". Let's coordinate!`,
-              timestamp: new Date().toISOString(),
-              readBy: [otherUser.id],
-            };
-            MockChatDatabase.addMessage(conversationId, replyMsg);
-          }, 2000);
-        }, 1500);
-      }
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  // Attachment upload simulation
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    // Limit to 5 files
-    if (attachments.length + files.length > 5) {
-      alert("Maximum 5 attachments per message (Story 6).");
-      return;
-    }
-
-    Array.from(files).forEach((f) => {
-      // Size check (10MB)
-      if (f.size > 10 * 1024 * 1024) {
-        alert(`File ${f.name} exceeds the 10MB limit.`);
-        return;
-      }
-
-      const id = `att-${Date.now()}-${Math.random().toString(36).substring(5)}`;
-      const reader = new FileReader();
-
-      const newAtt: Attachment = {
-        id,
-        name: f.name,
-        type: f.type,
-        size: f.size,
-        url: "",
-        uploadStatus: "uploading",
-        progress: 0,
-      };
-
-      setAttachments((prev) => [...prev, newAtt]);
-
-      reader.onload = (event) => {
-        // Mocking Upload Progress over 1.5 seconds
-        let progressVal = 0;
-        const interval = setInterval(() => {
-          progressVal += 20;
-          setAttachments((prev) =>
-            prev.map((a) => {
-              if (a.id === id) {
-                if (progressVal >= 100) {
-                  clearInterval(interval);
-                  return {
-                    ...a,
-                    url: event.target?.result as string,
-                    uploadStatus: "success",
-                    progress: 100,
-                  };
-                }
-                return { ...a, progress: progressVal };
-              }
-              return a;
-            }),
-          );
-        }, 150);
-      };
-
-      reader.readAsDataURL(f);
-    });
-  };
-
-  const removeAttachment = (id: string) => {
-    setAttachments(attachments.filter((a) => a.id !== id));
-  };
-
-  // Lightbox Image Viewer
-  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
-
-  // Message Right Click context menu
-  const handleMessageContextMenu = (e: React.MouseEvent, msg: Message) => {
-    e.preventDefault();
-    if (msg.isSystem) return;
-    setMsgContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      message: msg,
-    });
-  };
-
-  // Silenced status check
-  const silence = currentUser
-    ? MockChatDatabase.getSilenceState(currentUser.id)
-    : undefined;
-  const isComposerDisabled =
-    !!silence ||
-    (conversation?.type === "broadcast" &&
-      conversation.creatorId !== currentUser?.id &&
-      currentUser?.role !== "superadmin");
-
-  // Deletion logic (Story 10)
-  const handleDeleteMessage = (msg: Message) => {
-    const isOwner = currentUser?.id === msg.senderId;
-    const isAdmin =
-      currentUser && ["superadmin", "admin"].includes(currentUser.role);
-
-    if (isAdmin) {
-      // Prompt modal reason
-      setDeleteTargetMessage(msg);
-      setDeleteReason("");
-    } else if (isOwner) {
-      if (confirm("Are you sure you want to delete your own message?")) {
-        const updated = {
-          ...msg,
-          isDeleted: true,
-          deletedReason: "Deleted by owner",
-        };
-        MockChatDatabase.updateMessage(updated);
-      }
-    }
-    setMsgContextMenu(null);
-  };
-
-  const handleConfirmDelete = () => {
-    if (!deleteTargetMessage || !currentUser) return;
-    const updated = {
-      ...deleteTargetMessage,
-      isDeleted: true,
-      deletedReason: deleteReason.trim(),
-      deletedBy: currentUser.id,
-    };
-    MockChatDatabase.updateMessage(updated);
-
-    // Log moderation action
-    const sender = MOCK_USERS.find(
-      (u) => u.id === deleteTargetMessage.senderId,
-    );
-    MockChatDatabase.addModerationLog({
-      id: `log-${Date.now()}`,
-      actorId: currentUser.id,
-      actorName: `${currentUser.firstName} ${currentUser.lastName}`,
-      targetId: deleteTargetMessage.senderId,
-      targetName: sender
-        ? `${sender.firstName} ${sender.lastName}`
-        : deleteTargetMessage.senderId,
-      action: "delete_message",
-      reason: deleteReason.trim(),
-      timestamp: new Date().toISOString(),
-    });
-
-    setDeleteTargetMessage(null);
-  };
-
-  // Report message logic (Story 10/12)
-  const handleReportMessage = (msg: Message) => {
-    setReportTargetMessage(msg);
-    setMsgContextMenu(null);
-  };
-
-  const handleConfirmReport = () => {
-    if (!reportTargetMessage || !currentUser) return;
-
-    // Log reporting action
-    const sender = MOCK_USERS.find(
-      (u) => u.id === reportTargetMessage.senderId,
-    );
-    MockChatDatabase.addModerationLog({
-      id: `log-${Date.now()}`,
-      actorId: currentUser.id,
-      actorName: `${currentUser.firstName} ${currentUser.lastName}`,
-      targetId: reportTargetMessage.id, // message reported
-      targetName: `Reported message: "${reportTargetMessage.text.slice(0, 30)}" by ${sender?.firstName || "Unknown"}`,
-      action: "delete_message", // reports can route in moderation logs
-      reason: `REPORT: ${reportReason}`,
-      timestamp: new Date().toISOString(),
-    });
-
-    alert("Message reported to administrator queue successfully.");
-    setReportTargetMessage(null);
-  };
+  const {
+    messages,
+    visibleCount,
+    text,
+    isRichMode,
+    richHtml,
+    attachments,
+    showSearch,
+    localSearchQuery,
+    localSearchResults,
+    currentSearchIndex,
+    showScrollBanner,
+    showJumpButton,
+    msgContextMenu,
+    editTargetMessage,
+    editText,
+    typingUsers,
+    lightboxUrl,
+    silence,
+    isComposerDisabled,
+    chatEndRef,
+    containerRef,
+    setRichHtml,
+    setShowSearch,
+    setLocalSearchQuery,
+    setLightboxUrl,
+    setEditText,
+    handleScroll,
+    handleSearchNext,
+    handleTextChange,
+    handleToggleComposerMode,
+    handleSend,
+    handleKeyDown,
+    handleMessageContextMenu,
+    handleDeleteMessage,
+    handleEditMessage,
+    handleConfirmEdit,
+    handleCancelEdit,
+    scrollToBottom,
+    getPlainTextFromHtml,
+  } = chatWindow;
 
   // Group date separators (Story 11)
   const renderMessageList = () => {
@@ -574,19 +151,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         return;
       }
 
-      const isMe = msg.senderId === currentUser?.id;
+      const isMe = msg.senderId === currentUser?._id;
 
       // Double blue ticks check (Receipt rules)
-      const receiptsDisabled =
-        currentUser &&
-        (MockChatDatabase.isReadReceiptsDisabled(currentUser.id) ||
-          (conversation?.type === "dm" &&
-            conversation.members.some((mId) =>
-              MockChatDatabase.isReadReceiptsDisabled(mId),
-            )));
+      const receiptsDisabled = false; // Mock DB removed
 
       const allRead = conversation?.members.every(
-        (mId) => mId === msg.senderId || msg.readBy.includes(mId),
+        (mId: any) => mId === msg.senderId || msg.readBy.includes(mId),
       );
 
       list.push(
@@ -628,16 +199,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
               <div
                 className={clsx(
-                  "p-3 rounded-2xl relative border",
+                  "p-4 rounded-2xl relative border shadow-sm transition-all duration-200",
                   msg.isDeleted
                     ? isDark
                       ? "bg-gray-800/60 text-gray-500 border-gray-700 italic"
                       : "bg-gray-50 text-gray-400 border-gray-200 italic"
                     : isMe
-                      ? "bg-teal-600 text-white border-teal-700 rounded-tr-none"
-                      : clsx(bgTertiary, textPrimary, borderColor, "rounded-tl-none"),
+                      ? "bg-linear-to-br from-teal-600 to-teal-700 text-white border-teal-800 rounded-tr-none shadow-md shadow-teal-500/20"
+                      : clsx(
+                          bgTertiary,
+                          textPrimary,
+                          borderColor,
+                          "rounded-tl-none",
+                        ),
                   isCurrentSearchHighlight
-                    ? "ring-3 ring-amber-500/50"
+                    ? "ring-3 ring-amber-500/50 shadow-lg shadow-amber-500/20"
                     : isSearchResult
                       ? "ring-2 ring-amber-500/20"
                       : "",
@@ -649,8 +225,56 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     <ShieldAlert className="w-3.5 h-3.5" />
                     This message was removed by an admin.
                   </span>
+                ) : editTargetMessage?.id === msg.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className={clsx(
+                        "w-full px-2 py-1.5 text-sm rounded-lg resize-none",
+                        inputClasses,
+                        "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+                      )}
+                      rows={3}
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") handleCancelEdit();
+                        if (e.key === "Enter" && e.ctrlKey) handleConfirmEdit();
+                      }}
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={handleCancelEdit}
+                        className={clsx(
+                          "px-2 py-1 text-xs font-semibold border rounded cursor-pointer transition-colors",
+                          borderColor,
+                          textSecondary,
+                          hoverBg,
+                        )}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleConfirmEdit}
+                        disabled={!editText.trim()}
+                        className="px-2 py-1 text-xs font-semibold bg-teal-600 disabled:opacity-50 text-white rounded hover:bg-teal-700 cursor-pointer transition-colors"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : msg.isRichText ? (
+                  <div
+                    className={clsx(
+                      "text-sm wrap-break-word rich-message-content",
+                      isMe ? "rich-message-content--inverted" : "",
+                    )}
+                    dangerouslySetInnerHTML={{
+                      __html: msg.text,
+                    }}
+                  />
                 ) : (
-                  <p className="text-sm whitespace-pre-wrap break-words">
+                  <p className="text-sm whitespace-pre-wrap wrap-break-word">
                     {msg.text}
                   </p>
                 )}
@@ -667,7 +291,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                             <div
                               key={att.id}
                               className={clsx(
-                                "relative rounded-lg overflow-hidden border max-w-[200px]",
+                                "relative rounded-lg overflow-hidden border max-w-50",
                                 isDark ? "border-white/10" : "border-black/10",
                               )}
                             >
@@ -675,7 +299,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                 src={att.url}
                                 alt=""
                                 onClick={() => setLightboxUrl(att.url)}
-                                className="w-full object-cover max-h-[140px] cursor-zoom-in hover:opacity-90"
+                                className="w-full object-cover max-h-35 cursor-zoom-in hover:opacity-90"
                               />
                             </div>
                           );
@@ -728,6 +352,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   minute: "2-digit",
                 })}
               </span>
+              {msg.edited && <span className="italic">(edited)</span>}
               {isMe && !msg.isDeleted && (
                 <div
                   className="cursor-help relative group"
@@ -757,21 +382,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   {conversation?.type === "group" &&
                     !receiptsDisabled &&
                     allRead && (
-                      <div className="absolute right-0 bottom-4 z-45 bg-gray-900 text-white text-[9px] p-2 rounded shadow-lg hidden group-hover:block min-w-[120px]">
+                      <div className="absolute right-0 bottom-4 z-45 bg-gray-900 text-white text-[9px] p-2 rounded shadow-lg hidden group-hover:block min-w-30">
                         <p className="font-semibold border-b border-white/20 pb-0.5 mb-1">
                           Read by:
                         </p>
-                        {conversation.members.map((mId) => {
-                          const member = MOCK_USERS.find((u) => u.id === mId);
-                          if (!member || mId === currentUser?.id) return null;
+                        {conversation.members.map((mId: any) => {
+                          const member = chatUsers?.find(
+                            (u: any) => u._id === mId,
+                          );
+                          if (!member || mId === currentUser?._id) return null;
                           return (
                             <div
                               key={mId}
                               className="flex justify-between gap-2 py-0.5"
                             >
-                              <span>
-                                {member.firstName} {member.lastName}
-                              </span>
+                              <span>{member.name}</span>
                               <span className="opacity-70">Read</span>
                             </div>
                           );
@@ -799,16 +424,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       {/* Header */}
       <div
         className={clsx(
-          "p-3 md:p-4 border-b flex items-center justify-between z-10 shadow-xs",
+          "px-4 md:px-6 py-3 md:py-4 border-b flex items-center justify-between z-10 shrink-0 shadow-sm",
           borderColor,
           bgPrimary,
         )}
       >
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={onBack}
             className={clsx(
-              "md:hidden p-1.5 rounded-lg cursor-pointer transition-colors",
+              "md:hidden p-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
               hoverBg,
             )}
           >
@@ -817,19 +442,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <div className="min-w-0">
             <h3
               className={clsx(
-                "text-sm md:text-base font-semibold truncate",
+                "text-sm md:text-base font-bold truncate",
                 textPrimary,
               )}
             >
               {conversation?.name}
             </h3>
             {conversation?.type !== "dm" && (
-              <p
-                className={clsx(
-                  "text-[10px] hidden md:block",
-                  textTertiary,
-                )}
-              >
+              <p className={clsx("text-[10px] hidden md:block", textTertiary)}>
                 {conversation?.members.length} members &bull;{" "}
                 {conversation?.description}
               </p>
@@ -842,11 +462,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <button
             onClick={() => setShowSearch(!showSearch)}
             className={clsx(
-              "p-1.5 rounded-lg transition-colors cursor-pointer",
+              "p-2.5 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95",
               showSearch
                 ? isDark
-                  ? "bg-teal-950/30 text-teal-400"
-                  : "bg-teal-50 text-teal-700"
+                  ? "bg-teal-950/30 text-teal-400 shadow-md shadow-teal-500/25"
+                  : "bg-teal-50 text-teal-700 shadow-md shadow-teal-500/25"
                 : clsx(hoverBg, textTertiary),
             )}
             title="Search inside chat"
@@ -860,7 +480,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       {showSearch && (
         <div
           className={clsx(
-            "p-2 border-b flex items-center gap-2 z-10",
+            "px-4 py-3 border-b flex items-center gap-3 z-10 shrink-0",
             borderColor,
             bgPrimary,
           )}
@@ -872,24 +492,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             value={localSearchQuery}
             onChange={(e) => setLocalSearchQuery(e.target.value)}
             className={clsx(
-              "flex-1 px-3 py-1 text-xs rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+              "flex-1 px-4 py-2 text-sm rounded-xl focus:outline-hidden focus:ring-2 focus:ring-teal-500 transition-all duration-200",
               inputClasses,
             )}
           />
           {localSearchResults.length > 0 && (
             <div
               className={clsx(
-                "flex items-center gap-1.5 text-xs shrink-0",
+                "flex items-center gap-2 text-xs shrink-0",
                 textTertiary,
               )}
             >
-              <span>
+              <span className="font-medium">
                 {currentSearchIndex + 1} of {localSearchResults.length}
               </span>
               <button
                 onClick={() => handleSearchNext("prev")}
                 className={clsx(
-                  "p-1 rounded border text-[10px] font-bold cursor-pointer transition-colors",
+                  "p-2 rounded-xl border text-[10px] font-bold cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                   borderColor,
                   hoverBg,
                 )}
@@ -899,7 +519,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               <button
                 onClick={() => handleSearchNext("next")}
                 className={clsx(
-                  "p-1 rounded border text-[10px] font-bold cursor-pointer transition-colors",
+                  "p-2 rounded-xl border text-[10px] font-bold cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                   borderColor,
                   hoverBg,
                 )}
@@ -914,7 +534,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               setLocalSearchQuery("");
             }}
             className={clsx(
-              "text-xs font-bold shrink-0 cursor-pointer transition-colors",
+              "text-xs font-bold shrink-0 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 px-3 py-2",
               textTertiary,
             )}
           >
@@ -927,7 +547,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-3 md:p-4 custom-scrollbar"
+        className="flex-1 overflow-y-auto p-3 md:p-4 custom-scrollbar min-h-0"
       >
         {renderMessageList()}
 
@@ -944,7 +564,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </span>
           </div>
         )}
-
         <div ref={chatEndRef} />
       </div>
 
@@ -969,83 +588,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         </button>
       )}
 
-      {/* Attachments preview list above input */}
-      {attachments.length > 0 && (
-        <div
-          className={clsx(
-            "p-3 border-t flex flex-wrap gap-3 max-h-[140px] overflow-y-auto",
-            borderColor,
-            bgPrimary,
-          )}
-        >
-          {attachments.map((att) => {
-            const isUploading = att.uploadStatus === "uploading";
-            const isFailed = att.uploadStatus === "failed";
-
-            return (
-              <div
-                key={att.id}
-                className={clsx(
-                  "relative flex items-center gap-2 p-2 border rounded-lg text-xs w-48 overflow-hidden select-none",
-                  borderColor,
-                  bgTertiary,
-                  textPrimary,
-                )}
-              >
-                {/* Upload Status / Progress (Story 6) */}
-                {isUploading && (
-                  <div
-                    className={clsx(
-                      "absolute inset-x-0 bottom-0 h-1",
-                      isDark ? "bg-gray-700" : "bg-gray-200",
-                    )}
-                  >
-                    <div
-                      className="h-full bg-teal-500 transition-all duration-150"
-                      style={{ width: `${att.progress}%` }}
-                    />
-                  </div>
-                )}
-
-                {/* Main Attachment Detail */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">{att.name}</p>
-                  <p className={clsx("text-[10px]", textTertiary)}>
-                    {isUploading
-                      ? `Uploading ${att.progress}%`
-                      : isFailed
-                        ? "Failed"
-                        : "Ready"}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  {isFailed && (
-                    <button
-                      className="p-1 text-teal-600 hover:text-teal-700 cursor-pointer"
-                      title="Retry"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => removeAttachment(att.id)}
-                    className={clsx(
-                      "p-1 cursor-pointer transition-colors",
-                      textTertiary,
-                    )}
-                  >
-                    <Trash className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* Composer Input Area */}
-      <div className={clsx("p-3 md:p-4 border-t", borderColor, bgPrimary)}>
+      <div
+        className={clsx(
+          "px-4 md:px-6 py-4 border-t shrink-0",
+          borderColor,
+          bgPrimary,
+        )}
+      >
         {isComposerDisabled ? (
           <div
             className={clsx(
@@ -1058,13 +608,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             {silence ? (
               <span className="flex items-center gap-1 md:gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                <span className="hidden md:inline">
+                {/* <span className="hidden md:inline">
                   You have been silenced globally. Expires:{" "}
                   {silence.expiresAt === "permanent"
                     ? "Indefinite"
                     : new Date(silence.expiresAt).toLocaleString()}
                   . Reason: {silence.reason}
-                </span>
+                </span> */}
                 <span className="md:hidden">Silenced globally</span>
               </span>
             ) : (
@@ -1078,55 +628,77 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               </span>
             )}
           </div>
-        ) : (
-          <div className="flex items-end gap-1.5 md:gap-2">
-            {/* Attachment paperclip */}
-            <div className="relative">
-              <input
-                type="file"
-                id="chat-file-picker"
-                multiple
-                className="hidden"
-                accept=".jpg,.jpeg,.png,.gif,.pdf,.docx,.xlsx,.csv,.zip"
-                onChange={handleFileChange}
-              />
+        ) : isRichMode ? (
+          <div className="space-y-2">
+            <CKEditorWrapper
+              value={richHtml}
+              onChange={setRichHtml}
+              placeholder="Type a message..."
+              maxLength={2000}
+              height={100}
+            />
+            <div className="flex items-center justify-between">
               <button
-                onClick={() =>
-                  document.getElementById("chat-file-picker")?.click()
-                }
+                onClick={handleToggleComposerMode}
                 className={clsx(
-                  "p-1.5 md:p-2 rounded-lg cursor-pointer transition-colors",
+                  "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                   hoverBg,
                   textTertiary,
                 )}
-                title="Attach file (JPG, PNG, GIF, PDF, DOCX, XLSX, CSV, ZIP. Max 10MB)"
+                title="Switch to plain text"
               >
-                <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
+                <Type className="w-4 h-4" />
+                Plain text
+              </button>
+              <button
+                onClick={handleSend}
+                disabled={
+                  !getPlainTextFromHtml(richHtml) && attachments.length === 0
+                }
+                className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl cursor-pointer shadow-md shadow-teal-500/25 transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                Send
+                <CornerDownLeft className="w-4 h-4" />
               </button>
             </div>
-
+          </div>
+        ) : (
+          <div className="flex items-end gap-2 md:gap-3">
             {/* Input fields */}
             <div className="flex-1 relative">
               <textarea
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => handleTextChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={1}
-                placeholder="Type a message..."
+                placeholder="Type a message... (start with *, #, - or / for rich text)"
                 className={clsx(
-                  "w-full px-3 md:px-4 py-2 border rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none min-h-[38px] max-h-[120px] custom-scrollbar",
+                  "w-full px-4 py-3 border rounded-2xl text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none min-h-12 max-h-32 custom-scrollbar transition-all duration-200",
                   inputClasses,
                 )}
               />
             </div>
 
+            {/* Manual rich text toggle */}
+            <button
+              onClick={handleToggleComposerMode}
+              className={clsx(
+                "p-2.5 md:p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
+                hoverBg,
+                textTertiary,
+              )}
+              title="Switch to rich text editor"
+            >
+              <Type className="w-5 h-5" />
+            </button>
+
             {/* Send Button */}
             <button
               onClick={handleSend}
               disabled={!text.trim() && attachments.length === 0}
-              className="p-1.5 md:p-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-xl cursor-pointer shadow-xs transition-colors"
+              className="p-2.5 md:p-3 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-2xl cursor-pointer shadow-md shadow-teal-500/25 transition-all duration-200 hover:scale-105 active:scale-95"
             >
-              <CornerDownLeft className="w-4 h-4 md:w-5 md:h-5" />
+              <CornerDownLeft className="w-5 h-5" />
             </button>
           </div>
         )}
@@ -1151,11 +723,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         <div
           style={{ top: msgContextMenu.y, left: msgContextMenu.x }}
           className={clsx(
-            "fixed z-50 border rounded-lg shadow-lg py-1 min-w-[120px]",
+            "fixed z-50 border rounded-lg shadow-lg py-1 min-w-30",
             bgPrimary,
             borderColor,
           )}
         >
+          {msgContextMenu.message.senderId === currentUser?._id && (
+            <button
+              onClick={() => handleEditMessage(msgContextMenu.message)}
+              className={clsx(
+                "w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 cursor-pointer transition-colors",
+                textSecondary,
+                hoverBg,
+              )}
+            >
+              <Edit className="w-3.5 h-3.5" />
+              Edit Message
+            </button>
+          )}
           <button
             onClick={() => handleDeleteMessage(msgContextMenu.message)}
             className={clsx(
@@ -1166,126 +751,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <Trash className="w-3.5 h-3.5" />
             Delete Message
           </button>
-          {msgContextMenu.message.senderId !== currentUser?.id && (
-            <button
-              onClick={() => handleReportMessage(msgContextMenu.message)}
-              className={clsx(
-                "w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 cursor-pointer transition-colors",
-                textSecondary,
-                hoverBg,
-              )}
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              Report Message
-            </button>
-          )}
         </div>
       )}
 
-      {/* Admin Message Delete Reason Modal */}
-      {deleteTargetMessage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs">
-          <div
-            className={clsx(
-              "w-full max-w-sm rounded-xl p-5 border text-left space-y-4",
-              bgPrimary,
-              borderColor,
-            )}
-          >
-            <h4 className={clsx("text-sm font-bold", textPrimary)}>
-              Reason for deletion
-            </h4>
-            <p className={clsx("text-xs", textTertiary)}>
-              Admin deletions must be logged. Specify a reason:
-            </p>
-            <input
-              type="text"
-              placeholder="Inappropriate content, spam, etc..."
-              value={deleteReason}
-              onChange={(e) => setDeleteReason(e.target.value)}
-              className={clsx(
-                "w-full px-3 py-2 border rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-hidden",
-                inputClasses,
-              )}
-            />
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setDeleteTargetMessage(null)}
-                className={clsx(
-                  "px-3 py-1.5 border rounded-lg text-xs font-semibold cursor-pointer transition-colors",
-                  borderColor,
-                  textSecondary,
-                  hoverBg,
-                )}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                disabled={!deleteReason.trim()}
-                className="px-3 py-1.5 bg-destructive disabled:opacity-50 text-xs font-semibold text-white rounded-lg hover:bg-destructive/90 cursor-pointer"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Message Report Reason Modal */}
-      {reportTargetMessage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs">
-          <div
-            className={clsx(
-              "w-full max-w-sm rounded-xl p-5 border text-left space-y-4",
-              bgPrimary,
-              borderColor,
-            )}
-          >
-            <h4 className={clsx("text-sm font-bold", textPrimary)}>
-              Report Message
-            </h4>
-            <p className={clsx("text-xs", textTertiary)}>
-              Select the reason why you are reporting this message:
-            </p>
-            <select
-              value={reportReason}
-              onChange={(e) => setReportReason(e.target.value)}
-              className={clsx(
-                "w-full px-3 py-2 border rounded-lg text-xs cursor-pointer",
-                borderColor,
-                inputClasses,
-              )}
-            >
-              <option value="Spam">Spam or Advertisements</option>
-              <option value="Hate Speech">Hate Speech or Harassment</option>
-              <option value="Inappropriate Language">
-                Inappropriate/Offensive Language
-              </option>
-              <option value="Other">Other Violation</option>
-            </select>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setReportTargetMessage(null)}
-                className={clsx(
-                  "px-3 py-1.5 border rounded-lg text-xs font-semibold cursor-pointer transition-colors",
-                  borderColor,
-                  textSecondary,
-                  hoverBg,
-                )}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmReport}
-                className="px-3 py-1.5 bg-teal-600 text-white text-xs font-semibold rounded-lg hover:bg-teal-700 cursor-pointer"
-              >
-                Report
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <style>{`
+        .rich-message-content p { margin: 0 0 0.35em; }
+        .rich-message-content p:last-child { margin-bottom: 0; }
+        .rich-message-content ul, .rich-message-content ol { margin: 0.25em 0; padding-left: 1.25em; }
+        .rich-message-content a { text-decoration: underline; }
+        .rich-message-content blockquote { border-left: 2px solid currentColor; opacity: 0.85; padding-left: 0.6em; margin: 0.35em 0; }
+        .rich-message-content--inverted a { color: inherit; }
+      `}</style>
     </div>
   );
 };

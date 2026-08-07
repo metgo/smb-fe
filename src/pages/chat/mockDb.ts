@@ -2,7 +2,6 @@ import type { UserRole } from "@/enums/user.types";
 import type {
   Message,
   Conversation,
-  Attachment,
   SilenceState,
   ModerationLogEntry,
 } from "./types";
@@ -28,14 +27,6 @@ export const MOCK_USERS: MockUser[] = [
     email: "karma.superadmin@metgo.com",
     role: "superadmin",
     avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=Karma",
-  },
-  {
-    id: "user-admin-1",
-    firstName: "Alex",
-    lastName: "Admin",
-    email: "alex.admin@metgo.com",
-    role: "admin",
-    avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=Alex",
   },
   {
     id: "user-dmo-1",
@@ -242,16 +233,6 @@ const INITIAL_MESSAGES: Message[] = [
     readBy: ["user-superadmin", "user-authority-1"],
   },
   {
-    id: "msg-2-1",
-    senderId: "user-admin-1",
-    senderName: "Alex Admin",
-    senderAvatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=Alex",
-    senderRole: "admin",
-    text: "Welcome to the regional team thread. Let's list pending approvals.",
-    timestamp: new Date(Date.now() - 3600000 * 24).toISOString(), // 24 hours ago
-    readBy: ["user-admin-1", "user-dmo-1", "user-authority-1"],
-  },
-  {
     id: "msg-2-2",
     senderId: "user-dmo-1",
     senderName: "Dave Dmo",
@@ -259,17 +240,6 @@ const INITIAL_MESSAGES: Message[] = [
     senderRole: "dmo",
     text: "Sure Alex. I will upload the local partner sheet here in a bit.",
     timestamp: new Date(Date.now() - 3600000 * 23).toISOString(), // 23 hours ago
-    readBy: ["user-admin-1", "user-dmo-1", "user-authority-1"],
-  },
-  {
-    id: "msg-2-3",
-    senderId: "user-admin-1",
-    senderName: "Alex Admin",
-    senderAvatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=Alex",
-    senderRole: "admin",
-    isSystem: true,
-    text: "Alex Admin added Arthur Authority",
-    timestamp: new Date(Date.now() - 3600000 * 22.5).toISOString(), // 22.5 hours ago
     readBy: ["user-admin-1", "user-dmo-1", "user-authority-1"],
   },
   {

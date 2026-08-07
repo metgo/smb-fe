@@ -27,6 +27,9 @@ export interface Message {
   isDeleted?: boolean;
   deletedReason?: string;
   deletedBy?: string;
+  edited?: boolean;
+  editedAt?: string; // ISO string when message was last edited
+  isRichText?: boolean; // true when text contains CKEditor-authored HTML
 }
 
 export interface Conversation {

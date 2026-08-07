@@ -2,6 +2,8 @@ type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
 
 type TViewMode = "list" | "grid";
+type TUserRole =
+  "superadmin" | "admin" | "user" | "dmo" | "authority" | "traveller";
 
 type TStatus =
   "draft" | "pending" | "approved" | "rejected" | "closed" | "archived";

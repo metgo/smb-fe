@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import React, { useState, useEffect, useRef } from "react";
 import {
   MessageSquare,
@@ -10,15 +11,13 @@ import {
 } from "lucide-react";
 import type { Conversation, Message } from "../types";
 import { MockChatDatabase } from "../mockDb";
-import type { MockUser } from "../mockDb";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
 
 interface InboxProps {
   conversations: Conversation[];
   activeConversationId: string | null;
   onSelectConversation: (id: string, highlightMessageId?: string) => void;
-  currentUser: MockUser | null;
+  currentUser: IChatUser | null;
   onOpenNewDm: () => void;
   onOpenNewGroup: () => void;
   onOpenNewBroadcast: () => void;
@@ -102,7 +101,7 @@ export const Inbox: React.FC<InboxProps> = ({
           const convId = (msg as any).conversationId;
           const conv = conversations.find((c) => c.id === convId);
           // Only return message if current user is a member of that conversation
-          if (conv && currentUser && conv.members.includes(currentUser.id)) {
+          if (conv && currentUser && conv.members.includes(currentUser._id)) {
             results.push({ message: msg, conversation: conv });
           }
         }
@@ -132,10 +131,10 @@ export const Inbox: React.FC<InboxProps> = ({
 
     const currentMuted = conv.mutedBy || [];
     let nextMuted: string[];
-    if (currentMuted.includes(currentUser.id)) {
-      nextMuted = currentMuted.filter((id) => id !== currentUser.id);
+    if (currentMuted.includes(currentUser._id)) {
+      nextMuted = currentMuted.filter((id) => id !== currentUser._id);
     } else {
-      nextMuted = [...currentMuted, currentUser.id];
+      nextMuted = [...currentMuted, currentUser._id];
     }
 
     const updatedConvs = conversations.map((c) =>
@@ -148,7 +147,7 @@ export const Inbox: React.FC<InboxProps> = ({
   };
 
   const isMuted = (conv: Conversation) => {
-    return currentUser && conv.mutedBy?.includes(currentUser.id);
+    return currentUser && conv.mutedBy?.includes(currentUser._id);
   };
 
   // Helper to format timestamps nicely
@@ -166,8 +165,8 @@ export const Inbox: React.FC<InboxProps> = ({
     return msgs.filter(
       (m) =>
         !m.isSystem &&
-        m.senderId !== currentUser.id &&
-        !m.readBy.includes(currentUser.id),
+        m.senderId !== currentUser._id &&
+        !m.readBy.includes(currentUser._id),
     ).length;
   };
 
@@ -186,7 +185,7 @@ export const Inbox: React.FC<InboxProps> = ({
         "border-r flex flex-col h-full shrink-0 relative select-none transition-all duration-300",
         borderColor,
         bgPrimary,
-        collapsed ? "w-16" : "w-full md:w-80",
+        collapsed ? "w-16" : "w-full md:w-80 lg:w-96",
       )}
     >
       {collapsed ? (
@@ -196,9 +195,8 @@ export const Inbox: React.FC<InboxProps> = ({
             onClick={onOpenNewDm}
             title="New DM"
             className={clsx(
-              "p-2 rounded-lg cursor-pointer transition-colors",
+              "p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
               hoverBg,
-              textTertiary,
             )}
           >
             <Mail className="w-5 h-5" />
@@ -208,9 +206,8 @@ export const Inbox: React.FC<InboxProps> = ({
               onClick={onOpenNewGroup}
               title="New Group Chat"
               className={clsx(
-                "p-2 rounded-lg cursor-pointer transition-colors",
+                "p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                 hoverBg,
-                textTertiary,
               )}
             >
               <Users className="w-5 h-5" />
@@ -221,9 +218,8 @@ export const Inbox: React.FC<InboxProps> = ({
               onClick={onOpenNewBroadcast}
               title="Create Broadcast Channel"
               className={clsx(
-                "p-2 rounded-lg cursor-pointer transition-colors",
+                "p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                 hoverBg,
-                textTertiary,
               )}
             >
               <Megaphone className="w-5 h-5" />
@@ -234,11 +230,11 @@ export const Inbox: React.FC<InboxProps> = ({
         /* Expanded state - show full interface */
         <>
           {/* Top search & title */}
-          <div className={clsx("p-4 border-b space-y-3", borderColor)}>
+          <div className={clsx("p-4 border-b space-y-4", borderColor)}>
             <div className="flex items-center justify-between">
               <h2
                 className={clsx(
-                  "text-lg font-semibold tracking-tight flex items-center gap-2",
+                  "text-lg font-bold tracking-tight flex items-center gap-2",
                   textPrimary,
                 )}
               >
@@ -250,7 +246,7 @@ export const Inbox: React.FC<InboxProps> = ({
                   onClick={onOpenNewDm}
                   title="New DM"
                   className={clsx(
-                    "p-1.5 rounded-lg cursor-pointer transition-colors",
+                    "p-2 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                     hoverBg,
                     textTertiary,
                   )}
@@ -262,7 +258,7 @@ export const Inbox: React.FC<InboxProps> = ({
                     onClick={onOpenNewGroup}
                     title="New Group Chat"
                     className={clsx(
-                      "p-1.5 rounded-lg cursor-pointer transition-colors",
+                      "p-2 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                       hoverBg,
                       textTertiary,
                     )}
@@ -275,7 +271,7 @@ export const Inbox: React.FC<InboxProps> = ({
                     onClick={onOpenNewBroadcast}
                     title="Create Broadcast Channel"
                     className={clsx(
-                      "p-1.5 rounded-lg cursor-pointer transition-colors",
+                      "p-2 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                       hoverBg,
                       textTertiary,
                     )}
@@ -290,7 +286,7 @@ export const Inbox: React.FC<InboxProps> = ({
             <div className="relative">
               <Search
                 className={clsx(
-                  "absolute left-2.5 top-2.5 w-4 h-4",
+                  "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4",
                   textTertiary,
                 )}
               />
@@ -300,7 +296,7 @@ export const Inbox: React.FC<InboxProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={clsx(
-                  "w-full pl-9 pr-3 py-1.5 text-sm border rounded-lg focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+                  "w-full pl-10 pr-4 py-2.5 text-sm border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-teal-500 transition-all duration-200",
                   inputClasses,
                 )}
               />
@@ -333,7 +329,7 @@ export const Inbox: React.FC<InboxProps> = ({
                         setSearchQuery("");
                       }}
                       className={clsx(
-                        "w-full text-left p-2 rounded-lg transition-colors flex flex-col gap-1 border cursor-pointer",
+                        "w-full text-left p-3 rounded-xl transition-all duration-200 flex flex-col gap-2 border cursor-pointer hover:scale-[1.02] active:scale-[0.98]",
                         hoverBg,
                         borderColor,
                       )}
@@ -361,7 +357,9 @@ export const Inbox: React.FC<InboxProps> = ({
                       >
                         {message.senderName}:
                       </p>
-                      <p className={clsx("text-xs line-clamp-2", textSecondary)}>
+                      <p
+                        className={clsx("text-xs line-clamp-2", textSecondary)}
+                      >
                         {message.text}
                       </p>
                       {message.attachments &&
@@ -413,7 +411,9 @@ export const Inbox: React.FC<InboxProps> = ({
                   <div
                     className={clsx(
                       "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                      isDark ? "bg-blue-950 text-blue-400" : "bg-blue-100 text-blue-600",
+                      isDark
+                        ? "bg-blue-950 text-blue-400"
+                        : "bg-blue-100 text-blue-600",
                     )}
                   >
                     <Megaphone className="w-5 h-5" />
@@ -422,7 +422,9 @@ export const Inbox: React.FC<InboxProps> = ({
                   <div
                     className={clsx(
                       "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                      isDark ? "bg-teal-950 text-teal-400" : "bg-teal-100 text-teal-600",
+                      isDark
+                        ? "bg-teal-950 text-teal-400"
+                        : "bg-teal-100 text-teal-600",
                     )}
                   >
                     <Users className="w-5 h-5" />
@@ -447,15 +449,15 @@ export const Inbox: React.FC<InboxProps> = ({
                     key={conv.id}
                     onContextMenu={(e) => handleRightClick(e, conv.id)}
                     className={clsx(
-                      "relative px-4 py-3 flex items-center gap-3 transition-colors select-none",
+                      "relative px-4 py-3 flex items-center gap-3 transition-all duration-200 select-none cursor-pointer hover:scale-[1.01] active:scale-[0.99]",
                       active
                         ? clsx(
                             isDark
-                              ? "bg-teal-950/20 text-teal-100"
-                              : "bg-teal-50 text-teal-950",
+                              ? "bg-teal-950/30 text-teal-100 shadow-md shadow-teal-500/10"
+                              : "bg-teal-50 text-teal-950 shadow-md shadow-teal-500/10",
                             "border-l-4 border-teal-500",
                           )
-                        : clsx(hoverBg, "cursor-pointer"),
+                        : clsx(hoverBg),
                     )}
                     onClick={() => onSelectConversation(conv.id)}
                   >
@@ -483,7 +485,9 @@ export const Inbox: React.FC<InboxProps> = ({
                             </span>
                           )}
                         </span>
-                        <span className={clsx("text-[10px] shrink-0", textTertiary)}>
+                        <span
+                          className={clsx("text-[10px] shrink-0", textTertiary)}
+                        >
                           {conv.lastMessage
                             ? formatTime(conv.lastMessage.timestamp)
                             : ""}
@@ -527,7 +531,9 @@ export const Inbox: React.FC<InboxProps> = ({
               })
             ) : (
               <div className="flex flex-col items-center justify-center h-48 px-4 text-center">
-                <MessageSquare className={clsx("w-10 h-10 mb-2", textTertiary)} />
+                <MessageSquare
+                  className={clsx("w-10 h-10 mb-2", textTertiary)}
+                />
                 <p className={clsx("text-sm font-medium", textSecondary)}>
                   No conversations yet.
                 </p>
@@ -561,7 +567,7 @@ export const Inbox: React.FC<InboxProps> = ({
               >
                 {conversations
                   .find((c) => c.id === contextMenu.convId)
-                  ?.mutedBy?.includes(currentUser?.id || "") ? (
+                  ?.mutedBy?.includes(currentUser?._id || "") ? (
                   <>
                     <Volume2 className="w-3.5 h-3.5 text-teal-600" />
                     Unmute Chat

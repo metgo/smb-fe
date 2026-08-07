@@ -20,7 +20,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   showSpinner = false,
   height = "h-[80dvh] md:h-[90vh]",
   maxWidth = "max-w-5xl",
-  closeOnOutsideClick = true,
+  closeOnOutsideClick = false,
 }) => {
   const { cardClasses, isRTL } = useThemeClasses();
   const [mounted, setMounted] = useState(false);
@@ -63,7 +63,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 z-100 flex items-end md:items-center justify-center md:p-4"
+      className="fixed inset-0 bg-black/80 z-100 flex items-end md:items-center justify-center md:p-4"
       onClick={closeOnOutsideClick ? handleClose : undefined}
     >
       <div
@@ -102,7 +102,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
           <X className="w-5 h-5" />
         </button>
         <Spinner isLoading={showSpinner} />
-        <>{children}</>
+        <div className="overflow-hidden">{children}</div>
       </div>
     </div>
   );

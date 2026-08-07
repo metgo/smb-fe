@@ -100,7 +100,7 @@ interface IUser {
   isPhoneVerify: boolean;
   isEmailVerify: boolean;
   loginAttempts: number;
-  role: "superadmin" | "admin" | "user" | "dmo" | "authority" | "traveller";
+  role: TUserRole;
   hasBusiness: boolean;
   lastLogin: string;
   countryCode: string;

@@ -45,6 +45,7 @@ import { sessionQueryApi } from "./api/sessionQueryApi";
 import { sessionMutationApi } from "./api/sessionMutationApi";
 import { reconciliationQueryApi } from "./api/reconciliationQueryApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
+import { chatSystemApi } from "./api/chatSystemApi";
 
 export const store = configureStore({
   reducer: {
@@ -99,6 +100,7 @@ export const store = configureStore({
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
     [reconciliationQueryApi.reducerPath]: reconciliationQueryApi.reducer,
+    [chatSystemApi.reducerPath]: chatSystemApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -140,6 +142,7 @@ export const store = configureStore({
       sessionQueryApi.middleware,
       sessionMutationApi.middleware,
       reconciliationQueryApi.middleware,
+      chatSystemApi.middleware,
       nprogressMiddleware,
     ),
 });

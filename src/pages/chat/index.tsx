@@ -1,4 +1,17 @@
+import clsx from "clsx";
+import {
+  ShieldAlert,
+  Eye,
+  Shield,
+  UserX,
+  AlertTriangle,
+  FileText,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+
 import { Inbox } from "./components/Inbox";
 import { ChatWindow } from "./components/ChatWindow";
 import {
@@ -6,25 +19,10 @@ import {
   NewGroupModal,
   NewBroadcastModal,
   SilenceUserModal,
-} from "./components/Modals";
-import { MockChatDatabase, MOCK_USERS } from "./mockDb";
-import type { MockUser } from "./mockDb";
-import type { Conversation, ModerationLogEntry, SilenceState } from "./types";
-import {
-  ShieldAlert,
-  Settings,
-  Eye,
-  Shield,
-  UserX,
-  AlertTriangle,
-  FileText,
-  CheckCircle,
-  Menu,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+} from "./components/modals";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
+import type { Conversation, ModerationLogEntry, SilenceState } from "./types";
+import { useChatUsersQuery } from "@/store/api/chatSystemApi";
 
 export default function ChatPage() {
   const {
@@ -39,10 +37,20 @@ export default function ChatPage() {
     isDark,
   } = useThemeClasses();
 
+  const {
+    data: chatUsers,
+    isLoading,
+    isFetching,
+  } = useChatUsersQuery({ page: 1, limit: 200 });
+  const chatUsersList = Array.isArray(chatUsers)
+    ? chatUsers
+    : chatUsers?.data || [];
+  console.log("🚀 ~ ChatPage ~ chatUsers:", chatUsers);
+
   // Debug active profile selection (for visual testing)
   const [activeDebugProfile, setActiveDebugProfile] =
     useState<string>("user-superadmin");
-  const [currentUser, setCurrentUser] = useState<MockUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<IChatUser | null>(null);
 
   // Core Chat State
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -82,38 +90,38 @@ export default function ChatPage() {
   >("chat");
   const [silences, setSilences] = useState<SilenceState[]>([]);
   const [logs, setLogs] = useState<ModerationLogEntry[]>([]);
-  const [readReceiptsDisabled, setReadReceiptsDisabled] = useState(false);
 
   // Set active user profile based on debug selection
   useEffect(() => {
-    const user = MOCK_USERS.find((u) => u.id === activeDebugProfile) || null;
+    const user =
+      chatUsersList.find((u: IChatUser) => u._id === activeDebugProfile) ||
+      null;
     setCurrentUser(user);
-    if (user) {
-      // Mock session storage login to sync components
-      sessionStorage.setItem("user_info", JSON.stringify({ user }));
-      sessionStorage.setItem("access_token", `mock-token-${user.id}`);
-      window.dispatchEvent(new Event("session:updated"));
-
-      // Load settings
-      setReadReceiptsDisabled(MockChatDatabase.isReadReceiptsDisabled(user.id));
-    }
     setActiveConversationId(null);
     setShowInbox(true);
-  }, [activeDebugProfile]);
+  }, [activeDebugProfile, chatUsersList]);
 
   // Load chat records
   const loadChatRecords = useCallback(() => {
     if (!currentUser) return;
 
-    // Fetch conversations where current user is a member
-    const list = MockChatDatabase.getConversations();
-    const userConvs = list.filter((c) => c.members.includes(currentUser.id));
-    setConversations(userConvs);
+    // Treat each user as a DM conversation for now
+    const mappedConvs = chatUsersList.map((u: IChatUser) => ({
+      id: u._id,
+      type: "direct" as const,
+      name: u.name || "User",
+      avatar: undefined,
+      members: [currentUser._id, u._id],
+      lastMessage: undefined,
+      unreadCount: 0,
+      updatedAt: new Date().toISOString(),
+    }));
+    setConversations(mappedConvs);
 
-    // Load admin components
-    setSilences(MockChatDatabase.getSilencedUsers());
-    setLogs(MockChatDatabase.getModerationLogs());
-  }, [currentUser]);
+    // Clear admin components since DB is removed
+    setSilences([]);
+    setLogs([]);
+  }, [currentUser, chatUsersList]);
 
   useEffect(() => {
     loadChatRecords();
@@ -153,84 +161,32 @@ export default function ChatPage() {
 
   // Start direct message thread
   const handleStartDm = (recipientId: string) => {
-    if (!currentUser) return;
-    const newConv = MockChatDatabase.startDirectChat(
-      currentUser.id,
-      recipientId,
-    );
-    handleSelectConversation(newConv.id);
+    handleSelectConversation(recipientId);
   };
 
   // Create group chat
-  const handleGroupCreated = (
-    name: string,
-    description: string,
-    memberIds: string[],
-  ) => {
-    if (!currentUser) return;
-    const newConv = MockChatDatabase.createGroupChat(
-      name,
-      description,
-      currentUser.id,
-      memberIds,
-    );
-    handleSelectConversation(newConv.id);
+  const handleGroupCreated = () => {
+    // No-op for now
   };
 
   // Create broadcast channel
-  const handleBroadcastCreated = (
-    name: string,
-    description: string,
-    targetRole: any,
-  ) => {
-    if (!currentUser) return;
-    const newConv = MockChatDatabase.createBroadcastChannel(
-      name,
-      description,
-      currentUser.id,
-      targetRole,
-    );
-    handleSelectConversation(newConv.id);
+  const handleBroadcastCreated = () => {
+    // No-op for now
   };
 
   // Silence user globally
-  const handleSilenceUser = (
-    userId: string,
-    duration: string,
-    reason: string,
-  ) => {
-    if (!currentUser) return;
-    MockChatDatabase.silenceUser(userId, duration, reason, currentUser.id);
-    loadChatRecords();
+  const handleSilenceUser = () => {
+    // No-op for now
   };
 
   // Unsilence user
-  const handleUnsilenceUser = (userId: string) => {
-    if (!currentUser) return;
-    MockChatDatabase.unsilenceUser(userId, currentUser.id);
-    loadChatRecords();
-  };
-
-  // Toggle read receipts
-  const handleToggleReadReceipts = () => {
-    if (!currentUser) return;
-    const nextVal = !readReceiptsDisabled;
-    setReadReceiptsDisabled(nextVal);
-    MockChatDatabase.setReadReceiptsDisabled(currentUser.id, nextVal);
+  const handleUnsilenceUser = () => {
+    // No-op for now
   };
 
   // Trigger export chat history to JSON file (Story 10)
-  const handleExportHistory = (convId: string) => {
-    const msgs = MockChatDatabase.getMessagesForConversation(convId);
-    const blob = new Blob([JSON.stringify(msgs, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `chat-history-${convId}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+  const handleExportHistory = () => {
+    // No-op for now
   };
 
   // Determine role levels
@@ -239,24 +195,24 @@ export default function ChatPage() {
   const canSeeModerationTab = isSuperadmin || isAdmin;
 
   // Render Admin View of all conversations
-  const allConversations = MockChatDatabase.getConversations();
+  const allConversations = conversations;
 
   return (
-    <div className={clsx("flex flex-col h-full select-none", bgSecondary)}>
-      {/* Dynamic Header */}
+    <div className={clsx("flex flex-col h-[80vh] select-none", bgSecondary)}>
+      {/* WhatsApp-style Header */}
       <div
         className={clsx(
           bgPrimary,
           borderColor,
-          "p-4 border-b flex flex-wrap items-center justify-between gap-4 z-20",
+          "px-4 md:px-6 py-3 md:py-4 border-b flex items-center justify-between gap-2 md:gap-4 z-20 shrink-0 shadow-sm",
         )}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 md:gap-4">
           {/* Mobile menu button */}
           <button
             onClick={() => setShowInbox(!showInbox)}
             className={clsx(
-              "md:hidden p-2 rounded-lg cursor-pointer transition-colors",
+              "md:hidden p-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
               hoverBg,
             )}
             aria-label="Toggle inbox"
@@ -268,7 +224,7 @@ export default function ChatPage() {
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className={clsx(
-              "hidden md:flex p-2 rounded-lg cursor-pointer transition-colors",
+              "hidden md:flex p-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
               hoverBg,
             )}
             aria-label="Toggle sidebar"
@@ -280,18 +236,15 @@ export default function ChatPage() {
             )}
           </button>
 
-          <div>
+          <div className="hidden sm:block">
             <h1
               className={clsx(
                 textPrimary,
-                "text-lg font-semibold tracking-tight flex items-center gap-2",
+                "text-lg md:text-xl font-bold tracking-tight flex items-center gap-2",
               )}
             >
-              In-App Chat System
+              Chat
             </h1>
-            <p className={clsx(textTertiary, "text-xs")}>
-              Real-time messaging coordination workspace
-            </p>
           </div>
         </div>
 
@@ -300,16 +253,16 @@ export default function ChatPage() {
           className={clsx(
             bgTertiary,
             borderColor,
-            "flex items-center gap-2 p-1.5 rounded-lg border",
+            "flex items-center gap-2 md:gap-3 p-1.5 md:p-2 rounded-xl border shadow-sm",
           )}
         >
           <span
             className={clsx(
               textTertiary,
-              "text-[10px] font-bold uppercase px-1 tracking-wide",
+              "text-[10px] md:text-xs font-bold uppercase px-2 tracking-wider hidden sm:block",
             )}
           >
-            Testing Role:
+            Role:
           </span>
           <select
             value={activeDebugProfile}
@@ -318,21 +271,17 @@ export default function ChatPage() {
               bgPrimary,
               borderColor,
               textSecondary,
-              "text-xs font-semibold border px-2 py-1 rounded-md cursor-pointer outline-hidden",
+              "text-xs md:text-sm font-semibold border px-3 md:px-4 py-2 rounded-lg cursor-pointer outline-hidden focus:ring-2 focus:ring-teal-500 transition-all duration-200",
             )}
           >
-            <option value="user-superadmin">Karma Lama (SUPERADMIN)</option>
-            <option value="user-admin-1">Alex Admin (ADMIN)</option>
-            <option value="user-dmo-1">Dave Dmo (DMO East)</option>
-            <option value="user-dmo-2">Dan Dmo (DMO West)</option>
-            <option value="user-dmo-3">Diana Dmo (DMO North)</option>
-            <option value="user-authority-1">Arthur Authority (Central)</option>
-            <option value="user-traveller-1">
-              Tim Traveller (Central Scope)
-            </option>
-            <option value="user-traveller-3">
-              Tom Traveller (Coast Scope)
-            </option>
+            <option value="user-superadmin">Superadmin</option>
+            <option value="user-admin-1">Admin</option>
+            <option value="user-dmo-1">DMO East</option>
+            <option value="user-dmo-2">DMO West</option>
+            <option value="user-dmo-3">DMO North</option>
+            <option value="user-authority-1">Authority</option>
+            <option value="user-traveller-1">Traveller Central</option>
+            <option value="user-traveller-3">Traveller Coast</option>
           </select>
         </div>
       </div>
@@ -341,7 +290,7 @@ export default function ChatPage() {
       <div className="flex-1 flex overflow-hidden min-h-0 relative">
         {/* Inbox Navigation Pane */}
         <div
-          className={`${showInbox ? "flex" : "hidden md:flex"} h-full transition-all duration-300 ${sidebarCollapsed ? "w-0 md:w-16" : "w-full md:w-80"} overflow-hidden`}
+          className={`${showInbox ? "flex" : "hidden md:flex"} h-full shrink-0 transition-all duration-300 ${sidebarCollapsed ? "w-0 md:w-16" : "w-full md:w-80 lg:w-96"} overflow-hidden`}
         >
           <Inbox
             conversations={conversations}
@@ -368,19 +317,19 @@ export default function ChatPage() {
             className={clsx(
               bgPrimary,
               borderColor,
-              " border-b px-4 py-2 flex items-center gap-2",
+              "border-b px-3 md:px-5 py-3 flex items-center gap-2 md:gap-3 overflow-x-auto shrink-0",
             )}
           >
             <button
               onClick={() => setActiveSubTab("chat")}
               className={clsx(
-                "px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer",
+                "px-3 md:px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer whitespace-nowrap hover:scale-105 active:scale-95",
                 activeSubTab === "chat"
-                  ? "bg-teal-600 text-white"
+                  ? "bg-teal-600 text-white shadow-md shadow-teal-500/25"
                   : clsx(textTertiary, hoverBg),
               )}
             >
-              Active Chat
+              Chat
             </button>
             {canSeeModerationTab && (
               <>
@@ -388,42 +337,30 @@ export default function ChatPage() {
                   <button
                     onClick={() => setActiveSubTab("admin_view")}
                     className={clsx(
-                      "px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer",
+                      "px-3 md:px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 cursor-pointer whitespace-nowrap hover:scale-105 active:scale-95",
                       activeSubTab === "admin_view"
-                        ? "bg-teal-600 text-white"
+                        ? "bg-teal-600 text-white shadow-md shadow-teal-500/25"
                         : clsx(textTertiary, hoverBg),
                     )}
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    All Platform Chats (Admin)
+                    <Eye className="w-4 h-4" />
+                    <span className="hidden sm:inline">All Chats</span>
                   </button>
                 )}
                 <button
                   onClick={() => setActiveSubTab("mod_logs")}
                   className={clsx(
-                    "px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer",
+                    "px-3 md:px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 cursor-pointer whitespace-nowrap hover:scale-105 active:scale-95",
                     activeSubTab === "mod_logs"
-                      ? "bg-teal-600 text-white"
+                      ? "bg-teal-600 text-white shadow-md shadow-teal-500/25"
                       : clsx(textTertiary, hoverBg),
                   )}
                 >
-                  <ShieldAlert className="w-3.5 h-3.5" />
-                  Moderation Logs
+                  <ShieldAlert className="w-4 h-4" />
+                  <span className="hidden sm:inline">Moderation</span>
                 </button>
               </>
             )}
-            <button
-              onClick={() => setActiveSubTab("settings")}
-              className={clsx(
-                "px-3 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ml-auto cursor-pointer",
-                activeSubTab === "settings"
-                  ? "bg-teal-600 text-white"
-                  : clsx(textTertiary, hoverBg),
-              )}
-            >
-              <Settings className="w-3.5 h-3.5" />
-              Settings
-            </button>
           </div>
 
           {/* Active Pane Render */}
@@ -435,6 +372,10 @@ export default function ChatPage() {
                   currentUser={currentUser}
                   highlightMessageId={highlightMessageId}
                   onBack={() => setShowInbox(true)}
+                  chatUsers={chatUsersList}
+                  conversation={conversations.find(
+                    (c) => c.id === activeConversationId,
+                  )}
                 />
               ) : (
                 <div
@@ -524,7 +465,7 @@ export default function ChatPage() {
                             Inspect Thread
                           </button>
                           <button
-                            onClick={() => handleExportHistory(c.id)}
+                            onClick={() => handleExportHistory()}
                             className={clsx(
                               "px-2.5 py-1 border rounded-md text-xs font-semibold cursor-pointer transition-colors",
                               borderColor,
@@ -540,231 +481,178 @@ export default function ChatPage() {
                   </div>
                 </div>
               </div>
-            ) : activeSubTab === "mod_logs" ? (
-              /* MODERATION LOGS AND SILENCE CONTROLS (Story 10) */
-              <div
-                className={clsx(
-                  "p-6 space-y-6 overflow-y-auto h-full text-left",
-                  bgSecondary,
-                )}
-              >
-                {/* Silence actions tool */}
+            ) : (
+              activeSubTab === "mod_logs" && (
+                /* MODERATION LOGS AND SILENCE CONTROLS (Story 10) */
                 <div
                   className={clsx(
-                    "rounded-xl p-4 border flex justify-between items-center gap-4",
-                    bgPrimary,
-                    borderColor,
+                    "p-6 space-y-6 overflow-y-auto h-full text-left",
+                    bgSecondary,
                   )}
                 >
-                  <div className="space-y-1">
-                    <h3
-                      className={clsx(
-                        "text-sm font-bold flex items-center gap-1.5",
-                        textPrimary,
-                      )}
-                    >
-                      <UserX className="w-4 h-4 text-destructive" />
-                      Silenced Users Directory
-                    </h3>
-                    <p className={clsx("text-xs", textTertiary)}>
-                      Silence users platform-wide from sending new messages.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() =>
-                      setModalOpen({ ...modalOpen, silence: true })
-                    }
-                    className="px-3 py-1.5 bg-destructive hover:bg-destructive/90 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
-                  >
-                    Silence User
-                  </button>
-                </div>
-
-                {/* Active Silences list */}
-                {silences.length > 0 && (
+                  {/* Silence actions tool */}
                   <div
                     className={clsx(
-                      "rounded-xl p-4 border space-y-3",
+                      "rounded-xl p-4 border flex justify-between items-center gap-4",
                       bgPrimary,
                       borderColor,
                     )}
                   >
-                    <h4 className={clsx("text-xs font-bold", textPrimary)}>
-                      Active Silenced Accounts
-                    </h4>
-                    <div className="space-y-2">
-                      {silences.map((s) => {
-                        const user = MOCK_USERS.find((u) => u.id === s.userId);
-                        return (
-                          <div
-                            key={s.userId}
-                            className={clsx(
-                              "flex justify-between items-center p-2.5 rounded-lg border",
-                              bgTertiary,
-                              borderColor,
-                            )}
-                          >
-                            <div>
-                              <p
-                                className={clsx(
-                                  "text-xs font-bold",
-                                  textPrimary,
-                                )}
-                              >
-                                {user
-                                  ? `${user.firstName} ${user.lastName}`
-                                  : s.userId}
-                              </p>
-                              <p className={clsx("text-[10px]", textTertiary)}>
-                                Reason: {s.reason}
-                              </p>
-                              <p className={clsx("text-[9px]", textTertiary)}>
-                                Expires:{" "}
-                                {s.expiresAt === "permanent"
-                                  ? "Indefinite"
-                                  : new Date(s.expiresAt).toLocaleString()}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleUnsilenceUser(s.userId)}
-                              className={clsx(
-                                "px-2 py-1 bg-teal-500/20 hover:bg-teal-500/35 text-[10px] font-bold rounded cursor-pointer transition-colors",
-                                isDark ? "text-teal-400" : "text-teal-700",
-                              )}
-                            >
-                              Lift Silence
-                            </button>
-                          </div>
-                        );
-                      })}
+                    <div className="space-y-1">
+                      <h3
+                        className={clsx(
+                          "text-sm font-bold flex items-center gap-1.5",
+                          textPrimary,
+                        )}
+                      >
+                        <UserX className="w-4 h-4 text-destructive" />
+                        Silenced Users Directory
+                      </h3>
+                      <p className={clsx("text-xs", textTertiary)}>
+                        Silence users platform-wide from sending new messages.
+                      </p>
                     </div>
-                  </div>
-                )}
-
-                {/* Action logs */}
-                <div
-                  className={clsx(
-                    "rounded-xl p-4 border space-y-4",
-                    bgPrimary,
-                    borderColor,
-                  )}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <FileText className={clsx("w-4 h-4", textTertiary)} />
-                    <h3 className={clsx("text-sm font-bold", textPrimary)}>
-                      Audit Log Actions
-                    </h3>
+                    <button
+                      onClick={() =>
+                        setModalOpen({ ...modalOpen, silence: true })
+                      }
+                      className="px-3 py-1.5 bg-destructive hover:bg-destructive/90 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
+                    >
+                      Silence User
+                    </button>
                   </div>
 
-                  {logs.length > 0 ? (
+                  {/* Active Silences list */}
+                  {silences.length > 0 && (
                     <div
                       className={clsx(
-                        "space-y-3 divide-y",
-                        isDark ? "divide-gray-800" : "divide-gray-100",
+                        "rounded-xl p-4 border space-y-3",
+                        bgPrimary,
+                        borderColor,
                       )}
                     >
-                      {logs.map((log) => (
-                        <div key={log.id} className="pt-3 text-xs space-y-1">
-                          <div className="flex justify-between">
-                            <span className={clsx("font-bold", textPrimary)}>
-                              {log.actorName}
-                            </span>
-                            <span className={clsx("text-[10px]", textTertiary)}>
-                              {new Date(log.timestamp).toLocaleString()}
-                            </span>
-                          </div>
-                          <p className={textSecondary}>
-                            Action:{" "}
-                            <span
+                      <h4 className={clsx("text-xs font-bold", textPrimary)}>
+                        Active Silenced Accounts
+                      </h4>
+                      <div className="space-y-2">
+                        {silences.map((s) => {
+                          const user = chatUsersList.find(
+                            (u: any) => u.id === s.userId,
+                          );
+                          return (
+                            <div
+                              key={s.userId}
                               className={clsx(
-                                "font-semibold capitalize",
-                                isDark ? "text-teal-400" : "text-teal-700",
+                                "flex justify-between items-center p-2.5 rounded-lg border",
+                                bgTertiary,
+                                borderColor,
                               )}
                             >
-                              {log.action.replace("_", " ")}
-                            </span>
-                          </p>
-                          <p className={clsx("italic", textTertiary)}>
-                            Target: {log.targetName}
-                          </p>
-                          <p className={textTertiary}>Reason: {log.reason}</p>
-                        </div>
-                      ))}
+                              <div>
+                                <p
+                                  className={clsx(
+                                    "text-xs font-bold",
+                                    textPrimary,
+                                  )}
+                                >
+                                  {user
+                                    ? user.name ||
+                                      `${user.firstName || ""} ${user.lastName || ""}`.trim()
+                                    : s.userId}
+                                </p>
+                                <p
+                                  className={clsx("text-[10px]", textTertiary)}
+                                >
+                                  Reason: {s.reason}
+                                </p>
+                                <p className={clsx("text-[9px]", textTertiary)}>
+                                  Expires:{" "}
+                                  {s.expiresAt === "permanent"
+                                    ? "Indefinite"
+                                    : new Date(s.expiresAt).toLocaleString()}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => handleUnsilenceUser()}
+                                className={clsx(
+                                  "px-2 py-1 bg-teal-500/20 hover:bg-teal-500/35 text-[10px] font-bold rounded cursor-pointer transition-colors",
+                                  isDark ? "text-teal-400" : "text-teal-700",
+                                )}
+                              >
+                                Lift Silence
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  ) : (
-                    <p
-                      className={clsx(
-                        "text-xs text-center py-6",
-                        textTertiary,
-                      )}
-                    >
-                      No moderation actions logged in this session.
-                    </p>
                   )}
-                </div>
-              </div>
-            ) : (
-              /* SETTINGS TAB */
-              <div
-                className={clsx(
-                  "p-6 space-y-6 overflow-y-auto h-full text-left",
-                  bgSecondary,
-                )}
-              >
-                <div
-                  className={clsx(
-                    "rounded-xl p-5 border space-y-4 max-w-md",
-                    bgPrimary,
-                    borderColor,
-                  )}
-                >
-                  <h3 className={clsx("text-sm font-bold", textPrimary)}>
-                    Chat settings
-                  </h3>
 
+                  {/* Action logs */}
                   <div
                     className={clsx(
-                      "flex items-center justify-between p-3 rounded-lg border",
-                      bgTertiary,
+                      "rounded-xl p-4 border space-y-4",
+                      bgPrimary,
                       borderColor,
                     )}
                   >
-                    <div>
-                      <h4 className={clsx("text-xs font-bold", textPrimary)}>
-                        Read Receipts
-                      </h4>
-                      <p className={clsx("text-[10px] mt-0.5", textTertiary)}>
-                        If disabled, you will not send receipts and cannot see
-                        others' blue ticks.
-                      </p>
+                    <div className="flex items-center gap-1.5">
+                      <FileText className={clsx("w-4 h-4", textTertiary)} />
+                      <h3 className={clsx("text-sm font-bold", textPrimary)}>
+                        Audit Log Actions
+                      </h3>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={!readReceiptsDisabled}
-                        onChange={handleToggleReadReceipts}
-                        className="sr-only peer"
-                      />
+
+                    {logs.length > 0 ? (
                       <div
                         className={clsx(
-                          "w-9 h-5 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600",
-                          isDark ? "bg-gray-700" : "bg-gray-300",
+                          "space-y-3 divide-y",
+                          isDark ? "divide-gray-800" : "divide-gray-100",
                         )}
-                      />
-                    </label>
-                  </div>
-
-                  <div
-                    className={clsx(
-                      "flex items-center gap-2 text-xs font-semibold p-2",
-                      isDark ? "text-emerald-400" : "text-emerald-600",
+                      >
+                        {logs.map((log) => (
+                          <div key={log.id} className="pt-3 text-xs space-y-1">
+                            <div className="flex justify-between">
+                              <span className={clsx("font-bold", textPrimary)}>
+                                {log.actorName}
+                              </span>
+                              <span
+                                className={clsx("text-[10px]", textTertiary)}
+                              >
+                                {new Date(log.timestamp).toLocaleString()}
+                              </span>
+                            </div>
+                            <p className={textSecondary}>
+                              Action:{" "}
+                              <span
+                                className={clsx(
+                                  "font-semibold capitalize",
+                                  isDark ? "text-teal-400" : "text-teal-700",
+                                )}
+                              >
+                                {log.action.replace("_", " ")}
+                              </span>
+                            </p>
+                            <p className={clsx("italic", textTertiary)}>
+                              Target: {log.targetName}
+                            </p>
+                            <p className={textTertiary}>Reason: {log.reason}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p
+                        className={clsx(
+                          "text-xs text-center py-6",
+                          textTertiary,
+                        )}
+                      >
+                        No moderation actions logged in this session.
+                      </p>
                     )}
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    Settings applied successfully.
                   </div>
                 </div>
-              </div>
+              )
             )}
           </div>
         </div>
@@ -776,12 +664,14 @@ export default function ChatPage() {
         onClose={() => setModalOpen({ ...modalOpen, newDm: false })}
         currentUser={currentUser}
         onStartChat={handleStartDm}
+        chatUsers={chatUsersList}
       />
       <NewGroupModal
         isOpen={modalOpen.newGroup}
         onClose={() => setModalOpen({ ...modalOpen, newGroup: false })}
         currentUser={currentUser}
         onGroupCreated={handleGroupCreated}
+        chatUsers={chatUsersList}
       />
       <NewBroadcastModal
         isOpen={modalOpen.newBroadcast}
@@ -793,6 +683,7 @@ export default function ChatPage() {
         isOpen={modalOpen.silence}
         onClose={() => setModalOpen({ ...modalOpen, silence: false })}
         onSilence={handleSilenceUser}
+        chatUsers={chatUsersList}
       />
     </div>
   );

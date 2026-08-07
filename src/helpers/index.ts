@@ -336,3 +336,13 @@ export function formatLastLogin(iso: string): string {
     minute: "2-digit",
   });
 }
+
+export const getInitials = (name?: string) => {
+  if (!name) return "UN";
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
+};

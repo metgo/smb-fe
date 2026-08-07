@@ -11,6 +11,7 @@ import {
   Building2,
   User,
 } from "lucide-react";
+import clsx from "clsx";
 
 import { routes } from "@/lib/routes";
 import { useAppSelector } from "@/hooks/hooks";
@@ -20,18 +21,7 @@ import { useGetUserInfoQuery } from "@/store/api/userQueryApi";
 import { formatDate } from "@/helpers/formatter";
 import { Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
-
-export function getInitials(fullName: string): string {
-  if (!fullName) return "";
-
-  return fullName
-    .trim()
-    .split(/\s+/) // split by one or more spaces
-    .map((word) => word[0]) // take first letter
-    .join("")
-    .toUpperCase();
-}
+import { getInitials } from "@/helpers";
 
 export default function ProfilePage() {
   const { t } = useTranslation("profile");
