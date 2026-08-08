@@ -1,13 +1,25 @@
 import clsx from "clsx";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { Users, Activity, Eye, Clock, Target } from "lucide-react";
+import {
+  Users,
+  Activity,
+  Eye,
+  Clock,
+  Target,
+  ArrowRight,
+  ChartLine,
+  ArrowLeft,
+} from "lucide-react";
 
-import { useAppSelector } from "@/hooks/hooks";
+import { routes } from "@/lib/routes";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { InfoTooltip } from "@/components/shared";
 import { normalizeTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetGoogleAnalyticsViewsQuery } from "@/store/api/analyticsApi";
+import { setWebsite } from "@/features/authSlice";
 
 const COLORS = {
   blue: { gradient: "from-blue-500 to-blue-600", stroke: "#3b82f6" },
@@ -257,8 +269,10 @@ function GAOverviewSkeleton() {
 }
 
 export default function GAOverview() {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { t } = useTranslation("dashboard");
-  const { isDark } = useThemeClasses();
+  const { isDark, isRTL } = useThemeClasses();
 
   const { dmoId, authorityId, websiteId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
@@ -320,6 +334,11 @@ export default function GAOverview() {
     },
   ];
 
+  function handleNavigateToAnalyticsDashboard() {
+    dispatch(setWebsite("689aca6896fc4dd7086c8834"));
+    navigate(routes.analyticsDashboard);
+  }
+
   return (
     <section>
       <div
@@ -349,6 +368,26 @@ export default function GAOverview() {
               {t("ga_desc")}
             </p>
           </div>
+
+          <button
+            type="button"
+            onClick={handleNavigateToAnalyticsDashboard}
+            title={t("view_full_analytics")}
+            className={clsx(
+              "p-1.5 rounded-md transition-colors shrink-0 flex items-center gap-2 cursor-pointer",
+              isDark
+                ? "text-gray-400 hover:text-white hover:bg-gray-800"
+                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100",
+            )}
+          >
+            <ChartLine className="w-4 h-4" />
+            <span>{t("view_full_analytics")}</span>
+            {isRTL ? (
+              <ArrowLeft className="w-4 h-4" />
+            ) : (
+              <ArrowRight className="w-4 h-4" />
+            )}
+          </button>
           <InfoTooltip
             content={t("google_analytics_overview_desc")}
             title={t("google_analytics_overview")}

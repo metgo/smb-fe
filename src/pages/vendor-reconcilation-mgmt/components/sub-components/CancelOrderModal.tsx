@@ -61,7 +61,7 @@ export default function CancelOrderModal({
     <ModalWrapper onClose={onClose} maxWidth="max-w-2xl" height="">
       {/* Header */}
       <div
-        className={`border-b ${borderColor} p-6 flex items-center justify-between flex-shrink-0`}
+        className={`border-b ${borderColor} p-6 flex items-center justify-between shrink-0`}
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
@@ -85,7 +85,7 @@ export default function CancelOrderModal({
           className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4`}
         >
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
             <div>
               <p
                 className={`text-sm font-medium text-red-900 dark:text-red-200`}
@@ -180,7 +180,7 @@ export default function CancelOrderModal({
 
       {/* Actions */}
       <div
-        className={`border-t ${borderColor} p-6 flex items-center justify-end gap-3 flex-shrink-0`}
+        className={`border-t ${borderColor} p-6 flex items-center justify-end gap-3 shrink-0`}
       >
         <button
           onClick={onClose}
