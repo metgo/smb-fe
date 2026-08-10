@@ -62,6 +62,7 @@ export const endpoints = {
   approveOrderProduct: "/approve-order-product",
   openDispute: "/orders/dispute",
   respondDispute: "/disputes/respond",
+  reopenDispute: "/disputes/reopen",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",

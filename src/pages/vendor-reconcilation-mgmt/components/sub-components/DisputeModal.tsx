@@ -8,6 +8,7 @@ interface DisputeModalProps {
   order: MonthlyOrder;
   onClose: () => void;
   onSubmit: (reason: string, details: string, files: File[]) => void;
+  isReopen?: boolean;
 }
 
 const disputeReasons = [
@@ -25,6 +26,7 @@ export default function DisputeModal({
   order,
   onClose,
   onSubmit,
+  isReopen = false,
 }: DisputeModalProps) {
   const { t } = useTranslation("reconciliation");
   const { theme } = useAppSelector((state) => state.settings);
@@ -42,6 +44,7 @@ export default function DisputeModal({
     return null;
   }
 
+  const isDark = theme === "dark";
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
   const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
   const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
@@ -119,12 +122,18 @@ export default function DisputeModal({
           className={`sticky top-0 ${bgPrimary} border-b ${borderColor} p-6 flex items-center justify-between z-10`}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                isDark ? "bg-orange-900/20" : "bg-orange-100"
+              }`}
+            >
+              <AlertTriangle
+                className={`w-5 h-5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
+              />
             </div>
             <div>
               <h2 className={`text-xl font-bold ${textPrimary}`}>
-                {t("open_dispute")}
+                {isReopen ? t("reopen_dispute_btn") : t("open_dispute")}
               </h2>
               <p className={`text-sm ${textTertiary}`}>
                 {t("order_number")} #{order._id}
@@ -133,7 +142,7 @@ export default function DisputeModal({
           </div>
           <button
             onClick={onClose}
-            className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 ${textSecondary} transition-colors`}
+            className={`p-2 rounded-lg ${isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"} ${textSecondary} transition-colors`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -142,17 +151,27 @@ export default function DisputeModal({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Warning */}
-          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+          <div
+            className={`border rounded-lg p-4 ${
+              isDark
+                ? "bg-orange-900/20 border-orange-800"
+                : "bg-orange-50 border-orange-200"
+            }`}
+          >
             <div className="flex items-start gap-2">
-              <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+              <AlertTriangle
+                className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                  isDark ? "text-orange-400" : "text-orange-600"
+                }`}
+              />
               <div>
                 <p
-                  className={`text-sm font-medium text-orange-900 dark:text-orange-200`}
+                  className={`text-sm font-medium ${isDark ? "text-orange-200" : "text-orange-900"}`}
                 >
                   {t("warning_freeze_order")}
                 </p>
                 <p
-                  className={`text-xs text-orange-700 dark:text-orange-300 mt-1`}
+                  className={`text-xs mt-1 ${isDark ? "text-orange-300" : "text-orange-700"}`}
                 >
                   {t("dispute_warning_desc")}
                 </p>
@@ -319,7 +338,9 @@ export default function DisputeModal({
                     </div>
                     <button
                       onClick={() => removeFile(index)}
-                      className="p-1 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      className={`p-1 rounded text-red-600 ${
+                        isDark ? "hover:bg-red-900/20" : "hover:bg-red-50"
+                      }`}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -336,7 +357,9 @@ export default function DisputeModal({
         >
           <button
             onClick={onClose}
-            className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+            className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} ${
+              isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"
+            } transition-colors`}
           >
             {t("cancel_btn")}
           </button>
@@ -344,7 +367,7 @@ export default function DisputeModal({
             onClick={handleSubmit}
             className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
           >
-            {t("submit_dispute")}
+            {isReopen ? t("reopen_dispute_btn") : t("submit_dispute")}
           </button>
         </div>
       </div>

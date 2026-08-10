@@ -1,7 +1,13 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
 import OrderDetailsModal from "./OrderDetailsModal";
 import DisputeModal from "./DisputeModal";
@@ -14,14 +20,15 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { uploadWithProgress } from "@/helpers";
+import { formatDateTime } from "@/helpers/formatter";
 import {
-  useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
+  useLazyGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
   useOpenDisputeMutation,
+  useReopenDisputeMutation,
   // useRespondDisputeMutation,
   // useBulkApproveOrderProductsMutation,
-  useGetReconciliationStatsQuery,
   useBulkMarkOrderAsCompletedMutation,
   useFinalizeClosedOrdersMutation,
   usePreviewFinalizeClosedOrdersQuery,
@@ -32,10 +39,12 @@ import {
   ReordableDataTable,
   FilterChips,
   ImageWithFallback,
+  ConfirmDialog,
 } from "@/components/shared";
 import MonthFilter from "@/pages/orders-mgmt/components/MonthFilter";
 import FilterButton from "@/components/btns/FilterButton";
 import clsx from "clsx";
+import { useVendorMonthlyReportData } from "../../hooks/useVendorMonthlyReportData";
 
 interface OrderProduct {
   _id: string;
@@ -56,7 +65,12 @@ interface OrderProduct {
     platformFee: number;
     disputeId?: string;
     reconciliationStatus?:
-      "pending" | "approved" | "canceled" | "disputed" | "rejected" | "closed";
+      | "pending"
+      | "approved"
+      | "canceled"
+      | "disputed"
+      | "rejected"
+      | "closed";
     vendorFacingResponse?: string;
   };
   customerInformation: {
@@ -170,7 +184,11 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
     deliveryMethod: d?.deliveryInformation?.deliveryMethod || "",
     deliveryAddress: address,
     specialInstructions: d?.deliveryInformation?.specialInstructions || "",
-    disputeId: d.orderInformation?.disputeId,
+    // The details endpoint nests disputeId under orderInformation, but the
+    // list endpoint (mapOrderProductList) puts it top-level - fall back to
+    // that shape too so we never end up substituting the orderProductId for
+    // a real disputeId downstream.
+    disputeId: d.orderInformation?.disputeId || (d as any).disputeId,
   };
 }
 
@@ -180,6 +198,7 @@ export type MonthlyOrder = ReturnType<typeof mapOrderProductList> & {
 
 export const VendorMonthlyReport = () => {
   const { t } = useTranslation("reconciliation");
+  const { t: tc } = useTranslation("common");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const {
@@ -190,29 +209,29 @@ export const VendorMonthlyReport = () => {
     textSecondary,
     textTertiary,
     isDark,
+    language,
   } = useThemeClasses();
-  const { dmoId, authorityId, userRole } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { userRole } = useAppSelector((state) => state.auth);
   const adminView = userRole === "superadmin";
 
   const businessSearchDebounceRef = useRef<ReturnType<
     typeof setTimeout
   > | null>(null);
-  const [orders, setOrders] = useState<MonthlyOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<MonthlyOrder | null>(null);
+  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [isReopenDisputeFlow, setIsReopenDisputeFlow] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
   const [showCloseAllOrdersModal, setShowCloseAllOrdersModal] = useState(false);
+  const [showBulkCompleteConfirm, setShowBulkCompleteConfirm] = useState(false);
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [_disputedCount, setDisputedCount] = useState(0);
 
-  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     status: "all",
     reconciliationStatus: "all",
@@ -228,71 +247,40 @@ export const VendorMonthlyReport = () => {
   const [showBusinessDropdown, setShowBusinessDropdown] = useState(false);
   const [isSearchingBusinesses, setIsSearchingBusinesses] = useState(false);
   const [selectedBusinessName, setSelectedBusinessName] = useState("");
-  const isLoadingNextPageRef = useRef(false);
   const [searchBusinessesTrigger] = useLazyGetBusinessForProductQuery();
 
-  const apiParams = useMemo(() => {
-    const params: any = {
-      page,
-      limit: 20,
-      dmoId,
-      authorityId,
-    };
-
-    if (filters.businessId) params.vendorId = filters.businessId;
-    if (filters.status !== "all") {
-      params.status = filters.status;
-    }
-    if (filters.reconciliationStatus !== "all") {
-      params.reconciliationStatus = filters.reconciliationStatus;
-    }
-
-    if (searchTerm) params.search = searchTerm;
-
-    if (filters.month !== "all" && filters.month !== "custom") {
-      const [month, year] = filters.month.split("-");
-
-      // format from the Date's own local year/month/day, not
-      // toISOString() - that converts to UTC first, which silently shifts
-      // the date back a day for any timezone ahead of UTC (midnight local
-      // time is still "yesterday evening" in UTC)
-      const formatLocalDate = (d: Date) => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
-      };
-
-      const firstDay = new Date(Number(year), Number(month) - 1, 1);
-      const lastDay = new Date(Number(year), Number(month), 0);
-
-      params.startDate = formatLocalDate(firstDay);
-      params.endDate = formatLocalDate(lastDay);
-    }
-
-    // Custom date range
-    if (filters.month === "custom") {
-      if (filters.startDate) params.startDate = filters.startDate;
-      if (filters.endDate) params.endDate = filters.endDate;
-    }
-    return params;
-  }, [page, filters, searchTerm, dmoId, authorityId]);
-
   const {
-    data: orderProductsData,
+    combinedOrders,
+    reconciliationStats,
     isLoading,
     isFetching,
-    refetch: refetchOrders,
-  } = useGetOrderProductsQuery(apiParams);
+    refetch,
+    refetchStats: refetchReconciliationStats,
+    scopeParams,
+    hasMore,
+    fetchNextPage,
+  } = useVendorMonthlyReportData(filters, searchTerm);
+
+  const orders = useMemo(
+    () => combinedOrders.map(mapOrderProductList),
+    [combinedOrders],
+  );
+
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
     useGetOrderProductDetailsQuery(detailsOrderId as string, {
       skip: !detailsOrderId,
+
+      refetchOnMountOrArgChange: true,
     });
   const [cancelOrderProduct] = useCancelOrderProductMutation();
   const [openDispute] = useOpenDisputeMutation();
+  const [reopenDispute] = useReopenDisputeMutation();
+  const [fetchOrderDetailsForReopen] = useLazyGetOrderProductDetailsQuery();
+  const [reopenFetchingId, setReopenFetchingId] = useState<string | null>(null);
   // const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
-  const [bulkMarkOrderAsCompleted] = useBulkMarkOrderAsCompletedMutation();
+  const [bulkMarkOrderAsCompleted, { isLoading: isBulkCompleting }] =
+    useBulkMarkOrderAsCompletedMutation();
   // const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
   const [finalizeClosedOrders, { isLoading: isClosingAllOrders }] =
     useFinalizeClosedOrdersMutation();
@@ -302,11 +290,17 @@ export const VendorMonthlyReport = () => {
     data: finalizeSweepPreview,
     isFetching: isFetchingSweepPreview,
     isError: isSweepPreviewError,
+    error: sweepPreviewError,
   } = usePreviewFinalizeClosedOrdersQuery(undefined, {
     skip: !showCloseAllOrdersModal,
   });
-  const { data: reconciliationStats, refetch: refetchReconciliationStats } =
-    useGetReconciliationStatsQuery();
+  // surface the backend's own message when it has one (e.g. "can't
+  // finalize yet, vendors still have time") instead of always showing the
+  // generic "couldn't check, try again" text - that generic text is only
+  // right for an actual technical failure, not a deliberate block
+  const sweepPreviewErrorMessage =
+    (sweepPreviewError as any)?.data?.message ?? undefined;
+
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const websiteMap = useMemo(() => {
@@ -435,49 +429,6 @@ export const VendorMonthlyReport = () => {
   }, [searchParams, adminView]);
 
   useEffect(() => {
-    if (orderProductsData?.data) {
-      const mappedOrders = orderProductsData.data.map(mapOrderProductList);
-
-      if (page === 1) {
-        setOrders(mappedOrders);
-      } else {
-        setOrders((prev) => {
-          const existingIds = new Set(prev.map((o: MonthlyOrder) => o._id));
-          const newOrders = mappedOrders.filter(
-            (o: MonthlyOrder) => !existingIds.has(o._id),
-          );
-          return [...prev, ...newOrders];
-        });
-      }
-    }
-  }, [orderProductsData, page]);
-
-  const hasMore = orderProductsData?.meta?.hasNextPage ?? false;
-
-  const loadNextPage = () => {
-    if (!hasMore || isLoading || isFetching || isLoadingNextPageRef.current)
-      return;
-    isLoadingNextPageRef.current = true;
-    setPage((prev) => prev + 1);
-  };
-
-  useEffect(() => {
-    isLoadingNextPageRef.current = isLoading || isFetching;
-  }, [isLoading, isFetching]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [
-    searchTerm,
-    filters.status,
-    filters.reconciliationStatus,
-    filters.month,
-    filters.startDate,
-    filters.endDate,
-    filters.businessId,
-  ]);
-
-  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest(".business-search-container")) {
@@ -537,7 +488,99 @@ export const VendorMonthlyReport = () => {
       return;
     }
     setSelectedOrder(order);
+    setIsReopenDisputeFlow(false);
     setShowDisputeModal(true);
+  };
+
+  const handleReopenDispute = (order: MonthlyOrder) => {
+    if (userRole !== "traveller") {
+      toast.error(t("only_traveller_can_open_disputes"));
+      return;
+    }
+    setSelectedOrder(order);
+    setShowOrderDetails(false);
+    setIsReopenDisputeFlow(true);
+    setShowDisputeModal(true);
+  };
+
+  // Row actions only have the list-mapped order, whose disputeId is
+  // frequently missing - fetch the order's details (whose disputeId is
+  // reliable, same as the OrderDetailsModal path) before opening the
+  // reopen modal, instead of failing with "dispute not found".
+  const handleReopenFromRow = async (order: MonthlyOrder) => {
+    if (userRole !== "traveller") {
+      toast.error(t("only_traveller_can_open_disputes"));
+      return;
+    }
+    setReopenFetchingId(order._id);
+    try {
+      const details = await fetchOrderDetailsForReopen(order._id).unwrap();
+      const mapped = mapOrderProductDetails(details);
+      handleReopenDispute({
+        ...order,
+        ...mapped,
+        disputeId: mapped.disputeId || order.disputeId,
+      });
+    } catch {
+      toast.error(t("reopen_dispute_failed"));
+    } finally {
+      setReopenFetchingId(null);
+    }
+  };
+
+  const handleSubmitReopenDispute = async (
+    reason: string,
+    details: string,
+    files: File[],
+  ) => {
+    if (!selectedOrder) return;
+    // The order's _id is an orderProduct id, not a dispute id - sending it
+    // to /disputes/reopen/:disputeId 404s with "dispute not found", so bail
+    // out with a clear error instead of silently substituting it.
+    if (!selectedOrder.disputeId) {
+      toast.error(t("reopen_dispute_failed"));
+      return;
+    }
+    try {
+      const attachmentUrls: string[] = [];
+
+      // Upload files if any
+      if (files.length > 0) {
+        for (const file of files) {
+          const res = await createSignedUrl([
+            { originalName: file.name, mimeType: file.type },
+          ]);
+          const { signedUrl, gcsURL } = res.data[0] as {
+            signedUrl: string;
+            gcsURL: string;
+          };
+
+          await uploadWithProgress(file, signedUrl, () => {});
+          attachmentUrls.push(gcsURL);
+        }
+      }
+
+      await reopenDispute({
+        disputeId: selectedOrder.disputeId,
+        reason,
+        description: details,
+        attachments: attachmentUrls,
+      }).unwrap();
+
+      toast.success(t("dispute_reopened"));
+      setShowDisputeModal(false);
+      setIsReopenDisputeFlow(false);
+      closeDetails();
+      refetch();
+      refetchReconciliationStats();
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      if (errorMessage?.includes("role")) {
+        toast.error(t("only_traveller_can_open_disputes"));
+      } else {
+        toast.error(t("reopen_dispute_failed"));
+      }
+    }
   };
 
   const handleSubmitDispute = async (
@@ -574,8 +617,8 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("dispute_submitted"));
       setShowDisputeModal(false);
-      setSelectedOrder(null);
-      refetchOrders();
+      closeDetails();
+      refetch();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -662,8 +705,8 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("order_cancelled"));
       setShowCancelModal(false);
-      setSelectedOrder(null);
-      refetchOrders();
+      closeDetails();
+      refetch();
       refetchReconciliationStats();
     } catch (error) {
       toast.error(t("cancel_failed"));
@@ -700,7 +743,7 @@ export const VendorMonthlyReport = () => {
     setShowAdminDisputeModal(false);
     setSelectedOrder(null);
     setDetailsOrderId(null);
-    refetchOrders();
+    refetch();
   };
 
   const handleSelectionChange = (newSelection: Set<string>) => {
@@ -732,13 +775,17 @@ export const VendorMonthlyReport = () => {
 
   const handleBulkMarkOrderCompleted = async () => {
     try {
+      // act on exactly what's currently shown - same DMO/Authority/vendor/
+      // date scope as the list itself, not silently the real current month
       await bulkMarkOrderAsCompleted({
         markAllAsCompleted: true,
+        ...scopeParams,
       }).unwrap();
 
       toast.success(t("orders_mark_as_completed"));
       setSelectedItems(new Set());
-      refetchOrders();
+      setShowBulkCompleteConfirm(false);
+      refetch();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -780,7 +827,7 @@ export const VendorMonthlyReport = () => {
 
       setShowCloseAllOrdersModal(false);
       toast.success(t("orders_closed_successfully"));
-      refetchOrders();
+      refetch();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
@@ -835,9 +882,18 @@ export const VendorMonthlyReport = () => {
         icon: XCircle,
         label: t("rejected"),
       },
+      closed: {
+        bg: isDark ? "bg-green-900/20" : "bg-green-100",
+        text: isDark ? "text-green-400" : "text-green-800",
+        icon: CheckCircle,
+        label: t("paid"),
+      },
     };
 
-    const badge = badges[status] || badges.pending || badges.processing;
+    const badge =
+      badges[(status || "").toLowerCase().trim()] ||
+      badges.pending ||
+      badges.processing;
     if (!badge) {
       return <span>{status}</span>;
     }
@@ -860,15 +916,6 @@ export const VendorMonthlyReport = () => {
   const formatCurrency = (amount?: number) => {
     if (amount === null || amount === undefined) return "-";
     return `₪${amount.toLocaleString()}`;
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   const columns = [
@@ -910,7 +957,11 @@ export const VendorMonthlyReport = () => {
       sortable: true,
       label: t("date"),
       render: (order: MonthlyOrder) => (
-        <span className={textSecondary}>{formatDate(order.purchaseDate)}</span>
+        <span className={textSecondary}>
+          {order.purchaseDate
+            ? formatDateTime(order.purchaseDate, language)
+            : "-"}
+        </span>
       ),
     },
     {
@@ -980,22 +1031,54 @@ export const VendorMonthlyReport = () => {
           onClick={(e) => e.stopPropagation()}
         >
           {order.status !== "canceled" &&
-            order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "disputed" &&
+            order.reconciliationStatus !== "closed" &&
+            order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "rejected" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
-                className="p-1.5 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                className={`p-1.5 rounded transition-colors ${
+                  isDark
+                    ? "text-orange-400 hover:bg-orange-900/20"
+                    : "text-orange-600 hover:bg-orange-50"
+                }`}
                 title={t("dispute")}
               >
                 <AlertTriangle className="w-4 h-4" />
               </button>
             )}
+          {order.reconciliationStatus === "rejected" &&
+            userRole === "traveller" && (
+              <button
+                onClick={() => handleReopenFromRow(order)}
+                disabled={reopenFetchingId === order._id}
+                className={`p-1.5 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isDark
+                    ? "text-orange-400 hover:bg-orange-900/20"
+                    : "text-orange-600 hover:bg-orange-50"
+                }`}
+                title={t("reopen_dispute_btn")}
+              >
+                {reopenFetchingId === order._id ? (
+                  <div
+                    className={`w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ${
+                      isDark ? "border-orange-400" : "border-orange-600"
+                    }`}
+                  />
+                ) : (
+                  <RotateCcw className="w-4 h-4" />
+                )}
+              </button>
+            )}
           {order.reconciliationStatus === "disputed" && adminView && (
             <button
               onClick={() => handleApproveDispute(order)}
-              className="p-1.5 rounded-full text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              className={`p-1.5 rounded-full transition-colors ${
+                isDark
+                  ? "text-green-400 hover:bg-green-900/20"
+                  : "text-green-600 hover:bg-green-50"
+              }`}
               title={t("approve")}
             >
               <CheckCircle className="w-5 h-5" />
@@ -1005,10 +1088,15 @@ export const VendorMonthlyReport = () => {
             order.reconciliationStatus !== "disputed" &&
             order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "rejected" &&
+            order.reconciliationStatus !== "closed" &&
             order.status !== "completed" && (
               <button
                 onClick={() => handleCancelOrder(order)}
-                className="p-1.5 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                className={`p-1.5 rounded transition-colors ${
+                  isDark
+                    ? "text-red-400 hover:bg-red-900/20"
+                    : "text-red-600 hover:bg-red-50"
+                }`}
                 title={t("cancel")}
               >
                 <XCircle className="w-4 h-4" />
@@ -1019,7 +1107,7 @@ export const VendorMonthlyReport = () => {
     },
   ];
 
-  if (isLoading && page === 1) {
+  if (isLoading && orders.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -1033,18 +1121,20 @@ export const VendorMonthlyReport = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
-        <div className="flex items-start justify-between gap-4">
+      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-5 mb-6`}>
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className={`text-2xl font-bold ${textPrimary} mb-1`}>
-              {t("vendor_reconciliation")}
+            <h1 className={`text-lg font-bold ${textPrimary}`}>
+              {tc("vendor_reconciliation")}
             </h1>
-            <p className={textTertiary}>{t("review_and_approve_orders")}</p>
+            <p className={`text-sm ${textTertiary}`}>
+              {t("review_and_approve_orders")}
+            </p>
           </div>
           {adminView && (
             <button
               onClick={() => setShowCloseAllOrdersModal(true)}
-              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+              className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
             >
               {t("close_all_orders")}
             </button>
@@ -1053,60 +1143,65 @@ export const VendorMonthlyReport = () => {
       </div>
 
       {/* Stats Dashboard */}
-      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>
-              {t("total_orders")}
-            </div>
-            <div className={`text-2xl font-bold ${textPrimary}`}>
+      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+            <div className={`text-xs ${textTertiary}`}>{t("total_orders")}</div>
+            <div className={`text-lg font-bold ${textPrimary}`}>
               {stats.totalOrders}
             </div>
           </div>
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>
+          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+            <div className={`text-xs ${textTertiary}`}>
               {t("total_revenue")}
             </div>
-            <div className={`text-2xl font-bold ${textPrimary}`}>
+            <div className={`text-lg font-bold ${textPrimary}`}>
               ₪{(stats.totalRevenue || 0).toLocaleString()}
             </div>
           </div>
 
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>
-              {t("net_payout")}
-            </div>
+          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+            <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
             <div
-              className={`text-2xl font-bold text-green-600 dark:text-green-400`}
+              className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
             >
               ₪{(stats.netPayout || 0).toLocaleString()}
             </div>
           </div>
-          <div className={`${bgSecondary} rounded-lg p-4 col-span-2`}>
-            <div className={`text-xs ${textTertiary} mb-2`}>
+
+          <div className={`${bgSecondary} rounded-lg px-3 py-2 col-span-2`}>
+            <div className={`text-xs ${textTertiary} mb-1`}>
               {t("status_overview")}
             </div>
-            <div className="flex flex-wrap gap-2 text-sm">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
               <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                <Clock
+                  className={`w-3.5 h-3.5 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}
+                />
                 <span className={textSecondary}>
                   {stats.pending} {t("pending")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <CheckCircle
+                  className={`w-3.5 h-3.5 ${isDark ? "text-green-400" : "text-green-600"}`}
+                />
                 <span className={textSecondary}>
                   {stats.approved} {t("approved")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                <AlertTriangle
+                  className={`w-3.5 h-3.5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
+                />
                 <span className={textSecondary}>
                   {stats.disputed} {t("disputed")}
                 </span>
               </span>
               <span className="flex items-center gap-1">
-                <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                <XCircle
+                  className={`w-3.5 h-3.5 ${isDark ? "text-red-400" : "text-red-600"}`}
+                />
                 <span className={textSecondary}>
                   {stats.cancelled} {t("canceled")}
                 </span>
@@ -1117,7 +1212,7 @@ export const VendorMonthlyReport = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className={`$ p-4 mb-6`}>
+      <div className={`$ mb-6`}>
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
           <div className="flex-1 w-full min-w-0">
             <SearchInput
@@ -1142,11 +1237,18 @@ export const VendorMonthlyReport = () => {
               stats.orderProductProcessing > 0 ||
               stats.orderProductShipped > 0) && (
               <button
-                onClick={handleBulkMarkOrderCompleted}
-                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+                onClick={() => setShowBulkCompleteConfirm(true)}
+                className={clsx(
+                  "px-4 py-2 rounded-lg cursor-pointer border transition-colors flex items-center gap-2",
+                  isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-600",
+                )}
               >
                 <CheckCircle className="w-4 h-4" />
-                {t("approve_pending_orders")}
+                <span className="hidden md:block">
+                  {t("approve_pending_orders")}
+                </span>
               </button>
             )}
 
@@ -1202,7 +1304,7 @@ export const VendorMonthlyReport = () => {
                 <option value="approved">{t("approved")}</option>
                 <option value="disputed">{t("disputed")}</option>
                 <option value="rejected">{t("rejected")}</option>
-                <option value="closed">{t("closed")}</option>
+                <option value="closed">{t("paid")}</option>
               </select>
             </div>
 
@@ -1287,7 +1389,11 @@ export const VendorMonthlyReport = () => {
                   )}
                   {filters.reconciliationStatus !== "all" && (
                     <FilterChips
-                      label={t(filters.reconciliationStatus)}
+                      label={t(
+                        filters.reconciliationStatus === "closed"
+                          ? "paid"
+                          : filters.reconciliationStatus,
+                      )}
                       onRemove={() =>
                         setFilters({ ...filters, reconciliationStatus: "all" })
                       }
@@ -1347,7 +1453,7 @@ export const VendorMonthlyReport = () => {
         storageKey="vendorMonthlyReportColumnOrder"
         columns={columns}
         hasMore={hasMore}
-        next={loadNextPage}
+        next={fetchNextPage}
         selectedItems={adminView ? selectedItems : undefined}
         onSelectionChange={adminView ? handleSelectionChange : undefined}
       />
@@ -1359,10 +1465,16 @@ export const VendorMonthlyReport = () => {
           loading={isDetailsLoading}
           onClose={closeDetails}
           onDispute={() => {
+            // Arriving here via a notification deep-link only sets
+            // detailsOrderId, not selectedOrder - so DisputeModal (gated on
+            // selectedOrder) would silently no-op without this sync.
+            setSelectedOrder(displayedOrder);
             setShowOrderDetails(false);
             setShowDisputeModal(true);
           }}
+          onReopenDispute={() => handleReopenDispute(displayedOrder)}
           onCancel={() => {
+            setSelectedOrder(displayedOrder);
             setShowOrderDetails(false);
             setShowCancelModal(true);
           }}
@@ -1391,11 +1503,17 @@ export const VendorMonthlyReport = () => {
       {showDisputeModal && selectedOrder && (
         <DisputeModal
           order={selectedOrder}
+          isReopen={isReopenDisputeFlow}
           onClose={() => {
             setShowDisputeModal(false);
-            setSelectedOrder(null);
+            setIsReopenDisputeFlow(false);
+            closeDetails();
           }}
-          onSubmit={handleSubmitDispute}
+          onSubmit={
+            isReopenDisputeFlow
+              ? handleSubmitReopenDispute
+              : handleSubmitDispute
+          }
         />
       )}
 
@@ -1405,7 +1523,7 @@ export const VendorMonthlyReport = () => {
           // loading={isCancelling}
           onClose={() => {
             setShowCancelModal(false);
-            setSelectedOrder(null);
+            closeDetails();
           }}
           onSubmit={handleSubmitCancel}
         />
@@ -1435,8 +1553,20 @@ export const VendorMonthlyReport = () => {
           isConfirming={isClosingAllOrders}
           onClose={() => setShowCloseAllOrdersModal(false)}
           onConfirm={handleCloseAllOrders}
+          previewErrorMessage={sweepPreviewErrorMessage}
         />
       )}
+
+      <ConfirmDialog
+        open={showBulkCompleteConfirm}
+        title={t("mark_orders_completed_confirm_title")}
+        message={t("mark_orders_completed_confirm_message")}
+        confirmText={t("approve_pending_orders")}
+        variant="warning"
+        loading={isBulkCompleting}
+        onCancel={() => setShowBulkCompleteConfirm(false)}
+        onConfirm={handleBulkMarkOrderCompleted}
+      />
     </div>
   );
 };

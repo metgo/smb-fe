@@ -28,12 +28,27 @@ export interface RespondDisputeRequest {
   vendorFacingResponse: string;
 }
 
+export interface ReopenDisputeRequest {
+  disputeId: string;
+  reason: string;
+  description: string;
+  attachments: string[];
+}
+
 export interface BulkApproveOrderProductsRequest {
   approveAllDisputed: boolean;
 }
+
 export interface BulkMarkAsCompletedRequest {
   markAllAsCompleted: boolean;
+  vendorId?: string;
+  externalApiId?: string;
+  dmoId?: string;
+  authorityId?: string;
+  startDate?: string;
+  endDate?: string;
 }
+
 export interface FinalizeClosedOrdersRequest {
   confirmFinalize: boolean;
 }
@@ -42,6 +57,18 @@ export interface FinalizeSweepPreview {
   targetMonth: string;
   sweptMonths: { label: string; payoutAmount: number }[];
 }
+
+export interface ReconciliationStatsParams {
+  dmoId?: string;
+  authorityId?: string;
+  status?: string;
+  reconciliationStatus?: string;
+  vendorId?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export const reconciliationQueryApi = createApi({
   reducerPath: "reconciliationQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -114,6 +141,19 @@ export const reconciliationQueryApi = createApi({
       }),
     }),
 
+    // POST /disputes/reopen/:disputeId
+    reopenDispute: builder.mutation<void, ReopenDisputeRequest>({
+      query: (body) => ({
+        url: `${endpoints.reopenDispute}/${body.disputeId}`,
+        method: "POST",
+        data: {
+          reason: body.reason,
+          description: body.description,
+          attachments: body.attachments,
+        },
+      }),
+    }),
+
     // POST /orders/bulk-approve
     bulkApproveOrderProducts: builder.mutation<
       void,
@@ -139,10 +179,14 @@ export const reconciliationQueryApi = createApi({
     }),
 
     // GET /orders/reconciliation-stats
-    getReconciliationStats: builder.query<any, void>({
-      query: () => ({
+    getReconciliationStats: builder.query<
+      any,
+      ReconciliationStatsParams | void
+    >({
+      query: (params) => ({
         url: endpoints.reconciliationStats,
         method: "GET",
+        params: params || {},
       }),
     }),
 
@@ -168,10 +212,12 @@ export const reconciliationQueryApi = createApi({
 export const {
   useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
+  useLazyGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
   useApproveOrderProductMutation,
   useOpenDisputeMutation,
   useRespondDisputeMutation,
+  useReopenDisputeMutation,
   useGetDisputeDetailsQuery,
   useBulkApproveOrderProductsMutation,
   useBulkMarkOrderAsCompletedMutation,

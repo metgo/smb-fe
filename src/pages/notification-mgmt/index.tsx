@@ -196,7 +196,7 @@ export default function NotificationsMgmtPage() {
   if (isFetching && page === 1 && allNotifications.length === 0) {
     return (
       <div
-        className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-white"} dark:bg-gray-950 transition-colors flex flex-col`}
+        className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-white"} transition-colors flex flex-col`}
       >
         <NotificationsMgmtSkeleton />
       </div>
@@ -205,11 +205,15 @@ export default function NotificationsMgmtPage() {
 
   return (
     <div
-      className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-white"}  dark:bg-gray-950 transition-colors flex flex-col`}
+      className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-white"} transition-colors flex flex-col`}
     >
       <div className="h-[calc(100vh-64px)] flex flex-col">
         {/* Fixed Header */}
-        <div className="shrink-0 p-4 sm:p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
+        <div
+          className={`shrink-0 p-4 sm:p-6 pb-4 border-b ${
+            isDark ? "border-gray-800" : "border-gray-200"
+          }`}
+        >
           <div className="max-w-400 mx-auto">
             <div className="flex items-center justify-between">
               <div>
@@ -399,7 +403,9 @@ export default function NotificationsMgmtPage() {
                       {/* Close / Clear Selection */}
                       <button
                         onClick={() => setSelectedNotifications(new Set())}
-                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                        className={`p-1.5 rounded-lg transition ${
+                          isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"
+                        }`}
                       >
                         <X className="h-6 w-6" />
                       </button>
@@ -425,7 +431,11 @@ export default function NotificationsMgmtPage() {
                     )
                   }
                 >
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <div
+                    className={`divide-y ${
+                      isDark ? "divide-gray-700" : "divide-gray-200"
+                    }`}
+                  >
                     {allNotifications?.map((notification) => {
                       const itemType = notification?.itemType;
                       if (!itemType) return null;

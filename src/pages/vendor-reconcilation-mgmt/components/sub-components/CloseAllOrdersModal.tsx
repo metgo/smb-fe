@@ -16,6 +16,7 @@ interface CloseAllOrdersModalProps {
   isConfirming: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  previewErrorMessage?: string;
 }
 
 // "MM/YYYY" -> "August 2026", matching the primary target month's own label
@@ -37,9 +38,10 @@ export default function CloseAllOrdersModal({
   isConfirming,
   onClose,
   onConfirm,
+  previewErrorMessage,
 }: CloseAllOrdersModalProps) {
   const { t } = useTranslation("reconciliation");
-  const { textPrimary, textTertiary, borderColor } = useThemeClasses();
+  const { textPrimary, textTertiary, borderColor, isDark } = useThemeClasses();
 
   return (
     <ModalWrapper onClose={onClose} maxWidth="max-w-lg" height="">
@@ -48,8 +50,14 @@ export default function CloseAllOrdersModal({
         className={`border-b ${borderColor} p-6 flex items-center justify-between flex-shrink-0`}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              isDark ? "bg-green-900/20" : "bg-green-100"
+            }`}
+          >
+            <CheckCircle2
+              className={`w-5 h-5 ${isDark ? "text-green-400" : "text-green-600"}`}
+            />
           </div>
           <div>
             <h2 className={`text-xl font-bold ${textPrimary}`}>
@@ -61,16 +69,28 @@ export default function CloseAllOrdersModal({
 
       {/* Content */}
       <div className="p-6 space-y-4">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div
+          className={`border rounded-lg p-4 ${
+            isDark ? "bg-red-900/20 border-red-800" : "bg-red-50 border-red-200"
+          }`}
+        >
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle
+              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                isDark ? "text-red-400" : "text-red-600"
+              }`}
+            />
             <div>
-              <p className="text-sm font-medium text-red-900 dark:text-red-200">
+              <p
+                className={`text-sm font-medium ${isDark ? "text-red-200" : "text-red-900"}`}
+              >
                 {t("close_all_orders_target_month", {
                   month: targetMonthLabel,
                 })}
               </p>
-              <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+              <p
+                className={`text-xs mt-1 ${isDark ? "text-red-300" : "text-red-700"}`}
+              >
                 {t("close_all_orders_warning_desc")}
               </p>
             </div>
@@ -84,7 +104,7 @@ export default function CloseAllOrdersModal({
         {isLoadingPreview && (
           <div className={`flex items-center gap-2 text-sm ${textTertiary}`}>
             <Loader2 className="w-4 h-4 animate-spin" />
-            {t("close_all_orders_checking_older_months")}
+            {previewErrorMessage || t("close_all_orders_preview_error")}
           </div>
         )}
 
@@ -93,23 +113,43 @@ export default function CloseAllOrdersModal({
             regardless of what this preview showed, so the CFO needs to know
             this check didn't actually happen before confirming */}
         {!isLoadingPreview && hasPreviewError && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <p className="text-sm text-red-800 dark:text-red-300">
+          <div
+            className={`border rounded-lg p-4 ${
+              isDark
+                ? "bg-red-900/20 border-red-800"
+                : "bg-red-50 border-red-200"
+            }`}
+          >
+            <p
+              className={`text-sm ${isDark ? "text-red-300" : "text-red-800"}`}
+            >
               {t("close_all_orders_preview_error")}
             </p>
           </div>
         )}
 
         {!isLoadingPreview && !hasPreviewError && sweptMonths.length > 0 && (
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-            <p className="text-sm font-medium text-amber-900 dark:text-amber-200 mb-2">
+          <div
+            className={`border rounded-lg p-4 ${
+              isDark
+                ? "bg-amber-900/20 border-amber-800"
+                : "bg-amber-50 border-amber-200"
+            }`}
+          >
+            <p
+              className={`text-sm font-medium mb-2 ${
+                isDark ? "text-amber-200" : "text-amber-900"
+              }`}
+            >
               {t("close_all_orders_also_includes")}
             </p>
             <ul className="space-y-1">
               {sweptMonths.map((month) => (
                 <li
                   key={month.label}
-                  className="text-sm text-amber-800 dark:text-amber-300 flex items-center justify-between"
+                  className={`text-sm flex items-center justify-between ${
+                    isDark ? "text-amber-300" : "text-amber-800"
+                  }`}
                 >
                   <span>{formatMonthLabel(month.label)}</span>
                   <span className="font-medium">
@@ -124,6 +164,10 @@ export default function CloseAllOrdersModal({
         <p className={`text-sm ${textTertiary}`}>
           {t("close_all_orders_ignores_filter_notice")}
         </p>
+
+        <p className={`text-sm ${textTertiary}`}>
+          {t("close_all_orders_disputed_notice")}
+        </p>
       </div>
 
       {/* Actions */}
@@ -133,7 +177,9 @@ export default function CloseAllOrdersModal({
         <button
           onClick={onClose}
           disabled={isConfirming}
-          className={`px-4 py-2 rounded-lg border ${borderColor} ${textTertiary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`px-4 py-2 rounded-lg border ${borderColor} ${textTertiary} ${
+            isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"
+          } transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {t("go_back")}
         </button>

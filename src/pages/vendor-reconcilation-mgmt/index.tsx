@@ -6,12 +6,7 @@ export const VendorReconciliationMgmt = () => {
   const { isDark } = useThemeClasses();
 
   return (
-    <div
-      className={clsx(
-        "transition-colors flex flex-col min-h-screen",
-        isDark ? "" : "bg-gray-50",
-      )}
-    >
+    <div className={clsx("", isDark ? "" : "bg-gray-50")}>
       <VendorMonthlyReport />
     </div>
   );

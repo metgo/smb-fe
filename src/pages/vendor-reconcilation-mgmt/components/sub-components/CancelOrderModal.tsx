@@ -33,6 +33,7 @@ export default function CancelOrderModal({
     bgPrimary,
     bgSecondary,
     borderColor,
+    isDark,
   } = useThemeClasses();
 
   const [reason, setReason] = useState("");
@@ -64,8 +65,14 @@ export default function CancelOrderModal({
         className={`border-b ${borderColor} p-6 flex items-center justify-between shrink-0`}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-            <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              isDark ? "bg-red-900/20" : "bg-red-100"
+            }`}
+          >
+            <XCircle
+              className={`w-5 h-5 ${isDark ? "text-red-400" : "text-red-600"}`}
+            />
           </div>
           <div>
             <h2 className={`text-xl font-bold ${textPrimary}`}>
@@ -82,17 +89,25 @@ export default function CancelOrderModal({
       <div className="p-6 space-y-6 overflow-y-auto max-h-[65vh]">
         {/* Warning */}
         <div
-          className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4`}
+          className={`border rounded-lg p-4 ${
+            isDark ? "bg-red-900/20 border-red-800" : "bg-red-50 border-red-200"
+          }`}
         >
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+            <AlertTriangle
+              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                isDark ? "text-red-400" : "text-red-600"
+              }`}
+            />
             <div>
               <p
-                className={`text-sm font-medium text-red-900 dark:text-red-200`}
+                className={`text-sm font-medium ${isDark ? "text-red-200" : "text-red-900"}`}
               >
                 {t("warning_cancel_refund")}
               </p>
-              <p className={`text-xs text-red-700 dark:text-red-300 mt-1`}>
+              <p
+                className={`text-xs mt-1 ${isDark ? "text-red-300" : "text-red-700"}`}
+              >
                 {t("cancel_refund_desc")}
               </p>
             </div>
@@ -184,7 +199,9 @@ export default function CancelOrderModal({
       >
         <button
           onClick={onClose}
-          className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+          className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} ${
+            isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"
+          } transition-colors`}
         >
           {t("go_back")}
         </button>
