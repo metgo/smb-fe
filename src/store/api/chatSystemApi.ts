@@ -4,11 +4,31 @@ import { endpoints } from "@/lib/endpoints";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 
 interface ChatUsersProps {
-  page: number;
-  limit: number;
-  role?: TUserRole;
+  search?: string;
+  email?: string;
+  role?: TUserRole[];
   dmoId?: string;
-  authrityId?: string;
+  authorityId?: string;
+  businessTagsId?: string;
+  dmoName?: string;
+  authorityName?: string;
+  businessName?: string;
+  businessTag?: string;
+  page?: number;
+  limit?: number;
+}
+
+interface ChatConversationsProps {
+  type?: TChatConversationType;
+  includeArchived?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+interface ChatConversationMessagesProps {
+  conversationId: string;
+  before?: string;
+  limit?: number;
 }
 
 export const chatSystemApi = createApi({
@@ -17,7 +37,7 @@ export const chatSystemApi = createApi({
   tagTypes: ["Chat", "Message", "User"],
 
   endpoints: (builder) => ({
-    chatUsers: builder.query<any, ChatUsersProps>({
+    chatUsers: builder.query<IChatUsersRes, ChatUsersProps>({
       query: (params: ChatUsersProps) => ({
         url: endpoints.chatUsers,
         method: "GET",
@@ -26,27 +46,119 @@ export const chatSystemApi = createApi({
       providesTags: ["User"],
     }),
 
-    sendMessage: builder.mutation<any, { body: any; chatId: string }>({
-      query: ({ body, chatId }) => ({
-        url: `${endpoints.chatMessages}/${chatId}`,
+    // Send a direct message; auto-creates the DM conversation if needed
+    sendDirectMessage: builder.mutation<
+      ISendMessageRes,
+      { targetUserId: string; content: string }
+    >({
+      query: (body) => ({
+        url: endpoints.chatMessages,
         method: "POST",
         data: body,
+      }),
+      invalidatesTags: ["Chat"],
+    }),
+
+    chatConversations: builder.query<
+      IChatConversationsRes,
+      ChatConversationsProps
+    >({
+      query: (params) => ({
+        url: endpoints.chatConversations,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Chat"],
+    }),
+
+    chatUnreadCount: builder.query<IChatUnreadCountRes, void>({
+      query: () => ({
+        url: endpoints.chatUnreadCount,
+        method: "GET",
+      }),
+      providesTags: ["Chat"],
+    }),
+
+    fetchConversationMessages: builder.query<
+      IChatMessagesRes,
+      ChatConversationMessagesProps
+    >({
+      query: ({ conversationId, before, limit }) => ({
+        url: `${endpoints.chatConversations}/${conversationId}/messages`,
+        method: "GET",
+        params: { before, limit },
+      }),
+      providesTags: ["Message"],
+    }),
+
+    sendMessage: builder.mutation<
+      IChatMessage,
+      { conversationId: string; content: string }
+    >({
+      query: ({ conversationId, content }) => ({
+        url: `${endpoints.chatConversations}/${conversationId}/messages`,
+        method: "POST",
+        data: { content },
       }),
       invalidatesTags: ["Chat", "Message"],
     }),
 
-    fetchMessages: builder.query<any, { chatId: string; page?: number }>({
-      query: ({ chatId, page = 1 }) => ({
-        url: `${endpoints.chatMessages}/${chatId}?page=${page}`,
-        method: "GET",
+    editMessage: builder.mutation<
+      IChatMessage,
+      { conversationId: string; messageId: string; content: string }
+    >({
+      query: ({ conversationId, messageId, content }) => ({
+        url: `${endpoints.chatConversations}/${conversationId}/messages/${messageId}`,
+        method: "PATCH",
+        data: { content },
       }),
-      providesTags: ["Message"],
+      invalidatesTags: ["Message"],
+    }),
+
+    deleteMessage: builder.mutation<
+      IChatMessage,
+      { conversationId: string; messageId: string }
+    >({
+      query: ({ conversationId, messageId }) => ({
+        url: `${endpoints.chatConversations}/${conversationId}/messages/${messageId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Message", "Chat"],
+    }),
+
+    markConversationRead: builder.mutation<IChatReadRes, string>({
+      query: (conversationId) => ({
+        url: `${endpoints.chatConversations}/${conversationId}/read`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Chat"],
+    }),
+
+    updateConversationSettings: builder.mutation<
+      IChatSettingsRes,
+      { conversationId: string; isMuted?: boolean; isArchived?: boolean }
+    >({
+      query: ({ conversationId, ...body }) => ({
+        url: `${endpoints.chatConversations}/${conversationId}/settings`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Chat"],
     }),
   }),
 });
 
 export const {
   useChatUsersQuery,
+  useSendDirectMessageMutation,
+  useChatConversationsQuery,
+  useChatUnreadCountQuery,
+  useLazyChatUnreadCountQuery,
+  useFetchConversationMessagesQuery,
+  useLazyFetchConversationMessagesQuery,
   useSendMessageMutation,
-  useFetchMessagesQuery,
+  useEditMessageMutation,
+  useDeleteMessageMutation,
+  useMarkConversationReadMutation,
+  useUpdateConversationSettingsMutation,
 } = chatSystemApi;

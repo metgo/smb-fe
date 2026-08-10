@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import uiReducer from "@/features/uiSlice";
+import chatPopupReducer from "@/features/chatPopupSlice";
 import authReducer from "@/features/authSlice";
 import settingsReducer from "@/features/settingsSlice";
 import notificationSlice from "@/features/notificationSlice";
@@ -50,6 +51,7 @@ import { chatSystemApi } from "./api/chatSystemApi";
 export const store = configureStore({
   reducer: {
     ui: uiReducer,
+    chatPopup: chatPopupReducer,
     auth: authReducer,
     settings: settingsReducer,
     filters: filterReducer,

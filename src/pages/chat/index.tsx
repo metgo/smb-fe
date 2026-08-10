@@ -6,12 +6,10 @@ import {
   UserX,
   AlertTriangle,
   FileText,
-  Menu,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
+import { useAppSelector } from "@/hooks/hooks";
 import { Inbox } from "./components/Inbox";
 import { ChatWindow } from "./components/ChatWindow";
 import {
@@ -21,8 +19,32 @@ import {
   SilenceUserModal,
 } from "./components/modals";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import type { Conversation, ModerationLogEntry, SilenceState } from "./types";
-import { useChatUsersQuery } from "@/store/api/chatSystemApi";
+import { useSocket } from "@/providers/SocketProvider";
+import {
+  useChatUsersQuery,
+  useChatConversationsQuery,
+} from "@/store/api/chatSystemApi";
+
+const mapConversation = (c: IChatConversation): IConversation => ({
+  id: c._id,
+  type: c.type,
+  name: c.type === "dm" ? c.otherParticipant?.name || "User" : c.name || "",
+  avatar: c.avatar,
+  members: c.otherParticipant ? [c.otherParticipant._id] : [],
+  lastMessage: c.lastMessagePreview
+    ? {
+        id: `${c._id}-last`,
+        senderId: "",
+        senderName: "",
+        text: c.lastMessagePreview,
+        timestamp: c.lastMessageAt,
+        readBy: [],
+      }
+    : undefined,
+  mutedBy: c.isMuted ? ["me"] : [],
+  archivedBy: c.isArchived ? ["me"] : [],
+  unreadCount: c.unreadCount,
+});
 
 export default function ChatPage() {
   const {
@@ -37,23 +59,30 @@ export default function ChatPage() {
     isDark,
   } = useThemeClasses();
 
-  const {
-    data: chatUsers,
-    isLoading,
-    isFetching,
-  } = useChatUsersQuery({ page: 1, limit: 200 });
+  const { data: chatUsers } = useChatUsersQuery({ page: 1, limit: 200 });
   const chatUsersList = Array.isArray(chatUsers)
     ? chatUsers
     : chatUsers?.data || [];
-  console.log("🚀 ~ ChatPage ~ chatUsers:", chatUsers);
 
-  // Debug active profile selection (for visual testing)
-  const [activeDebugProfile, setActiveDebugProfile] =
-    useState<string>("user-superadmin");
-  const [currentUser, setCurrentUser] = useState<IChatUser | null>(null);
+  const socket = useSocket();
+
+  // The logged-in user, mapped from Redux auth state into the IChatUser
+  // shape the rest of the chat feature expects.
+  const authUser = useAppSelector((state) => state.auth.user);
+  const currentUser: IChatUser | null = useMemo(() => {
+    if (!authUser) return null;
+    return {
+      _id: authUser.id,
+      name: `${authUser.firstName} ${authUser.lastName}`.trim(),
+      email: authUser.email,
+      role: authUser.role as TUserRole,
+      dmoId: authUser.dmo?.id,
+      authorityId: authUser.authority?.id,
+    };
+  }, [authUser]);
 
   // Core Chat State
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<IConversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
@@ -61,8 +90,8 @@ export default function ChatPage() {
   // Navigation for mobile responsive view
   const [showInbox, setShowInbox] = useState(true);
 
-  // Desktop sidebar collapse state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Desktop sidebar collapse state (no toggle control currently exposed)
+  const sidebarCollapsed = false;
 
   // Search Highlight Message (Story 8)
   const [highlightMessageId, setHighlightMessageId] = useState<
@@ -88,68 +117,55 @@ export default function ChatPage() {
   const [activeSubTab, setActiveSubTab] = useState<
     "chat" | "admin_view" | "mod_logs" | "settings"
   >("chat");
-  const [silences, setSilences] = useState<SilenceState[]>([]);
-  const [logs, setLogs] = useState<ModerationLogEntry[]>([]);
+  const [silences, setSilences] = useState<ISilenceState[]>([]);
+  const [logs, setLogs] = useState<IModerationLogEntry[]>([]);
 
-  // Set active user profile based on debug selection
+  // Reset chat navigation state when the logged-in user changes
   useEffect(() => {
-    const user =
-      chatUsersList.find((u: IChatUser) => u._id === activeDebugProfile) ||
-      null;
-    setCurrentUser(user);
     setActiveConversationId(null);
     setShowInbox(true);
-  }, [activeDebugProfile, chatUsersList]);
+  }, [currentUser?._id]);
 
-  // Load chat records
-  const loadChatRecords = useCallback(() => {
-    if (!currentUser) return;
+  // Real conversation list (inbox) from the backend
+  const { data: conversationsRes, refetch: refetchConversations } =
+    useChatConversationsQuery(
+      { page: 1, limit: 50, includeArchived: true },
+      { skip: !currentUser },
+    );
 
-    // Treat each user as a DM conversation for now
-    const mappedConvs = chatUsersList.map((u: IChatUser) => ({
-      id: u._id,
-      type: "direct" as const,
-      name: u.name || "User",
-      avatar: undefined,
-      members: [currentUser._id, u._id],
-      lastMessage: undefined,
-      unreadCount: 0,
-      updatedAt: new Date().toISOString(),
-    }));
-    setConversations(mappedConvs);
+  useEffect(() => {
+    if (!currentUser) {
+      setConversations([]);
+      return;
+    }
+    const mapped = (conversationsRes?.data || []).map(mapConversation);
+    setConversations(mapped);
 
     // Clear admin components since DB is removed
     setSilences([]);
     setLogs([]);
-  }, [currentUser, chatUsersList]);
+  }, [currentUser, conversationsRes]);
 
+  // Refresh inbox on any relevant real-time chat event
   useEffect(() => {
-    loadChatRecords();
+    if (!socket) return;
 
-    // Listeners for updates
     const handleUpdate = () => {
-      loadChatRecords();
+      refetchConversations();
     };
 
-    window.addEventListener("metgo_chat_conversation_created", handleUpdate);
-    window.addEventListener("metgo_chat_message_received", handleUpdate);
-    window.addEventListener("metgo_chat_message_updated", handleUpdate);
-    window.addEventListener("metgo_chat_user_silenced", handleUpdate);
-    window.addEventListener("metgo_chat_user_unsilenced", handleUpdate);
-    window.addEventListener("metgo_chat_settings_changed", handleUpdate);
+    socket.on("chat:message", handleUpdate);
+    socket.on("chat:message-edited", handleUpdate);
+    socket.on("chat:message-deleted", handleUpdate);
+    socket.on("chat:read", handleUpdate);
 
     return () => {
-      window.removeEventListener(
-        "metgo_chat_conversation_created",
-        handleUpdate,
-      );
-      window.removeEventListener("metgo_chat_message_received", handleUpdate);
-      window.removeEventListener("metgo_chat_message_updated", handleUpdate);
-      window.removeEventListener("metgo_chat_user_silenced", handleUpdate);
-      window.removeEventListener("metgo_chat_user_unsilenced", handleUpdate);
-      window.removeEventListener("metgo_chat_settings_changed", handleUpdate);
+      socket.off("chat:message", handleUpdate);
+      socket.off("chat:message-edited", handleUpdate);
+      socket.off("chat:message-deleted", handleUpdate);
+      socket.off("chat:read", handleUpdate);
     };
-  }, [currentUser, loadChatRecords]);
+  }, [socket, refetchConversations]);
 
   // Handle select conversation
   const handleSelectConversation = (id: string, highlightMsgId?: string) => {
@@ -159,10 +175,48 @@ export default function ChatPage() {
     setActiveSubTab("chat");
   };
 
-  // Start direct message thread
+  // Start (or resume) a direct message thread. If a real conversation with
+  // this user already exists, open it; otherwise open a pending/local DM
+  // shell — the real conversation is created server-side on first send.
   const handleStartDm = (recipientId: string) => {
-    handleSelectConversation(recipientId);
+    const existing = conversations.find(
+      (c) => c.type === "dm" && c.members.includes(recipientId),
+    );
+    if (existing) {
+      handleSelectConversation(existing.id);
+      return;
+    }
+
+    const recipient = chatUsersList.find(
+      (u: IChatUser) => u._id === recipientId,
+    );
+    const pendingId = `pending-dm-${recipientId}`;
+    setConversations((prev) => {
+      if (prev.some((c) => c.id === pendingId)) return prev;
+      return [
+        ...prev,
+        {
+          id: pendingId,
+          type: "dm",
+          name: recipient?.name || "User",
+          members: [recipientId],
+        } as IConversation,
+      ];
+    });
+    handleSelectConversation(pendingId);
   };
+
+  // Called by ChatWindow after the first message in a pending DM succeeds,
+  // so the pending shell can be swapped for the real conversation id.
+  const handlePendingDmResolved = useCallback(
+    (pendingId: string, realConversationId: string) => {
+      setActiveConversationId((prev) =>
+        prev === pendingId ? realConversationId : prev,
+      );
+      refetchConversations();
+    },
+    [refetchConversations],
+  );
 
   // Create group chat
   const handleGroupCreated = () => {
@@ -199,93 +253,6 @@ export default function ChatPage() {
 
   return (
     <div className={clsx("flex flex-col h-[80vh] select-none", bgSecondary)}>
-      {/* WhatsApp-style Header */}
-      <div
-        className={clsx(
-          bgPrimary,
-          borderColor,
-          "px-4 md:px-6 py-3 md:py-4 border-b flex items-center justify-between gap-2 md:gap-4 z-20 shrink-0 shadow-sm",
-        )}
-      >
-        <div className="flex items-center gap-3 md:gap-4">
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setShowInbox(!showInbox)}
-            className={clsx(
-              "md:hidden p-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
-              hoverBg,
-            )}
-            aria-label="Toggle inbox"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-
-          {/* Desktop sidebar collapse button */}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className={clsx(
-              "hidden md:flex p-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
-              hoverBg,
-            )}
-            aria-label="Toggle sidebar"
-          >
-            {sidebarCollapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronLeft className="w-5 h-5" />
-            )}
-          </button>
-
-          <div className="hidden sm:block">
-            <h1
-              className={clsx(
-                textPrimary,
-                "text-lg md:text-xl font-bold tracking-tight flex items-center gap-2",
-              )}
-            >
-              Chat
-            </h1>
-          </div>
-        </div>
-
-        {/* Debug Panel / Interactive Role Switcher */}
-        <div
-          className={clsx(
-            bgTertiary,
-            borderColor,
-            "flex items-center gap-2 md:gap-3 p-1.5 md:p-2 rounded-xl border shadow-sm",
-          )}
-        >
-          <span
-            className={clsx(
-              textTertiary,
-              "text-[10px] md:text-xs font-bold uppercase px-2 tracking-wider hidden sm:block",
-            )}
-          >
-            Role:
-          </span>
-          <select
-            value={activeDebugProfile}
-            onChange={(e) => setActiveDebugProfile(e.target.value)}
-            className={clsx(
-              bgPrimary,
-              borderColor,
-              textSecondary,
-              "text-xs md:text-sm font-semibold border px-3 md:px-4 py-2 rounded-lg cursor-pointer outline-hidden focus:ring-2 focus:ring-teal-500 transition-all duration-200",
-            )}
-          >
-            <option value="user-superadmin">Superadmin</option>
-            <option value="user-admin-1">Admin</option>
-            <option value="user-dmo-1">DMO East</option>
-            <option value="user-dmo-2">DMO West</option>
-            <option value="user-dmo-3">DMO North</option>
-            <option value="user-authority-1">Authority</option>
-            <option value="user-traveller-1">Traveller Central</option>
-            <option value="user-traveller-3">Traveller Coast</option>
-          </select>
-        </div>
-      </div>
-
       {/* Main Split Layout */}
       <div className="flex-1 flex overflow-hidden min-h-0 relative">
         {/* Inbox Navigation Pane */}
@@ -297,6 +264,8 @@ export default function ChatPage() {
             activeConversationId={activeConversationId}
             onSelectConversation={handleSelectConversation}
             currentUser={currentUser}
+            chatUsers={chatUsersList}
+            onStartDm={handleStartDm}
             onOpenNewDm={() => setModalOpen({ ...modalOpen, newDm: true })}
             onOpenNewGroup={() =>
               setModalOpen({ ...modalOpen, newGroup: true })
@@ -376,6 +345,12 @@ export default function ChatPage() {
                   conversation={conversations.find(
                     (c) => c.id === activeConversationId,
                   )}
+                  pendingDmRecipientId={
+                    activeConversationId.startsWith("pending-dm-")
+                      ? activeConversationId.replace("pending-dm-", "")
+                      : undefined
+                  }
+                  onPendingDmResolved={handlePendingDmResolved}
                 />
               ) : (
                 <div

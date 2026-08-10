@@ -1,5 +1,6 @@
 import clsx from "clsx";
-import React, { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+import React, { useState, useEffect } from "react";
 import {
   MessageSquare,
   Users,
@@ -9,15 +10,18 @@ import {
   VolumeX,
   Mail,
 } from "lucide-react";
-import type { Conversation, Message } from "../types";
-import { MockChatDatabase } from "../mockDb";
+
+import { getInitials } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useUpdateConversationSettingsMutation } from "@/store/api/chatSystemApi";
 
 interface InboxProps {
-  conversations: Conversation[];
+  conversations: IConversation[];
   activeConversationId: string | null;
   onSelectConversation: (id: string, highlightMessageId?: string) => void;
   currentUser: IChatUser | null;
+  chatUsers?: IChatUser[];
+  onStartDm?: (recipientId: string) => void;
   onOpenNewDm: () => void;
   onOpenNewGroup: () => void;
   onOpenNewBroadcast: () => void;
@@ -29,6 +33,8 @@ export const Inbox: React.FC<InboxProps> = ({
   activeConversationId,
   onSelectConversation,
   currentUser,
+  chatUsers = [],
+  onStartDm,
   onOpenNewDm,
   onOpenNewGroup,
   onOpenNewBroadcast,
@@ -37,7 +43,6 @@ export const Inbox: React.FC<InboxProps> = ({
   const {
     isDark,
     bgPrimary,
-    bgTertiary,
     textPrimary,
     textSecondary,
     textTertiary,
@@ -47,11 +52,8 @@ export const Inbox: React.FC<InboxProps> = ({
   } = useThemeClasses();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<
-    { message: Message; conversation: Conversation }[]
-  >([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [updateConversationSettings] = useUpdateConversationSettingsMutation();
 
   // Handle right-click context menu for muting conversations
   const [contextMenu, setContextMenu] = useState<{
@@ -66,54 +68,31 @@ export const Inbox: React.FC<InboxProps> = ({
     return () => window.removeEventListener("click", handleOutsideClick);
   }, []);
 
-  // Debounced search logic for global search (Story 8)
-  useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+  // Client-side filter over the already-loaded conversation list (no
+  // dedicated message-search endpoint exists in the DM API)
+  const filteredConversations = conversations.filter((conv) => {
+    if (searchQuery.trim().length < 2) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      conv.name.toLowerCase().includes(q) ||
+      conv.lastMessage?.text.toLowerCase().includes(q)
+    );
+  });
 
-    if (searchQuery.trim().length < 2) {
-      setSearchResults([]);
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearching(true);
-    debounceRef.current = setTimeout(() => {
-      const allMsgs = MockChatDatabase.getAllMessages();
-      const results: { message: Message; conversation: Conversation }[] = [];
-
-      // Filter messages containing the query (excluding system and deleted ones)
-      allMsgs.forEach((msg) => {
-        if (msg.isSystem || msg.isDeleted) return;
-
-        const matchesText = msg.text
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-
-        // Search file attachments names (Story 8: "Searching for a file name finds messages with matching attachments.")
-        const matchesFile = msg.attachments?.some((att) =>
-          att.name.toLowerCase().includes(searchQuery.toLowerCase()),
-        );
-
-        if (matchesText || matchesFile) {
-          // Find which conversation this message belongs to
-          const convId = (msg as any).conversationId;
-          const conv = conversations.find((c) => c.id === convId);
-          // Only return message if current user is a member of that conversation
-          if (conv && currentUser && conv.members.includes(currentUser._id)) {
-            results.push({ message: msg, conversation: conv });
-          }
-        }
-      });
-
-      setSearchResults(results);
-    }, 300); // 300ms debounce
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [searchQuery, conversations, currentUser]);
+  // Users who don't yet have a DM conversation with the current user —
+  // shown as a "Contacts" list; clicking one starts/opens the DM.
+  const dmMemberIds = new Set(
+    conversations.filter((c) => c.type === "dm").flatMap((c) => c.members),
+  );
+  const usersWithoutConversation = chatUsers.filter((u) => {
+    if (u._id === currentUser?._id) return false;
+    if (dmMemberIds.has(u._id)) return false;
+    if (searchQuery.trim().length < 2) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      u.name.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q)
+    );
+  });
 
   const handleRightClick = (e: React.MouseEvent, convId: string) => {
     e.preventDefault();
@@ -124,30 +103,23 @@ export const Inbox: React.FC<InboxProps> = ({
     });
   };
 
-  const handleToggleMute = (convId: string) => {
-    if (!currentUser) return;
+  const handleToggleMute = async (convId: string) => {
     const conv = conversations.find((c) => c.id === convId);
-    if (!conv) return;
-
-    const currentMuted = conv.mutedBy || [];
-    let nextMuted: string[];
-    if (currentMuted.includes(currentUser._id)) {
-      nextMuted = currentMuted.filter((id) => id !== currentUser._id);
-    } else {
-      nextMuted = [...currentMuted, currentUser._id];
-    }
-
-    const updatedConvs = conversations.map((c) =>
-      c.id === convId ? { ...c, mutedBy: nextMuted } : c,
-    );
-    MockChatDatabase.saveConversations(updatedConvs);
-    // Force trigger render via local storage update event
-    window.dispatchEvent(new Event("metgo_chat_settings_changed"));
     setContextMenu(null);
+    if (!conv || convId.startsWith("pending-dm-")) return;
+
+    try {
+      await updateConversationSettings({
+        conversationId: convId,
+        isMuted: !isMuted(conv),
+      }).unwrap();
+    } catch {
+      toast.error("Failed to update conversation settings");
+    }
   };
 
-  const isMuted = (conv: Conversation) => {
-    return currentUser && conv.mutedBy?.includes(currentUser._id);
+  const isMuted = (conv: IConversation) => {
+    return !!currentUser && !!conv.mutedBy?.length;
   };
 
   // Helper to format timestamps nicely
@@ -157,18 +129,7 @@ export const Inbox: React.FC<InboxProps> = ({
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  // Calculate unread count for a conversation
-  const getUnreadCount = (conv: Conversation): number => {
-    if (!currentUser) return 0;
-    const msgs = MockChatDatabase.getMessagesForConversation(conv.id);
-    // Count messages where sender is not current user and readBy does not contain current user
-    return msgs.filter(
-      (m) =>
-        !m.isSystem &&
-        m.senderId !== currentUser._id &&
-        !m.readBy.includes(currentUser._id),
-    ).length;
-  };
+  const getUnreadCount = (conv: IConversation): number => conv.unreadCount || 0;
 
   // Determine permissions for buttons
   const isSuperOrAdmin =
@@ -305,85 +266,8 @@ export const Inbox: React.FC<InboxProps> = ({
 
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {searchQuery.trim().length >= 2 ? (
-              // Global Search Results View
-              <div className="p-2 space-y-2">
-                <p
-                  className={clsx(
-                    "text-[11px] font-semibold uppercase tracking-wider px-2",
-                    textTertiary,
-                  )}
-                >
-                  Message Search Results ({searchResults.length})
-                </p>
-                {isSearching && searchResults.length === 0 ? (
-                  <p className={clsx("text-xs text-center py-4", textTertiary)}>
-                    Searching...
-                  </p>
-                ) : searchResults.length > 0 ? (
-                  searchResults.map(({ message, conversation }) => (
-                    <button
-                      key={message.id}
-                      onClick={() => {
-                        onSelectConversation(conversation.id, message.id);
-                        setSearchQuery("");
-                      }}
-                      className={clsx(
-                        "w-full text-left p-3 rounded-xl transition-all duration-200 flex flex-col gap-2 border cursor-pointer hover:scale-[1.02] active:scale-[0.98]",
-                        hoverBg,
-                        borderColor,
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={clsx(
-                            "text-xs font-bold truncate",
-                            textSecondary,
-                          )}
-                        >
-                          {conversation.name}
-                        </span>
-                        <span
-                          className={clsx("text-[9px] shrink-0", textTertiary)}
-                        >
-                          {formatTime(message.timestamp)}
-                        </span>
-                      </div>
-                      <p
-                        className={clsx(
-                          "text-[11px] font-semibold",
-                          isDark ? "text-teal-400" : "text-teal-700",
-                        )}
-                      >
-                        {message.senderName}:
-                      </p>
-                      <p
-                        className={clsx("text-xs line-clamp-2", textSecondary)}
-                      >
-                        {message.text}
-                      </p>
-                      {message.attachments &&
-                        message.attachments.length > 0 && (
-                          <span
-                            className={clsx(
-                              "text-[10px] flex items-center gap-1 mt-0.5",
-                              textTertiary,
-                            )}
-                          >
-                            📎{" "}
-                            {message.attachments.map((a) => a.name).join(", ")}
-                          </span>
-                        )}
-                    </button>
-                  ))
-                ) : (
-                  <p className={clsx("text-xs text-center py-4", textTertiary)}>
-                    No results. Try at least 2 characters.
-                  </p>
-                )}
-              </div>
-            ) : conversations.length > 0 ? (
-              conversations.map((conv) => {
+            {filteredConversations.length > 0 ? (
+              filteredConversations.map((conv) => {
                 const active = conv.id === activeConversationId;
                 const unreadCount = getUnreadCount(conv);
                 const isConvMuted = isMuted(conv);
@@ -406,44 +290,6 @@ export const Inbox: React.FC<InboxProps> = ({
                 // Determine correct visual styling for broadcast channel
                 const isBroadcast = conv.type === "broadcast";
 
-                // Visual Icons for groups/broadcasts
-                const IconComponent = isBroadcast ? (
-                  <div
-                    className={clsx(
-                      "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                      isDark
-                        ? "bg-blue-950 text-blue-400"
-                        : "bg-blue-100 text-blue-600",
-                    )}
-                  >
-                    <Megaphone className="w-5 h-5" />
-                  </div>
-                ) : conv.type === "group" ? (
-                  <div
-                    className={clsx(
-                      "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                      isDark
-                        ? "bg-teal-950 text-teal-400"
-                        : "bg-teal-100 text-teal-600",
-                    )}
-                  >
-                    <Users className="w-5 h-5" />
-                  </div>
-                ) : (
-                  <img
-                    src={
-                      conv.avatar ||
-                      `https://api.dicebear.com/7.x/adventurer/svg?seed=${conv.name}`
-                    }
-                    alt={conv.name}
-                    className={clsx(
-                      "w-10 h-10 rounded-full border shrink-0 object-cover",
-                      borderColor,
-                      bgTertiary,
-                    )}
-                  />
-                );
-
                 return (
                   <div
                     key={conv.id}
@@ -461,7 +307,17 @@ export const Inbox: React.FC<InboxProps> = ({
                     )}
                     onClick={() => onSelectConversation(conv.id)}
                   >
-                    {IconComponent}
+                    <div
+                      className={clsx(
+                        "w-12 h-12 rounded-full border shrink-0 flex items-center justify-center font-bold text-lg",
+                        borderColor,
+                        isDark
+                          ? "bg-gray-800 text-gray-200"
+                          : "bg-gray-100 text-gray-600",
+                      )}
+                    >
+                      {getInitials(conv?.name)}
+                    </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
@@ -545,6 +401,55 @@ export const Inbox: React.FC<InboxProps> = ({
                 </button>
               </div>
             )}
+
+            {/* Contacts without an existing conversation */}
+            {usersWithoutConversation.length > 0 && (
+              <div className={clsx("border-t pt-2 pb-1", borderColor)}>
+                <p
+                  className={clsx(
+                    "text-[11px] font-semibold uppercase tracking-wider px-4 pb-1",
+                    textTertiary,
+                  )}
+                >
+                  Contacts
+                </p>
+                {usersWithoutConversation.map((user) => (
+                  <button
+                    key={user._id}
+                    onClick={() => onStartDm?.(user._id)}
+                    className={clsx(
+                      "w-full text-left px-4 py-3 flex items-center gap-3 transition-all duration-200 select-none cursor-pointer",
+                      hoverBg,
+                    )}
+                  >
+                    <div
+                      className={clsx(
+                        "w-12 h-12 rounded-full border shrink-0 flex items-center justify-center font-bold text-lg",
+                        borderColor,
+                        isDark
+                          ? "bg-gray-800 text-gray-200"
+                          : "bg-gray-100 text-gray-600",
+                      )}
+                    >
+                      {getInitials(user.name)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={clsx(
+                          "text-sm font-bold truncate",
+                          textPrimary,
+                        )}
+                      >
+                        {user.name}
+                      </p>
+                      <p className={clsx("text-xs truncate", textSecondary)}>
+                        {user.email}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right-click Mute/Unmute Context Menu */}
@@ -552,7 +457,7 @@ export const Inbox: React.FC<InboxProps> = ({
             <div
               style={{ top: contextMenu.y, left: contextMenu.x }}
               className={clsx(
-                "fixed z-50 border rounded-lg shadow-lg py-1 min-w-[120px]",
+                "fixed z-50 border rounded-lg shadow-lg py-1 min-w-30",
                 bgPrimary,
                 borderColor,
               )}
@@ -565,9 +470,12 @@ export const Inbox: React.FC<InboxProps> = ({
                   hoverBg,
                 )}
               >
-                {conversations
-                  .find((c) => c.id === contextMenu.convId)
-                  ?.mutedBy?.includes(currentUser?._id || "") ? (
+                {(() => {
+                  const menuConv = conversations.find(
+                    (c) => c.id === contextMenu.convId,
+                  );
+                  return menuConv && isMuted(menuConv);
+                })() ? (
                   <>
                     <Volume2 className="w-3.5 h-3.5 text-teal-600" />
                     Unmute Chat

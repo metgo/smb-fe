@@ -9,6 +9,7 @@ import {
   Compass,
   Edit,
   Eye,
+  MessageCircle,
   MousePointer,
   Plus,
   Share2,
@@ -51,6 +52,8 @@ import { envKeys } from "@/lib/envKeys";
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 import { getLngWiseStr } from "@/helpers";
+import { useAppDispatch } from "@/hooks/hooks";
+import { openChatPopup } from "@/features/chatPopupSlice";
 
 // ─── Tour trigger (inner — needs TourProvider in scope) ───────────────────────
 
@@ -295,6 +298,23 @@ function BusinessDetailsPageInner() {
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
+
+  // ── Chat with business creator ──────────────────────────────────────────
+  const dispatch = useAppDispatch();
+
+  const businessCreator = {
+    _id: business?.userId?._id,
+    name: business?.userId?.firstName + " " + business?.userId?.lastName,
+    email: business?.userId?.email,
+    role: business?.userId?.role,
+    dmoId: business?.dmoId,
+    authorityId: business?.authorityId,
+  };
+
+  const handleChatWithCreator = () => {
+    if (!businessCreator) return;
+    dispatch(openChatPopup(businessCreator));
+  };
   const [updateBusiness] = useUpdateBusinessMutation();
 
   useEffect(() => {
@@ -585,6 +605,17 @@ function BusinessDetailsPageInner() {
           opMode={opMode}
           missingFields={missingFieldsFromToken}
         />
+      )}
+
+      {/* Chat with business creator (FAB) */}
+      {businessCreator && (
+        <button
+          onClick={handleChatWithCreator}
+          title={`Message ${businessCreator.name}`}
+          className="fixed bottom-8 right-6 z-40 w-12 h-12 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/30 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
+        >
+          <MessageCircle className="w-5 h-5" />
+        </button>
       )}
 
       <TourPortal />

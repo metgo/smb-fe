@@ -1,7 +1,32 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import DOMPurify from "dompurify";
+import { toast } from "sonner";
 
-import type { Message, Attachment, Conversation } from "@/pages/chat/types";
+import { useSocket } from "@/providers/SocketProvider";
+import {
+  useLazyFetchConversationMessagesQuery,
+  useSendMessageMutation,
+  useSendDirectMessageMutation,
+  useEditMessageMutation,
+  useDeleteMessageMutation,
+  useMarkConversationReadMutation,
+} from "@/store/api/chatSystemApi";
+
+const mapWireMessage = (
+  m: IChatMessage,
+  senderNameFor: (id: string) => string,
+): IMessage => ({
+  id: m._id,
+  senderId: m.senderId,
+  senderName: senderNameFor(m.senderId),
+  text: m.content ?? "",
+  timestamp: m.createdAt,
+  readBy: [],
+  isSystem: m.type === "system",
+  isDeleted: !!m.deletedAt || m.content === null,
+  edited: m.isEdited,
+  editedAt: m.updatedAt,
+});
 
 // Typing a markdown-style formatting character or a leading "/" switches
 // the composer into the rich text editor, mirroring Teams' behavior.
@@ -37,8 +62,10 @@ interface UseChatWindowProps {
   conversationId: string;
   currentUser: IChatUser | null;
   highlightMessageId?: string;
-  conversation?: Conversation;
+  conversation?: IConversation;
   chatUsers?: IChatUser[];
+  pendingDmRecipientId?: string;
+  onPendingDmResolved?: (pendingId: string, realConversationId: string) => void;
 }
 
 export const useChatWindow = ({
@@ -47,10 +74,30 @@ export const useChatWindow = ({
   highlightMessageId,
   conversation,
   chatUsers,
+  pendingDmRecipientId,
+  onPendingDmResolved,
 }: UseChatWindowProps) => {
+  const socket = useSocket();
+  const isPendingDm = !!pendingDmRecipientId;
+
+  const [fetchMessages] = useLazyFetchConversationMessagesQuery();
+  const [sendMessageMutation] = useSendMessageMutation();
+  const [sendDirectMessageMutation] = useSendDirectMessageMutation();
+  const [editMessageMutation] = useEditMessageMutation();
+  const [deleteMessageMutation] = useDeleteMessageMutation();
+  const [markConversationRead] = useMarkConversationReadMutation();
+
+  const senderNameFor = useCallback(
+    (id: string) => {
+      if (id === currentUser?._id) return currentUser?.name || "You";
+      return chatUsers?.find((u) => u._id === id)?.name || "User";
+    },
+    [chatUsers, currentUser],
+  );
+
   // Message state
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [visibleCount, setVisibleCount] = useState(30);
+  const [messages, setMessages] = useState<IMessage[]>([]);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [text, setText] = useState("");
 
   // Teams-style adaptive composer: plain textarea by default, switches to
@@ -59,7 +106,7 @@ export const useChatWindow = ({
   const [richHtml, setRichHtml] = useState("");
 
   // Attachments State
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachments, setAttachments] = useState<IAttachment[]>([]);
 
   // Searching within the open conversation (Story 8)
   const [showSearch, setShowSearch] = useState(false);
@@ -77,15 +124,15 @@ export const useChatWindow = ({
   const [msgContextMenu, setMsgContextMenu] = useState<{
     x: number;
     y: number;
-    message: Message;
+    message: IMessage;
   } | null>(null);
-  const [editTargetMessage, setEditTargetMessage] = useState<Message | null>(
+  const [editTargetMessage, setEditTargetMessage] = useState<IMessage | null>(
     null,
   );
   const [editText, setEditText] = useState("");
 
-  // Typing indicators state
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  // Typing indicators — no real-time typing event exists in the DM API yet
+  const typingUsers: string[] = [];
 
   // Lightbox Image Viewer
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -93,11 +140,52 @@ export const useChatWindow = ({
   // Fetch Conversation info
   // conversation is now passed as a prop from parent
 
-  // Load message history
-  const loadMessages = useCallback(() => {
-    // TODO: fetch messages via API
-    setMessages([]);
-  }, [conversationId, currentUser]);
+  // Load message history (real conversations only; pending DMs start empty)
+  const loadMessages = useCallback(async () => {
+    if (isPendingDm) {
+      setMessages([]);
+      setHasMoreMessages(false);
+      return;
+    }
+    try {
+      const res = await fetchMessages({ conversationId, limit: 30 }).unwrap();
+      const mapped = res.data
+        .map((m) => mapWireMessage(m, senderNameFor))
+        .reverse(); // API returns newest-first via `before` cursor; render oldest-first
+      setMessages(mapped);
+      setHasMoreMessages(res.hasMore);
+    } catch {
+      setMessages([]);
+      setHasMoreMessages(false);
+      toast.error("Failed to load messages");
+    }
+  }, [conversationId, isPendingDm, fetchMessages, senderNameFor]);
+
+  const loadOlderMessages = useCallback(async () => {
+    if (isPendingDm || !hasMoreMessages || messages.length === 0) return;
+    const oldest = messages[0];
+    try {
+      const res = await fetchMessages({
+        conversationId,
+        before: oldest.id,
+        limit: 30,
+      }).unwrap();
+      const mapped = res.data
+        .map((m) => mapWireMessage(m, senderNameFor))
+        .reverse();
+      setMessages((prev) => [...mapped, ...prev]);
+      setHasMoreMessages(res.hasMore);
+    } catch {
+      toast.error("Failed to load older messages");
+    }
+  }, [
+    conversationId,
+    isPendingDm,
+    hasMoreMessages,
+    messages,
+    fetchMessages,
+    senderNameFor,
+  ]);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -106,45 +194,93 @@ export const useChatWindow = ({
 
   useEffect(() => {
     loadMessages();
-    setVisibleCount(30);
     setAttachments([]);
     setShowSearch(false);
     setLocalSearchQuery("");
     setText("");
     setRichHtml("");
     setIsRichMode(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, currentUser]);
 
-    // Setup listener for real-time messages
-    const handleNewMessage = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail.convId === conversationId) {
-        setMessages((prev) => [...prev, detail.message]);
+  // Real-time message/edit/delete/read events from the socket
+  useEffect(() => {
+    if (!socket) return;
 
-        // Auto scroll helper
-        if (containerRef.current) {
-          const { scrollTop, scrollHeight, clientHeight } =
-            containerRef.current;
-          const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
-          if (isNearBottom) {
-            setTimeout(scrollToBottom, 50);
-          } else {
-            setShowScrollBanner(true);
-          }
+    const handleNewMessage = (payload: IChatSocketMessagePayload) => {
+      if (payload.conversationId !== conversationId) return;
+      setMessages((prev) => [
+        ...prev,
+        mapWireMessage(payload.message, senderNameFor),
+      ]);
+
+      if (containerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+        if (isNearBottom) {
+          setTimeout(scrollToBottom, 50);
+        } else {
+          setShowScrollBanner(true);
         }
       }
     };
 
-    window.addEventListener("metgo_chat_message_received", handleNewMessage);
-    window.addEventListener("metgo_chat_message_updated", loadMessages);
+    const handleMessageEdited = (payload: IChatSocketMessageEditedPayload) => {
+      if (payload.conversationId !== conversationId) return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === payload.messageId
+            ? {
+                ...m,
+                text: payload.content,
+                edited: payload.isEdited,
+                editedAt: payload.updatedAt,
+              }
+            : m,
+        ),
+      );
+    };
+
+    const handleMessageDeleted = (
+      payload: IChatSocketMessageDeletedPayload,
+    ) => {
+      if (payload.conversationId !== conversationId) return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === payload.messageId ? { ...m, isDeleted: true, text: "" } : m,
+        ),
+      );
+    };
+
+    const handleRead = (payload: IChatSocketReadPayload) => {
+      if (payload.conversationId !== conversationId) return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.readBy.includes(payload.userId)
+            ? m
+            : { ...m, readBy: [...m.readBy, payload.userId] },
+        ),
+      );
+    };
+
+    socket.on("chat:message", handleNewMessage);
+    socket.on("chat:message-edited", handleMessageEdited);
+    socket.on("chat:message-deleted", handleMessageDeleted);
+    socket.on("chat:read", handleRead);
 
     return () => {
-      window.removeEventListener(
-        "metgo_chat_message_received",
-        handleNewMessage,
-      );
-      window.removeEventListener("metgo_chat_message_updated", loadMessages);
+      socket.off("chat:message", handleNewMessage);
+      socket.off("chat:message-edited", handleMessageEdited);
+      socket.off("chat:message-deleted", handleMessageDeleted);
+      socket.off("chat:read", handleRead);
     };
-  }, [conversationId, currentUser, loadMessages]);
+  }, [socket, conversationId, senderNameFor]);
+
+  // Mark conversation as read when opened
+  useEffect(() => {
+    if (isPendingDm || !conversationId) return;
+    markConversationRead(conversationId).catch(() => {});
+  }, [conversationId, isPendingDm, markConversationRead]);
 
   // Highlight message from search result (Story 8)
   useEffect(() => {
@@ -170,36 +306,7 @@ export const useChatWindow = ({
     }
   }, [highlightMessageId, messages.length]);
 
-  // Handle typing simulation
-  useEffect(() => {
-    if (!conversation || !currentUser) return;
-
-    // Simulate other users typing when we open a conversation, to make the app alive
-    const eligibleOthers = conversation.members.filter(
-      (id) => id !== currentUser._id,
-    );
-    if (eligibleOthers.length === 0) return;
-
-    const timer = setTimeout(() => {
-      // Pick a random participant
-      const randomUserId =
-        eligibleOthers[Math.floor(Math.random() * eligibleOthers.length)];
-      const randomUser = chatUsers?.find((u) => u._id === randomUserId);
-
-      if (randomUser) {
-        setTypingUsers([randomUser.name || "User"]);
-
-        // Disappear after 3 seconds of inactivity
-        setTimeout(() => {
-          setTypingUsers([]);
-        }, 3000);
-      }
-    }, 4000);
-
-    return () => clearTimeout(timer);
-  }, [conversation, currentUser, chatUsers]);
-
-  // Monitor scrolling for infinite scroll & jump button
+  // Monitor scrolling for infinite scroll (loads older messages from the API) & jump button
   const handleScroll = () => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
@@ -207,17 +314,17 @@ export const useChatWindow = ({
     // Jump button visibility (if scrolled up more than 400px)
     setShowJumpButton(scrollHeight - scrollTop - clientHeight > 400);
 
-    // Infinite scroll upward (lazy-load next 30)
-    if (scrollTop === 0 && messages.length > visibleCount) {
+    // Infinite scroll upward (lazy-load older messages from the server)
+    if (scrollTop === 0 && hasMoreMessages) {
       const prevHeight = scrollHeight;
-      setVisibleCount((prev) => prev + 30);
-      // Adjust scroll to maintain position after loading older messages
-      setTimeout(() => {
-        if (containerRef.current) {
-          containerRef.current.scrollTop =
-            containerRef.current.scrollHeight - prevHeight;
-        }
-      }, 50);
+      loadOlderMessages().then(() => {
+        setTimeout(() => {
+          if (containerRef.current) {
+            containerRef.current.scrollTop =
+              containerRef.current.scrollHeight - prevHeight;
+          }
+        }, 50);
+      });
     }
   };
 
@@ -235,7 +342,7 @@ export const useChatWindow = ({
           !m.isSystem &&
           !m.isDeleted &&
           (m.text.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
-            m.attachments?.some((a) =>
+            m.attachments?.some((a: IAttachment) =>
               a.name.toLowerCase().includes(localSearchQuery.toLowerCase()),
             )),
       )
@@ -306,67 +413,60 @@ export const useChatWindow = ({
     }
   };
 
-  // Send Message logic
-  const handleSend = () => {
+  // Send Message logic — optimistic UI update, rolled back on API error
+  const handleSend = async () => {
     const plainFromRich = isRichMode ? getPlainTextFromHtml(richHtml) : "";
     const hasContent = isRichMode ? !!plainFromRich : !!text.trim();
-    if (!hasContent && attachments.length === 0) return;
-    if (!currentUser || !conversation) return;
+    if (!hasContent) return;
+    if (!currentUser) return;
 
-    // Check if silenced
-    const silence = false;
-    if (silence) return;
+    const content = isRichMode ? sanitizeMessageHtml(richHtml) : text.trim();
+    const tempId = `temp-${Date.now()}`;
 
-    // Create Message object
-    const newMsg: Message = {
-      id: `msg-${conversationId}-${Date.now()}`,
+    const optimisticMsg: IMessage = {
+      id: tempId,
       senderId: currentUser._id,
       senderName: currentUser.name || "User",
-      senderAvatar: undefined,
       senderRole: currentUser.role,
-      text: isRichMode ? sanitizeMessageHtml(richHtml) : text.trim(),
+      text: content,
       isRichText: isRichMode,
       timestamp: new Date().toISOString(),
-      attachments: attachments.length > 0 ? attachments : undefined,
       readBy: [currentUser._id],
     };
 
-    setMessages((prev) => [...prev, newMsg]);
+    setMessages((prev) => [...prev, optimisticMsg]);
     setText("");
     setRichHtml("");
     setIsRichMode(false);
     setAttachments([]);
     setTimeout(scrollToBottom, 50);
 
-    // Simulate real-time mock responses to DMs to make the app interactive (Wow factor!)
-    if (conversation.type === "dm") {
-      const otherUser = chatUsers?.find(
-        (u) =>
-          u._id !== currentUser._id && conversation.members.includes(u._id),
-      );
-      if (otherUser) {
-        const previewText = isRichMode ? plainFromRich : newMsg.text;
-        setTimeout(() => {
-          // Trigger typing indicator
-          setTypingUsers([otherUser.name || "User"]);
-
-          setTimeout(() => {
-            setTypingUsers([]);
-            // Add automated mock reply
-            const replyMsg: Message = {
-              id: `msg-${conversationId}-${Date.now() + 1}`,
-              senderId: otherUser._id,
-              senderName: otherUser.name || "User",
-              senderAvatar: undefined,
-              senderRole: otherUser.role,
-              text: `Thanks for messaging. I got your request regarding: "${previewText.slice(0, 30)}". Let's coordinate!`,
-              timestamp: new Date().toISOString(),
-              readBy: [otherUser._id],
-            };
-            setMessages((prev) => [...prev, replyMsg]);
-          }, 2000);
-        }, 1500);
+    try {
+      if (isPendingDm && pendingDmRecipientId) {
+        const res = await sendDirectMessageMutation({
+          targetUserId: pendingDmRecipientId,
+          content,
+        }).unwrap();
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === tempId ? mapWireMessage(res.message, senderNameFor) : m,
+          ),
+        );
+        onPendingDmResolved?.(conversationId, res.conversationId);
+      } else {
+        const res = await sendMessageMutation({
+          conversationId,
+          content,
+        }).unwrap();
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === tempId ? mapWireMessage(res, senderNameFor) : m,
+          ),
+        );
       }
+    } catch {
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      toast.error("Failed to send message");
     }
   };
 
@@ -378,7 +478,7 @@ export const useChatWindow = ({
   };
 
   // Message Right Click context menu
-  const handleMessageContextMenu = (e: React.MouseEvent, msg: Message) => {
+  const handleMessageContextMenu = (e: React.MouseEvent, msg: IMessage) => {
     e.preventDefault();
     if (msg.isSystem) return;
     setMsgContextMenu({
@@ -388,41 +488,34 @@ export const useChatWindow = ({
     });
   };
 
-  // Silenced status check
-  const silence = undefined;
-  const isComposerDisabled =
-    !!silence ||
-    (conversation?.type === "broadcast" &&
-      conversation.creatorId !== currentUser?._id &&
-      currentUser?.role !== "superadmin");
+  const isComposerDisabled = false;
 
-  // Deletion logic
-  const handleDeleteMessage = (msg: Message) => {
+  // Deletion logic — self-delete only, per the DM API guide
+  const handleDeleteMessage = async (msg: IMessage) => {
     const isOwner = currentUser?._id === msg.senderId;
-    const isAdmin =
-      currentUser && ["superadmin", "admin"].includes(currentUser.role);
-
-    if (isOwner || isAdmin) {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === msg.id
-            ? {
-                ...m,
-                isDeleted: true,
-                deletedReason: isOwner
-                  ? "Deleted by owner"
-                  : "Deleted by admin",
-                deletedBy: currentUser?._id,
-              }
-            : m,
-        ),
-      );
-    }
     setMsgContextMenu(null);
+    if (!isOwner || isPendingDm) return;
+
+    const prevMessages = messages;
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === msg.id ? { ...m, isDeleted: true, text: "" } : m,
+      ),
+    );
+
+    try {
+      await deleteMessageMutation({
+        conversationId,
+        messageId: msg.id,
+      }).unwrap();
+    } catch {
+      setMessages(prevMessages);
+      toast.error("Failed to delete message");
+    }
   };
 
-  // Edit message logic - inline editing
-  const handleEditMessage = (msg: Message) => {
+  // Edit message logic - inline editing, self-edit only
+  const handleEditMessage = (msg: IMessage) => {
     const isOwner = currentUser?._id === msg.senderId;
     if (isOwner && !msg.isSystem && !msg.isDeleted) {
       setEditTargetMessage(msg);
@@ -431,27 +524,36 @@ export const useChatWindow = ({
     setMsgContextMenu(null);
   };
 
-  const handleConfirmEdit = () => {
-    if (!editTargetMessage || !currentUser) return;
-    if (!editText.trim()) {
-      return;
-    }
+  const handleConfirmEdit = async () => {
+    if (!editTargetMessage || !currentUser || isPendingDm) return;
+    const newText = editText.trim();
+    if (!newText) return;
 
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === editTargetMessage.id
-          ? {
-              ...m,
-              text: editText.trim(),
-              edited: true,
-              editedAt: new Date().toISOString(),
-            }
-          : m,
-      ),
-    );
-
+    const targetId = editTargetMessage.id;
     setEditTargetMessage(null);
     setEditText("");
+
+    try {
+      const res = await editMessageMutation({
+        conversationId,
+        messageId: targetId,
+        content: newText,
+      }).unwrap();
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === targetId
+            ? {
+                ...m,
+                text: res.content ?? newText,
+                edited: true,
+                editedAt: res.updatedAt,
+              }
+            : m,
+        ),
+      );
+    } catch {
+      toast.error("Failed to edit message");
+    }
   };
 
   const handleCancelEdit = () => {
@@ -462,7 +564,6 @@ export const useChatWindow = ({
   return {
     // State
     messages,
-    visibleCount,
     text,
     isRichMode,
     richHtml,
@@ -479,7 +580,6 @@ export const useChatWindow = ({
     typingUsers,
     lightboxUrl,
     conversation,
-    silence,
     isComposerDisabled,
 
     // Refs

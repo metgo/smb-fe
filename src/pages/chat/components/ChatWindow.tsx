@@ -1,7 +1,6 @@
 import React from "react";
 import clsx from "clsx";
 import {
-  Download,
   Trash,
   AlertCircle,
   CornerDownLeft,
@@ -18,6 +17,7 @@ import {
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useChatWindow } from "@/hooks/useChatWindow";
 import CKEditorWrapper from "@/components/wrapper/CKEditorWrapper";
+import { getInitials } from "@/helpers";
 
 interface ChatWindowProps {
   conversationId: string;
@@ -26,6 +26,8 @@ interface ChatWindowProps {
   onBack: () => void;
   chatUsers?: any[];
   conversation?: any;
+  pendingDmRecipientId?: string;
+  onPendingDmResolved?: (pendingId: string, realConversationId: string) => void;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -35,6 +37,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onBack,
   chatUsers,
   conversation,
+  pendingDmRecipientId,
+  onPendingDmResolved,
 }) => {
   const {
     isDark,
@@ -55,11 +59,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     highlightMessageId,
     conversation,
     chatUsers,
+    pendingDmRecipientId,
+    onPendingDmResolved,
   });
 
   const {
     messages,
-    visibleCount,
     text,
     isRichMode,
     richHtml,
@@ -75,7 +80,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     editText,
     typingUsers,
     lightboxUrl,
-    silence,
     isComposerDisabled,
     chatEndRef,
     containerRef,
@@ -104,8 +108,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const list: React.ReactNode[] = [];
     let lastDateStr = "";
 
-    // Paginate messages
-    const sliced = messages.slice(-visibleCount);
+    const sliced = messages;
 
     sliced.forEach((msg) => {
       // Date Separator calculation
@@ -171,18 +174,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             className={`flex gap-2 max-w-[70%] items-end ${isMe ? "flex-row-reverse" : "flex-row"}`}
           >
             {!isMe && (
-              <img
-                src={
-                  msg.senderAvatar ||
-                  `https://api.dicebear.com/7.x/adventurer/svg?seed=${msg.senderName}`
-                }
+              <div
                 className={clsx(
-                  "w-8 h-8 rounded-full border shrink-0 self-start mt-0.5 object-cover",
+                  "w-12 h-12 rounded-full border shrink-0 flex items-center justify-center font-bold text-lg",
                   borderColor,
-                  bgTertiary,
+                  isDark
+                    ? "bg-gray-800 text-gray-200"
+                    : "bg-gray-100 text-gray-600",
                 )}
-                alt=""
-              />
+              >
+                {getInitials(conversation?.name)}
+              </div>
             )}
 
             <div className="flex flex-col">
@@ -278,61 +280,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     {msg.text}
                   </p>
                 )}
-
-                {/* Attachments rendering */}
-                {!msg.isDeleted &&
-                  msg.attachments &&
-                  msg.attachments.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {msg.attachments.map((att) => {
-                        const isImg = att.type.startsWith("image/");
-                        if (isImg) {
-                          return (
-                            <div
-                              key={att.id}
-                              className={clsx(
-                                "relative rounded-lg overflow-hidden border max-w-50",
-                                isDark ? "border-white/10" : "border-black/10",
-                              )}
-                            >
-                              <img
-                                src={att.url}
-                                alt=""
-                                onClick={() => setLightboxUrl(att.url)}
-                                className="w-full object-cover max-h-35 cursor-zoom-in hover:opacity-90"
-                              />
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <a
-                              key={att.id}
-                              href={att.url}
-                              download={att.name}
-                              className={clsx(
-                                "flex items-center gap-2 p-1.5 rounded-lg border text-xs leading-tight transition-colors",
-                                isMe
-                                  ? "bg-teal-700 hover:bg-teal-800 border-teal-800 text-white"
-                                  : isDark
-                                    ? "bg-gray-900 hover:bg-gray-800 border-gray-700 text-gray-300"
-                                    : "bg-white hover:bg-gray-50 border-gray-200 text-gray-800",
-                              )}
-                            >
-                              <Download className="w-4 h-4 shrink-0" />
-                              <div className="min-w-0 flex-1">
-                                <p className="font-semibold truncate">
-                                  {att.name}
-                                </p>
-                                <p className="text-[9px] opacity-75">
-                                  {(att.size / 1024).toFixed(1)} KB
-                                </p>
-                              </div>
-                            </a>
-                          );
-                        }
-                      })}
-                    </div>
-                  )}
               </div>
             </div>
           </div>
@@ -605,28 +552,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 : "bg-red-50 text-red-700 border-red-200",
             )}
           >
-            {silence ? (
-              <span className="flex items-center gap-1 md:gap-1.5">
-                <ShieldAlert className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                {/* <span className="hidden md:inline">
-                  You have been silenced globally. Expires:{" "}
-                  {silence.expiresAt === "permanent"
-                    ? "Indefinite"
-                    : new Date(silence.expiresAt).toLocaleString()}
-                  . Reason: {silence.reason}
-                </span> */}
-                <span className="md:hidden">Silenced globally</span>
+            <span className="flex items-center gap-1 md:gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="hidden md:inline">
+                Read-only channel. Only the channel owner can post
+                announcements.
               </span>
-            ) : (
-              <span className="flex items-center gap-1 md:gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                <span className="hidden md:inline">
-                  Read-only channel. Only the channel owner can post
-                  announcements.
-                </span>
-                <span className="md:hidden">Read-only channel</span>
-              </span>
-            )}
+              <span className="md:hidden">Read-only channel</span>
+            </span>
           </div>
         ) : isRichMode ? (
           <div className="space-y-2">

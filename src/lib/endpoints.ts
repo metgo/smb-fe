@@ -188,7 +188,9 @@ export const endpoints = {
 
   // Chat System
   chatUsers: "/chats/users",
-  chatMessages: "/chat/messages",
+  chatMessages: "/chats/messages",
+  chatConversations: "/chats/conversations",
+  chatUnreadCount: "/chats/unread-count",
   chatGroups: "/chat/groups",
   chatBroadcasts: "/chat/broadcasts",
 
