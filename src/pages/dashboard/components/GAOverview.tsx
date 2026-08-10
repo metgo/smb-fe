@@ -381,7 +381,9 @@ export default function GAOverview() {
             )}
           >
             <ChartLine className="w-4 h-4" />
-            <span>{t("view_full_analytics")}</span>
+            <span className={clsx("md:block hidden")}>
+              {t("view_full_analytics")}
+            </span>
             {isRTL ? (
               <ArrowLeft className="w-4 h-4" />
             ) : (
