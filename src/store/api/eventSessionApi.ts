@@ -258,7 +258,10 @@ export const eventSessionApi = createApi({
       invalidatesTags: ["EventSession"],
     }),
 
-    resendSessionBookNotify: builder.mutation<any, { wrapperId: string; sessionId: string }>({
+    resendSessionBookNotify: builder.mutation<
+      any,
+      { wrapperId: string; sessionId: string }
+    >({
       query: ({ wrapperId, sessionId }) => ({
         url: `${endpoints.eventSessions}/sessions/${wrapperId}/${sessionId}/resend`,
         method: "POST",
