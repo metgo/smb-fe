@@ -15,11 +15,24 @@ export const businessMutationApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ["Business"],
   endpoints: (builder) => ({
-    initBusinessCreate: builder.mutation<any, void>({
-      query: () => ({
+    initBusinessCreate: builder.mutation<
+      any,
+      {
+        name: string;
+        dmoId?: string;
+        authorityId?: string;
+        checkOnly?: boolean;
+      }
+    >({
+      query: (body) => ({
         url: endpoints.businesses,
         method: "POST",
-        data: { name: "" },
+        data: {
+          name: body.name,
+          dmoId: body.dmoId,
+          authorityId: body.authorityId,
+          checkOnly: body.checkOnly,
+        },
       }),
       invalidatesTags: ["Business"],
     }),
