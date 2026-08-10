@@ -352,3 +352,96 @@ export const ORDER_SUMMARY_COLUMNS = {
     isDefault: boolean;
   }>,
 };
+
+// Google Analytics - Data Studio Report URLs
+export const websitesAnalyticsReport = [
+  {
+    _id: "665ea1ebb543b9e55f3bff71",
+    name: "תו 8",
+    purpose: "MARKETPLACE",
+    websiteUrl: "https://tav-8.co.il",
+    logo: "https://storage.googleapis.com/tav8-sderot20w3s71w1n/logo/company.svg",
+    gaDataStudioId: "bf4a74b7-2461-4171-aac6-e65649f69839",
+  },
+  {
+    _id: "689aca6896fc4dd7086c8834",
+    name: "הנגב הפורח",
+    purpose: "TRAVELING",
+    websiteUrl: "https://negevtime.co.il",
+    logo: "https://storage.googleapis.com/bnei-fo5gz43xdb6i5t/images/logo/black.svg",
+    gaDataStudioId: "15c71d0b-29ee-4d8c-9ba1-0764bc22de35",
+  },
+  {
+    _id: "69fc87cc2add117312a6bfb5",
+    name: "K8 Market",
+    purpose: "MARKETPLACE",
+    websiteUrl: "https://k8market.com/",
+    logo: "https://storage.googleapis.com/metgo_dev/2026/4/8wx5Es79rjcabFFf.png",
+    gaDataStudioId: "5abde87d-1cb2-4c34-9fa2-f1ca21b4d3fb",
+  },
+  {
+    _id: "69d4ac45a21dc4e01d306c86",
+    name: "מטבע הארי",
+    purpose: "MARKETPLACE",
+    websiteUrl: "https://visitgalil.co.il",
+    logo: "https://storage.googleapis.com/galil-u123ho7fgfosd/emails/header/company-logo.png",
+    gaDataStudioId: "9ec61bfa-9966-4c8b-aec8-3183867cc196",
+  },
+  {
+    _id: "68cbeaae68573c3ff74ab1ff",
+    name: "חוף אשקלון",
+    websiteUrl: "https://hofash.co.il/",
+    logo: "https://storage.googleapis.com/hofash-ft5gz4td6b68g9/images/logo/black.svg",
+    purpose: "TRAVELING",
+    gaDataStudioId: "e74a2919-8469-4390-9382-0820c54676a0",
+  },
+  {
+    _id: "6927d45f50add3723628b4d9",
+    name: "הקצה",
+    websiteUrl: "https://hakatze.co.il",
+    logo: "https://storage.googleapis.com/hakatze-v-ho7fgf-os/images/logo/white.svg",
+    purpose: "TRAVELING",
+    gaDataStudioId: "65a1522c-2155-41ef-ac62-e7f691184be2",
+  },
+  {
+    _id: "69a15fcdffe2526563bfb907",
+    name: "כיף בעוטף",
+    websiteUrl: "https://kefotef.co.il/",
+    logo: "https://storage.googleapis.com/metgo_dev/2026/5/krLY9C4fAfNJPXIm.webp",
+    purpose: "TRAVELING",
+    gaDataStudioId: "6db428ee-a5a7-4c88-97d3-ed9d9a4387cc",
+  },
+  {
+    _id: "69e217df883f154071b49de1",
+    name: "גלבוע, מעל הכל",
+    websiteUrl: "https://theviewpoint.co.il/",
+    logo: "https://storage.googleapis.com/metgo_dev/2026/3/0K6DKWUcFce1sj1x.png",
+    purpose: "TRAVELING",
+    gaDataStudioId: "f9c7c64b-eb20-4ca2-ac7b-9a85eb904506",
+  },
+  {
+    _id: "69fc595e2add117312a6bfad",
+    name: "במעלה",
+    websiteUrl: "https://bamaale.co.il/",
+    logo: "https://storage.googleapis.com/metgo_dev/2026/4/XTesy3Nj4FnUVTx1.png",
+    purpose: "TRAVELING",
+    gaDataStudioId: "8b58352c-cc5a-40d5-befb-a37b7687c7ab",
+  },
+
+  {
+    _id: "67ff852373b8abc8aeb7bd80",
+    name: "תו הנגב",
+    purpose: "MARKETPLACE",
+    websiteUrl: "https://tavhanegev.co.il",
+    logo: "https://storage.googleapis.com/metgo_dev/2026/5/ceRAmdRbBO6DcbUE.svg",
+    gaDataStudioId: "",
+  },
+  {
+    _id: "696cb7a40ae797cedc4d013b",
+    name: "קסם המדבר",
+    websiteUrl: "",
+    logo: "https://storage.googleapis.com/metgo_dev/2026/5/INTNEHNqjGqx6HSu.png",
+    purpose: "TRAVELING",
+    gaDataStudioId: "",
+  },
+];

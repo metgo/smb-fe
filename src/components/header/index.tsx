@@ -1,13 +1,12 @@
 import clsx from "clsx";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Moon,
   Sun,
   Settings,
   Check,
-  Monitor,
   Languages,
   Menu,
   SlidersHorizontal,
@@ -288,15 +287,6 @@ export default function Header() {
                   <Sun className={clsx("w-5 h-5", textPrimary)} />
                 )}
               </button>
-
-              {/* View Toggle */}
-              <Link
-                to={routes.analyticsDashboard}
-                className="p-2 rounded-lg transition-colors cursor-pointer"
-                aria-label="Toggle view"
-              >
-                <Monitor className={clsx("w-5 h-5", textPrimary)} />
-              </Link>
 
               {/* Edit Mode Toggle */}
               {toggleEditMode() && location.pathname === routes.dashboard && (
