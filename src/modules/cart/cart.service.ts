@@ -668,8 +668,8 @@ export class CartService {
           quantity: p.quantity,
           itemType: p.itemType,
         })),
-        totalAmount: vendor.totalAmount,
-        deliveryFee: vendor.deliveryFee,
+        totalAmount: Math.round(vendor.totalAmount * 100) / 100,
+        deliveryFee: Math.round((vendor.deliveryFee || 0) * 100) / 100,
         deliveryMethod: vendor.deliveryMethod,
         deliveryArea: vendor.deliveryArea,
         deliveryPickupLocation: vendor.deliveryPickupLocation,
@@ -681,10 +681,9 @@ export class CartService {
         isPricePerProduct: vendor.isPricePerProduct,
       }));
 
-      const totalAmount = vendorProducts.reduce(
-        (sum, vendor) => sum + vendor.totalAmount,
-        0,
-      );
+      const totalAmount = Math.round(
+        vendorProducts.reduce((sum, vendor) => sum + vendor.totalAmount, 0) * 100,
+      ) / 100;
 
       const newCart = new this.CartModel({
         vendorProducts,

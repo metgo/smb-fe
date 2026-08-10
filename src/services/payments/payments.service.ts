@@ -360,6 +360,20 @@ export class PaymentsService {
     try {
       const pageRequestUid = query?.LowProfileId;
 
+      const existingPayment = await this.PaymentModel.findOne({
+        paymentRequestId: pageRequestUid,
+      });
+
+      // A late/duplicate failure webhook must not clobber a payment that a
+      // success webhook already settled — mirrors the guard in paymentSucess().
+      if (existingPayment?.status === PaymentStatus.SUCCESS) {
+        this.logger.info('[PAYMENT]: Ignoring stale failure webhook — payment already succeeded', {
+          paymentRequestId: pageRequestUid,
+          orderId: existingPayment.orderId,
+        });
+        return;
+      }
+
       const updateField = {
         status: PaymentStatus.FAILURE,
         updatedAt: new Date(),

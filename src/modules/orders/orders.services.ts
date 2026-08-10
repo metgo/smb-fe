@@ -1090,7 +1090,9 @@ export class OrdersService {
 
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
-        const vendorGrossAmount = vendor.totalAmount + (vendor.deliveryFee || 0);
+        const vendorGrossAmount = Math.round(
+          (vendor.totalAmount + (vendor.deliveryFee || 0)) * 100,
+        ) / 100;
         const vendorCreditCardPayment = totalVendorsAmount > 0
           ? Math.round(
             (parentOrder.creditCardPayment * (vendorGrossAmount / totalVendorsAmount)) * 100,
@@ -1228,7 +1230,10 @@ export class OrdersService {
     }
 
     try {
-      const deleteResult = await this.OrderModel.findByIdAndDelete(parentOrder._id);
+      // Transient DB errors (network blip, replica election) can make this
+      // throw once; retry a few times before accepting the parent is stuck.
+      const deleteResult = await this.deleteParentOrderWithRetry(parentOrder._id, 3);
+
       if (!deleteResult) {
         this.logger.error('[ORDER]: FAILED TO DELETE PARENT ORDER - ORDER NOT FOUND', {
           parentOrderId: parentOrder._id,
@@ -1250,6 +1255,25 @@ export class OrdersService {
       updateOrder: parentOrder,
       getProductInformation: [],
     };
+  }
+
+  private async deleteParentOrderWithRetry(
+    parentOrderId: mongoose.Types.ObjectId | string,
+    attemptsLeft: number,
+    attempt = 1,
+  ): Promise<Order | null> {
+    try {
+      return await this.OrderModel.findByIdAndDelete(parentOrderId);
+    } catch (deleteError) {
+      if (attemptsLeft <= 1) throw deleteError;
+      this.logger.warn('[ORDER]: RETRYING PARENT ORDER DELETE', {
+        parentOrderId,
+        attempt,
+        error: deleteError instanceof Error ? deleteError.message : String(deleteError),
+      });
+      await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+      return this.deleteParentOrderWithRetry(parentOrderId, attemptsLeft - 1, attempt + 1);
+    }
   }
 
   private async sendEmailPostVendorOrderPayment(
