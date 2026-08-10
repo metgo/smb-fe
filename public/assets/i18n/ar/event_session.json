@@ -117,6 +117,7 @@
   "audience_field": "الجمهور المستهدف",
   "all_registrants": "جميع المسجلين",
   "custom_recipients_label": "اختيار مخصص",
+  "channel_field": "القناة",
   "channel_email_label": "بريد إلكتروني",
   "channel_email_desc": "رسالة بريد إلكتروني",
   "channel_sms_label": "SMS",

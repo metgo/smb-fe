@@ -118,6 +118,7 @@
   "audience_field": "Target Audience",
   "all_registrants": "All Registrants",
   "custom_recipients_label": "Custom Selection",
+  "channel_field": "Channel",
   "channel_email_label": "Email",
   "channel_email_desc": "Email message",
   "channel_sms_label": "SMS",

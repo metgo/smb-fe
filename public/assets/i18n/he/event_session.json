@@ -117,6 +117,7 @@
   "audience_field": "קהל יעד",
   "all_registrants": "כל הנרשמים",
   "custom_recipients_label": "בחירה מותאמת אישית",
+  "channel_field": "ערוץ",
   "channel_email_label": "אימייל",
   "channel_email_desc": "הודעת דוא״ל",
   "channel_sms_label": "SMS",

@@ -79,14 +79,14 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     isAll: true,
     users: [],
   });
-  const [channel, setChannel] = useState<"EMAIL" | "SMS">("EMAIL");
+  const [channels, setChannels] = useState<Array<"EMAIL" | "SMS">>(["EMAIL"]);
   const [scheduledAt, setScheduledAt] = useState("");
   const [template, setTemplate] = useState<
     "24h-reminder" | "same-day" | "starting-soon" | "custom"
   >("custom");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  console.log("🚀 ~ NotifyScheduleTab ~ body:", body)
+  console.log("🚀 ~ NotifyScheduleTab ~ body:", body);
 
   const [historyPage, setHistoryPage] = useState(1);
   const [history, setHistory] = useState<INotificationHistoryItem[]>([]);
@@ -187,21 +187,31 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
   const recipients = audience.isAll ? audienceUsers : audience.users;
   const count = new Set(recipients.map((r) => r.email)).size;
 
+  function toggleChannel(value: "EMAIL" | "SMS") {
+    setChannels((prev) =>
+      prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value],
+    );
+  }
+
   async function send() {
-    if (!subject.trim() || !count || !wrapperId) return;
+    if (!subject.trim() || !count || !wrapperId || !channels.length) return;
     try {
-      await sendSessionNotification({
-        wrapperId,
-        data: {
-          type: channel === "EMAIL" ? "email" : "sms",
-          recipientType: audience.isAll ? "all" : "custom",
-          subject,
-          message: body,
-          recipients: audience.isAll
-            ? undefined
-            : audience.users.map((u) => u.email),
-        },
-      }).unwrap();
+      await Promise.all(
+        channels.map((c) =>
+          sendSessionNotification({
+            wrapperId,
+            data: {
+              type: c === "EMAIL" ? "email" : "sms",
+              recipientType: audience.isAll ? "all" : "custom",
+              subject,
+              message: body,
+              recipients: audience.isAll
+                ? undefined
+                : audience.users.map((u) => u.email),
+            },
+          }).unwrap(),
+        ),
+      );
       setSubject("");
       setBody("");
       setHistoryPage(1);
@@ -214,7 +224,12 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5">
-        <div className={clsx(CARD, "flex flex-col min-h-0 max-h-[calc(100vh-220px)]")}>
+        <div
+          className={clsx(
+            CARD,
+            "flex flex-col min-h-0 max-h-[calc(100vh-220px)]",
+          )}
+        >
           <div className="flex items-center justify-between mb-3.5">
             <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
               {t("send_message_title")}
@@ -243,24 +258,29 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
             <AField label={t("channel_field")}>
               <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5 mb-3.5">
                 <button
-                  className={channelBtn(channel === "EMAIL")}
-                  onClick={() => setChannel("EMAIL")}
+                  type="button"
+                  aria-pressed={channels.includes("EMAIL")}
+                  className={channelBtn(channels.includes("EMAIL"))}
+                  onClick={() => toggleChannel("EMAIL")}
                 >
-                  <strong className="text-sm">{t("channel_email_label")}</strong>
+                  <strong className="text-sm">
+                    {t("channel_email_label")}
+                  </strong>
                   <span className={clsx("text-[12.5px]", textTertiary)}>
                     {t("channel_email_desc")}
                   </span>
                 </button>
                 <button
-                  className={channelBtn(channel === "SMS")}
-                  onClick={() => setChannel("SMS")}
+                  type="button"
+                  aria-pressed={channels.includes("SMS")}
+                  className={channelBtn(channels.includes("SMS"))}
+                  onClick={() => toggleChannel("SMS")}
                 >
                   <strong className="text-sm">{t("channel_sms_label")}</strong>
                   <span className={clsx("text-[12.5px]", textTertiary)}>
                     {t("channel_sms_desc")}
                   </span>
                 </button>
-
               </div>
             </AField>
 
@@ -273,14 +293,10 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
               />
             </AField>
 
-
-
             <AField label={t("template_field")}>
               <select
                 value={template}
-                onChange={(e) =>
-                  setTemplate(e.target.value as typeof template)
-                }
+                onChange={(e) => setTemplate(e.target.value as typeof template)}
                 className={INPUT}
               >
                 <option value="24h-reminder">{t("template_24h")}</option>
@@ -321,7 +337,6 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
               </>
             )}
 
-
             <div className="flex items-center justify-between gap-3 mt-1.5">
               <span className={clsx("text-sm", textTertiary)}>
                 {t("send_to_count", { count })}
@@ -331,7 +346,9 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
                   "px-3.75 py-2.25 text-[13.5px] rounded-[9px] font-bold text-white hover:brightness-110 transition-[transform,filter] active:translate-y-px disabled:opacity-60 flex items-center gap-1.5",
                   isDark ? "bg-blue-500" : "bg-blue-600",
                 )}
-                disabled={!subject.trim() || !count || isSending}
+                disabled={
+                  !subject.trim() || !count || !channels.length || isSending
+                }
                 onClick={send}
               >
                 {isSending && <Loader className="w-4 h-4 animate-spin" />}
@@ -339,7 +356,6 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
               </button>
             </div>
           </div>
-
         </div>
 
         <div className={CARD}>
@@ -623,6 +639,5 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     </>
   );
 }
-
 
 // Hi & nbsp; { FIRST_NAME }, <br><br>I hope you are doing good. We are going to conduct the&nbsp;{SESSION_NAME} on&nbsp;{SESSION_DATE} at&nbsp;{SESSION_TIME}. It will be on&nbsp;{VENUE}.&nbsp;<br><br>Please consider it.&nbsp;<br>Code:&nbsp;{REF_CODE}<br>QR:&nbsp;{{ QR }}<br><br>Thank you.&nbsp;<br><br></br>
