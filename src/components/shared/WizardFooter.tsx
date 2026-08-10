@@ -75,7 +75,7 @@ export default function WizardFooter({
           <button
             onClick={onSaveDraft}
             disabled={isSaving || isDisabled}
-            title={isDisabled ? "Wait for AI assignment to finish" : undefined}
+            title={isDisabled ? "Business name already exists" : undefined}
             className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg border cursor-pointer transition-colors ${
               isSaving || isDisabled
                 ? isDark
@@ -123,9 +123,7 @@ export default function WizardFooter({
               <button
                 onClick={onPublish}
                 disabled={isPublishing || isDisabled}
-                title={
-                  isDisabled ? "Wait for AI assignment to finish" : undefined
-                }
+                title={isDisabled ? "Business name already exists" : undefined}
                 className={`px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base rounded-lg text-white transition-colors flex items-center gap-1.5 sm:gap-2 ${
                   isPublishing || isDisabled
                     ? "bg-green-600 opacity-50 cursor-not-allowed"
