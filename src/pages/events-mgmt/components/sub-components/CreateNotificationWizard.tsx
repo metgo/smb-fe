@@ -1,16 +1,13 @@
 import clsx from "clsx";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { formatFromBackendTemplate } from "@/helpers/formatter";
 import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
+
 import { ModalWrapper } from "@/components/wrapper";
 import { RichTextEditor } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { formatFromBackendTemplate } from "@/helpers/formatter";
 
 interface CreateNotificationWizardProps {
   t: (key: string) => string;
-  eventName?: string;
-  startDate?: string;
-  eventDays?: { startTime: string }[];
-  address?: string;
   capacity?: number;
   editingNotification: NotificationData | null;
   notifications: NotificationData[];
@@ -23,10 +20,6 @@ interface CreateNotificationWizardProps {
 
 const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
   t,
-  eventDays,
-  startDate,
-  eventName,
-  address,
   capacity,
   notifications,
   setEditingNotification,
@@ -242,15 +235,12 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                     })
                   }
                   variables={[
-                    { label: "Event Name", value: eventName || "Sample Event" },
-                    { label: "Event Date", value: startDate || "2026-01-15" },
-                    {
-                      label: "Event Time",
-                      value: eventDays?.[0]?.startTime || "10:00",
-                    },
-                    { label: "Venue", value: address || "Event Location" },
-                    { label: "First Name", value: "John" },
-                    { label: "Ticket QR", value: "[QR]" },
+                    { label: "Event Name", value: "{EVENT_NAME}" },
+                    { label: "Event Date", value: "{EVENT_DATE}" },
+                    { label: "Event Time", value: "{EVENT_TIME}" },
+                    { label: "Venue", value: "{VENUE}" },
+                    { label: "First Name", value: "{FIRST_NAME}" },
+                    { label: "Ticket QR", value: "{QR}" },
                   ]}
                 />
               </div>

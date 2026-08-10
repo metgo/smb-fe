@@ -228,10 +228,6 @@ export default function CreateEventWizardNew({
             showNotificationForm={wizard.showNotificationForm}
             setShowNotificationForm={wizard.setShowNotificationForm}
             eventLanguage={wizard.eventLanguage}
-            eventName={wizard.translationFormData.name}
-            startDate={wizard.startDate}
-            eventDays={wizard.eventDays}
-            address={wizard.address}
             capacity={wizard.capacity}
           />
         )}

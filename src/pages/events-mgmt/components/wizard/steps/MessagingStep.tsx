@@ -28,10 +28,6 @@ interface MessagingStepProps {
   showNotificationForm: boolean;
   setShowNotificationForm: React.Dispatch<React.SetStateAction<boolean>>;
   eventLanguage: Language;
-  eventName?: string;
-  startDate?: string;
-  eventDays?: { startTime: string }[];
-  address?: string;
   capacity?: number;
   markDirty: (step: number) => void;
 }
@@ -45,10 +41,6 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
   showNotificationForm,
   setShowNotificationForm,
   eventLanguage,
-  eventName,
-  startDate,
-  eventDays,
-  address,
   capacity,
 }) => {
   const { t } = useTranslation("events");
@@ -255,10 +247,6 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
         {showNotificationForm && editingNotification && (
           <CreateNotificationWizard
             t={t}
-            eventName={eventName}
-            startDate={startDate}
-            eventDays={eventDays}
-            address={address}
             capacity={capacity}
             notifications={notifications}
             setNotifications={setNotifications}

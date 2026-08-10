@@ -1,5 +1,6 @@
 import clsx from "clsx";
-import { Loader } from "lucide-react";
+import { toast } from "sonner";
+import { Loader, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -9,7 +10,10 @@ import DatePicker from "@/components/shared/DatePicker";
 import SearchInput from "@/components/shared/SearchInput";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { useEventSessionRegListQuery } from "@/store/api/eventSessionApi";
+import {
+  useEventSessionRegListQuery,
+  useResendSessionBookNotifyMutation,
+} from "@/store/api/eventSessionApi";
 
 const LIMIT = 10;
 const SKELETON_ROWS = 6;
@@ -27,7 +31,10 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
   const [registrations, setRegistrations] = useState<IRegistration[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const [resendSessionBookNotify] = useResendSessionBookNotifyMutation();
 
   useEffect(() => {
     setPage(1);
@@ -80,6 +87,18 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
     onLoadMore: fetchNextPage,
   });
 
+  async function handleResendNotify(registration: IRegistration) {
+    setResendingId(registration.bookingId);
+    try {
+      await resendSessionBookNotify(registration.bookingId).unwrap();
+      toast.success(t("toast_notification_sent"));
+    } catch {
+      toast.error(t("toast_notification_send_error"));
+    } finally {
+      setResendingId(null);
+    }
+  }
+
   const TH = clsx(
     "text-start py-2.25 px-3 text-[11.5px] uppercase tracking-[0.04em] border-b",
     textTertiary,
@@ -129,22 +148,25 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
                     <th className={TH}>{t("col_contact")}</th>
                     <th className={TH}>{t("col_session")}</th>
                     <th className={TH}>{t("col_when")}</th>
+                    <th className={TH}>{t("col_actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {Array.from({ length: SKELETON_ROWS }).map((_, row) => (
                     <tr key={row} className="animate-pulse">
-                      {Array.from({ length: SKELETON_COLS }).map((_, col) => (
-                        <td key={col} className={TD}>
-                          <div
-                            className={clsx(
-                              "h-4 rounded",
-                              isDark ? "bg-gray-700" : "bg-gray-200",
-                            )}
-                            style={{ width: `${55 + Math.random() * 35}%` }}
-                          />
-                        </td>
-                      ))}
+                      {Array.from({ length: SKELETON_COLS + 1 }).map(
+                        (_, col) => (
+                          <td key={col} className={TD}>
+                            <div
+                              className={clsx(
+                                "h-4 rounded",
+                                isDark ? "bg-gray-700" : "bg-gray-200",
+                              )}
+                              style={{ width: `${55 + Math.random() * 35}%` }}
+                            />
+                          </td>
+                        ),
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -168,6 +190,7 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
                     <th className={TH}>{t("col_contact")}</th>
                     <th className={TH}>{t("col_session")}</th>
                     <th className={TH}>{t("col_when")}</th>
+                    <th className={TH}>{t("col_actions")}</th>
                   </tr>
                 </thead>
 
@@ -228,6 +251,29 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
                       <td className={TD}>
                         {fmtDate(registration.slotDate, undefined, "he-IL")} ·{" "}
                         {fmtTime(registration.slotTime)}
+                      </td>
+
+                      <td className={TD}>
+                        <button
+                          type="button"
+                          title={t("resend_action")}
+                          aria-label={t("resend_action")}
+                          disabled={resendingId === registration.bookingId}
+                          onClick={() => handleResendNotify(registration)}
+                          className={clsx(
+                            "p-1.5 rounded-lg bg-green-100 hover:bg-green-300  text-green-400 hover:text-white disabled:opacity-50 cursor-pointer",
+                          )}
+                        >
+                          {resendingId === registration.bookingId ? (
+                            <Loader
+                              className={clsx(
+                                "w-4 h-4 animate-spin text-green-600",
+                              )}
+                            />
+                          ) : (
+                            <Mail className={clsx("w-4 h-4")} />
+                          )}
+                        </button>
                       </td>
                     </tr>
                   ))}

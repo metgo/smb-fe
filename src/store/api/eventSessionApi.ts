@@ -258,12 +258,9 @@ export const eventSessionApi = createApi({
       invalidatesTags: ["EventSession"],
     }),
 
-    resendSessionBookNotify: builder.mutation<
-      any,
-      { wrapperId: string; sessionId: string }
-    >({
-      query: ({ wrapperId, sessionId }) => ({
-        url: `${endpoints.eventSessions}/sessions/${wrapperId}/${sessionId}/resend`,
+    resendSessionBookNotify: builder.mutation<any, string>({
+      query: (sessionBookingId) => ({
+        url: `${endpoints.eventSessionResendNotification}/${sessionBookingId}`,
         method: "POST",
       }),
       invalidatesTags: ["EventSession"],
@@ -290,6 +287,7 @@ export const {
   useReSendSessionNotificationMutation,
   useGetSendNotificationHistoryQuery,
   useGetSendNotificationHistoryDetailsQuery,
+  useResendSessionBookNotifyMutation,
 
   useCreateLandingPageSessionMutation,
   useCreateLandingPageSessionBlockMutation,

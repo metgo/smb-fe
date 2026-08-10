@@ -284,29 +284,33 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
               </div>
             </AField>
 
-            <AField label={t("schedule_date_time_field")}>
-              <input
-                type="datetime-local"
-                className={INPUT}
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-              />
-            </AField>
+            <div className="grid grid-cols-2 gap-4">
+              <AField label={t("schedule_date_time_field")}>
+                <input
+                  type="datetime-local"
+                  className={INPUT}
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                />
+              </AField>
 
-            <AField label={t("template_field")}>
-              <select
-                value={template}
-                onChange={(e) => setTemplate(e.target.value as typeof template)}
-                className={INPUT}
-              >
-                <option value="24h-reminder">{t("template_24h")}</option>
-                <option value="same-day">{t("template_same_day")}</option>
-                <option value="starting-soon">
-                  {t("template_starting_soon")}
-                </option>
-                <option value="custom">{t("custom")}</option>
-              </select>
-            </AField>
+              <AField label={t("template_field")}>
+                <select
+                  value={template}
+                  onChange={(e) =>
+                    setTemplate(e.target.value as typeof template)
+                  }
+                  className={INPUT}
+                >
+                  <option value="24h-reminder">{t("template_24h")}</option>
+                  <option value="same-day">{t("template_same_day")}</option>
+                  <option value="starting-soon">
+                    {t("template_starting_soon")}
+                  </option>
+                  <option value="custom">{t("custom")}</option>
+                </select>
+              </AField>
+            </div>
 
             {template === "custom" && (
               <>
