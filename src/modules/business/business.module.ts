@@ -31,6 +31,8 @@ import {
   ProductsAudit,
   ProductsAuditSchema,
 } from '../products/schema/products-audit.schema';
+import { Trip, TripSchema } from '../trips/schema/trips.schema';
+import { EventsAudit, EventsAuditSchema } from '../events/schema/events-audit.schema';
 import { BusinessSharedController } from './shared/controllers/business.controller';
 import { Tags, TagsSchema } from 'src/modules/tags/schema/tags.schema';
 import {
@@ -59,6 +61,8 @@ import { CreateBusinessHandler } from './command/handler/create-business.handler
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: ExternalApi.name, schema: ExternalApiSchema },
       { name: Campaign.name, schema: CampaignSchema },
+      { name: Trip.name, schema: TripSchema },
+      { name: EventsAudit.name, schema: EventsAuditSchema },
     ]),
     ConfigModule,
     HashModule,

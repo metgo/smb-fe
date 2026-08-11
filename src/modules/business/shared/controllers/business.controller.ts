@@ -15,10 +15,10 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { GetByCampCodeQueryRequest } from '../request/get-by-campcode.request';
 import { CreateBusinessRequest } from '../request/create-business.request';
 import { GetBusinessDetailForTourismQuery } from '../../tourism/queries/get-business-detail.query';
 import { CreateBusinessCommand } from '../../command/create-business.command';
+import { GetBusinessDetailTourismRequest } from '../../tourism/request/get-business-detail-tourism.request';
 
 @Controller()
 export class BusinessSharedController {
@@ -60,7 +60,7 @@ export class BusinessSharedController {
   @Get('businesses/:slug')
   async getBusinessDetailBySlug(
     @Param('slug') slug: string,
-    @Query() query: GetByCampCodeQueryRequest,
+    @Query() query: GetBusinessDetailTourismRequest,
   ) {
     return await this.queryBus.execute(
       new GetBusinessDetailForTourismQuery(slug, query),

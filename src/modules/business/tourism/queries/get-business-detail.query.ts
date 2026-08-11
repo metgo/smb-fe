@@ -1,8 +1,8 @@
-import { GetByCampCodeQueryRequest } from '../../shared/request/get-by-campcode.request';
+import { GetBusinessDetailTourismRequest } from '../request/get-business-detail-tourism.request';
 
 export class GetBusinessDetailForTourismQuery {
   constructor(
     public readonly slug: string,
-    public readonly query: GetByCampCodeQueryRequest,
+    public readonly query: GetBusinessDetailTourismRequest,
   ) {}
 }

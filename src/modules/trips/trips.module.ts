@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { GetTripBySlugHandler } from './queries/handlers/get-trip-by-slug.handler';
 import { GetAllTripsHandler } from './queries/handlers/get-all-trips.handler';
+import { GetTripsByBusinessIdHandler } from './queries/handlers/get-trips-by-business-id.handler';
 import { TripController } from './trips.controller';
 import { Trip, TripSchema } from './schema/trips.schema';
 import { UsersModule } from '../users/users.module';
@@ -33,6 +34,7 @@ import {
     GetTripBySlugHandler,
     GetAllTripsHandler,
     GetAllTripsRawQueryHandler,
+    GetTripsByBusinessIdHandler,
   ],
 })
 export class TripModule {}

@@ -10,6 +10,9 @@ import { GetBusinessDetailForTourismQuery } from '../get-business-detail.query';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
 import { sanitizeImages } from 'src/core/helper/image.util';
+import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
+import { Trip } from 'src/modules/trips/schema/trips.schema';
+import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 
 @QueryHandler(GetBusinessDetailForTourismQuery)
 export class GetBusinessDetailForTourismHandler
@@ -17,6 +20,12 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
   constructor(
     @InjectModel(BusinessesAudit.name)
     private BusinessesAuditModel: Model<BusinessesAudit>,
+    @InjectModel(ProductsAudit.name)
+    private ProductsAuditModel: Model<ProductsAudit>,
+    @InjectModel(Trip.name)
+    private TripModel: Model<Trip>,
+    @InjectModel(EventsAudit.name)
+    private EventsAuditModel: Model<EventsAudit>,
     private readonly businessService: BusinessService,
   ) { }
 
@@ -74,6 +83,38 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
 
         const { businessId, socialMedia, ...rest } = business;
 
+        // Calculate hasProduct, hasTrips, hasEvents silently in backend only if isTravel is true
+        let hasProducts = false;
+        let hasTrips = false;
+        let hasEvents = false;
+
+        if (query.isTravel === true) {
+          [hasProducts, hasTrips, hasEvents] = await Promise.all([
+            this.ProductsAuditModel.countDocuments({
+              businessId,
+              isActive: true,
+              isDeleted: { $ne: true },
+            }).then(count => count > 0),
+            this.TripModel.countDocuments({
+              stations: {
+                $elemMatch: {
+                  _id: businessId,
+                },
+              },
+              status: 'APPROVED',
+              isDeleted: { $ne: true },
+            }).then(count => count > 0),
+            this.EventsAuditModel.countDocuments({
+              businessId,
+              isActive: true,
+              isDeleted: { $ne: true },
+              dayDescription: {
+                $elemMatch: { date: { $gte: new Date() } },
+              },
+            }).then(count => count > 0),
+          ]);
+        }
+
         const mappedData = {
           ...rest,
           _id: businessId,
@@ -83,6 +124,9 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
             ...(socialMediaId ?? {}),
             url,
           })),
+          hasProducts,
+          hasTrips,
+          hasEvents,
         };
 
         const response = await this.businessService.localizeBusiness(
@@ -92,9 +136,19 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
 
         return response;
       } catch (error) {
-        if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        if (
+          error
+          && typeof error === 'object'
+          && 'name' in error
+          && error.name === 'CastError'
+          && 'kind' in error
+          && error.kind === 'ObjectId'
+        ) {
+          const modelName = 'model' in error && error.model && typeof error.model === 'object' && 'modelName' in error.model
+            ? (error.model as any).modelName
+            : '';
           throw new BadRequestException(
-            `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
+            `${modelName} ${ServerErrors.INVALID_ID}`,
           );
         }
         exceptionHandling(error);
