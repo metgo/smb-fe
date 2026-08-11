@@ -17,6 +17,7 @@ import { ServicesTypes } from 'src/modules/dashboard/dashboard.type';
 import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { TripStatus } from 'src/modules/trips/trips.types';
+import { PointOfInterestsAudit } from 'src/modules/point-of-interests/schema/point-of-interest-audit.schema';
 
 @QueryHandler(GetSiteConfigByIdentifierIdQuery)
 export class GetSiteConfigByIdentifierIdHandler
@@ -32,6 +33,8 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
     private EventsAuditModel: Model<EventsAudit>,
     @InjectModel(Trip.name)
     private TripModel: Model<Trip>,
+    @InjectModel(PointOfInterestsAudit.name)
+    private PointOfInterestsAuditModel: Model<PointOfInterestsAudit>,
   ) { }
 
   async execute(queries: GetSiteConfigByIdentifierIdQuery) {
@@ -56,11 +59,6 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
         .populate([
           {
             path: 'siteTopics.siteCategories.businessIds',
-            select:
-              'slug name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr geoLocation images primaryCategoryId groupTypesId accessibilitiesId tagsId address',
-          },
-          {
-            path: 'siteTopics.siteCategories.poiIds',
             select:
               'slug name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr geoLocation images primaryCategoryId groupTypesId accessibilitiesId tagsId address',
           },
@@ -130,6 +128,30 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
         images: sanitizeImages(trip.images?.slice(0, 5)),
         serviceType: ServicesTypes.TRIPS,
       }));
+
+      // POIs are no longer curated per-category via SiteFiltersConfig.
+      // Site scoping for POIs is determined solely by PointOfInterestsAudit.associatedWebsiteIds -
+      // any matching POI shows up under every category on the site.
+      const pois = await this.PointOfInterestsAuditModel.find({
+        associatedWebsiteIds: siteSetting._id,
+        status: CommonStatus.APPROVED,
+        isActive: true,
+        isDeleted: { $ne: true },
+      })
+        .select(
+          'slug name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr geoLocation images primaryCategoryId groupTypesId accessibilitiesId tagsId address pointOfInterestId',
+        )
+        .lean();
+
+      const sitePOIs = pois.map((poi: any) => {
+        const { pointOfInterestId, ...rest } = poi;
+        return {
+          ...rest,
+          _id: pointOfInterestId,
+          images: sanitizeImages(poi.images?.slice(0, 5)),
+          serviceType: ServicesTypes.POINT_OF_INTEREST,
+        };
+      });
 
       result.header = this.localizeString(
         { base: result.header, he: result.headerHe, ar: result.headerAr },
@@ -209,19 +231,13 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
                     images: sanitizeImages(item.images?.slice(0, 5)),
                     serviceType: ServicesTypes.BUSINESS,
                   })),
-                poiIds: (category.poiIds || [])
-                  .filter(Boolean)
-                  .map((item: any) => ({
-                    ...this.localizeItem(item, locale),
-                    images: sanitizeImages(item.images?.slice(0, 5)),
-                    serviceType: ServicesTypes.POINT_OF_INTEREST,
-                  })),
               };
 
-              // Only add eventIds and tripIds to the first topic's first category
+              // Only add eventIds, tripIds and poiIds to the first topic's first category
               if (topicIndex === 0 && categoryIndex === 0) {
                 processedCategory.eventIds = siteEvents; // All events for the site
                 processedCategory.tripIds = siteTrips; // All trips for the site
+                processedCategory.poiIds = sitePOIs; // All POIs for the site
               }
 
               return processedCategory;
