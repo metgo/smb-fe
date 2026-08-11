@@ -149,9 +149,9 @@ export const useChatWindow = ({
     }
     try {
       const res = await fetchMessages({ conversationId, limit: 30 }).unwrap();
-      const mapped = res.data
-        .map((m) => mapWireMessage(m, senderNameFor))
-        .reverse(); // API returns newest-first via `before` cursor; render oldest-first
+      // API already returns oldest-first (index 0 = oldest, last = newest) —
+      // no reverse needed.
+      const mapped = res.data.map((m) => mapWireMessage(m, senderNameFor));
       setMessages(mapped);
       setHasMoreMessages(res.hasMore);
     } catch {
@@ -170,9 +170,8 @@ export const useChatWindow = ({
         before: oldest.id,
         limit: 30,
       }).unwrap();
-      const mapped = res.data
-        .map((m) => mapWireMessage(m, senderNameFor))
-        .reverse();
+      // Same as loadMessages — already oldest-first, no reverse needed.
+      const mapped = res.data.map((m) => mapWireMessage(m, senderNameFor));
       setMessages((prev) => [...mapped, ...prev]);
       setHasMoreMessages(res.hasMore);
     } catch {
