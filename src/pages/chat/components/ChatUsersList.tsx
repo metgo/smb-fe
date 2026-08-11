@@ -9,18 +9,21 @@ import {
   Volume2,
   VolumeX,
   Mail,
+  Info,
 } from "lucide-react";
 
-import { getInitials } from "@/helpers";
+import { getInitials, timeAgo } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useUpdateConversationSettingsMutation } from "@/store/api/chatSystemApi";
+import ChatUserProfile from "./ChatUserProfile";
 
-interface InboxProps {
+interface ChatUsersListProps {
   conversations: IConversation[];
   activeConversationId: string | null;
   onSelectConversation: (id: string, highlightMessageId?: string) => void;
   currentUser: IChatUser | null;
   chatUsers?: IChatUser[];
+  presence?: Record<string, IPresenceEntry>;
   onStartDm?: (recipientId: string) => void;
   onOpenNewDm: () => void;
   onOpenNewGroup: () => void;
@@ -28,12 +31,13 @@ interface InboxProps {
   collapsed?: boolean;
 }
 
-export const Inbox: React.FC<InboxProps> = ({
+export const ChatUsersList: React.FC<ChatUsersListProps> = ({
   conversations,
   activeConversationId,
   onSelectConversation,
   currentUser,
   chatUsers = [],
+  presence = {},
   onStartDm,
   onOpenNewDm,
   onOpenNewGroup,
@@ -52,6 +56,7 @@ export const Inbox: React.FC<InboxProps> = ({
   } = useThemeClasses();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [profileEmail, setProfileEmail] = useState<string | null>(null);
 
   const [updateConversationSettings] = useUpdateConversationSettingsMutation();
 
@@ -68,9 +73,16 @@ export const Inbox: React.FC<InboxProps> = ({
     return () => window.removeEventListener("click", handleOutsideClick);
   }, []);
 
+  // Pending DM shells are created as soon as a contact is clicked, before
+  // any message is actually sent — keep them out of the conversation list
+  // until they've started a real chat (first message sent).
+  const startedConversations = conversations.filter(
+    (c) => !(c.id.startsWith("pending-dm-") && !c.lastMessage),
+  );
+
   // Client-side filter over the already-loaded conversation list (no
   // dedicated message-search endpoint exists in the DM API)
-  const filteredConversations = conversations.filter((conv) => {
+  const filteredConversations = startedConversations.filter((conv) => {
     if (searchQuery.trim().length < 2) return true;
     const q = searchQuery.toLowerCase();
     return (
@@ -82,7 +94,9 @@ export const Inbox: React.FC<InboxProps> = ({
   // Users who don't yet have a DM conversation with the current user —
   // shown as a "Contacts" list; clicking one starts/opens the DM.
   const dmMemberIds = new Set(
-    conversations.filter((c) => c.type === "dm").flatMap((c) => c.members),
+    startedConversations
+      .filter((c) => c.type === "dm")
+      .flatMap((c) => c.members),
   );
   const usersWithoutConversation = chatUsers.filter((u) => {
     if (u._id === currentUser?._id) return false;
@@ -130,6 +144,36 @@ export const Inbox: React.FC<InboxProps> = ({
   };
 
   const getUnreadCount = (conv: IConversation): number => conv.unreadCount || 0;
+
+  const onlineCount = Object.values(presence).filter(
+    (entry) => entry.isOnline,
+  ).length;
+
+  // "Online" / "Last seen <relative time>" / nothing (never connected)
+  const getPresenceLabel = (userId?: string): string | null => {
+    if (!userId) return null;
+    const entry = presence[userId];
+    if (!entry) return null;
+    if (entry.isOnline) return "Online";
+    if (!entry.lastActiveAt) return null;
+    return `Last seen ${timeAgo(entry.lastActiveAt)}`;
+  };
+
+  // Role-specific pill colors for the Contacts list
+  const roleBadgeClasses: Record<TUserRole, string> = {
+    superadmin: isDark
+      ? "bg-purple-900/30 text-purple-400"
+      : "bg-purple-50 text-purple-700",
+    admin: isDark ? "bg-blue-900/30 text-blue-400" : "bg-blue-50 text-blue-700",
+    authority: isDark
+      ? "bg-amber-900/30 text-amber-400"
+      : "bg-amber-50 text-amber-700",
+    dmo: isDark ? "bg-teal-900/30 text-teal-400" : "bg-teal-50 text-teal-700",
+    traveller: isDark
+      ? "bg-gray-800 text-gray-300"
+      : "bg-gray-100 text-gray-600",
+    user: isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600",
+  };
 
   // Determine permissions for buttons
   const isSuperOrAdmin =
@@ -193,15 +237,17 @@ export const Inbox: React.FC<InboxProps> = ({
           {/* Top search & title */}
           <div className={clsx("p-4 border-b space-y-4", borderColor)}>
             <div className="flex items-center justify-between">
-              <h2
-                className={clsx(
-                  "text-lg font-bold tracking-tight flex items-center gap-2",
-                  textPrimary,
-                )}
-              >
-                <MessageSquare className="w-5 h-5 text-teal-600" />
-                Chats
-              </h2>
+              <div>
+                <h2
+                  className={clsx(
+                    "text-lg font-bold tracking-tight flex items-center gap-2",
+                    textPrimary,
+                  )}
+                >
+                  <MessageSquare className="w-5 h-5 text-teal-600" />
+                  Chats
+                </h2>
+              </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={onOpenNewDm}
@@ -266,11 +312,32 @@ export const Inbox: React.FC<InboxProps> = ({
 
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {filteredConversations.length > 0 ? (
-              filteredConversations.map((conv) => {
+            <div className="flex items-center justify-between  pt-3 pb-1 px-2 ">
+              <p
+                className={clsx(
+                  "text-[11px] font-semibold uppercase tracking-wider",
+                  textTertiary,
+                )}
+              >
+                Conversation ({startedConversations.length})
+              </p>
+              {onlineCount > 0 && (
+                <p
+                  className={clsx(
+                    "text-[11px] font-medium flex items-center gap-1.5 mt-0.5",
+                    textTertiary,
+                  )}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  {onlineCount} online
+                </p>
+              )}
+            </div>
+
+            {filteredConversations?.length > 0 ? (
+              filteredConversations?.map((conv) => {
                 const active = conv.id === activeConversationId;
                 const unreadCount = getUnreadCount(conv);
-                const isConvMuted = isMuted(conv);
 
                 let previewText = conv.lastMessage
                   ? conv.lastMessage.isSystem
@@ -290,6 +357,16 @@ export const Inbox: React.FC<InboxProps> = ({
                 // Determine correct visual styling for broadcast channel
                 const isBroadcast = conv.type === "broadcast";
 
+                // For DMs, resolve the other participant to show their role pill.
+                // Prefer the conversation's own otherParticipant (always present
+                // for DMs from the API) over the paginated chatUsers list, which
+                // may not include every user the current account has a DM with.
+                const dmUser =
+                  conv.type === "dm"
+                    ? conv.otherParticipant ||
+                      chatUsers.find((u) => u._id === conv.members[0])
+                    : undefined;
+
                 return (
                   <div
                     key={conv.id}
@@ -307,16 +384,26 @@ export const Inbox: React.FC<InboxProps> = ({
                     )}
                     onClick={() => onSelectConversation(conv.id)}
                   >
-                    <div
-                      className={clsx(
-                        "w-12 h-12 rounded-full border shrink-0 flex items-center justify-center font-bold text-lg",
-                        borderColor,
-                        isDark
-                          ? "bg-gray-800 text-gray-200"
-                          : "bg-gray-100 text-gray-600",
+                    <div className="relative shrink-0">
+                      <div
+                        className={clsx(
+                          "w-8 h-8 rounded-full border shrink-0 flex items-center justify-center font-bold text-sm",
+                          borderColor,
+                          isDark
+                            ? "bg-gray-800 text-gray-200"
+                            : "bg-gray-100 text-gray-600",
+                        )}
+                      >
+                        {getInitials(conv?.name)}
+                      </div>
+                      {dmUser && presence[dmUser._id]?.isOnline && (
+                        <span
+                          className={clsx(
+                            "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2",
+                            isDark ? "border-gray-900" : "border-white",
+                          )}
+                        />
                       )}
-                    >
-                      {getInitials(conv?.name)}
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -328,6 +415,16 @@ export const Inbox: React.FC<InboxProps> = ({
                           )}
                         >
                           {conv.name}
+                          {dmUser && (
+                            <span
+                              className={clsx(
+                                "px-2 py-0.5 text-[9px] font-bold rounded-full capitalize shrink-0",
+                                roleBadgeClasses[dmUser.role],
+                              )}
+                            >
+                              {dmUser.role}
+                            </span>
+                          )}
                           {isBroadcast && (
                             <span
                               className={clsx(
@@ -359,20 +456,41 @@ export const Inbox: React.FC<InboxProps> = ({
                               : textSecondary,
                           )}
                         >
-                          {previewText || (
-                            <span className={clsx("italic", textTertiary)}>
-                              No messages yet
-                            </span>
-                          )}
+                          {previewText ||
+                            (dmUser && getPresenceLabel(dmUser._id) ? (
+                              <span
+                                className={clsx(
+                                  presence[dmUser._id]?.isOnline
+                                    ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                                    : textTertiary,
+                                )}
+                              >
+                                {getPresenceLabel(dmUser._id)}
+                              </span>
+                            ) : (
+                              <span className={clsx("italic", textTertiary)}>
+                                No messages yet
+                              </span>
+                            ))}
                         </p>
                         <div className="flex items-center gap-1">
-                          {isConvMuted && (
-                            <VolumeX
+                          {dmUser?.email && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setProfileEmail(dmUser.email);
+                              }}
+                              title="View profile"
                               className={clsx(
-                                "w-3.5 h-3.5 shrink-0",
+                                "p-0.5 rounded-full cursor-pointer transition-colors shrink-0",
                                 textTertiary,
+                                isDark
+                                  ? "hover:text-teal-400"
+                                  : "hover:text-teal-600",
                               )}
-                            />
+                            >
+                              <Info className="w-3.5 h-3.5" />
+                            </button>
                           )}
                           {unreadCount > 0 && (
                             <span className="min-w-4 h-4 px-1 flex items-center justify-center rounded-full bg-teal-600 text-white text-[10px] font-bold">
@@ -411,10 +529,10 @@ export const Inbox: React.FC<InboxProps> = ({
                     textTertiary,
                   )}
                 >
-                  Contacts
+                  Contacts ({usersWithoutConversation.length})
                 </p>
                 {usersWithoutConversation.map((user) => (
-                  <button
+                  <div
                     key={user._id}
                     onClick={() => onStartDm?.(user._id)}
                     className={clsx(
@@ -422,31 +540,69 @@ export const Inbox: React.FC<InboxProps> = ({
                       hoverBg,
                     )}
                   >
-                    <div
-                      className={clsx(
-                        "w-12 h-12 rounded-full border shrink-0 flex items-center justify-center font-bold text-lg",
-                        borderColor,
-                        isDark
-                          ? "bg-gray-800 text-gray-200"
-                          : "bg-gray-100 text-gray-600",
-                      )}
-                    >
-                      {getInitials(user.name)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p
+                    <div className="relative shrink-0">
+                      <div
                         className={clsx(
-                          "text-sm font-bold truncate",
-                          textPrimary,
+                          "w-8 h-8 rounded-full border shrink-0 flex items-center justify-center font-bold text-sm",
+                          borderColor,
+                          isDark
+                            ? "bg-gray-800 text-gray-200"
+                            : "bg-gray-100 text-gray-600",
                         )}
                       >
-                        {user.name}
-                      </p>
+                        {getInitials(user.name)}
+                      </div>
+                      {presence[user._id]?.isOnline && (
+                        <span
+                          className={clsx(
+                            "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2",
+                            isDark ? "border-gray-900" : "border-white",
+                          )}
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p
+                          className={clsx(
+                            "text-sm font-bold truncate",
+                            textPrimary,
+                          )}
+                        >
+                          {user.name}
+                        </p>
+                        <span
+                          className={clsx(
+                            "px-2 py-0.5 text-xs font-semibold rounded-full capitalize shrink-0",
+                            roleBadgeClasses[user.role],
+                          )}
+                        >
+                          {user.role}
+                        </span>
+                      </div>
                       <p className={clsx("text-xs truncate", textSecondary)}>
-                        {user.email}
+                        {getPresenceLabel(user._id) || user.email}
                       </p>
                     </div>
-                  </button>
+                    {user.email && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProfileEmail(user.email);
+                        }}
+                        title="View profile"
+                        className={clsx(
+                          "p-1.5 rounded-full cursor-pointer transition-colors shrink-0",
+                          textTertiary,
+                          isDark
+                            ? "hover:text-teal-400"
+                            : "hover:text-teal-600",
+                        )}
+                      >
+                        <Info className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -488,6 +644,13 @@ export const Inbox: React.FC<InboxProps> = ({
                 )}
               </button>
             </div>
+          )}
+
+          {profileEmail && (
+            <ChatUserProfile
+              email={profileEmail}
+              onClose={() => setProfileEmail(null)}
+            />
           )}
         </>
       )}

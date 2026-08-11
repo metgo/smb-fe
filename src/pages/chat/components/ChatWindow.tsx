@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import clsx from "clsx";
 import {
   Trash,
@@ -11,13 +11,16 @@ import {
   CheckCheck,
   Edit,
   Type,
+  Mail,
+  UserCircle,
+  ArrowLeft,
 } from "lucide-react";
 
-// Removed MockChatDatabase imports
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useChatWindow } from "@/hooks/useChatWindow";
 import CKEditorWrapper from "@/components/wrapper/CKEditorWrapper";
-import { getInitials } from "@/helpers";
+import { getInitials, timeAgo } from "@/helpers";
+import ChatUserProfile from "./ChatUserProfile";
 
 interface ChatWindowProps {
   conversationId: string;
@@ -26,6 +29,7 @@ interface ChatWindowProps {
   onBack: () => void;
   chatUsers?: any[];
   conversation?: any;
+  presence?: Record<string, IPresenceEntry>;
   pendingDmRecipientId?: string;
   onPendingDmResolved?: (pendingId: string, realConversationId: string) => void;
 }
@@ -37,6 +41,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onBack,
   chatUsers,
   conversation,
+  presence = {},
   pendingDmRecipientId,
   onPendingDmResolved,
 }) => {
@@ -62,6 +67,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     pendingDmRecipientId,
     onPendingDmResolved,
   });
+
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const {
     messages,
@@ -102,6 +109,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     scrollToBottom,
     getPlainTextFromHtml,
   } = chatWindow;
+
+  // The other participant in a DM, used for the "no previous conversation"
+  // quick-info card shown before any messages have been exchanged. Prefer
+  // the conversation's own otherParticipant (always present for DMs from
+  // the API) over the paginated chatUsers list, which may not include
+  // every user the current account has a DM with.
+  const dmUser =
+    conversation?.type === "dm"
+      ? conversation.otherParticipant ||
+        chatUsers?.find((u: any) => u._id === conversation.members[0])
+      : undefined;
+  const isNewDm = conversation?.type === "dm" && messages.length === 0;
+
+  // Online status line shown in the header for DMs only
+  const dmPresence = dmUser ? presence[dmUser._id] : undefined;
+  const presenceLabel = dmPresence
+    ? dmPresence.isOnline
+      ? "Online"
+      : dmPresence.lastActiveAt
+        ? `Last seen ${timeAgo(dmPresence.lastActiveAt)}`
+        : null
+    : null;
 
   // Group date separators (Story 11)
   const renderMessageList = () => {
@@ -380,11 +409,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <button
             onClick={onBack}
             className={clsx(
-              "md:hidden p-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
+              "md:hidden rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
               hoverBg,
             )}
           >
-            ←
+            <ArrowLeft className={clsx(textSecondary)} />
           </button>
           <div className="min-w-0">
             <h3
@@ -395,11 +424,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             >
               {conversation?.name}
             </h3>
-            {conversation?.type !== "dm" && (
+            {conversation?.type !== "dm" ? (
               <p className={clsx("text-[10px] hidden md:block", textTertiary)}>
                 {conversation?.members.length} members &bull;{" "}
                 {conversation?.description}
               </p>
+            ) : (
+              presenceLabel && (
+                <p
+                  className={clsx(
+                    "text-[10px]",
+                    dmPresence?.isOnline
+                      ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                      : textTertiary,
+                  )}
+                >
+                  {presenceLabel}
+                </p>
+              )
             )}
           </div>
         </div>
@@ -496,7 +538,54 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-3 md:p-4 custom-scrollbar min-h-0"
       >
-        {renderMessageList()}
+        {isNewDm && dmUser ? (
+          <div className="flex flex-col items-center justify-center h-full text-center select-none px-4">
+            <div
+              className={clsx(
+                "w-16 h-16 rounded-full border shrink-0 flex items-center justify-center font-bold text-xl mb-3",
+                borderColor,
+                isDark
+                  ? "bg-gray-800 text-gray-200"
+                  : "bg-gray-100 text-gray-600",
+              )}
+            >
+              {getInitials(dmUser.name)}
+            </div>
+            <h4 className={clsx("text-sm font-bold", textPrimary)}>
+              {dmUser.name}
+            </h4>
+            {dmUser.email && (
+              <p
+                className={clsx(
+                  "text-xs flex items-center gap-1.5 mt-1",
+                  textTertiary,
+                )}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                {dmUser.email}
+              </p>
+            )}
+            <p className={clsx("text-[11px] mt-2", textTertiary)}>
+              No previous conversation. Say hello!
+            </p>
+            {dmUser.email && (
+              <button
+                onClick={() => setShowProfileModal(true)}
+                className={clsx(
+                  "mt-4 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer border transition-all duration-200 hover:scale-105 active:scale-95",
+                  borderColor,
+                  textSecondary,
+                  hoverBg,
+                )}
+              >
+                <UserCircle className="w-4 h-4" />
+                View Profile
+              </button>
+            )}
+          </div>
+        ) : (
+          renderMessageList()
+        )}
 
         {/* Typing Indicators (Story 7) */}
         {typingUsers.length > 0 && (
@@ -603,7 +692,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 value={text}
                 onChange={(e) => handleTextChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                rows={1}
+                rows={2}
                 placeholder="Type a message... (start with *, #, - or / for rich text)"
                 className={clsx(
                   "w-full px-4 py-3 border rounded-2xl text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none min-h-12 max-h-32 custom-scrollbar transition-all duration-200",
@@ -636,6 +725,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           </div>
         )}
       </div>
+
+      {/* Quick-info "View Profile" modal for a fresh DM contact */}
+      {showProfileModal && dmUser?.email && (
+        <ChatUserProfile
+          email={dmUser.email}
+          onClose={() => setShowProfileModal(false)}
+        />
+      )}
 
       {/* Lightbox Viewer Overlay (Story 6) */}
       {lightboxUrl && (
@@ -671,7 +768,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               )}
             >
               <Edit className="w-3.5 h-3.5" />
-              Edit Message
+              Edit
             </button>
           )}
           <button
@@ -682,7 +779,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             )}
           >
             <Trash className="w-3.5 h-3.5" />
-            Delete Message
+            Delete
           </button>
         </div>
       )}

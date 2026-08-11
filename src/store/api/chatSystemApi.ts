@@ -79,6 +79,14 @@ export const chatSystemApi = createApi({
       providesTags: ["Chat"],
     }),
 
+    chatPresence: builder.query<IChatPresenceRes, { userIds: string[] }>({
+      query: ({ userIds }) => ({
+        url: endpoints.chatPresence,
+        method: "GET",
+        params: { userIds: userIds.join(",") },
+      }),
+    }),
+
     fetchConversationMessages: builder.query<
       IChatMessagesRes,
       ChatConversationMessagesProps
@@ -154,6 +162,7 @@ export const {
   useChatConversationsQuery,
   useChatUnreadCountQuery,
   useLazyChatUnreadCountQuery,
+  useChatPresenceQuery,
   useFetchConversationMessagesQuery,
   useLazyFetchConversationMessagesQuery,
   useSendMessageMutation,

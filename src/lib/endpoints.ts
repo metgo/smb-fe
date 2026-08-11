@@ -191,6 +191,7 @@ export const endpoints = {
   chatMessages: "/chats/messages",
   chatConversations: "/chats/conversations",
   chatUnreadCount: "/chats/unread-count",
+  chatPresence: "/chats/presence",
   chatGroups: "/chat/groups",
   chatBroadcasts: "/chat/broadcasts",
 

@@ -102,6 +102,19 @@ interface IChatSocketReadPayload {
   lastReadAt: string;
 }
 
+interface IChatSocketPresencePayload {
+  userId: string;
+  isOnline: boolean;
+  lastActiveAt: string | null;
+}
+
+interface IPresenceEntry {
+  isOnline: boolean;
+  lastActiveAt: string | null;
+}
+
+type IChatPresenceRes = Record<string, IPresenceEntry>;
+
 //
 interface IAttachment {
   id: string;
@@ -142,6 +155,7 @@ interface IConversation {
   avatar?: string;
   description?: string;
   members: string[]; // user IDs
+  otherParticipant?: IChatConversationOtherParticipant; // for DMs
   creatorId?: string;
   adminId?: string; // Group Admin
   targetRole?: TUserRole; // for broadcasts
