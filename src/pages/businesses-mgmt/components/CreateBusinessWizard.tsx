@@ -832,6 +832,15 @@ function CreateBusinessWizardInner({
       toast.error(tt("full_description_required"));
       return;
     }
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     const resolvedBusinessId = await saveDraft(false);
     if (resolvedBusinessId) {

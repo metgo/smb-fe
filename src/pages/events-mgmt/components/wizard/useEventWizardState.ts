@@ -709,6 +709,15 @@ export function useEventWizardState({
       toast.error(tc("name_required"));
       return;
     }
+    if (hasAssociatedWebsites && !selectAssociatedWebsiteIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     refetch?.();
@@ -717,6 +726,8 @@ export function useEventWizardState({
     eventName,
     eventNameHe,
     eventNameAr,
+    hasAssociatedWebsites,
+    selectAssociatedWebsiteIds,
     tc,
     saveDraft,
     buildWebsiteAccessPayload,

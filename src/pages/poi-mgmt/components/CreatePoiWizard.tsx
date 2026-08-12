@@ -396,6 +396,15 @@ export default function CreatePoiWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     const resolvedPoiId = await saveDraft(false);
     if (resolvedPoiId) {
