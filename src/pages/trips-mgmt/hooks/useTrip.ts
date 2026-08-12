@@ -162,17 +162,21 @@ export const useTrip = ({
         break;
 
       case 2:
-        if (!selectedStationDetails?.length)
-          newErrors.stations = ct("required_field");
+        if ((selectedStationDetails?.length ?? 0) < 2)
+          newErrors.stations = ft("stationsTooltip");
         break;
 
       case 4:
         if (hasAnyStationImages && !selectedImages?.length)
-          newErrors.images = ct("required_field");
+          newErrors.images = ft("imagesTooltip");
         break;
     }
 
     setErrors(newErrors);
+
+    const firstError = Object.values(newErrors)[0];
+    if (firstError) toast.error(firstError);
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -214,7 +218,7 @@ export const useTrip = ({
       return;
     }
 
-    if (!selectedStationDetails?.length) {
+    if ((selectedStationDetails?.length ?? 0) < 2) {
       setSelectedTab("stations");
       toast.error(ft("stationsTooltip"));
       return;

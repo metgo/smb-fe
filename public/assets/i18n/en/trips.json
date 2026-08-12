@@ -65,6 +65,6 @@
   "website_visibility_required": "Please select at least one website visibility",
   "short_description_length_exceeded": "Short description must be 150 characters or less",
   "description_length_exceeded": "Description must be 500 characters or less",
-  "stationsTooltip": "Please select at least one station",
+  "stationsTooltip": "Please select at least two stations",
   "imagesTooltip": "Please upload at least one image"
 }
