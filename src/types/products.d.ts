@@ -12,11 +12,7 @@ interface ProductQuantity {
 }
 
 type ProductType =
-  | "PHYSICAL"
-  | "SERVICE"
-  | "TABLE_ORDER"
-  | "HOTEL"
-  | "EXPERIENCE";
+  "PHYSICAL" | "SERVICE" | "TABLE_ORDER" | "HOTEL" | "EXPERIENCE";
 
 interface Product {
   _id: string;
@@ -107,12 +103,7 @@ interface ProductFormData {
 
   // Type & Category
   type:
-    | "physical"
-    | "table-order"
-    | "service"
-    | "hotel-room"
-    | "experience"
-    | "";
+    "physical" | "table-order" | "service" | "hotel-room" | "experience" | "";
   categories: string[];
   subCategories: string[];
 

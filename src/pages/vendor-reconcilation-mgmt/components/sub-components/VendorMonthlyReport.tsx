@@ -65,12 +65,7 @@ interface OrderProduct {
     platformFee: number;
     disputeId?: string;
     reconciliationStatus?:
-      | "pending"
-      | "approved"
-      | "canceled"
-      | "disputed"
-      | "rejected"
-      | "closed";
+      "pending" | "approved" | "canceled" | "disputed" | "rejected" | "closed";
     vendorFacingResponse?: string;
   };
   customerInformation: {
