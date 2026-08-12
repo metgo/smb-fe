@@ -14,7 +14,7 @@ export function useProductListData(
   searchTerm: string,
   urlBusinessId: string | null,
 ) {
-  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
+  const { dmoId, authorityId, websiteId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
   );
   const { language } = useThemeClasses();
@@ -31,6 +31,7 @@ export function useProductListData(
     language,
     urlBusinessId,
     dmoId,
+    websiteId,
     authorityId,
     startDate,
     endDate,
@@ -43,6 +44,7 @@ export function useProductListData(
       locale: language,
       dmoId,
       authorityId,
+      websiteId,
       startDate,
       endDate,
     };
@@ -59,6 +61,7 @@ export function useProductListData(
     urlBusinessId,
     dmoId,
     authorityId,
+    websiteId,
     startDate,
     endDate,
   ]);
