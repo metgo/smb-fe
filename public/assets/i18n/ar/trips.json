@@ -6,6 +6,7 @@
   "trip_name": "اسم الرحلة",
   "short_description": "وصف مختصر",
   "estimated_duration": "المدة المقدرة",
+  "hours": "ساعات",
   "total_distance_covered": "إجمالي المسافة المقطوعة",
   "edit": "تعديل",
   "contact_details": "تفاصيل الاتصال",

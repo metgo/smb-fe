@@ -6,6 +6,7 @@
   "trip_name": "Trip Name",
   "short_description": "Short Description",
   "estimated_duration": "Estimated Duration",
+  "hours": "hours",
   "total_distance_covered": "Total Distance Covered",
   "edit": "Edit",
   "contact_details": "Contact Details",

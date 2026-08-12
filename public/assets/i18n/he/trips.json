@@ -6,6 +6,7 @@
   "trip_name": "שם הטיול",
   "short_description": "תיאור קצר",
   "estimated_duration": "משך משוער",
+  "hours": "שעות",
   "total_distance_covered": "מרחק כולל",
   "edit": "ערוך",
   "contact_details": "פרטי קשר",

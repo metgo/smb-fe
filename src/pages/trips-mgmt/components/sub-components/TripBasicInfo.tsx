@@ -117,6 +117,7 @@ const TripBasicInfo = ({
 
       <FormFieldWrapper
         label={t("estimated_duration")}
+        hint={t("hours")}
         required
         error={errors.estimatedDuration}
       >
