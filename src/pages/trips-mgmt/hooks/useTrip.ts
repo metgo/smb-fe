@@ -92,6 +92,14 @@ export const useTrip = ({
     (state) => state.stations.selectedStationDetails,
   );
 
+  const hasAnyStationImages = useMemo(
+    () =>
+      (selectedStationDetails ?? []).some(
+        (station) => (station.images?.length ?? 0) > 0,
+      ),
+    [selectedStationDetails],
+  );
+
   const {
     isPoiChecked,
     activeCategoryIds,
@@ -159,7 +167,8 @@ export const useTrip = ({
         break;
 
       case 4:
-        if (!selectedImages?.length) newErrors.images = ct("required_field");
+        if (hasAnyStationImages && !selectedImages?.length)
+          newErrors.images = ct("required_field");
         break;
     }
 
@@ -211,7 +220,7 @@ export const useTrip = ({
       return;
     }
 
-    if (!selectedImages?.length) {
+    if (hasAnyStationImages && !selectedImages?.length) {
       setSelectedTab("image");
       toast.error(ft("imagesTooltip"));
       return;
