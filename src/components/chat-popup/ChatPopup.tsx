@@ -9,7 +9,7 @@ import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useChatWindow } from "@/hooks/useChatWindow";
 import { useChatConversationsQuery } from "@/store/api/chatSystemApi";
-import RichTextEditor from "@/components/shared/RichTextEditor";
+import RichTextEditorMinimal from "@/components/shared/RichTextEditorMinimal";
 
 interface ChatPopupProps {
   /** The person this popup is chatting with. */
@@ -265,7 +265,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
           <div className={clsx("px-2.5 py-2 border-t shrink-0", borderColor)}>
             {isRichMode ? (
               <div className="space-y-1.5">
-                <RichTextEditor
+                <RichTextEditorMinimal
                   value={richHtml}
                   onChange={setRichHtml}
                   placeholder={t("type_a_message")}
