@@ -1,6 +1,8 @@
 import clsx from "clsx";
 import { AlertTriangle } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { ChatUsersList } from "./components/ChatUsersList";
@@ -22,7 +24,10 @@ import {
 const mapConversation = (c: IChatConversation): IConversation => ({
   id: c._id,
   type: c.type,
-  name: c.type === "dm" ? c.otherParticipant?.name || "User" : c.name || "",
+  name:
+    c.type === "dm"
+      ? c.otherParticipant?.name || i18n.t("user_fallback", { ns: "chat" })
+      : c.name || "",
   avatar: c.avatar,
   members: c.otherParticipant ? [c.otherParticipant._id] : [],
   otherParticipant: c.otherParticipant,
@@ -42,6 +47,7 @@ const mapConversation = (c: IChatConversation): IConversation => ({
 });
 
 export default function ChatPage() {
+  const { t } = useTranslation("chat");
   const { authorityId, dmoId } = useAppSelector((state) => state.auth);
   const { bgSecondary, textPrimary, textTertiary } = useThemeClasses();
 
@@ -188,7 +194,7 @@ export default function ChatPage() {
         {
           id: pendingId,
           type: "dm",
-          name: recipient?.name || "User",
+          name: recipient?.name || t("user_fallback"),
           members: [recipientId],
         } as IConversation,
       ];
@@ -283,11 +289,10 @@ export default function ChatPage() {
               >
                 <AlertTriangle className="w-12 h-12 text-teal-500 mb-4" />
                 <h3 className={clsx("text-base font-semibold", textPrimary)}>
-                  No Chat Selected
+                  {t("no_chat_selected")}
                 </h3>
                 <p className={clsx("text-xs max-w-sm mt-1", textTertiary)}>
-                  Select a conversation from the inbox panel or trigger a direct
-                  message from the action bar.
+                  {t("no_chat_selected_desc")}
                 </p>
               </div>
             )}

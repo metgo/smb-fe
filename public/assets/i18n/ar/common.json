@@ -74,6 +74,7 @@
   "promotions": "العروض الترويجية",
   "blog": "المدونة",
   "article": "مقال",
+  "chat": "دردشة",
   "news_feed": "تدفق الأخبار",
   "feed_settings": "إعدادات التدفق",
   "mini_site": "الموقع المصغر",
@@ -412,6 +413,5 @@
   "view_business_on": "عرض على",
   "contact_support_label": "أو اتصل بفريق الدعم لدينا",
   "selected_dmo_authority": "منظمة تسويق الوجهة والسلطة المحددة",
-  "connected_websites": "المواقع المرتبطة",
   "no_connected_dmo_authority_websites": "لا توجد منظمة تسويق وجهة أو سلطة أو مواقع مرتبطة"
 }

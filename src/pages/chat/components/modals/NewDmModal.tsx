@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import React, { useState } from "react";
 import { Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { getInitials } from "@/helpers";
 import type { ModalProps } from "./types";
@@ -20,6 +21,7 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
   onStartChat,
   chatUsers,
 }) => {
+  const { t } = useTranslation("chat");
   const { isDark, borderColor, inputClasses, textPrimary, textSecondary } =
     useThemeClasses();
   const [search, setSearch] = useState("");
@@ -46,7 +48,7 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
       height="h-[80dvh] md:h-[60vh]"
     >
       <div className="flex h-full min-h-0 flex-col">
-        <ModalHeader title="New Direct Message" />
+        <ModalHeader title={t("new_direct_message")} />
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4">
           {/* Search */}
@@ -54,7 +56,7 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
             <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name, email, or role..."
+              placeholder={t("search_by_name_email_or_role")}
               value={search}
               onChange={handleSearchChange}
               className={clsx(
@@ -122,7 +124,7 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
               ))
             ) : (
               <p className={clsx("text-center py-8 text-sm", textSecondary)}>
-                No matching contacts found under your hierarchy permissions.
+                {t("no_matching_contacts")}
               </p>
             )}
           </div>

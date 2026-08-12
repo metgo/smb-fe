@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getInitials } from "@/helpers";
 import { Search, ShieldAlert, Check } from "lucide-react";
 
@@ -25,6 +26,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   onGroupCreated,
   chatUsers,
 }) => {
+  const { t } = useTranslation("chat");
   const { isDark, borderColor, inputClasses, textPrimary, textSecondary } =
     useThemeClasses();
   const [name, setName] = useState("");
@@ -51,7 +53,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
       setSelectedMembers(selectedMembers.filter((m) => m !== id));
     } else {
       if (selectedMembers.length >= 49) {
-        setError("Maximum group size (50 members) reached.");
+        setError(t("group_max_members"));
         return;
       }
       setSelectedMembers([...selectedMembers, id]);
@@ -61,15 +63,15 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
 
   const handleCreate = () => {
     if (!name.trim()) {
-      setError("Group name is required");
+      setError(t("group_name_required"));
       return;
     }
     if (name.length > 60) {
-      setError("Group name must be 60 characters or less");
+      setError(t("group_name_max_length"));
       return;
     }
     if (selectedMembers.length < 2) {
-      setError("Add at least 2 members to create a group");
+      setError(t("group_min_members"));
       return;
     }
     onGroupCreated(name.trim(), description.trim(), selectedMembers);
@@ -89,12 +91,12 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
         maxWidth="max-w-md"
         height="max-h-[85vh] md:max-h-[50vh]"
       >
-        <ModalHeader title="Access Restricted" />
+        <ModalHeader title={t("access_restricted")} />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center space-y-4">
             <ShieldAlert className="w-12 h-12 text-destructive mx-auto" />
             <p className={`text-sm ${textSecondary}`}>
-              Traveller role users are not authorized to create group chats.
+              {t("traveller_not_authorized_group")}
             </p>
           </div>
         </div>
@@ -110,7 +112,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
       maxWidth="max-w-md"
       height="h-[85dvh] md:h-[75vh]"
     >
-      <ModalHeader title="Create Group Chat" />
+      <ModalHeader title={t("create_group_chat")} />
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4 text-left">
           {error && (
@@ -135,12 +137,12 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                   textSecondary,
                 )}
               >
-                Group Name * ({name.length}/60)
+                {t("group_name_char_count", { count: name.length })}
               </label>
               <input
                 type="text"
                 maxLength={60}
-                placeholder="e.g. Regional Coordination"
+                placeholder={t("group_name_placeholder")}
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
@@ -161,11 +163,11 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                   textSecondary,
                 )}
               >
-                Description (Optional)
+                {t("description_optional")}
               </label>
               <textarea
                 rows={2}
-                placeholder="What this group is for..."
+                placeholder={t("group_description_placeholder")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className={clsx(
@@ -185,13 +187,13 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                 textSecondary,
               )}
             >
-              Add Members (Selected: {selectedMembers.length})
+              {t("add_members_selected", { count: selectedMembers.length })}
             </label>
             <div className="relative mb-2">
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search contacts..."
+                placeholder={t("search_contacts")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className={clsx(
@@ -267,7 +269,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                 })
               ) : (
                 <p className="text-center py-4 text-xs text-gray-400">
-                  No contacts found.
+                  {t("no_contacts_found")}
                 </p>
               )}
             </div>
@@ -277,7 +279,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
             onClick={handleCreate}
             className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
           >
-            Create Group
+            {t("create_group")}
           </button>
         </div>
       </div>

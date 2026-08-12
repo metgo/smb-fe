@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import React, { useState } from "react";
 import { ShieldAlert } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // MockUser removed
 import { UserRole } from "@/enums/user.types";
@@ -24,6 +25,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
   currentUser,
   onBroadcastCreated,
 }) => {
+  const { t } = useTranslation("chat");
   const { isDark, borderColor, inputClasses, textSecondary } =
     useThemeClasses();
   const [name, setName] = useState("");
@@ -36,7 +38,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
 
   const handleCreate = () => {
     if (!name.trim()) {
-      setError("Broadcast channel name is required");
+      setError(t("broadcast_name_required"));
       return;
     }
     onBroadcastCreated(name.trim(), description.trim(), targetRole);
@@ -54,13 +56,12 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
         maxWidth="max-w-md"
         height="max-h-[85vh] md:max-h-[50vh]"
       >
-        <ModalHeader title="Access Restricted" />
+        <ModalHeader title={t("access_restricted")} />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center space-y-4">
             <ShieldAlert className="w-12 h-12 text-destructive mx-auto" />
             <p className={`text-sm ${textSecondary}`}>
-              Only SUPERADMIN and ADMIN roles are authorized to create broadcast
-              channels.
+              {t("only_admin_can_create_broadcast")}
             </p>
           </div>
         </div>
@@ -76,7 +77,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
       maxWidth="max-w-md"
       height="h-[80dvh] md:h-[50vh]"
     >
-      <ModalHeader title="New Broadcast Channel" />
+      <ModalHeader title={t("new_broadcast_channel")} />
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4 text-left">
           {error && (
@@ -99,11 +100,11 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
                 textSecondary,
               )}
             >
-              Channel Name *
+              {t("channel_name_label")}
             </label>
             <input
               type="text"
-              placeholder="e.g. DMO Policy Updates"
+              placeholder={t("channel_name_placeholder")}
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
@@ -124,7 +125,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
                 textSecondary,
               )}
             >
-              Target Audience Role
+              {t("target_audience_role")}
             </label>
             <select
               value={targetRole}
@@ -135,13 +136,9 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
                 isDark ? "bg-gray-800 text-white" : "bg-white text-gray-900",
               )}
             >
-              <option value="dmo">
-                DMO (Destination Marketing Organization)
-              </option>
-              <option value="authority">AUTHORITY (Local Authority)</option>
-              <option value="traveller">
-                TRAVELLER (Business Owner/End-user)
-              </option>
+              <option value="dmo">{t("role_dmo_full")}</option>
+              <option value="authority">{t("role_authority_full")}</option>
+              <option value="traveller">{t("role_traveller_full")}</option>
             </select>
           </div>
 
@@ -152,11 +149,11 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
                 textSecondary,
               )}
             >
-              Description (Optional)
+              {t("description_optional")}
             </label>
             <textarea
               rows={2}
-              placeholder="What announcements this channel broadcasts..."
+              placeholder={t("broadcast_description_placeholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className={clsx(
@@ -171,7 +168,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
             onClick={handleCreate}
             className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
           >
-            Create Broadcast Channel
+            {t("create_broadcast_channel_button")}
           </button>
         </div>
       </div>

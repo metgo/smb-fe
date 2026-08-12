@@ -83,6 +83,7 @@
 
   "blog": "בלוג",
   "artilce": "מאמר",
+  "chat": "צ'אט",
   "news_feed": "פיד חדשות",
   "feed_settings": "הגדרות פיד",
   "mini_site": "מיני-אתר",
@@ -427,6 +428,5 @@
   "view_business_on": "צפה ב",
   "contact_support_label": "או צור קשר עם צוות התמיכה שלנו",
   "selected_dmo_authority": "DMO ורשות נבחרים",
-  "connected_websites": "אתרים מחוברים",
   "no_connected_dmo_authority_websites": "אין DMO, רשות או אתרים מחוברים"
 }

@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 import {
   Mail,
   Phone,
@@ -92,6 +93,7 @@ const ChatUserProfileSkeleton = () => {
 };
 
 const ChatUserProfile = ({ email, onClose }: ChatUserProfileProps) => {
+  const { t } = useTranslation("chat");
   const { data, isFetching, isLoading } = useGetUserDetailsByEmailQuery(email);
   const { dmosAuthorities } = useCommon();
   const { isDark, textPrimary, textTertiary, borderColor, bgSecondary } =
@@ -160,7 +162,7 @@ const ChatUserProfile = ({ email, onClose }: ChatUserProfileProps) => {
                   )}
                 >
                   <BadgeCheck className="w-3 h-3" />
-                  Verified
+                  {t("verified")}
                 </span>
               )}
             </div>
@@ -174,7 +176,7 @@ const ChatUserProfile = ({ email, onClose }: ChatUserProfileProps) => {
                   className={clsx("w-4 h-4 mt-0.5 shrink-0", textTertiary)}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className={clsx("text-xs", textTertiary)}>Email</p>
+                  <p className={clsx("text-xs", textTertiary)}>{t("email")}</p>
                   <div className="flex items-center gap-1.5">
                     <p
                       className={clsx(
@@ -198,7 +200,9 @@ const ChatUserProfile = ({ email, onClose }: ChatUserProfileProps) => {
                     className={clsx("w-4 h-4 mt-0.5 shrink-0", textTertiary)}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className={clsx("text-xs", textTertiary)}>Phone</p>
+                    <p className={clsx("text-xs", textTertiary)}>
+                      {t("phone")}
+                    </p>
                     <div className="flex items-center gap-1.5">
                       <p
                         className={clsx(
@@ -227,7 +231,9 @@ const ChatUserProfile = ({ email, onClose }: ChatUserProfileProps) => {
                     className={clsx("w-4 h-4 mt-0.5 shrink-0", textTertiary)}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className={clsx("text-xs", textTertiary)}>Address</p>
+                    <p className={clsx("text-xs", textTertiary)}>
+                      {t("address")}
+                    </p>
                     <p className={clsx("text-sm font-medium", textPrimary)}>
                       {data.address}
                     </p>
@@ -241,7 +247,7 @@ const ChatUserProfile = ({ email, onClose }: ChatUserProfileProps) => {
                   />
                   <div className="min-w-0 flex-1">
                     <p className={clsx("text-xs", textTertiary)}>
-                      Member Since
+                      {t("member_since")}
                     </p>
                     <p className={clsx("text-sm font-medium", textPrimary)}>
                       {new Date(data.createdAt).toLocaleDateString(undefined, {
@@ -283,7 +289,7 @@ const ChatUserProfile = ({ email, onClose }: ChatUserProfileProps) => {
                           textTertiary,
                         )}
                       >
-                        DMO
+                        {t("dmo")}
                       </p>
                       <p
                         className={clsx(
@@ -331,7 +337,7 @@ const ChatUserProfile = ({ email, onClose }: ChatUserProfileProps) => {
                           textTertiary,
                         )}
                       >
-                        Authority
+                        {t("authority")}
                       </p>
                       <p
                         className={clsx(

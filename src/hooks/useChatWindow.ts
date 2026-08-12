@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import DOMPurify from "dompurify";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { useSocket } from "@/providers/SocketProvider";
 import {
@@ -77,6 +78,7 @@ export const useChatWindow = ({
   pendingDmRecipientId,
   onPendingDmResolved,
 }: UseChatWindowProps) => {
+  const { t } = useTranslation("chat");
   const socket = useSocket();
   const isPendingDm = !!pendingDmRecipientId;
 
@@ -89,10 +91,10 @@ export const useChatWindow = ({
 
   const senderNameFor = useCallback(
     (id: string) => {
-      if (id === currentUser?._id) return currentUser?.name || "You";
-      return chatUsers?.find((u) => u._id === id)?.name || "User";
+      if (id === currentUser?._id) return currentUser?.name || t("you");
+      return chatUsers?.find((u) => u._id === id)?.name || t("user_fallback");
     },
-    [chatUsers, currentUser],
+    [chatUsers, currentUser, t],
   );
 
   // Message state
@@ -157,7 +159,7 @@ export const useChatWindow = ({
     } catch {
       setMessages([]);
       setHasMoreMessages(false);
-      toast.error("Failed to load messages");
+      toast.error(t("failed_to_load_messages"));
     }
   }, [conversationId, isPendingDm, fetchMessages, senderNameFor]);
 
@@ -175,7 +177,7 @@ export const useChatWindow = ({
       setMessages((prev) => [...mapped, ...prev]);
       setHasMoreMessages(res.hasMore);
     } catch {
-      toast.error("Failed to load older messages");
+      toast.error(t("failed_to_load_older_messages"));
     }
   }, [
     conversationId,
@@ -465,7 +467,7 @@ export const useChatWindow = ({
       }
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      toast.error("Failed to send message");
+      toast.error(t("failed_to_send_message"));
     }
   };
 
@@ -509,7 +511,7 @@ export const useChatWindow = ({
       }).unwrap();
     } catch {
       setMessages(prevMessages);
-      toast.error("Failed to delete message");
+      toast.error(t("failed_to_delete_message"));
     }
   };
 
@@ -518,15 +520,15 @@ export const useChatWindow = ({
     const isOwner = currentUser?._id === msg.senderId;
     if (isOwner && !msg.isSystem && !msg.isDeleted) {
       setEditTargetMessage(msg);
-      setEditText(msg.text);
+      setEditText(msg.isRichText ? msg.text : `<p>${escapeHtml(msg.text)}</p>`);
     }
     setMsgContextMenu(null);
   };
 
   const handleConfirmEdit = async () => {
     if (!editTargetMessage || !currentUser || isPendingDm) return;
-    const newText = editText.trim();
-    if (!newText) return;
+    const newText = sanitizeMessageHtml(editText);
+    if (!getPlainTextFromHtml(newText)) return;
 
     const targetId = editTargetMessage.id;
     setEditTargetMessage(null);
@@ -544,6 +546,7 @@ export const useChatWindow = ({
             ? {
                 ...m,
                 text: res.content ?? newText,
+                isRichText: true,
                 edited: true,
                 editedAt: res.updatedAt,
               }
@@ -551,7 +554,7 @@ export const useChatWindow = ({
         ),
       );
     } catch {
-      toast.error("Failed to edit message");
+      toast.error(t("failed_to_edit_message"));
     }
   };
 

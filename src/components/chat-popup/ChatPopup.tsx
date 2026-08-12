@@ -1,13 +1,15 @@
 import clsx from "clsx";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Maximize2, Minus, X, CornerDownLeft } from "lucide-react";
+import { Maximize2, Minus, X, CornerDownLeft, Type } from "lucide-react";
 
-import { getInitials } from "@/helpers";
+import { getInitials, timeAgo } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useChatWindow } from "@/hooks/useChatWindow";
 import { useChatConversationsQuery } from "@/store/api/chatSystemApi";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 
 interface ChatPopupProps {
   /** The person this popup is chatting with. */
@@ -19,6 +21,8 @@ interface ChatPopupProps {
   onClose: () => void;
   /** Horizontal offset in px from the right edge, for stacking multiple popups. */
   rightOffset?: number;
+  /** Online/last-seen status for the receiver, if known. */
+  presence?: IPresenceEntry;
 }
 
 /**
@@ -33,7 +37,9 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
   onToggleMinimize,
   onClose,
   rightOffset = 0,
+  presence,
 }) => {
+  const { t } = useTranslation("chat");
   const navigate = useNavigate();
   const {
     isDark,
@@ -66,12 +72,17 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
   const {
     messages,
     text,
+    isRichMode,
+    richHtml,
+    setRichHtml,
     handleTextChange,
+    handleToggleComposerMode,
     handleKeyDown,
     handleSend,
     chatEndRef,
     containerRef,
     handleScroll,
+    getPlainTextFromHtml,
   } = useChatWindow({
     conversationId: activeConversationId,
     currentUser,
@@ -90,9 +101,9 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
     <div
       style={{ right: `${16 + rightOffset}px` }}
       className={clsx(
-        "fixed bottom-0 z-50 w-80 rounded-t-xl border border-b-0 shadow-2xl flex flex-col overflow-hidden transition-all duration-200",
-        minimized ? "h-12" : "h-105",
-        borderColor,
+        "fixed bottom-10 z-50 w-96 rounded-xl border shadow-2xl flex flex-col overflow-hidden transition-all duration-200",
+        minimized ? "h-18" : isRichMode ? "h-125" : "h-105",
+        presence && presence.isOnline ? "border-teal-500" : " border-gray-500",
         bgPrimary,
       )}
     >
@@ -116,12 +127,38 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
           >
             {getInitials(receiver.name)}
           </div>
-          <span className={clsx("text-sm font-semibold truncate", textPrimary)}>
-            {receiver.name}
-          </span>
+          <div className="min-w-0">
+            <span
+              className={clsx(
+                "text-sm font-semibold truncate block",
+                textPrimary,
+              )}
+            >
+              {receiver.name}
+            </span>
+            <span className={clsx("text-[10px] truncate block", textTertiary)}>
+              {receiver.email} &bull; {receiver.role}
+            </span>
+            {presence && (
+              <span
+                className={clsx(
+                  "text-[10px] block",
+                  presence.isOnline
+                    ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                    : textTertiary,
+                )}
+              >
+                {presence.isOnline
+                  ? t("online_status")
+                  : presence.lastActiveAt
+                    ? t("last_seen", { time: timeAgo(presence.lastActiveAt) })
+                    : null}
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 ">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -196,7 +233,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
                 >
                   <div
                     className={clsx(
-                      "max-w-[75%] px-3 py-1.5 rounded-2xl text-xs break-words",
+                      "max-w-[75%] px-3 py-1.5 rounded-2xl text-xs wrap-break-word",
                       msg.isDeleted
                         ? "italic text-gray-400 bg-gray-100 dark:bg-gray-800"
                         : isMe
@@ -209,7 +246,14 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
                             ),
                     )}
                   >
-                    {msg.isDeleted ? "This message was deleted." : msg.text}
+                    {msg.isDeleted ? (
+                      "This message was deleted."
+                    ) : (
+                      <div
+                        className="wrap-break-word rich-message-content"
+                        dangerouslySetInnerHTML={{ __html: msg.text }}
+                      />
+                    )}
                   </div>
                 </div>
               );
@@ -218,30 +262,59 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
           </div>
 
           {/* Composer */}
-          <div
-            className={clsx(
-              "px-2.5 py-2 border-t shrink-0 flex items-center gap-2",
-              borderColor,
+          <div className={clsx("px-2.5 py-2 border-t shrink-0", borderColor)}>
+            {isRichMode ? (
+              <div className="space-y-1.5">
+                <RichTextEditor
+                  value={richHtml}
+                  onChange={setRichHtml}
+                  placeholder={t("type_a_message")}
+                  maxLength={2000}
+                />
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={handleToggleComposerMode}
+                    className={clsx(
+                      "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold cursor-pointer transition-colors",
+                      hoverBg,
+                      textTertiary,
+                    )}
+                  >
+                    <Type className="w-3.5 h-3.5" />
+                    {t("plain_text")}
+                  </button>
+                  <button
+                    onClick={handleSend}
+                    disabled={!getPlainTextFromHtml(richHtml)}
+                    className="p-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-full cursor-pointer transition-colors shrink-0"
+                  >
+                    <CornerDownLeft className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={text}
+                  onChange={(e) => handleTextChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Aa"
+                  className={clsx(
+                    "flex-1 px-3 py-2 text-xs rounded-full focus:outline-hidden focus:ring-2 focus:ring-teal-500 border",
+                    inputClasses,
+                    borderColor,
+                  )}
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!text.trim()}
+                  className="p-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-full cursor-pointer transition-colors shrink-0"
+                >
+                  <CornerDownLeft className="w-3.5 h-3.5" />
+                </button>
+              </div>
             )}
-          >
-            <input
-              type="text"
-              value={text}
-              onChange={(e) => handleTextChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Aa"
-              className={clsx(
-                "flex-1 px-3 py-2 text-xs rounded-full focus:outline-hidden focus:ring-2 focus:ring-teal-500",
-                inputClasses,
-              )}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!text.trim()}
-              className="p-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-full cursor-pointer transition-colors shrink-0"
-            >
-              <CornerDownLeft className="w-3.5 h-3.5" />
-            </button>
           </div>
         </>
       )}

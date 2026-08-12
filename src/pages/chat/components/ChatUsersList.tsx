@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   MessageSquare,
   Users,
@@ -44,6 +45,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
   onOpenNewBroadcast,
   collapsed = false,
 }) => {
+  const { t } = useTranslation("chat");
   const {
     isDark,
     bgPrimary,
@@ -128,7 +130,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
         isMuted: !isMuted(conv),
       }).unwrap();
     } catch {
-      toast.error("Failed to update conversation settings");
+      toast.error(t("failed_to_update_conversation_settings"));
     }
   };
 
@@ -154,9 +156,9 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
     if (!userId) return null;
     const entry = presence[userId];
     if (!entry) return null;
-    if (entry.isOnline) return "Online";
+    if (entry.isOnline) return t("online_status");
     if (!entry.lastActiveAt) return null;
-    return `Last seen ${timeAgo(entry.lastActiveAt)}`;
+    return t("last_seen", { time: timeAgo(entry.lastActiveAt) });
   };
 
   // Role-specific pill colors for the Contacts list
@@ -198,7 +200,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
         <div className="flex flex-col items-center py-4 gap-4">
           <button
             onClick={onOpenNewDm}
-            title="New DM"
+            title={t("new_dm")}
             className={clsx(
               "p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
               hoverBg,
@@ -209,7 +211,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
           {canCreateGroup && (
             <button
               onClick={onOpenNewGroup}
-              title="New Group Chat"
+              title={t("new_group_chat")}
               className={clsx(
                 "p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                 hoverBg,
@@ -221,7 +223,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
           {isSuperOrAdmin && (
             <button
               onClick={onOpenNewBroadcast}
-              title="Create Broadcast Channel"
+              title={t("create_broadcast_channel")}
               className={clsx(
                 "p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                 hoverBg,
@@ -245,13 +247,13 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                   )}
                 >
                   <MessageSquare className="w-5 h-5 text-teal-600" />
-                  Chats
+                  {t("chats")}
                 </h2>
               </div>
-              <div className="flex items-center gap-1">
+              {/* <div className="flex items-center gap-1">
                 <button
                   onClick={onOpenNewDm}
-                  title="New DM"
+                  title={t("new_dm")}
                   className={clsx(
                     "p-2 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                     hoverBg,
@@ -263,7 +265,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                 {canCreateGroup && (
                   <button
                     onClick={onOpenNewGroup}
-                    title="New Group Chat"
+                    title={t("new_group_chat")}
                     className={clsx(
                       "p-2 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                       hoverBg,
@@ -276,7 +278,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                 {isSuperOrAdmin && (
                   <button
                     onClick={onOpenNewBroadcast}
-                    title="Create Broadcast Channel"
+                    title={t("create_broadcast_channel")}
                     className={clsx(
                       "p-2 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
                       hoverBg,
@@ -286,7 +288,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                     <Megaphone className="w-4 h-4" />
                   </button>
                 )}
-              </div>
+              </div> */}
             </div>
 
             {/* Global Search Bar */}
@@ -299,7 +301,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
               />
               <input
                 type="text"
-                placeholder="Search messages or files..."
+                placeholder={t("search_messages_or_files")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={clsx(
@@ -319,7 +321,9 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                   textTertiary,
                 )}
               >
-                Conversation ({startedConversations.length})
+                {t("conversation_count", {
+                  count: startedConversations.length,
+                })}
               </p>
               {onlineCount > 0 && (
                 <p
@@ -329,7 +333,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                   )}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  {onlineCount} online
+                  {t("online_count", { count: onlineCount })}
                 </p>
               )}
             </div>
@@ -346,7 +350,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                   : "";
 
                 if (conv.lastMessage?.isDeleted) {
-                  previewText = "This message was removed by an admin.";
+                  previewText = t("message_removed_by_admin");
                 }
 
                 // Truncate at 50 characters (Story 1)
@@ -434,7 +438,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                                   : "bg-blue-50 text-blue-700",
                               )}
                             >
-                              Broadcast
+                              {t("broadcast")}
                             </span>
                           )}
                         </span>
@@ -469,7 +473,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                               </span>
                             ) : (
                               <span className={clsx("italic", textTertiary)}>
-                                No messages yet
+                                {t("no_messages_yet")}
                               </span>
                             ))}
                         </p>
@@ -480,7 +484,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                                 e.stopPropagation();
                                 setProfileEmail(dmUser.email);
                               }}
-                              title="View profile"
+                              title={t("view_profile")}
                               className={clsx(
                                 "p-0.5 rounded-full cursor-pointer transition-colors shrink-0",
                                 textTertiary,
@@ -509,13 +513,13 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                   className={clsx("w-10 h-10 mb-2", textTertiary)}
                 />
                 <p className={clsx("text-sm font-medium", textSecondary)}>
-                  No conversations yet.
+                  {t("no_conversations_yet")}
                 </p>
                 <button
                   onClick={onOpenNewDm}
                   className="mt-3 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                 >
-                  Start Conversation
+                  {t("start_conversation")}
                 </button>
               </div>
             )}
@@ -529,7 +533,9 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                     textTertiary,
                   )}
                 >
-                  Contacts ({usersWithoutConversation.length})
+                  {t("contacts_count", {
+                    count: usersWithoutConversation.length,
+                  })}
                 </p>
                 {usersWithoutConversation.map((user) => (
                   <div
@@ -590,7 +596,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                           e.stopPropagation();
                           setProfileEmail(user.email);
                         }}
-                        title="View profile"
+                        title={t("view_profile")}
                         className={clsx(
                           "p-1.5 rounded-full cursor-pointer transition-colors shrink-0",
                           textTertiary,
@@ -634,12 +640,12 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                 })() ? (
                   <>
                     <Volume2 className="w-3.5 h-3.5 text-teal-600" />
-                    Unmute Chat
+                    {t("unmute_chat")}
                   </>
                 ) : (
                   <>
                     <VolumeX className="w-3.5 h-3.5 text-destructive" />
-                    Mute Chat
+                    {t("mute_chat")}
                   </>
                 )}
               </button>

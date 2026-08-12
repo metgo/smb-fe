@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
@@ -18,6 +19,7 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
   onSilence,
   chatUsers,
 }) => {
+  const { t } = useTranslation("chat");
   const { isDark, inputClasses, textSecondary } = useThemeClasses();
   const [selectedUser, setSelectedUser] = useState("");
   const [duration, setDuration] = useState("24h");
@@ -30,11 +32,11 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
 
   const handleSilence = () => {
     if (!selectedUser) {
-      setError("Please select a user to silence");
+      setError(t("select_user_required"));
       return;
     }
     if (!reason.trim()) {
-      setError("Please specify a reason for silencing");
+      setError(t("silence_reason_required"));
       return;
     }
     onSilence(selectedUser, duration, reason.trim());
@@ -52,7 +54,7 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
       maxWidth="max-w-md"
       height="h-[80dvh] md:h-[50vh]"
     >
-      <ModalHeader title="Silence User Globally" />
+      <ModalHeader title={t("silence_user_globally")} />
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4 text-left">
           {error && (
@@ -75,7 +77,7 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
                 textSecondary,
               )}
             >
-              Select User
+              {t("select_user")}
             </label>
             <select
               value={selectedUser}
@@ -88,7 +90,7 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
                 inputClasses,
               )}
             >
-              <option value="">-- Choose User --</option>
+              <option value="">{t("choose_user_placeholder")}</option>
               {nonAdmins.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim()}{" "}
@@ -105,7 +107,7 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
                 textSecondary,
               )}
             >
-              Silence Duration
+              {t("silence_duration")}
             </label>
             <select
               value={duration}
@@ -115,10 +117,10 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
                 inputClasses,
               )}
             >
-              <option value="1h">1 Hour</option>
-              <option value="24h">24 Hours (1 Day)</option>
-              <option value="7d">7 Days (1 Week)</option>
-              <option value="permanent">Permanent (Indefinite)</option>
+              <option value="1h">{t("duration_1_hour")}</option>
+              <option value="24h">{t("duration_24_hours")}</option>
+              <option value="7d">{t("duration_7_days")}</option>
+              <option value="permanent">{t("duration_permanent")}</option>
             </select>
           </div>
 
@@ -129,11 +131,11 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
                 textSecondary,
               )}
             >
-              Reason *
+              {t("reason_required_label")}
             </label>
             <input
               type="text"
-              placeholder="e.g. Inappropriate language or policy violation"
+              placeholder={t("silence_reason_placeholder")}
               value={reason}
               onChange={(e) => {
                 setReason(e.target.value);
@@ -150,7 +152,7 @@ export const SilenceUserModal: React.FC<SilenceUserModalProps> = ({
             onClick={handleSilence}
             className="w-full py-2.5 bg-destructive hover:bg-destructive/90 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
           >
-            Silence User
+            {t("silence_user_button")}
           </button>
         </div>
       </div>

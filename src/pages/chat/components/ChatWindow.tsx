@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 import {
   Trash,
   AlertCircle,
@@ -18,7 +19,7 @@ import {
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useChatWindow } from "@/hooks/useChatWindow";
-import CKEditorWrapper from "@/components/wrapper/CKEditorWrapper";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 import { getInitials, timeAgo } from "@/helpers";
 import ChatUserProfile from "./ChatUserProfile";
 
@@ -45,6 +46,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   pendingDmRecipientId,
   onPendingDmResolved,
 }) => {
+  const { t } = useTranslation("chat");
   const {
     isDark,
     bgPrimary,
@@ -126,9 +128,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const dmPresence = dmUser ? presence[dmUser._id] : undefined;
   const presenceLabel = dmPresence
     ? dmPresence.isOnline
-      ? "Online"
+      ? t("online_status")
       : dmPresence.lastActiveAt
-        ? `Last seen ${timeAgo(dmPresence.lastActiveAt)}`
+        ? t("last_seen", { time: timeAgo(dmPresence.lastActiveAt) })
         : null
     : null;
 
@@ -254,24 +256,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 {msg.isDeleted ? (
                   <span className="flex items-center gap-1.5 text-xs">
                     <ShieldAlert className="w-3.5 h-3.5" />
-                    This message was removed by an admin.
+                    {t("message_removed_by_admin")}
                   </span>
                 ) : editTargetMessage?.id === msg.id ? (
                   <div className="space-y-2">
-                    <textarea
+                    <RichTextEditor
                       value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      className={clsx(
-                        "w-full px-2 py-1.5 text-sm rounded-lg resize-none",
-                        inputClasses,
-                        "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
-                      )}
-                      rows={3}
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === "Escape") handleCancelEdit();
-                        if (e.key === "Enter" && e.ctrlKey) handleConfirmEdit();
-                      }}
+                      onChange={setEditText}
+                      placeholder={t("type_a_message")}
+                      maxLength={2000}
                     />
                     <div className="flex gap-2 justify-end">
                       <button
@@ -283,18 +276,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                           hoverBg,
                         )}
                       >
-                        Cancel
+                        {t("cancel")}
                       </button>
                       <button
                         onClick={handleConfirmEdit}
-                        disabled={!editText.trim()}
+                        disabled={!getPlainTextFromHtml(editText)}
                         className="px-2 py-1 text-xs font-semibold bg-teal-600 disabled:opacity-50 text-white rounded hover:bg-teal-700 cursor-pointer transition-colors"
                       >
-                        Save
+                        {t("save")}
                       </button>
                     </div>
                   </div>
-                ) : msg.isRichText ? (
+                ) : (
                   <div
                     className={clsx(
                       "text-sm wrap-break-word rich-message-content",
@@ -304,10 +297,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                       __html: msg.text,
                     }}
                   />
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap wrap-break-word">
-                    {msg.text}
-                  </p>
                 )}
               </div>
             </div>
@@ -328,7 +317,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   minute: "2-digit",
                 })}
               </span>
-              {msg.edited && <span className="italic">(edited)</span>}
+              {msg.edited && <span className="italic">{t("edited")}</span>}
               {isMe && !msg.isDeleted && (
                 <div
                   className="cursor-help relative group"
@@ -336,7 +325,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     conversation?.type === "group" &&
                     allRead &&
                     !receiptsDisabled
-                      ? `Read by all members. Hover for list.`
+                      ? t("read_by_all")
                       : undefined
                   }
                 >
@@ -360,7 +349,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     allRead && (
                       <div className="absolute right-0 bottom-4 z-45 bg-gray-900 text-white text-[9px] p-2 rounded shadow-lg hidden group-hover:block min-w-30">
                         <p className="font-semibold border-b border-white/20 pb-0.5 mb-1">
-                          Read by:
+                          {t("read_by")}
                         </p>
                         {conversation.members.map((mId: any) => {
                           const member = chatUsers?.find(
@@ -373,7 +362,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                               className="flex justify-between gap-2 py-0.5"
                             >
                               <span>{member.name}</span>
-                              <span className="opacity-70">Read</span>
+                              <span className="opacity-70">{t("read")}</span>
                             </div>
                           );
                         })}
@@ -426,8 +415,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </h3>
             {conversation?.type !== "dm" ? (
               <p className={clsx("text-[10px] hidden md:block", textTertiary)}>
-                {conversation?.members.length} members &bull;{" "}
-                {conversation?.description}
+                {t("members_count", { count: conversation?.members.length })}{" "}
+                &bull; {conversation?.description}
               </p>
             ) : (
               presenceLabel && (
@@ -458,7 +447,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   : "bg-teal-50 text-teal-700 shadow-md shadow-teal-500/25"
                 : clsx(hoverBg, textTertiary),
             )}
-            title="Search inside chat"
+            title={t("search_inside_chat")}
           >
             <Search className="w-4 h-4" />
           </button>
@@ -477,7 +466,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <Search className={clsx("w-4 h-4", textTertiary)} />
           <input
             type="text"
-            placeholder="Search keywords inside conversation..."
+            placeholder={t("search_keywords_inside_conversation")}
             value={localSearchQuery}
             onChange={(e) => setLocalSearchQuery(e.target.value)}
             className={clsx(
@@ -493,7 +482,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               )}
             >
               <span className="font-medium">
-                {currentSearchIndex + 1} of {localSearchResults.length}
+                {t("search_result_count", {
+                  current: currentSearchIndex + 1,
+                  total: localSearchResults.length,
+                })}
               </span>
               <button
                 onClick={() => handleSearchNext("prev")}
@@ -527,7 +519,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               textTertiary,
             )}
           >
-            Cancel
+            {t("cancel")}
           </button>
         </div>
       )}
@@ -566,7 +558,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               </p>
             )}
             <p className={clsx("text-[11px] mt-2", textTertiary)}>
-              No previous conversation. Say hello!
+              {t("no_previous_conversation")}
             </p>
             {dmUser.email && (
               <button
@@ -579,7 +571,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 )}
               >
                 <UserCircle className="w-4 h-4" />
-                View Profile
+                {t("view_profile_button")}
               </button>
             )}
           </div>
@@ -596,7 +588,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce delay-300" />
             </div>
             <span className={clsx("text-[10px] italic", textTertiary)}>
-              {typingUsers.join(" and ")} is typing...
+              {t("is_typing", { users: typingUsers.join(` ${t("and")} `) })}
             </span>
           </div>
         )}
@@ -610,7 +602,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 cursor-pointer z-10"
         >
           <ArrowDown className="w-3.5 h-3.5" />
-          New message &darr;
+          {t("new_message")} &darr;
         </button>
       )}
 
@@ -618,7 +610,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         <button
           onClick={scrollToBottom}
           className="absolute bottom-20 right-4 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold p-2 rounded-full shadow-lg cursor-pointer z-10"
-          title="Jump to latest"
+          title={t("jump_to_latest")}
         >
           <ArrowDown className="w-4 h-4" />
         </button>
@@ -644,20 +636,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <span className="flex items-center gap-1 md:gap-1.5">
               <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4" />
               <span className="hidden md:inline">
-                Read-only channel. Only the channel owner can post
-                announcements.
+                {t("read_only_channel_desc")}
               </span>
-              <span className="md:hidden">Read-only channel</span>
+              <span className="md:hidden">{t("read_only_channel")}</span>
             </span>
           </div>
         ) : isRichMode ? (
           <div className="space-y-2">
-            <CKEditorWrapper
+            <RichTextEditor
               value={richHtml}
               onChange={setRichHtml}
-              placeholder="Type a message..."
+              placeholder={t("type_a_message")}
               maxLength={2000}
-              height={100}
             />
             <div className="flex items-center justify-between">
               <button
@@ -667,10 +657,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   hoverBg,
                   textTertiary,
                 )}
-                title="Switch to plain text"
+                title={t("switch_to_plain_text")}
               >
                 <Type className="w-4 h-4" />
-                Plain text
+                {t("plain_text")}
               </button>
               <button
                 onClick={handleSend}
@@ -679,7 +669,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 }
                 className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl cursor-pointer shadow-md shadow-teal-500/25 transition-all duration-200 hover:scale-105 active:scale-95"
               >
-                Send
+                {t("send")}
                 <CornerDownLeft className="w-4 h-4" />
               </button>
             </div>
@@ -693,7 +683,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 onChange={(e) => handleTextChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                placeholder="Type a message... (start with *, #, - or / for rich text)"
+                placeholder={t("type_a_message_with_rich_text_hint")}
                 className={clsx(
                   "w-full px-4 py-3 border rounded-2xl text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none min-h-12 max-h-32 custom-scrollbar transition-all duration-200",
                   inputClasses,
@@ -709,7 +699,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 hoverBg,
                 textTertiary,
               )}
-              title="Switch to rich text editor"
+              title={t("switch_to_rich_text_editor")}
             >
               <Type className="w-5 h-5" />
             </button>
@@ -768,7 +758,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               )}
             >
               <Edit className="w-3.5 h-3.5" />
-              Edit
+              {t("edit")}
             </button>
           )}
           <button
@@ -779,7 +769,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             )}
           >
             <Trash className="w-3.5 h-3.5" />
-            Delete
+            {t("delete")}
           </button>
         </div>
       )}

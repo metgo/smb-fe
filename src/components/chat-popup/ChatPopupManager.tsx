@@ -5,6 +5,7 @@ import {
   closeChatPopup,
   setChatPopupMinimized,
 } from "@/features/chatPopupSlice";
+import { useChatPresence } from "@/hooks/useChatPresence";
 import { ChatPopup } from "./ChatPopup";
 
 const POPUP_WIDTH = 320;
@@ -32,6 +33,12 @@ export const ChatPopupManager = () => {
     };
   }, [authUser]);
 
+  const presenceUserIds = useMemo(
+    () => popups.map((popup) => popup.receiver._id),
+    [popups],
+  );
+  const presence = useChatPresence(presenceUserIds);
+
   if (!currentUser || popups.length === 0) return null;
 
   return (
@@ -42,6 +49,7 @@ export const ChatPopupManager = () => {
           receiver={popup.receiver}
           currentUser={currentUser}
           minimized={popup.minimized}
+          presence={presence[popup.receiver._id]}
           rightOffset={index * (POPUP_WIDTH + POPUP_GAP)}
           onToggleMinimize={() =>
             dispatch(
