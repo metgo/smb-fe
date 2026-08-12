@@ -49,8 +49,8 @@ export const useTrip = ({
   const [isShowSelectedRouteChecked, setIsShowSelectedRouteChecked] =
     useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [description, setDescription] = useState("<p></p>");
-  const [shortDescription, setshortDescription] = useState("<p></p>");
+  const [description, setDescription] = useState("");
+  const [shortDescription, setshortDescription] = useState("");
   const [tripDetails, setTripDetails] = useState<ITripDetailsRes | undefined>(
     undefined,
   );
