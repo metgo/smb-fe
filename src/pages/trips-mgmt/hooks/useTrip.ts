@@ -1,11 +1,12 @@
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { routes } from "@/lib/routes";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { useCommon } from "@/hooks/useCommon";
 import {
   useCreateTripMutation,
   useUpdateTripMutation,
@@ -63,6 +64,18 @@ export const useTrip = ({
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState<string[]>(
     [],
+  );
+
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
   );
 
   const businesses = useAppSelector((state) => state.stations.businesses);
@@ -136,8 +149,8 @@ export const useTrip = ({
           newErrors.shortDescription = ct("required_field");
         if (!formData.estimatedDuration)
           newErrors.estimatedDuration = ct("required_field");
-        if (!websiteVisibilityIds?.length)
-          newErrors.websiteVisibility = ct("required_field");
+        if (hasAssociatedWebsites && !websiteVisibilityIds?.length)
+          newErrors.websiteVisibilityIds = ft("website_visibility_required");
         break;
 
       case 2:
@@ -168,7 +181,7 @@ export const useTrip = ({
       return;
     }
 
-    if (!websiteVisibilityIds?.length) {
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
       setSelectedTab("details");
       toast.error(ft("website_visibility_required"));
       return;
