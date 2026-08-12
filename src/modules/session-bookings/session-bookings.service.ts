@@ -363,7 +363,7 @@ export class SessionBookingsService {
                   // Build base query for counting bookings
                   const baseQuery = {
                     wrapperId,
-                    sessionId: session._id.toString(),
+                    sessionId: session._id?.toString() || session.sessionId?.toString() || '',
                     slotDate: dateObj.date,
                     slotTime: slot.time,
                     isDeleted: { $ne: true },
