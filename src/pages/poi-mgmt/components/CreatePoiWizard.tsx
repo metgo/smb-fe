@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 
 import {
   PoiBasicInfo,
@@ -108,6 +109,18 @@ export default function CreatePoiWizard({
 
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
+  );
+
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
   );
 
   const initialFormData = useRef(formData);
@@ -353,6 +366,8 @@ export default function CreatePoiWizard({
           newErrors.fullDescription = t("required_field");
         if (!selectedDmoId) newErrors.dmo = t("required_field");
         if (!selectedAuthorityId) newErrors.authority = t("required_field");
+        if (hasAssociatedWebsites && !websiteVisibilityIds?.length)
+          newErrors.websiteVisibilityIds = tc("website_visibility_required");
 
         break;
 
@@ -498,6 +513,7 @@ export default function CreatePoiWizard({
       t,
       formData,
       errors,
+      setErrors,
       setFormData,
       address,
       geo,

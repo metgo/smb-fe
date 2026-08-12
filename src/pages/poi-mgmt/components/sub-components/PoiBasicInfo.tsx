@@ -21,6 +21,7 @@ interface PoiBasicInfoProps {
   formData: PoiFormData;
   setFormData: (data: any) => void;
   errors: Record<string, string>;
+  setErrors?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   selectedAuthorityId: string;
@@ -35,6 +36,7 @@ const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
   formData,
   markDirty,
   errors,
+  setErrors,
   selectedDmoId,
   setSelectDmoId,
   selectedAuthorityId,
@@ -60,6 +62,7 @@ const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
 
       <DmoAuthorityWebsiteIdsSelector
         errors={errors}
+        setErrors={setErrors}
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}

@@ -227,6 +227,7 @@
   "website_visibility": "נראות באתר",
   "select_associated_websites": "בחר אתרים משויכים",
   "select_unassociated_websites": "בחר אתרים שאינם משויכים",
+  "website_visibility_required": "אנא בחר לפחות אתר משויך אחד",
 
   "download_pdf": "הורד PDF",
   "download_csv": "הורד CSV",

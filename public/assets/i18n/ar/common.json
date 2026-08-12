@@ -218,6 +218,7 @@
   "website_visibility": "رؤية الموقع",
   "select_associated_websites": "اختر المواقع المرتبطة",
   "select_unassociated_websites": "اختر المواقع غير المرتبطة",
+  "website_visibility_required": "يرجى اختيار موقع مرتبط واحد على الأقل",
 
   "download_pdf": "تحميل PDF",
   "download_csv": "تحميل CSV",

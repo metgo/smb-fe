@@ -62,6 +62,7 @@
   "promotion_group_publish_failed": "פרסום המבצעים נכשל",
 
   "website_select_info": "אנא בחר תחילה את האתר שבו תרצה להציג תוכן זה.",
+  "website_visibility_required": "אנא בחר לפחות אתר משויך אחד",
   "empty_content_info": "אנא הוסף לפחות קטגוריה אחת עם עסקים.",
   "unsaved_changes": "שינויים שלא נשמרו",
   "close_without_saving": "יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לסגור מבלי לשמור?",
