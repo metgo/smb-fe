@@ -45,7 +45,7 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
     <ModalWrapper
       onClose={onClose}
       maxWidth="max-w-md"
-      height="h-[80dvh] md:h-[60vh]"
+      height="h-[80dvh] md:h-max"
     >
       <div className="flex h-full min-h-0 flex-col">
         <ModalHeader title={t("new_direct_message")} />
@@ -68,7 +68,7 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
           </div>
 
           {/* User List - scrollable */}
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1 space-y-1">
+          <div className="max-h-120 flex-1 overflow-y-auto pr-1 space-y-1">
             {filtered.length > 0 ? (
               filtered.map((user) => (
                 <button

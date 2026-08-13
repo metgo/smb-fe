@@ -11,6 +11,12 @@ import {
   VolumeX,
   Mail,
   Info,
+  Crown,
+  ShieldCheck,
+  Landmark,
+  MapPin,
+  Backpack,
+  type LucideIcon,
 } from "lucide-react";
 
 import { getInitials, timeAgo } from "@/helpers";
@@ -151,6 +157,11 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
     (entry) => entry.isOnline,
   ).length;
 
+  // Users currently online, for the horizontal "active now" strip
+  const onlineUsers = chatUsers.filter(
+    (u) => u._id !== currentUser?._id && presence[u._id]?.isOnline,
+  );
+
   // "Online" / "Last seen <relative time>" / nothing (never connected)
   const getPresenceLabel = (userId?: string): string | null => {
     if (!userId) return null;
@@ -175,6 +186,16 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
       ? "bg-gray-800 text-gray-300"
       : "bg-gray-100 text-gray-600",
     user: isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600",
+  };
+
+  // Role-specific icon shown alongside the role label/pill
+  const roleIcons: Record<TUserRole, LucideIcon> = {
+    superadmin: Crown,
+    admin: ShieldCheck,
+    authority: Landmark,
+    dmo: MapPin,
+    traveller: Backpack,
+    user: Backpack,
   };
 
   // Determine permissions for buttons
@@ -250,7 +271,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                   {t("chats")}
                 </h2>
               </div>
-              {/* <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={onOpenNewDm}
                   title={t("new_dm")}
@@ -288,7 +309,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                     <Megaphone className="w-4 h-4" />
                   </button>
                 )}
-              </div> */}
+              </div>
             </div>
 
             {/* Global Search Bar */}
@@ -311,6 +332,71 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
               />
             </div>
           </div>
+
+          {/* Active Now — horizontal scroll of currently-online users */}
+          {onlineUsers.length > 0 && (
+            <div className={clsx("px-4 py-3 border-b", borderColor)}>
+              <p
+                className={clsx(
+                  "text-[11px] font-semibold uppercase tracking-wider mb-2",
+                  textTertiary,
+                )}
+              >
+                {t("active_now")}
+              </p>
+              <div className="flex gap-3 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1">
+                {onlineUsers.map((user) => {
+                  const RoleIcon = roleIcons[user.role];
+                  return (
+                    <button
+                      key={user._id}
+                      type="button"
+                      onClick={() => onStartDm?.(user._id)}
+                      title={`${user.name} (${user.role})`}
+                      className="flex flex-col items-center gap-1 shrink-0 w-14 cursor-pointer"
+                    >
+                      <div className="relative">
+                        <div
+                          className={clsx(
+                            "w-11 h-11 rounded-full border shrink-0 flex items-center justify-center font-bold text-sm",
+                            borderColor,
+                            isDark
+                              ? "bg-gray-800 text-gray-200"
+                              : "bg-gray-100 text-gray-600",
+                          )}
+                        >
+                          {getInitials(user.name)}
+                        </div>
+                        <span
+                          className={clsx(
+                            "absolute -top-0.5 -left-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                            isDark ? "border-gray-900" : "border-white",
+                            roleBadgeClasses[user.role],
+                          )}
+                        >
+                          <RoleIcon className="w-2.5 h-2.5" />
+                        </span>
+                        <span
+                          className={clsx(
+                            "absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2",
+                            isDark ? "border-gray-900" : "border-white",
+                          )}
+                        />
+                      </div>
+                      <span
+                        className={clsx(
+                          "text-[10px] font-medium truncate w-full text-center",
+                          textSecondary,
+                        )}
+                      >
+                        {user.name.split(" ")[0]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -419,16 +505,21 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                           )}
                         >
                           {conv.name}
-                          {dmUser && (
-                            <span
-                              className={clsx(
-                                "px-2 py-0.5 text-[9px] font-bold rounded-full capitalize shrink-0",
-                                roleBadgeClasses[dmUser.role],
-                              )}
-                            >
-                              {dmUser.role}
-                            </span>
-                          )}
+                          {dmUser &&
+                            (() => {
+                              const RoleIcon = roleIcons[dmUser.role];
+                              return (
+                                <span
+                                  className={clsx(
+                                    "px-2 py-0.5 text-[9px] font-bold rounded-full capitalize shrink-0 flex items-center gap-1",
+                                    roleBadgeClasses[dmUser.role],
+                                  )}
+                                >
+                                  <RoleIcon className="w-2.5 h-2.5" />
+                                  {dmUser.role}
+                                </span>
+                              );
+                            })()}
                           {isBroadcast && (
                             <span
                               className={clsx(
@@ -577,14 +668,20 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
                         >
                           {user.name}
                         </p>
-                        <span
-                          className={clsx(
-                            "px-2 py-0.5 text-xs font-semibold rounded-full capitalize shrink-0",
-                            roleBadgeClasses[user.role],
-                          )}
-                        >
-                          {user.role}
-                        </span>
+                        {(() => {
+                          const RoleIcon = roleIcons[user.role];
+                          return (
+                            <span
+                              className={clsx(
+                                "px-2 py-0.5 text-xs font-semibold rounded-full capitalize shrink-0 flex items-center gap-1",
+                                roleBadgeClasses[user.role],
+                              )}
+                            >
+                              <RoleIcon className="w-3 h-3" />
+                              {user.role}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <p className={clsx("text-xs truncate", textSecondary)}>
                         {getPresenceLabel(user._id) || user.email}

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import clsx from "clsx";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Trash,
@@ -15,6 +15,7 @@ import {
   Mail,
   UserCircle,
   ArrowLeft,
+  Info,
 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -22,6 +23,7 @@ import { useChatWindow } from "@/hooks/useChatWindow";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { getInitials, timeAgo } from "@/helpers";
 import ChatUserProfile from "./ChatUserProfile";
+import { GroupInfoModal } from "./modals";
 
 interface ChatWindowProps {
   conversationId: string;
@@ -33,6 +35,7 @@ interface ChatWindowProps {
   presence?: Record<string, IPresenceEntry>;
   pendingDmRecipientId?: string;
   onPendingDmResolved?: (pendingId: string, realConversationId: string) => void;
+  onGroupLeft?: () => void;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -45,6 +48,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   presence = {},
   pendingDmRecipientId,
   onPendingDmResolved,
+  onGroupLeft,
 }) => {
   const { t } = useTranslation("chat");
   const {
@@ -71,6 +75,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   });
 
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showGroupInfoModal, setShowGroupInfoModal] = useState(false);
+  const [groupSenderProfileEmail, setGroupSenderProfileEmail] = useState<
+    string | null
+  >(null);
 
   const {
     messages,
@@ -205,17 +213,32 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             className={`flex gap-2 max-w-[70%] items-end ${isMe ? "flex-row-reverse" : "flex-row"}`}
           >
             {!isMe && (
-              <div
+              <button
+                type="button"
+                onClick={() => {
+                  if (conversation?.type === "dm") return;
+                  const sender = chatUsers?.find(
+                    (u: any) => u._id === msg.senderId,
+                  );
+                  if (sender?.email) setGroupSenderProfileEmail(sender.email);
+                }}
+                disabled={conversation?.type === "dm"}
                 className={clsx(
                   "w-12 h-12 rounded-full border shrink-0 flex items-center justify-center font-bold text-lg",
                   borderColor,
                   isDark
                     ? "bg-gray-800 text-gray-200"
                     : "bg-gray-100 text-gray-600",
+                  conversation?.type !== "dm" &&
+                    "cursor-pointer hover:opacity-80",
                 )}
               >
-                {getInitials(conversation?.name)}
-              </div>
+                {getInitials(
+                  conversation?.type === "dm"
+                    ? conversation?.name
+                    : msg.senderName,
+                )}
+              </button>
             )}
 
             <div className="flex flex-col">
@@ -437,6 +460,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
         {/* Header Tools */}
         <div className="flex items-center gap-2">
+          {conversation?.type === "group" && (
+            <button
+              onClick={() => setShowGroupInfoModal(true)}
+              className={clsx(
+                "p-2.5 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95",
+                hoverBg,
+                textTertiary,
+              )}
+              title={t("group_info")}
+            >
+              <Info className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() => setShowSearch(!showSearch)}
             className={clsx(
@@ -721,6 +757,26 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         <ChatUserProfile
           email={dmUser.email}
           onClose={() => setShowProfileModal(false)}
+        />
+      )}
+
+      {/* Sender profile modal, opened from a group message avatar */}
+      {groupSenderProfileEmail && (
+        <ChatUserProfile
+          email={groupSenderProfileEmail}
+          onClose={() => setGroupSenderProfileEmail(null)}
+        />
+      )}
+
+      {/* Group roster / management modal */}
+      {showGroupInfoModal && conversation?.type === "group" && (
+        <GroupInfoModal
+          isOpen={showGroupInfoModal}
+          onClose={() => setShowGroupInfoModal(false)}
+          conversationId={conversationId}
+          currentUser={currentUser}
+          chatUsers={chatUsers || []}
+          onLeft={onGroupLeft}
         />
       )}
 

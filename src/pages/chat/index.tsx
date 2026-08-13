@@ -1,10 +1,12 @@
 import clsx from "clsx";
+import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { getApiErrorMessage } from "@/helpers";
 import { ChatUsersList } from "./components/ChatUsersList";
 import { ChatWindow } from "./components/ChatWindow";
 import {
@@ -19,6 +21,7 @@ import { useSocket } from "@/providers/SocketProvider";
 import {
   useChatUsersQuery,
   useChatConversationsQuery,
+  useCreateGroupMutation,
 } from "@/store/api/chatSystemApi";
 
 const mapConversation = (c: IChatConversation): IConversation => ({
@@ -123,6 +126,8 @@ export default function ChatPage() {
       { skip: !currentUser },
     );
 
+  const [createGroup] = useCreateGroupMutation();
+
   useEffect(() => {
     if (!currentUser) {
       setConversations([]);
@@ -155,14 +160,40 @@ export default function ChatPage() {
     socket.on("chat:message-edited", handleUpdate);
     socket.on("chat:message-deleted", handleUpdate);
     socket.on("chat:read", handleUpdate);
+    // A group was created (initial members) or the current user was just
+    // added to an existing group — refetch the inbox to pick it up.
+    socket.on("chat:conversation-updated", handleUpdate);
 
     return () => {
       socket.off("chat:message", handleUpdate);
       socket.off("chat:message-edited", handleUpdate);
       socket.off("chat:message-deleted", handleUpdate);
       socket.off("chat:read", handleUpdate);
+      socket.off("chat:conversation-updated", handleUpdate);
     };
   }, [socket, refetchConversations]);
+
+  // The current user was removed from a group by an admin — they're no
+  // longer a participant, so drop it from the inbox and close it if open.
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRemovedFromGroup = (
+      payload: IChatSocketRemovedFromGroupPayload,
+    ) => {
+      setConversations((prev) =>
+        prev.filter((c) => c.id !== payload.conversationId),
+      );
+      setActiveConversationId((prev) =>
+        prev === payload.conversationId ? null : prev,
+      );
+    };
+
+    socket.on("chat:removed-from-group", handleRemovedFromGroup);
+    return () => {
+      socket.off("chat:removed-from-group", handleRemovedFromGroup);
+    };
+  }, [socket]);
 
   // Handle select conversation
   const handleSelectConversation = (id: string, highlightMsgId?: string) => {
@@ -215,8 +246,22 @@ export default function ChatPage() {
   );
 
   // Create group chat
-  const handleGroupCreated = () => {
-    // No-op for now
+  const handleGroupCreated = async (
+    groupName: string,
+    description: string,
+    memberIds: string[],
+  ) => {
+    try {
+      const group = await createGroup({
+        name: groupName,
+        description: description || undefined,
+        memberIds,
+      }).unwrap();
+      await refetchConversations();
+      handleSelectConversation(group._id);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, t("failed_to_create_group")));
+    }
   };
 
   // Create broadcast channel
@@ -279,6 +324,10 @@ export default function ChatPage() {
                     : undefined
                 }
                 onPendingDmResolved={handlePendingDmResolved}
+                onGroupLeft={() => {
+                  setActiveConversationId(null);
+                  refetchConversations();
+                }}
               />
             ) : (
               <div

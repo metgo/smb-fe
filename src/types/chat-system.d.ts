@@ -25,6 +25,8 @@ interface IChatMessage {
   updatedAt?: string;
   deletedAt?: string;
   deletedBy?: string;
+  systemMessageKey?: TSystemMessageKey;
+  systemMessageParams?: Record<string, string>;
 }
 
 interface ISendMessageRes {
@@ -51,6 +53,77 @@ interface IChatConversation {
   unreadCount: number;
   otherParticipant?: IChatConversationOtherParticipant;
 }
+
+// Group chat
+interface IGroupParticipant {
+  userId: string;
+  role: "admin" | "member";
+  joinedAt: string;
+}
+
+interface IChatGroupConversation {
+  _id: string;
+  type: "group";
+  name: string;
+  description: string | null;
+  avatar: string | null;
+  participants: IGroupParticipant[];
+  createdById: string;
+  lastMessageId: string | null;
+  lastMessageAt: string | null;
+  lastMessagePreview: string | null;
+}
+
+interface IGroupRosterParticipant {
+  _id: string;
+  name: string;
+  email: string;
+  role: TUserRole;
+  dmoId: string | null;
+  authorityId: string | null;
+  groupRole: "admin" | "member";
+  joinedAt: string;
+}
+
+interface IChatGroupDetails {
+  _id: string;
+  type: "group";
+  name: string;
+  description: string | null;
+  avatar: string | null;
+  participants: IGroupRosterParticipant[];
+  createdById: string;
+}
+
+interface ICreateGroupReq {
+  name: string;
+  description?: string;
+  memberIds: string[];
+}
+
+interface IUpdateGroupReq {
+  conversationId: string;
+  name?: string;
+  description?: string;
+  avatar?: string;
+}
+
+interface IRemoveGroupMemberRes {
+  conversationId: string;
+  removedUserId: string;
+}
+
+interface ILeaveGroupRes {
+  conversationId: string;
+}
+
+// System messages
+type TSystemMessageKey =
+  | "chat.system.memberAdded"
+  | "chat.system.memberRemoved"
+  | "chat.system.memberLeft"
+  | "chat.system.adminPromoted"
+  | "chat.system.groupNameUpdated";
 
 interface IChatConversationsRes extends IPagination {
   data: IChatConversation[];
@@ -106,6 +179,14 @@ interface IChatSocketPresencePayload {
   userId: string;
   isOnline: boolean;
   lastActiveAt: string | null;
+}
+
+interface IChatSocketConversationUpdatedPayload {
+  conversationId: string;
+}
+
+interface IChatSocketRemovedFromGroupPayload {
+  conversationId: string;
 }
 
 interface IPresenceEntry {

@@ -75,7 +75,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
     <ModalWrapper
       onClose={onClose}
       maxWidth="max-w-md"
-      height="h-[80dvh] md:h-[50vh]"
+      height="h-[80dvh] md:h-max"
     >
       <ModalHeader title={t("new_broadcast_channel")} />
       <div className="flex-1 overflow-y-auto p-4">

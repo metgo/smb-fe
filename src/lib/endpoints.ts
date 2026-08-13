@@ -192,8 +192,8 @@ export const endpoints = {
   chatConversations: "/chats/conversations",
   chatUnreadCount: "/chats/unread-count",
   chatPresence: "/chats/presence",
-  chatGroups: "/chat/groups",
-  chatBroadcasts: "/chat/broadcasts",
+  chatGroups: "/chats/groups",
+  chatBroadcasts: "/chats/broadcasts",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

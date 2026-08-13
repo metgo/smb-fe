@@ -34,7 +34,7 @@ interface ChatConversationMessagesProps {
 export const chatSystemApi = createApi({
   reducerPath: "chatSystemApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ["Chat", "Message", "User"],
+  tagTypes: ["Chat", "Message", "User", "Group"],
 
   endpoints: (builder) => ({
     chatUsers: builder.query<IChatUsersRes, ChatUsersProps>({
@@ -153,6 +153,77 @@ export const chatSystemApi = createApi({
       }),
       invalidatesTags: ["Chat"],
     }),
+
+    createGroup: builder.mutation<IChatGroupConversation, ICreateGroupReq>({
+      query: (body) => ({
+        url: endpoints.chatGroups,
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Chat"],
+    }),
+
+    groupDetails: builder.query<IChatGroupDetails, string>({
+      query: (conversationId) => ({
+        url: `${endpoints.chatGroups}/${conversationId}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, conversationId) => [
+        { type: "Group", id: conversationId },
+      ],
+    }),
+
+    updateGroup: builder.mutation<IChatGroupConversation, IUpdateGroupReq>({
+      query: ({ conversationId, ...body }) => ({
+        url: `${endpoints.chatGroups}/${conversationId}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: (_result, _error, { conversationId }) => [
+        "Chat",
+        { type: "Group", id: conversationId },
+      ],
+    }),
+
+    addGroupMembers: builder.mutation<
+      IChatGroupConversation,
+      { conversationId: string; memberIds: string[] }
+    >({
+      query: ({ conversationId, memberIds }) => ({
+        url: `${endpoints.chatGroups}/${conversationId}/members`,
+        method: "POST",
+        data: { memberIds },
+      }),
+      invalidatesTags: (_result, _error, { conversationId }) => [
+        "Chat",
+        { type: "Group", id: conversationId },
+      ],
+    }),
+
+    removeGroupMember: builder.mutation<
+      IRemoveGroupMemberRes,
+      { conversationId: string; userId: string }
+    >({
+      query: ({ conversationId, userId }) => ({
+        url: `${endpoints.chatGroups}/${conversationId}/members/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, { conversationId }) => [
+        "Chat",
+        { type: "Group", id: conversationId },
+      ],
+    }),
+
+    leaveGroup: builder.mutation<ILeaveGroupRes, string>({
+      query: (conversationId) => ({
+        url: `${endpoints.chatGroups}/${conversationId}/leave`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, conversationId) => [
+        "Chat",
+        { type: "Group", id: conversationId },
+      ],
+    }),
   }),
 });
 
@@ -170,4 +241,10 @@ export const {
   useDeleteMessageMutation,
   useMarkConversationReadMutation,
   useUpdateConversationSettingsMutation,
+  useCreateGroupMutation,
+  useGroupDetailsQuery,
+  useUpdateGroupMutation,
+  useAddGroupMembersMutation,
+  useRemoveGroupMemberMutation,
+  useLeaveGroupMutation,
 } = chatSystemApi;

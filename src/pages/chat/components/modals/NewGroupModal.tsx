@@ -110,7 +110,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
     <ModalWrapper
       onClose={onClose}
       maxWidth="max-w-md"
-      height="h-[85dvh] md:h-[75vh]"
+      height="h-[85dvh] md:h-max"
     >
       <ModalHeader title={t("create_group_chat")} />
       <div className="flex-1 overflow-y-auto p-4">
