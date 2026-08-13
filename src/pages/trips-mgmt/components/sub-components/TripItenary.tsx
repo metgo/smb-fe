@@ -19,7 +19,7 @@ const TripItenary = ({ t, schedules, setSchedules }: TripItenaryProps) => {
     field: keyof ScheduleItem,
     value: string,
   ) => {
-    const updated = schedules.map((item, i) =>
+    const updated = schedules?.map((item, i) =>
       i === index ? { ...item, [field]: value } : item,
     );
     setSchedules(updated);
@@ -40,7 +40,7 @@ const TripItenary = ({ t, schedules, setSchedules }: TripItenaryProps) => {
       </h3>
 
       <div className="space-y-4">
-        {schedules.map((schedule, index) => (
+        {schedules?.map((schedule, index) => (
           <div
             key={index}
             className={`relative p-4 rounded-lg border ${borderColor} ${bgTertiary}`}

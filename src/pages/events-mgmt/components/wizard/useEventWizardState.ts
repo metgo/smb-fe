@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
@@ -62,6 +63,18 @@ export function useEventWizardState({
   const [selectAssociatedWebsiteIds, setSelectAssociatedWebsiteIds] = useState<
     string[]
   >([]);
+
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
+  );
 
   // ─── Step 1: Basic Information ───────────────────────────────────────
   const [eventName, setEventName] = useState("");
@@ -570,6 +583,8 @@ export function useEventWizardState({
             !shortDescriptionAr?.trim()
           )
             newErrors.shortDescription = tc("required_field");
+          if (hasAssociatedWebsites && !selectAssociatedWebsiteIds?.length)
+            newErrors.websiteVisibilityIds = tc("website_visibility_required");
           break;
         case 2:
           if (!isMultiDay && !startDate)
@@ -592,6 +607,9 @@ export function useEventWizardState({
     },
     [
       selectedDmoId,
+      selectedAuthorityId,
+      selectAssociatedWebsiteIds,
+      hasAssociatedWebsites,
       eventName,
       eventNameHe,
       eventNameAr,
@@ -691,6 +709,15 @@ export function useEventWizardState({
       toast.error(tc("name_required"));
       return;
     }
+    if (hasAssociatedWebsites && !selectAssociatedWebsiteIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     refetch?.();
@@ -699,6 +726,8 @@ export function useEventWizardState({
     eventName,
     eventNameHe,
     eventNameAr,
+    hasAssociatedWebsites,
+    selectAssociatedWebsiteIds,
     tc,
     saveDraft,
     buildWebsiteAccessPayload,
@@ -842,6 +871,7 @@ export function useEventWizardState({
     isPublishing,
     lastSaved,
     errors,
+    setErrors,
     isPublishBtnClicked,
 
     // Loading

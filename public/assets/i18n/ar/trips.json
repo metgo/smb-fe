@@ -6,6 +6,7 @@
   "trip_name": "اسم الرحلة",
   "short_description": "وصف مختصر",
   "estimated_duration": "المدة المقدرة",
+  "hours": "ساعات",
   "total_distance_covered": "إجمالي المسافة المقطوعة",
   "edit": "تعديل",
   "contact_details": "تفاصيل الاتصال",
@@ -65,6 +66,6 @@
   "website_visibility_required": "يرجى اختيار موقع إلكتروني واحد على الأقل للعرض",
   "short_description_length_exceeded": "يجب ألا يتجاوز الوصف المختصر 150 حرفًا",
   "description_length_exceeded": "يجب ألا يتجاوز الوصف 500 حرف",
-  "stationsTooltip": "يرجى اختيار محطة واحدة على الأقل",
+  "stationsTooltip": "يرجى اختيار محطتين على الأقل",
   "imagesTooltip": "يرجى رفع صورة واحدة على الأقل"
 }

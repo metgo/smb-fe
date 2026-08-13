@@ -1,11 +1,12 @@
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { routes } from "@/lib/routes";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { useCommon } from "@/hooks/useCommon";
 import {
   useCreateTripMutation,
   useUpdateTripMutation,
@@ -48,8 +49,8 @@ export const useTrip = ({
   const [isShowSelectedRouteChecked, setIsShowSelectedRouteChecked] =
     useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [description, setDescription] = useState("<p></p>");
-  const [shortDescription, setshortDescription] = useState("<p></p>");
+  const [description, setDescription] = useState("");
+  const [shortDescription, setshortDescription] = useState("");
   const [tripDetails, setTripDetails] = useState<ITripDetailsRes | undefined>(
     undefined,
   );
@@ -65,6 +66,18 @@ export const useTrip = ({
     [],
   );
 
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
+  );
+
   const businesses = useAppSelector((state) => state.stations.businesses);
   const originalStations = useAppSelector(
     (state) => state.stations.originalStations,
@@ -77,6 +90,14 @@ export const useTrip = ({
   );
   const selectedStationDetails = useAppSelector(
     (state) => state.stations.selectedStationDetails,
+  );
+
+  const hasAnyStationImages = useMemo(
+    () =>
+      (selectedStationDetails ?? []).some(
+        (station) => (station.images?.length ?? 0) > 0,
+      ),
+    [selectedStationDetails],
   );
 
   const {
@@ -136,21 +157,26 @@ export const useTrip = ({
           newErrors.shortDescription = ct("required_field");
         if (!formData.estimatedDuration)
           newErrors.estimatedDuration = ct("required_field");
-        if (!websiteVisibilityIds?.length)
-          newErrors.websiteVisibility = ct("required_field");
+        if (hasAssociatedWebsites && !websiteVisibilityIds?.length)
+          newErrors.websiteVisibilityIds = ft("website_visibility_required");
         break;
 
       case 2:
-        if (!selectedStationDetails?.length)
-          newErrors.stations = ct("required_field");
+        if ((selectedStationDetails?.length ?? 0) < 2)
+          newErrors.stations = ft("stationsTooltip");
         break;
 
       case 4:
-        if (!selectedImages?.length) newErrors.images = ct("required_field");
+        if (hasAnyStationImages && !selectedImages?.length)
+          newErrors.images = ft("imagesTooltip");
         break;
     }
 
     setErrors(newErrors);
+
+    const firstError = Object.values(newErrors)[0];
+    if (firstError) toast.error(firstError);
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -168,7 +194,7 @@ export const useTrip = ({
       return;
     }
 
-    if (!websiteVisibilityIds?.length) {
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
       setSelectedTab("details");
       toast.error(ft("website_visibility_required"));
       return;
@@ -192,13 +218,13 @@ export const useTrip = ({
       return;
     }
 
-    if (!selectedStationDetails?.length) {
+    if ((selectedStationDetails?.length ?? 0) < 2) {
       setSelectedTab("stations");
       toast.error(ft("stationsTooltip"));
       return;
     }
 
-    if (!selectedImages?.length) {
+    if (hasAnyStationImages && !selectedImages?.length) {
       setSelectedTab("image");
       toast.error(ft("imagesTooltip"));
       return;

@@ -128,6 +128,7 @@ export default function CreateEventWizardNew({
             internalNotes={wizard.internalNotes}
             setInternalNotes={wizard.setInternalNotes}
             errors={wizard.errors}
+            setErrors={wizard.setErrors}
             selectedDmoId={wizard.selectedDmoId}
             setSelectDmoId={wizard.setSelectDmoId}
             selectedAuthorityId={wizard.selectedAuthorityId}

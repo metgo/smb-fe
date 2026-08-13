@@ -211,6 +211,7 @@
   "website_visibility": "Website Visibility",
   "select_associated_websites": "Select Associated Websites",
   "select_unassociated_websites": "Select Unassociated Websites",
+  "website_visibility_required": "Please select at least one associated website",
 
   "download_pdf": "Download PDF",
   "download_csv": "Download CSV",

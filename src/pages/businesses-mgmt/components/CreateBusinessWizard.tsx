@@ -18,6 +18,7 @@ import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
@@ -188,6 +189,18 @@ function CreateBusinessWizardInner({
   );
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
+  );
+
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
   );
 
   // Form State
@@ -819,6 +832,15 @@ function CreateBusinessWizardInner({
       toast.error(tt("full_description_required"));
       return;
     }
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     const resolvedBusinessId = await saveDraft(false);
     if (resolvedBusinessId) {
@@ -849,6 +871,16 @@ function CreateBusinessWizardInner({
     ) {
       setCurrentStep(1);
       toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
       return;
     }
 

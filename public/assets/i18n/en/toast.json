@@ -66,6 +66,7 @@
   "promotion_group_publish_failed": "Failed to publish promotions",
 
   "website_select_info": "Please select the website first to specify where this content should be displayed.",
+  "website_visibility_required": "Please select at least one associated website",
   "empty_content_info": "Please add at least one category with businesses.",
 
   "unsaved_changes": "Unsaved Changes",
