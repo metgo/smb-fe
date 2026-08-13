@@ -92,7 +92,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     isComposerDisabled,
     chatEndRef,
     containerRef,
-    setRichHtml,
     setShowSearch,
     setLocalSearchQuery,
     setLightboxUrl,
@@ -100,6 +99,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     handleScroll,
     handleSearchNext,
     handleTextChange,
+    handleRichTextChange,
     handleToggleComposerMode,
     handleSend,
     handleKeyDown,
@@ -645,7 +645,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <div className="space-y-2">
             <RichTextEditor
               value={richHtml}
-              onChange={setRichHtml}
+              onChange={handleRichTextChange}
               placeholder={t("type_a_message")}
               maxLength={2000}
             />

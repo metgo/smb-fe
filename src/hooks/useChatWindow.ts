@@ -133,8 +133,44 @@ export const useChatWindow = ({
   );
   const [editText, setEditText] = useState("");
 
-  // Typing indicators — no real-time typing event exists in the DM API yet
-  const typingUsers: string[] = [];
+  // Typing indicators — real-time via the chat:typing socket event.
+  const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
+  const typingClearTimeoutsRef = useRef<
+    Record<string, ReturnType<typeof setTimeout>>
+  >({});
+  const ownTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const isEmittingTypingRef = useRef(false);
+
+  const notifyTyping = useCallback(() => {
+    if (!socket || isPendingDm) return;
+
+    if (!isEmittingTypingRef.current) {
+      isEmittingTypingRef.current = true;
+      socket.emit("chat:typing", { conversationId, isTyping: true });
+    }
+
+    if (ownTypingTimeoutRef.current) clearTimeout(ownTypingTimeoutRef.current);
+    ownTypingTimeoutRef.current = setTimeout(() => {
+      isEmittingTypingRef.current = false;
+      socket.emit("chat:typing", { conversationId, isTyping: false });
+    }, 3000);
+  }, [socket, conversationId, isPendingDm]);
+
+  // Called immediately on send — no reason to wait out the 3s timer once the
+  // message is already gone.
+  const stopTyping = useCallback(() => {
+    if (!socket || isPendingDm) return;
+    if (ownTypingTimeoutRef.current) {
+      clearTimeout(ownTypingTimeoutRef.current);
+      ownTypingTimeoutRef.current = null;
+    }
+    if (isEmittingTypingRef.current) {
+      isEmittingTypingRef.current = false;
+      socket.emit("chat:typing", { conversationId, isTyping: false });
+    }
+  }, [socket, conversationId, isPendingDm]);
 
   // Lightbox Image Viewer
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -201,6 +237,15 @@ export const useChatWindow = ({
     setText("");
     setRichHtml("");
     setIsRichMode(false);
+
+    setTypingUserIds([]);
+    Object.values(typingClearTimeoutsRef.current).forEach(clearTimeout);
+    typingClearTimeoutsRef.current = {};
+    if (ownTypingTimeoutRef.current) {
+      clearTimeout(ownTypingTimeoutRef.current);
+      ownTypingTimeoutRef.current = null;
+    }
+    isEmittingTypingRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, currentUser]);
 
@@ -264,16 +309,49 @@ export const useChatWindow = ({
       );
     };
 
+    const handleTyping = (payload: {
+      conversationId: string;
+      userId: string;
+      isTyping: boolean;
+    }) => {
+      if (payload.conversationId !== conversationId) return;
+
+      setTypingUserIds((prev) => {
+        if (payload.isTyping) {
+          return prev.includes(payload.userId)
+            ? prev
+            : [...prev, payload.userId];
+        }
+        return prev.filter((id) => id !== payload.userId);
+      });
+
+      if (typingClearTimeoutsRef.current[payload.userId]) {
+        clearTimeout(typingClearTimeoutsRef.current[payload.userId]);
+        delete typingClearTimeoutsRef.current[payload.userId];
+      }
+
+      if (payload.isTyping) {
+        typingClearTimeoutsRef.current[payload.userId] = setTimeout(() => {
+          setTypingUserIds((prev) =>
+            prev.filter((id) => id !== payload.userId),
+          );
+          delete typingClearTimeoutsRef.current[payload.userId];
+        }, 3000);
+      }
+    };
+
     socket.on("chat:message", handleNewMessage);
     socket.on("chat:message-edited", handleMessageEdited);
     socket.on("chat:message-deleted", handleMessageDeleted);
     socket.on("chat:read", handleRead);
+    socket.on("chat:typing", handleTyping);
 
     return () => {
       socket.off("chat:message", handleNewMessage);
       socket.off("chat:message-edited", handleMessageEdited);
       socket.off("chat:message-deleted", handleMessageDeleted);
       socket.off("chat:read", handleRead);
+      socket.off("chat:typing", handleTyping);
     };
   }, [socket, conversationId, senderNameFor]);
 
@@ -395,11 +473,17 @@ export const useChatWindow = ({
   // types a markdown-style formatting character or a leading "/" (Teams-style)
   const handleTextChange = (value: string) => {
     setText(value);
+    if (value) notifyTyping();
     if (!isRichMode && RICH_TEXT_TRIGGER.test(value)) {
       setIsRichMode(true);
       setRichHtml(`<p>${escapeHtml(value)}</p>`);
       setText("");
     }
+  };
+
+  const handleRichTextChange = (value: string) => {
+    setRichHtml(value);
+    if (getPlainTextFromHtml(value)) notifyTyping();
   };
 
   const handleToggleComposerMode = () => {
@@ -423,6 +507,8 @@ export const useChatWindow = ({
 
     const content = isRichMode ? sanitizeMessageHtml(richHtml) : text.trim();
     const tempId = `temp-${Date.now()}`;
+
+    stopTyping();
 
     const optimisticMsg: IMessage = {
       id: tempId,
@@ -563,6 +649,8 @@ export const useChatWindow = ({
     setEditText("");
   };
 
+  const typingUsers = typingUserIds.map((id) => senderNameFor(id));
+
   return {
     // State
     messages,
@@ -600,6 +688,7 @@ export const useChatWindow = ({
     handleScroll,
     handleSearchNext,
     handleTextChange,
+    handleRichTextChange,
     handleToggleComposerMode,
     handleSend,
     handleKeyDown,
