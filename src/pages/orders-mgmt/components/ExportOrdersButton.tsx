@@ -147,7 +147,7 @@ export default function ExportOrdersButton({
       return `${dateStr}_${suffix}`;
     }
     if (monthFilter && monthFilter !== "all" && monthFilter !== "custom") {
-      return monthFilter;
+      return `${monthFilter}_${suffix}`;
     }
     return `${suffix}_export_${new Date().toISOString().slice(0, 10)}`;
   };
