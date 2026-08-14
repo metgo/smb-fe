@@ -2,6 +2,7 @@ import * as XLSX from "xlsx";
 import { useState, useRef, useEffect } from "react";
 import { Download, FileText, FileSpreadsheet } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { getLngWiseStr } from "@/helpers";
 
 type OrderColumnVisibility = {
   name: boolean;
@@ -45,7 +46,7 @@ export default function ExportOrdersButton({
   customDateFrom,
   customDateTo,
 }: ExportOrdersButtonProps) {
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -119,7 +120,12 @@ export default function ExportOrdersButton({
 
   const buildSummaryRows = () =>
     summaryData.map((row) => ({
-      [t("business_name")]: row.businessName ?? "-",
+      [t("business_name")]: getLngWiseStr(
+        language,
+        row.businessName,
+        row.businessNameHe,
+        row.businessNameAr,
+      ),
       [t("business_address_city")]: row.businessAddressCity ?? "-",
       [t("business_address_location")]: row.businessAddressLocation ?? "-",
       [t("total_no_of_orders")]: row.totalNoOfOrders ?? "-",
