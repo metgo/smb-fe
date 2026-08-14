@@ -38,9 +38,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   // Group creation is only for ADMIN, SUPERADMIN, DMO, AUTHORITY. Travellers cannot.
   const isEligible =
     currentUser &&
-    ["superadmin", "admin", "dmo", "authority", "authorityAdmin"].includes(
-      currentUser.role,
-    );
+    ["superadmin", "dmo", "authority"].includes(currentUser.role);
 
   const filtered = chatUsers.filter((u) => {
     const term = search.toLowerCase();

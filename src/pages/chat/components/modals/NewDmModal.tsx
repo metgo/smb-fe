@@ -13,6 +13,7 @@ interface NewDmModalProps extends ModalProps {
   currentUser: IChatUser | null;
   onStartChat: (recipientId: string) => void;
   chatUsers: IChatUser[];
+  conversations?: IConversation[];
 }
 
 export const NewDmModal: React.FC<NewDmModalProps> = ({
@@ -20,6 +21,7 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
   onClose,
   onStartChat,
   chatUsers,
+  conversations = [],
 }) => {
   const { t } = useTranslation("chat");
   const { isDark, borderColor, inputClasses, textPrimary, textSecondary } =
@@ -30,7 +32,21 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
     setSearch(e.target.value);
   };
 
-  const filtered = chatUsers.filter((u) => {
+  // Users who already have a started DM conversation (pending DM shells with
+  // no message yet are excluded, so they still show up here) are hidden —
+  // starting a new chat with them belongs in the existing conversation.
+  const dmMemberIds = new Set(
+    conversations
+      .filter(
+        (c) =>
+          c.type === "dm" &&
+          !(c.id.startsWith("pending-dm-") && !c.lastMessage),
+      )
+      .flatMap((c) => c.members),
+  );
+  const availableUsers = chatUsers.filter((u) => !dmMemberIds.has(u._id));
+
+  const filtered = availableUsers.filter((u) => {
     const term = search.toLowerCase();
     const userName = u.name;
     const nameMatch = userName.toLowerCase().includes(term);
@@ -60,15 +76,19 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
               value={search}
               onChange={handleSearchChange}
               className={clsx(
-                "w-full pl-9 pr-4 py-2.5 rounded-lg text-sm",
+                "w-full pl-9 pr-4 py-2.5 rounded-lg text-sm border",
                 inputClasses,
                 "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
               )}
             />
           </div>
 
+          <p className={clsx("text-xs font-medium shrink-0", textSecondary)}>
+            {t("contacts_count", { count: filtered.length })}
+          </p>
+
           {/* User List - scrollable */}
-          <div className="max-h-120 flex-1 overflow-y-auto pr-1 space-y-1">
+          <div className="max-h-90 flex-1 overflow-y-auto pr-1 space-y-1">
             {filtered.length > 0 ? (
               filtered.map((user) => (
                 <button

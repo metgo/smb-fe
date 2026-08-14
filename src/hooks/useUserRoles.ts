@@ -6,7 +6,6 @@ export const useUserRoles = () => {
 
   return {
     isTraveller: role === UserRole.TRAVELLER,
-    isAdmin: role === UserRole.ADMIN,
     isSuperadmin: role === UserRole.SUPERADMIN,
     isDMO: role === UserRole.DMO,
     isAuthority: role === UserRole.AUTHORITY,

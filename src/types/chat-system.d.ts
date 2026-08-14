@@ -117,6 +117,102 @@ interface ILeaveGroupRes {
   conversationId: string;
 }
 
+// Broadcast lists — saved recipient lists that fan a send out into
+// independent 1-on-1 DMs (see FE integration guide). Unrelated to
+// TChatConversationType's "broadcast" value, which is reserved/unused.
+interface IChatBroadcastList {
+  _id: string;
+  name: string;
+  description: string | null;
+  memberIds: string[];
+  createdById: string;
+  memberCount: number;
+  createdAt: string;
+  updatedAt: string | null;
+  isDeleted: boolean;
+}
+
+interface IChatBroadcastListSummary {
+  _id: string;
+  name: string;
+  description: string | null;
+  createdById: string;
+  createdAt: string;
+  memberCount: number;
+}
+
+interface IChatBroadcastRosterMember {
+  _id: string;
+  name: string;
+  email: string;
+  role: TUserRole;
+  dmoId: string | null;
+  authorityId: string | null;
+}
+
+interface IChatBroadcastListDetails {
+  _id: string;
+  name: string;
+  description: string | null;
+  createdById: string;
+  createdAt: string;
+  memberCount: number;
+  members: IChatBroadcastRosterMember[];
+}
+
+interface ICreateBroadcastListReq {
+  name: string;
+  description?: string;
+  memberIds: string[];
+}
+
+interface IUpdateBroadcastListReq {
+  broadcastListId: string;
+  name?: string;
+  description?: string;
+}
+
+interface IRemoveBroadcastMemberRes {
+  broadcastListId: string;
+  removedUserId: string;
+  memberCount: number;
+}
+
+interface IDeleteBroadcastListRes {
+  _id: string;
+  isDeleted: true;
+}
+
+interface ISendBroadcastReq {
+  broadcastListId: string;
+  content: string;
+}
+
+interface ISendBroadcastRes {
+  broadcastListId: string;
+  broadcastMessageId: string;
+  sent: string[];
+  failed: Array<{ userId: string; reason: string }>;
+  sentCount: number;
+  failedCount: number;
+}
+
+interface IChatBroadcastListsRes extends IPagination {
+  data: IChatBroadcastListSummary[];
+}
+
+interface IChatBroadcastSentMessage {
+  _id: string;
+  content: string;
+  createdAt: string;
+  sentCount: number;
+  failedCount: number;
+}
+
+interface IChatBroadcastMessagesRes extends IPagination {
+  data: IChatBroadcastSentMessage[];
+}
+
 // System messages
 type TSystemMessageKey =
   | "chat.system.memberAdded"

@@ -31,10 +31,22 @@ interface ChatConversationMessagesProps {
   limit?: number;
 }
 
+interface ChatBroadcastListsProps {
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+interface ChatBroadcastMessagesProps {
+  broadcastListId: string;
+  page?: number;
+  limit?: number;
+}
+
 export const chatSystemApi = createApi({
   reducerPath: "chatSystemApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ["Chat", "Message", "User", "Group"],
+  tagTypes: ["Chat", "Message", "User", "Group", "Broadcast"],
 
   endpoints: (builder) => ({
     chatUsers: builder.query<IChatUsersRes, ChatUsersProps>({
@@ -224,6 +236,122 @@ export const chatSystemApi = createApi({
         { type: "Group", id: conversationId },
       ],
     }),
+
+    // Broadcast lists — saved recipient lists; sending fans out into
+    // independent 1-on-1 DMs. See FE integration guide for the full model.
+    broadcastLists: builder.query<
+      IChatBroadcastListsRes,
+      ChatBroadcastListsProps
+    >({
+      query: (params) => ({
+        url: endpoints.chatBroadcasts,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Broadcast"],
+    }),
+
+    createBroadcastList: builder.mutation<
+      IChatBroadcastList,
+      ICreateBroadcastListReq
+    >({
+      query: (body) => ({
+        url: endpoints.chatBroadcasts,
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Broadcast"],
+    }),
+
+    broadcastListDetails: builder.query<IChatBroadcastListDetails, string>({
+      query: (broadcastListId) => ({
+        url: `${endpoints.chatBroadcasts}/${broadcastListId}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, broadcastListId) => [
+        { type: "Broadcast", id: broadcastListId },
+      ],
+    }),
+
+    updateBroadcastList: builder.mutation<
+      IChatBroadcastList,
+      IUpdateBroadcastListReq
+    >({
+      query: ({ broadcastListId, ...body }) => ({
+        url: `${endpoints.chatBroadcasts}/${broadcastListId}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: (_result, _error, { broadcastListId }) => [
+        "Broadcast",
+        { type: "Broadcast", id: broadcastListId },
+      ],
+    }),
+
+    addBroadcastMembers: builder.mutation<
+      IChatBroadcastList,
+      { broadcastListId: string; memberIds: string[] }
+    >({
+      query: ({ broadcastListId, memberIds }) => ({
+        url: `${endpoints.chatBroadcasts}/${broadcastListId}/members`,
+        method: "POST",
+        data: { memberIds },
+      }),
+      invalidatesTags: (_result, _error, { broadcastListId }) => [
+        "Broadcast",
+        { type: "Broadcast", id: broadcastListId },
+      ],
+    }),
+
+    removeBroadcastMember: builder.mutation<
+      IRemoveBroadcastMemberRes,
+      { broadcastListId: string; userId: string }
+    >({
+      query: ({ broadcastListId, userId }) => ({
+        url: `${endpoints.chatBroadcasts}/${broadcastListId}/members/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, { broadcastListId }) => [
+        "Broadcast",
+        { type: "Broadcast", id: broadcastListId },
+      ],
+    }),
+
+    deleteBroadcastList: builder.mutation<IDeleteBroadcastListRes, string>({
+      query: (broadcastListId) => ({
+        url: `${endpoints.chatBroadcasts}/${broadcastListId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, broadcastListId) => [
+        "Broadcast",
+        { type: "Broadcast", id: broadcastListId },
+      ],
+    }),
+
+    sendBroadcast: builder.mutation<ISendBroadcastRes, ISendBroadcastReq>({
+      query: ({ broadcastListId, content }) => ({
+        url: `${endpoints.chatBroadcasts}/${broadcastListId}/send`,
+        method: "POST",
+        data: { content },
+      }),
+      invalidatesTags: (_result, _error, { broadcastListId }) => [
+        { type: "Broadcast", id: broadcastListId },
+      ],
+    }),
+
+    broadcastMessages: builder.query<
+      IChatBroadcastMessagesRes,
+      ChatBroadcastMessagesProps
+    >({
+      query: ({ broadcastListId, ...params }) => ({
+        url: `${endpoints.chatBroadcasts}/${broadcastListId}/messages`,
+        method: "GET",
+        params,
+      }),
+      providesTags: (_result, _error, { broadcastListId }) => [
+        { type: "Broadcast", id: `${broadcastListId}-messages` },
+      ],
+    }),
   }),
 });
 
@@ -247,4 +375,13 @@ export const {
   useAddGroupMembersMutation,
   useRemoveGroupMemberMutation,
   useLeaveGroupMutation,
+  useBroadcastListsQuery,
+  useCreateBroadcastListMutation,
+  useBroadcastListDetailsQuery,
+  useUpdateBroadcastListMutation,
+  useAddBroadcastMembersMutation,
+  useRemoveBroadcastMemberMutation,
+  useDeleteBroadcastListMutation,
+  useSendBroadcastMutation,
+  useBroadcastMessagesQuery,
 } = chatSystemApi;

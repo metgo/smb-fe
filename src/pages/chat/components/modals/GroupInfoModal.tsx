@@ -170,7 +170,6 @@ export const GroupInfoModal: React.FC<GroupInfoModalProps> = ({
     superadmin: isDark
       ? "bg-purple-900/30 text-purple-400"
       : "bg-purple-50 text-purple-700",
-    admin: isDark ? "bg-blue-900/30 text-blue-400" : "bg-blue-50 text-blue-700",
     authority: isDark
       ? "bg-amber-900/30 text-amber-400"
       : "bg-amber-50 text-amber-700",
@@ -178,7 +177,6 @@ export const GroupInfoModal: React.FC<GroupInfoModalProps> = ({
     traveller: isDark
       ? "bg-gray-800 text-gray-300"
       : "bg-gray-100 text-gray-600",
-    user: isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600",
   };
 
   return (

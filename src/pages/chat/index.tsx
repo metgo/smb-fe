@@ -22,6 +22,7 @@ import {
   useChatUsersQuery,
   useChatConversationsQuery,
   useCreateGroupMutation,
+  useBroadcastListsQuery,
 } from "@/store/api/chatSystemApi";
 
 const mapConversation = (c: IChatConversation): IConversation => ({
@@ -49,16 +50,31 @@ const mapConversation = (c: IChatConversation): IConversation => ({
   unreadCount: c.unreadCount,
 });
 
+// Broadcast lists are a distinct concept from real conversations (no shared
+// thread — see FE integration guide), but the sidebar/ChatWindow shell only
+// knows how to select/render IConversation entries. Reusing the otherwise-
+// unused "broadcast" conversation type lets a list slot into that flow with
+// zero extra plumbing: ChatUsersList already badges it, and ChatWindow
+// already branches on it to show the send-history/composer view instead of
+// a message thread.
+const mapBroadcastListToConversation = (
+  b: IChatBroadcastListSummary,
+): IConversation => ({
+  id: b._id,
+  type: "broadcast",
+  name: b.name,
+  description: b.description || undefined,
+  members: [],
+  creatorId: b.createdById,
+});
+
 export default function ChatPage() {
   const { t } = useTranslation("chat");
-  const { authorityId, dmoId } = useAppSelector((state) => state.auth);
   const { bgSecondary, textPrimary, textTertiary } = useThemeClasses();
 
   const { data: chatUsers } = useChatUsersQuery({
     page: 1,
     limit: 200,
-    authorityId,
-    dmoId,
   });
   const chatUsersList = Array.isArray(chatUsers)
     ? chatUsers
@@ -126,6 +142,18 @@ export default function ChatPage() {
       { skip: !currentUser },
     );
 
+  // Broadcast lists the current user owns (or, for SUPERADMIN, every list) —
+  // merged into the conversation list below so they're selectable the same
+  // way a DM/Group is. TRAVELLER gets a 403 on this endpoint, so skip it.
+  const canManageBroadcasts =
+    !!currentUser &&
+    ["superadmin", "dmo", "authority"].includes(currentUser.role);
+  const { data: broadcastListsRes, refetch: refetchBroadcastLists } =
+    useBroadcastListsQuery(
+      { page: 1, limit: 50 },
+      { skip: !currentUser || !canManageBroadcasts },
+    );
+
   const [createGroup] = useCreateGroupMutation();
 
   useEffect(() => {
@@ -134,8 +162,11 @@ export default function ChatPage() {
       return;
     }
     const mapped = (conversationsRes?.data || []).map(mapConversation);
-    setConversations(mapped);
-  }, [currentUser, conversationsRes]);
+    const broadcastConversations = (broadcastListsRes?.data || []).map(
+      mapBroadcastListToConversation,
+    );
+    setConversations([...mapped, ...broadcastConversations]);
+  }, [currentUser, conversationsRes, broadcastListsRes]);
 
   // Online status for every user we could have a DM with (conversation
   // peers + not-yet-messaged contacts) — kept live via the socket.
@@ -264,9 +295,11 @@ export default function ChatPage() {
     }
   };
 
-  // Create broadcast channel
-  const handleBroadcastCreated = () => {
-    // No-op for now
+  // A broadcast list was created — refresh the list and open it like any
+  // other conversation, right in the ChatWindow.
+  const handleBroadcastCreated = async (broadcastList: IChatBroadcastList) => {
+    await refetchBroadcastLists();
+    handleSelectConversation(broadcastList._id);
   };
 
   // Silence user globally
@@ -287,7 +320,6 @@ export default function ChatPage() {
             activeConversationId={activeConversationId}
             onSelectConversation={handleSelectConversation}
             currentUser={currentUser}
-            chatUsers={chatUsersList}
             presence={presence}
             onStartDm={handleStartDm}
             onOpenNewDm={() => setModalOpen({ ...modalOpen, newDm: true })}
@@ -327,6 +359,7 @@ export default function ChatPage() {
                 onGroupLeft={() => {
                   setActiveConversationId(null);
                   refetchConversations();
+                  refetchBroadcastLists();
                 }}
               />
             ) : (
@@ -356,6 +389,7 @@ export default function ChatPage() {
         currentUser={currentUser}
         onStartChat={handleStartDm}
         chatUsers={chatUsersList}
+        conversations={conversations}
       />
       <NewGroupModal
         isOpen={modalOpen.newGroup}
@@ -368,6 +402,7 @@ export default function ChatPage() {
         isOpen={modalOpen.newBroadcast}
         onClose={() => setModalOpen({ ...modalOpen, newBroadcast: false })}
         currentUser={currentUser}
+        chatUsers={chatUsersList}
         onBroadcastCreated={handleBroadcastCreated}
       />
       <SilenceUserModal

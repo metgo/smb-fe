@@ -11,6 +11,7 @@ import {
   useEditMessageMutation,
   useDeleteMessageMutation,
   useMarkConversationReadMutation,
+  useGroupDetailsQuery,
 } from "@/store/api/chatSystemApi";
 
 const mapWireMessage = (
@@ -81,6 +82,11 @@ export const useChatWindow = ({
   const { t } = useTranslation("chat");
   const socket = useSocket();
   const isPendingDm = !!pendingDmRecipientId;
+  // Broadcast lists have no conversation-messages thread of their own —
+  // ChatWindow renders a dedicated send-history view for them instead
+  // (useBroadcastWindow), so this hook must not hit the DM/Group message
+  // endpoints for one.
+  const isBroadcast = conversation?.type === "broadcast";
 
   const [fetchMessages] = useLazyFetchConversationMessagesQuery();
   const [sendMessageMutation] = useSendMessageMutation();
@@ -89,12 +95,24 @@ export const useChatWindow = ({
   const [deleteMessageMutation] = useDeleteMessageMutation();
   const [markConversationRead] = useMarkConversationReadMutation();
 
+  // chatUsers is scoped to the users this account is permitted to see
+  // (e.g. by authority/dmo), which for non-superadmin roles can exclude
+  // other members of a group they belong to. The group roster has no such
+  // restriction, so it's used as a fallback source of truth for names.
+  const { data: groupDetails } = useGroupDetailsQuery(conversationId, {
+    skip: !conversationId || conversation?.type !== "group",
+  });
+
   const senderNameFor = useCallback(
     (id: string) => {
       if (id === currentUser?._id) return currentUser?.name || t("you");
-      return chatUsers?.find((u) => u._id === id)?.name || t("user_fallback");
+      return (
+        chatUsers?.find((u) => u._id === id)?.name ||
+        groupDetails?.participants.find((p) => p._id === id)?.name ||
+        t("user_fallback")
+      );
     },
-    [chatUsers, currentUser, t],
+    [chatUsers, currentUser, groupDetails, t],
   );
 
   // Message state
@@ -178,9 +196,11 @@ export const useChatWindow = ({
   // Fetch Conversation info
   // conversation is now passed as a prop from parent
 
-  // Load message history (real conversations only; pending DMs start empty)
+  // Load message history (real conversations only; pending DMs and
+  // broadcast lists start/stay empty — a broadcast list has no thread of
+  // its own for this endpoint to return).
   const loadMessages = useCallback(async () => {
-    if (isPendingDm) {
+    if (isPendingDm || isBroadcast) {
       setMessages([]);
       setHasMoreMessages(false);
       return;
@@ -197,10 +217,11 @@ export const useChatWindow = ({
       setHasMoreMessages(false);
       toast.error(t("failed_to_load_messages"));
     }
-  }, [conversationId, isPendingDm, fetchMessages, senderNameFor]);
+  }, [conversationId, isPendingDm, isBroadcast, fetchMessages, senderNameFor]);
 
   const loadOlderMessages = useCallback(async () => {
-    if (isPendingDm || !hasMoreMessages || messages.length === 0) return;
+    if (isPendingDm || isBroadcast || !hasMoreMessages || messages.length === 0)
+      return;
     const oldest = messages[0];
     try {
       const res = await fetchMessages({
@@ -218,6 +239,7 @@ export const useChatWindow = ({
   }, [
     conversationId,
     isPendingDm,
+    isBroadcast,
     hasMoreMessages,
     messages,
     fetchMessages,
@@ -357,9 +379,9 @@ export const useChatWindow = ({
 
   // Mark conversation as read when opened
   useEffect(() => {
-    if (isPendingDm || !conversationId) return;
+    if (isPendingDm || isBroadcast || !conversationId) return;
     markConversationRead(conversationId).catch(() => {});
-  }, [conversationId, isPendingDm, markConversationRead]);
+  }, [conversationId, isPendingDm, isBroadcast, markConversationRead]);
 
   // Highlight message from search result (Story 8)
   useEffect(() => {
