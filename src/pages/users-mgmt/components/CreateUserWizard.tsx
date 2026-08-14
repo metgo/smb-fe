@@ -18,13 +18,6 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 const CREATABLE_ROLES: Partial<Record<UserRole, UserRole[]>> = {
   [UserRole.SUPERADMIN]: [
     UserRole.SUPERADMIN,
-    UserRole.ADMIN,
-    UserRole.DMO,
-    UserRole.AUTHORITY,
-    UserRole.TRAVELLER,
-  ],
-  [UserRole.ADMIN]: [
-    UserRole.ADMIN,
     UserRole.DMO,
     UserRole.AUTHORITY,
     UserRole.TRAVELLER,
@@ -62,7 +55,6 @@ const LANGUAGE_OPTIONS = [
 
 const ROLE_OPTIONS = [
   { value: UserRole.SUPERADMIN, labelKey: "role_super_admin" },
-  { value: UserRole.ADMIN, labelKey: "role_admin" },
   { value: UserRole.DMO, labelKey: "role_dmo" },
   { value: UserRole.AUTHORITY, labelKey: "role_authority" },
   { value: UserRole.TRAVELLER, labelKey: "role_traveller" },
@@ -89,8 +81,7 @@ const CreateUserWizard = ({
   // An Authority user may only create Authority users within their own
   // authority, so the authority picker is locked to their own authority
   // instead of listing every authority in the system.
-  const isAuthorityCaller =
-    userRole === UserRole.AUTHORITY || userRole === UserRole.AUTHORITY_ADMIN;
+  const isAuthorityCaller = userRole === UserRole.AUTHORITY;
   const ownAuthorityId = user?.authority?.id ?? "";
 
   const getDefaultAuthorityId = (role: string) =>

@@ -23,7 +23,6 @@ import { toast } from "sonner";
 
 const ROLE_ORDER: UserRole[] = [
   UserRole.SUPERADMIN,
-  UserRole.ADMIN,
   UserRole.DMO,
   UserRole.AUTHORITY,
   UserRole.TRAVELLER,
@@ -31,7 +30,7 @@ const ROLE_ORDER: UserRole[] = [
 
 const ROLE_TAB_LABEL_KEYS: Partial<Record<UserRole, string>> = {
   [UserRole.SUPERADMIN]: "super_admins_tab",
-  [UserRole.ADMIN]: "admins_tab",
+  // [UserRole.ADMIN]: "admins_tab",
   [UserRole.DMO]: "dmos_tab",
   [UserRole.AUTHORITY]: "authorities_tab",
   [UserRole.TRAVELLER]: "travellers_tab",

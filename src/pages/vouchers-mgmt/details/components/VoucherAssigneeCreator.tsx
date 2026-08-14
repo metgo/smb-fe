@@ -1,5 +1,6 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
+import { getInitials } from "@/helpers";
 
 interface PersonInfo {
   name: string;
@@ -19,16 +20,6 @@ interface VoucherAssigneeCreatorProps {
   isDark: boolean;
   t: (key: string) => string;
 }
-
-const getInitials = (name?: string) => {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0])
-    .join("")
-    .toUpperCase();
-};
 
 const VoucherAssigneeCreator: React.FC<VoucherAssigneeCreatorProps> = ({
   voucher,

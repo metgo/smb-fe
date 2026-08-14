@@ -1147,7 +1147,10 @@ function CreateBusinessWizardInner({
       )}
 
       {/* Content */}
-      <div data-tour="wizard-content" className="flex-1 overflow-y-auto p-6">
+      <div
+        data-tour="wizard-content"
+        className="flex-1 overflow-y-auto overflow-x-auto p-6"
+      >
         {renderStep()}
       </div>
 
