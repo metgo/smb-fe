@@ -91,6 +91,7 @@ export class CartService {
         createdAt: new Date(),
         totalAmount,
         campId,
+        vendorProducts: [], // Explicitly set empty array to prevent inconsistency
       });
 
       // const availableProducts
@@ -124,7 +125,7 @@ export class CartService {
       this.logger.error(
         `[${command.campCode} - CART]: FAILED TO ADD ITEM TO CART`,
         {
-          err: error.message,
+          err: error instanceof Error ? error.message : String(error),
         },
       );
       exceptionHandling(error);
@@ -228,7 +229,7 @@ export class CartService {
       this.logger.error(
         `[${command.campCode} - CART]: FAILED TO ADD ITEMS TO CART`,
         {
-          err: error.message,
+          err: error instanceof Error ? error.message : String(error),
         },
       );
       exceptionHandling(error);
@@ -368,7 +369,7 @@ export class CartService {
       return updatedCart;
     } catch (error) {
       this.logger.error('[EXTERNAL_API_CART]: FAILED TO ADD ITEM TO CART', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
       });
       exceptionHandling(error);
     }
@@ -412,7 +413,7 @@ export class CartService {
       return cart;
     } catch (error) {
       this.logger.error('[EXTERNAL_API_CART]: FAILED TO DELETE ITEM TO CART', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
       });
       exceptionHandling(error);
     }
@@ -446,7 +447,7 @@ export class CartService {
       this.logger.error(
         '[EXTERNAL_API_CART]: FAILED TO UPDATE CART FOR PAYMENT',
         {
-          err: error.message,
+          err: error instanceof Error ? error.message : String(error),
         },
       );
       exceptionHandling(error);
@@ -479,7 +480,7 @@ export class CartService {
       return updatedCart;
     } catch (error) {
       this.logger.error('[EXTERNAL_API_CART]: FAILED TO ADD ITEM TO CART', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
       });
       exceptionHandling(error);
     }
@@ -513,7 +514,7 @@ export class CartService {
       this.logger.error(
         '[EXTERNAL_API_CART]: FAILED TO CONVERTED TO ORDER SUCCESSFULLY',
         {
-          err: error.message,
+          err: error instanceof Error ? error.message : String(error),
         },
       );
       exceptionHandling(error);
@@ -626,7 +627,7 @@ export class CartService {
       this.logger.error(
         '[EXTERNAL_API_CART]: FAILED TO DELETE ITEM FROM CART',
         {
-          err: error.message,
+          err: error instanceof Error ? error.message : String(error),
         },
       );
       exceptionHandling(error);
@@ -687,6 +688,7 @@ export class CartService {
 
       const newCart = new this.CartModel({
         vendorProducts,
+        product: [], // Explicitly set empty array to prevent inconsistency
         name: command.name,
         email: command.email,
         phone: command.phone,
@@ -707,7 +709,7 @@ export class CartService {
     } catch (error) {
       this.logger.error(
         `[${command.campCode} - CART]: FAILED TO ADD VENDOR-WISE PRODUCTS TO CART`,
-        { err: error.message },
+        { err: error instanceof Error ? error.message : String(error) },
       );
       exceptionHandling(error);
     }

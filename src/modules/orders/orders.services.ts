@@ -204,12 +204,26 @@ export class OrdersService {
         );
       }
 
-      if (cartDetails?.vendorProducts?.length) {
+      if (cartDetails?.vendorProducts?.length && (!cartDetails?.product || cartDetails?.product?.length === 0)) {
+        this.logger.info('[ORDER]: Using vendor cart checkout', {
+          cartId: body.cartId,
+          vendorCount: cartDetails.vendorProducts.length,
+        });
         return await this.startVendorCartCheckout(
           body,
           loggedInUser,
           cartDetails,
         );
+      }
+
+      // Log warning if both vendorProducts and product arrays exist (data inconsistency)
+      if (cartDetails?.vendorProducts?.length && cartDetails?.product?.length) {
+        this.logger.warn('[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist during checkout', {
+          cartId: body.cartId,
+          vendorProductsCount: cartDetails.vendorProducts.length,
+          productCount: cartDetails.product.length,
+        });
+        // Fall through to regular checkout to prevent issues
       }
 
       if (!body.email && !body.phone) {
@@ -410,9 +424,20 @@ export class OrdersService {
         'code',
         body.campCode,
       );
-      const externalApi = await this.externalApiService.findByIdentifierId(
-        body.identifierId,
-      );
+
+      // Validate identifierId before creating order
+      let externalApi;
+      try {
+        externalApi = await this.externalApiService.findByIdentifierId(
+          body.identifierId,
+        );
+      } catch (error) {
+        this.logger.error('[EXTERNAL_API_ORDERS]: INVALID IDENTIFIER ID', {
+          identifierId: body.identifierId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      }
 
       const newOrder = new this.OrderModel();
 
@@ -533,7 +558,12 @@ export class OrdersService {
     }
 
     // If cart has vendor products, use vendor split order creation
-    if (cart?.vendorProducts?.length) {
+    // Only proceed if vendorProducts has data and regular product array is empty
+    if (cart?.vendorProducts?.length && (!cart?.product || cart?.product?.length === 0)) {
+      this.logger.info('[ORDER]: Using vendor split for voucher payment', {
+        cartId: body?.cartId,
+        vendorCount: cart.vendorProducts.length,
+      });
       const parentOrder = new this.OrderModel({
         ...command,
         externalApiId: command?.externalApi?._id,
@@ -548,6 +578,16 @@ export class OrdersService {
         cart,
         command?.externalApi,
       );
+    }
+
+    // Log warning if both vendorProducts and product arrays exist (data inconsistency)
+    if (cart?.vendorProducts?.length && cart?.product?.length) {
+      this.logger.warn('[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist in voucher order', {
+        cartId: body?.cartId,
+        vendorProductsCount: cart.vendorProducts.length,
+        productCount: cart.product.length,
+      });
+      // Fall through to regular order processing
     }
 
     const orderWithQR = new this.OrderModel({
@@ -675,8 +715,17 @@ export class OrdersService {
     languagePreference?: Locale,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
     try {
-      // Check if order is already processed to prevent duplicates
+      // Check if order exists before attempting to update
       const existingOrder = await findOneById<Order>(this.OrderModel, orderId);
+      if (!existingOrder) {
+        this.logger.error('[ORDER]: ORDER NOT FOUND FOR PAYMENT SUCCESS', {
+          orderId,
+          error: 'Order does not exist in database',
+        });
+        throw new Error('Order not found. Cannot process payment success for non-existent order.');
+      }
+
+      // Check if order is already processed to prevent duplicates
       if (existingOrder?.paymentStatus === PaymentStatus.SUCCESS) {
         this.logger.info('[ORDER]: Order already processed, skipping duplicate', {
           orderId,
@@ -725,8 +774,23 @@ export class OrdersService {
       const cart = await this.cartService.updateCartPostPayment(orderId);
 
       // Split into per-vendor orders when cart was created vendor-wise
-      if (cart?.vendorProducts?.length) {
+      // Only proceed with vendor split if vendorProducts has actual data and regular product array is empty
+      if (cart?.vendorProducts?.length && (!cart?.product || cart?.product?.length === 0)) {
+        this.logger.info('[ORDER]: Proceeding with vendor split order creation', {
+          orderId,
+          vendorCount: cart.vendorProducts.length,
+        });
         return await this.createVendorSplitOrders(updateOrder, cart, externalApi);
+      }
+
+      // Log warning if both vendorProducts and product arrays exist (data inconsistency)
+      if (cart?.vendorProducts?.length && cart?.product?.length) {
+        this.logger.warn('[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist', {
+          orderId,
+          vendorProductsCount: cart.vendorProducts.length,
+          productCount: cart.product.length,
+        });
+        // Fall through to regular order processing to prevent order deletion
       }
 
       const findCartProducts = cart?.product?.filter(
@@ -1066,10 +1130,10 @@ export class OrdersService {
       );
     }
 
-    await this.OrderModel.findByIdAndDelete(parentOrder._id);
-
-    this.logger.info('[ORDER]: PARENT COMBO ORDER DELETED AFTER VENDOR SPLIT FROM VOUCHER', {
+    // Parent order is preserved - never deleted to prevent data loss
+    this.logger.info('[ORDER]: PARENT COMBO ORDER PRESERVED AFTER VENDOR SPLIT FROM VOUCHER', {
       parentOrderId: parentOrder._id,
+      vendorOrdersCount: vendorOrders.length,
     });
 
     return {
@@ -1229,51 +1293,16 @@ export class OrdersService {
       );
     }
 
-    try {
-      // Transient DB errors (network blip, replica election) can make this
-      // throw once; retry a few times before accepting the parent is stuck.
-      const deleteResult = await this.deleteParentOrderWithRetry(parentOrder._id, 3);
-
-      if (!deleteResult) {
-        this.logger.error('[ORDER]: FAILED TO DELETE PARENT ORDER - ORDER NOT FOUND', {
-          parentOrderId: parentOrder._id,
-        });
-      } else {
-        this.logger.info('[ORDER]: PARENT COMBO ORDER DELETED AFTER VENDOR SPLIT', {
-          parentOrderId: parentOrder._id,
-        });
-      }
-    } catch (error) {
-      this.logger.error('[ORDER]: FAILED TO DELETE PARENT ORDER', {
-        parentOrderId: parentOrder._id,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      // Continue execution even if deletion fails - vendor orders are already created
-    }
+    // Parent order is preserved - never deleted to prevent data loss
+    this.logger.info('[ORDER]: PARENT COMBO ORDER PRESERVED AFTER VENDOR SPLIT', {
+      parentOrderId: parentOrder._id,
+      vendorOrdersCount: vendorOrders.length,
+    });
 
     return {
       updateOrder: parentOrder,
       getProductInformation: [],
     };
-  }
-
-  private async deleteParentOrderWithRetry(
-    parentOrderId: mongoose.Types.ObjectId | string,
-    attemptsLeft: number,
-    attempt = 1,
-  ): Promise<Order | null> {
-    try {
-      return await this.OrderModel.findByIdAndDelete(parentOrderId);
-    } catch (deleteError) {
-      if (attemptsLeft <= 1) throw deleteError;
-      this.logger.warn('[ORDER]: RETRYING PARENT ORDER DELETE', {
-        parentOrderId,
-        attempt,
-        error: deleteError instanceof Error ? deleteError.message : String(deleteError),
-      });
-      await new Promise(resolve => setTimeout(resolve, 500 * attempt));
-      return this.deleteParentOrderWithRetry(parentOrderId, attemptsLeft - 1, attempt + 1);
-    }
   }
 
   private async sendEmailPostVendorOrderPayment(

@@ -51,7 +51,7 @@ export class PaymentsService {
       return payment;
     } catch (err) {
       this.logger.error('[PAYMENT]: FAILED TO CREATE', {
-        err: err.message,
+        err: err instanceof Error ? err.message : String(err),
       });
       exceptionHandling(err);
     }
@@ -148,7 +148,7 @@ export class PaymentsService {
       return cardComResponse.data;
     } catch (err) {
       this.logger.error('[CARDCOM]: FAILED TO GENERATE LINK', {
-        err: err.message,
+        err: err instanceof Error ? err.message : String(err),
       });
 
       const ENV_NAME = this.configService.get('ENV_NAME');
@@ -257,11 +257,23 @@ export class PaymentsService {
       // }
 
       if (payments?.purpose === PaymentPurpose.ORDER) {
-        const { updateOrder, getProductInformation }
-          = await this.ordersService.updateAfterPaymentSuccess(
+        let updateOrder; let
+          getProductInformation;
+        try {
+          const result = await this.ordersService.updateAfterPaymentSuccess(
             payments.orderId,
             languagePreference,
           );
+          updateOrder = result.updateOrder;
+          getProductInformation = result.getProductInformation;
+        } catch (orderError) {
+          this.logger.error('[PAYMENT]: FAILED TO UPDATE ORDER AFTER PAYMENT SUCCESS', {
+            orderId: payments.orderId,
+            error: orderError instanceof Error ? orderError.message : String(orderError),
+          });
+          // Don't throw - payment was successful, just log the issue
+          return;
+        }
 
         if (updateOrder?.totalAmount === updateOrder?.creditCardPayment) {
           // if (!isMockPayment) {
@@ -349,8 +361,8 @@ export class PaymentsService {
       }
       // }
     } catch (err) {
-      this.logger.error(`[PAYMENT]: PAYMENT FAILED >> err: ${err.message}`, {
-        err: err.message,
+      this.logger.error(`[PAYMENT]: PAYMENT FAILED >> err: ${err instanceof Error ? err.message : String(err)}`, {
+        err: err instanceof Error ? err.message : String(err),
       });
       exceptionHandling(err);
     }
@@ -404,7 +416,7 @@ export class PaymentsService {
       this.logger.error(
         '[PAYMENT]: FAILED TO UPDATE PAYMENT AFTER PAYMENT FAILURE',
         {
-          err: err.message,
+          err: err instanceof Error ? err.message : String(err),
         },
       );
       exceptionHandling(err);
