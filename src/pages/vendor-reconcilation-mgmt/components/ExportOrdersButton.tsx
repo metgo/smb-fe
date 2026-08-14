@@ -102,7 +102,7 @@ export default function ExportOrdersButton({
     if (monthFilter && monthFilter !== "all" && monthFilter !== "custom") {
       return `${monthFilter}_payments`;
     }
-    return `payments_export_${new Date().toISOString().slice(0, 10)}`;
+    return `payments_${new Date().toISOString().slice(0, 10)}`;
   };
 
   const handleExportCSV = () => {
