@@ -1251,6 +1251,9 @@ export const VendorMonthlyReport = () => {
               orders={orders}
               selectedOrders={selectedItems}
               t={t}
+              monthFilter={filters.month}
+              customDateFrom={filters.startDate}
+              customDateTo={filters.endDate}
             />
             <FilterButton value={showFilters} onChange={setShowFilters} />
           </div>

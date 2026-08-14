@@ -33,12 +33,18 @@ interface ExportOrdersButtonProps {
   orders: MonthlyOrder[];
   selectedOrders: Set<string>;
   t: (key: string) => string;
+  monthFilter?: string;
+  customDateFrom?: string;
+  customDateTo?: string;
 }
 
 export default function ExportOrdersButton({
   orders,
   selectedOrders,
   t,
+  monthFilter,
+  customDateFrom,
+  customDateTo,
 }: ExportOrdersButtonProps) {
   const { isDark } = useThemeClasses();
   const [open, setOpen] = useState(false);
@@ -85,6 +91,20 @@ export default function ExportOrdersButton({
       [t("delivery_address")]: order.deliveryAddress || "-",
     }));
 
+  const getFileBaseName = () => {
+    if (monthFilter === "custom" && (customDateFrom || customDateTo)) {
+      const dateStr =
+        customDateFrom && customDateTo
+          ? `${customDateFrom}_to_${customDateTo}`
+          : customDateFrom || customDateTo;
+      return `${dateStr}_payments`;
+    }
+    if (monthFilter && monthFilter !== "all" && monthFilter !== "custom") {
+      return `${monthFilter}_payments`;
+    }
+    return `payments_export_${new Date().toISOString().slice(0, 10)}`;
+  };
+
   const handleExportCSV = () => {
     const data = getExportData();
     if (!data.length) return;
@@ -109,7 +129,7 @@ export default function ExportOrdersButton({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `orders_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `${getFileBaseName()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     setOpen(false);
@@ -123,10 +143,7 @@ export default function ExportOrdersButton({
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-    XLSX.writeFile(
-      workbook,
-      `orders_export_${new Date().toISOString().slice(0, 10)}.xlsx`,
-    );
+    XLSX.writeFile(workbook, `${getFileBaseName()}.xlsx`);
     setOpen(false);
   };
 
