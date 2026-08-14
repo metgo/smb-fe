@@ -27,6 +27,9 @@ interface ExportOrdersButtonProps {
   summaryData: any[];
   t: (key: string) => string;
   tc: (key: string) => string;
+  monthFilter?: string;
+  customDateFrom?: string;
+  customDateTo?: string;
 }
 
 export default function ExportOrdersButton({
@@ -38,6 +41,9 @@ export default function ExportOrdersButton({
   summaryData,
   t,
   tc,
+  monthFilter,
+  customDateFrom,
+  customDateTo,
 }: ExportOrdersButtonProps) {
   const { isDark } = useThemeClasses();
   const [open, setOpen] = useState(false);
@@ -125,6 +131,21 @@ export default function ExportOrdersButton({
         : "-",
     }));
 
+  const getFileBaseName = () => {
+    const suffix = isSummaryMode ? "summary" : "orders";
+    if (monthFilter === "custom" && (customDateFrom || customDateTo)) {
+      const dateStr =
+        customDateFrom && customDateTo
+          ? `${customDateFrom}_to_${customDateTo}`
+          : customDateFrom || customDateTo;
+      return `${dateStr}_${suffix}`;
+    }
+    if (monthFilter && monthFilter !== "all" && monthFilter !== "custom") {
+      return monthFilter;
+    }
+    return `${suffix}_export_${new Date().toISOString().slice(0, 10)}`;
+  };
+
   const handleExportCSV = () => {
     const rows = isSummaryMode ? buildSummaryRows() : buildOrderRows();
     if (!rows.length) return;
@@ -140,7 +161,7 @@ export default function ExportOrdersButton({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${isSummaryMode ? "summary" : "orders"}_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `${getFileBaseName()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     setOpen(false);
@@ -156,10 +177,7 @@ export default function ExportOrdersButton({
       worksheet,
       isSummaryMode ? "Summary" : "Orders",
     );
-    XLSX.writeFile(
-      workbook,
-      `${isSummaryMode ? "summary" : "orders"}_export_${new Date().toISOString().slice(0, 10)}.xlsx`,
-    );
+    XLSX.writeFile(workbook, `${getFileBaseName()}.xlsx`);
     setOpen(false);
   };
 

@@ -539,6 +539,9 @@ export default function OrdersSummaryMgmtPage() {
                   summaryData={combinedOrdersSummary}
                   t={t}
                   tc={tc}
+                  monthFilter={summaryFilters.month}
+                  customDateFrom={summaryFilters.startDate}
+                  customDateTo={summaryFilters.endDate}
                 />
               </div>
             </div>
