@@ -19,7 +19,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
-import { uploadWithProgress } from "@/helpers";
+import { uploadWithProgress, getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";
 import {
   useGetOrderProductDetailsQuery,
@@ -52,6 +52,8 @@ interface OrderProduct {
   productInformation: {
     _id: string;
     name: string;
+    nameHe?: string;
+    nameAr?: string;
     image: string;
     category: { _id: string; name: string };
   };
@@ -96,7 +98,7 @@ interface OrderProduct {
   };
 }
 
-function mapOrderProductList(d: any) {
+function mapOrderProductList(d: any, language: Language) {
   const customerName =
     [d.customer?.firstName, d.customer?.lastName]
       .filter(Boolean)
@@ -106,7 +108,12 @@ function mapOrderProductList(d: any) {
   return {
     _id: d._id,
     orderId: d.orderId,
-    productName: d.product?.name || "",
+    productName: getLngWiseStr(
+      language,
+      d.product?.name,
+      d.product?.nameHe,
+      d.product?.nameAr,
+    ),
     productImage: d.product?.image?.image || "",
     productCategory: "",
     customerName,
@@ -131,7 +138,10 @@ function mapOrderProductList(d: any) {
     disputeId: d.disputeId,
   };
 }
-function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
+function mapOrderProductDetails(
+  d: OrderProduct & { _id?: string },
+  language: Language,
+) {
   const address = [
     d.deliveryInformation?.address?.houseNo,
     d.deliveryInformation?.address?.apartment,
@@ -155,7 +165,12 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
   return {
     _id: d._id,
     orderId: d.orderId,
-    productName: d?.productInformation?.name || "",
+    productName: getLngWiseStr(
+      language,
+      d?.productInformation?.name,
+      d?.productInformation?.nameHe,
+      d?.productInformation?.nameAr,
+    ),
     productImage: d?.productInformation?.image || "",
     productCategory: d?.productInformation?.category?.name || "",
     customerName: d?.customerInformation?.name?.trim() || "",
@@ -257,8 +272,8 @@ export const VendorMonthlyReport = () => {
   } = useVendorMonthlyReportData(filters, searchTerm);
 
   const orders = useMemo(
-    () => combinedOrders.map(mapOrderProductList),
-    [combinedOrders],
+    () => combinedOrders.map((d) => mapOrderProductList(d, language)),
+    [combinedOrders, language],
   );
 
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
@@ -311,14 +326,14 @@ export const VendorMonthlyReport = () => {
 
   const displayedOrder = useMemo(() => {
     if (orderDetailsData && detailsOrderId === selectedOrder?._id) {
-      return mapOrderProductDetails(orderDetailsData);
+      return mapOrderProductDetails(orderDetailsData, language);
     }
     // Handle case when navigating from URL with orderProductId
     if (orderDetailsData && detailsOrderId && !selectedOrder) {
-      return mapOrderProductDetails(orderDetailsData);
+      return mapOrderProductDetails(orderDetailsData, language);
     }
     return selectedOrder;
-  }, [orderDetailsData, detailsOrderId, selectedOrder]);
+  }, [orderDetailsData, detailsOrderId, selectedOrder, language]);
 
   const hasActiveFilters = useMemo(() => {
     return (
@@ -510,7 +525,7 @@ export const VendorMonthlyReport = () => {
     setReopenFetchingId(order._id);
     try {
       const details = await fetchOrderDetailsForReopen(order._id).unwrap();
-      const mapped = mapOrderProductDetails(details);
+      const mapped = mapOrderProductDetails(details, language);
       handleReopenDispute({
         ...order,
         ...mapped,
@@ -1251,6 +1266,9 @@ export const VendorMonthlyReport = () => {
               orders={orders}
               selectedOrders={selectedItems}
               t={t}
+              monthFilter={filters.month}
+              customDateFrom={filters.startDate}
+              customDateTo={filters.endDate}
             />
             <FilterButton value={showFilters} onChange={setShowFilters} />
           </div>

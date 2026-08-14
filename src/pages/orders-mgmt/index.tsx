@@ -926,6 +926,9 @@ export default function OrdersMgmtPage() {
                     summaryData={[]}
                     t={t}
                     tc={tc}
+                    monthFilter={filters.month}
+                    customDateFrom={filters.startDate}
+                    customDateTo={filters.endDate}
                   />
                 </div>
 
