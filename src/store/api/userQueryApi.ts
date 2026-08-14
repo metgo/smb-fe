@@ -23,6 +23,14 @@ export const userQueryApi = createApi({
       providesTags: ["user"],
     }),
 
+    getUserDetailsByEmail: builder.query<IUserDetailsRes, string>({
+      query: (email) => ({
+        url: `${endpoints.users}/${email}`,
+        method: "GET",
+      }),
+      providesTags: ["user"],
+    }),
+
     getUsers: builder.query<IUsersRes, GetUsersParams>({
       query: ({ page, limit, role, search }) => {
         const params = new URLSearchParams({
@@ -41,4 +49,8 @@ export const userQueryApi = createApi({
   }),
 });
 
-export const { useGetUserInfoQuery, useGetUsersQuery } = userQueryApi;
+export const {
+  useGetUserInfoQuery,
+  useGetUsersQuery,
+  useGetUserDetailsByEmailQuery,
+} = userQueryApi;

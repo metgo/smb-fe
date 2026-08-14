@@ -35,6 +35,7 @@ import {
   ChevronLeft,
   CheckSquare,
   AlertTriangle,
+  MessageCircle,
   CalendarArrowDown,
   ShoppingBag,
   BarChart3,
@@ -157,6 +158,13 @@ export default function Sidebar() {
       path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
+      isEnabled: true,
+    },
+    {
+      id: "chat",
+      path: routes.chat,
+      label: t("chat") || "Chat",
+      icon: MessageCircle,
       isEnabled: true,
     },
     {

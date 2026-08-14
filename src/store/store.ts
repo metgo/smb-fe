@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import uiReducer from "@/features/uiSlice";
+import chatPopupReducer from "@/features/chatPopupSlice";
 import authReducer from "@/features/authSlice";
 import settingsReducer from "@/features/settingsSlice";
 import notificationSlice from "@/features/notificationSlice";
@@ -45,10 +46,12 @@ import { sessionQueryApi } from "./api/sessionQueryApi";
 import { sessionMutationApi } from "./api/sessionMutationApi";
 import { reconciliationQueryApi } from "./api/reconciliationQueryApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
+import { chatSystemApi } from "./api/chatSystemApi";
 
 export const store = configureStore({
   reducer: {
     ui: uiReducer,
+    chatPopup: chatPopupReducer,
     auth: authReducer,
     settings: settingsReducer,
     filters: filterReducer,
@@ -99,6 +102,7 @@ export const store = configureStore({
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
     [reconciliationQueryApi.reducerPath]: reconciliationQueryApi.reducer,
+    [chatSystemApi.reducerPath]: chatSystemApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -140,6 +144,7 @@ export const store = configureStore({
       sessionQueryApi.middleware,
       sessionMutationApi.middleware,
       reconciliationQueryApi.middleware,
+      chatSystemApi.middleware,
       nprogressMiddleware,
     ),
 });

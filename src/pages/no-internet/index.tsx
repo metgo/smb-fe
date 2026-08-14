@@ -250,7 +250,7 @@ const NoInternetPage = () => {
             <button
               onMouseEnter={() => setHomeBtnHovered(true)}
               onMouseLeave={() => setHomeBtnHovered(false)}
-              className={`px-6 py-3 rounded-full border font-semibold text-sm tracking-wide transition-all duration-300 shadow-lg ${
+              className={`px-6 py-3 rounded-full border text-white font-semibold text-sm tracking-wide transition-all duration-300 shadow-lg ${
                 homeBtnHovered
                   ? "border-blue-600 shadow-blue-400/40 scale-105"
                   : "border-blue-500 shadow-blue-300/30 scale-100"

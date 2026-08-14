@@ -29,6 +29,7 @@ import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { locales } from "@/lib/utils";
 import NotificationsBell from "./NotificationsBell";
+import ChatNotificationBell from "./ChatNotificationBell";
 
 export default function Header() {
   const dispatch = useAppDispatch();
@@ -308,6 +309,7 @@ export default function Header() {
                 </button>
               )}
 
+              <ChatNotificationBell />
               <NotificationsBell />
             </div>
           </div>

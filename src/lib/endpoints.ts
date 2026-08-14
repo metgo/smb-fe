@@ -187,6 +187,15 @@ export const endpoints = {
   businessSummary: "/business-summary",
   poiSummary: "/poi-summary",
 
+  // Chat System
+  chatUsers: "/chats/users",
+  chatMessages: "/chats/messages",
+  chatConversations: "/chats/conversations",
+  chatUnreadCount: "/chats/unread-count",
+  chatPresence: "/chats/presence",
+  chatGroups: "/chats/groups",
+  chatBroadcasts: "/chats/broadcasts",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
   googleMapRouteDirection:

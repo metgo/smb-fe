@@ -178,9 +178,7 @@ export default function ViewChangesModal({
   if (!isOpen) return null;
 
   const isAdmin =
-    userRole === UserRole.ADMIN ||
-    userRole === UserRole.SUPERADMIN ||
-    userRole === UserRole.SITE_MANAGER;
+    userRole === UserRole.SUPERADMIN || userRole === UserRole.SITE_MANAGER;
 
   const changesByCategory = changeData
     ? changeData.changes.reduce(

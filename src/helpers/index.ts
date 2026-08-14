@@ -336,3 +336,26 @@ export function formatLastLogin(iso: string): string {
     minute: "2-digit",
   });
 }
+
+export const getInitials = (name?: string) => {
+  if (!name) return "UN";
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
+};
+
+// Backend error bodies shape `message` as a plain string for business-rule
+// failures, or an array of strings for request-shape validation failures.
+export const getApiErrorMessage = (
+  error: unknown,
+  fallback: string,
+): string => {
+  const data = (error as { data?: { message?: string | string[] } })?.data;
+  const message = data?.message;
+  if (Array.isArray(message)) return message[0] || fallback;
+  if (typeof message === "string") return message;
+  return fallback;
+};
