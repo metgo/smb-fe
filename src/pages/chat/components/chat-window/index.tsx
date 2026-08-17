@@ -25,8 +25,8 @@ import { useChatWindow } from "@/hooks/useChatWindow";
 import { useBroadcastWindow } from "@/hooks/useBroadcastWindow";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { getInitials, timeAgo } from "@/helpers";
-import ChatUserProfile from "./ChatUserProfile";
-import { GroupInfoModal, BroadcastListInfoModal } from "./modals";
+import { BroadcastListInfoModal, GroupInfoModal } from "../modals";
+import ChatUserProfile from "../ChatUserProfile";
 
 interface ChatWindowProps {
   conversationId: string;

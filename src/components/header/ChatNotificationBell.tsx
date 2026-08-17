@@ -90,9 +90,9 @@ const ChatNotificationBell = () => {
     });
   };
 
-  const handleSelectConversation = () => {
+  const handleSelectConversation = (conversationId: string) => {
     setIsOpen(false);
-    navigate(routes.chat);
+    navigate(`${routes.chat}?conversationId=${conversationId}`);
   };
 
   const handleViewAll = () => {
@@ -207,9 +207,9 @@ const ChatNotificationBell = () => {
                   return (
                     <button
                       key={conv._id}
-                      onClick={handleSelectConversation}
+                      onClick={() => handleSelectConversation(conv._id)}
                       className={clsx(
-                        "w-full flex items-start gap-3 px-5 py-3.5 text-left transition-colors duration-150",
+                        "w-full cursor-pointer flex items-start gap-3 px-5 py-3.5 text-left transition-colors duration-150",
                         isDark ? "hover:bg-gray-800/60" : "hover:bg-gray-50",
                         isUnread &&
                           (isDark ? "bg-blue-500/5" : "bg-blue-50/60"),
@@ -242,14 +242,15 @@ const ChatNotificationBell = () => {
                             <span className="mt-1 shrink-0 w-2 h-2 rounded-full bg-blue-500" />
                           )}
                         </div>
-                        <p
+                        <div
                           className={clsx(
                             "text-xs mt-0.5 leading-relaxed line-clamp-1",
                             textSecondary,
                           )}
-                        >
-                          {conv.lastMessagePreview}
-                        </p>
+                          dangerouslySetInnerHTML={{
+                            __html: conv?.lastMessagePreview,
+                          }}
+                        />
                         <p
                           className={clsx(
                             "text-[11px] mt-1 font-medium",

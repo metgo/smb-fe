@@ -1,19 +1,18 @@
 import clsx from "clsx";
+import i18n from "@/i18n";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import i18n from "@/i18n";
+import { useSearchParams } from "react-router-dom";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { getApiErrorMessage } from "@/helpers";
 import { ChatUsersList } from "./components/ChatUsersList";
-import { ChatWindow } from "./components/ChatWindow";
 import {
   NewDmModal,
   NewGroupModal,
   NewBroadcastModal,
-  SilenceUserModal,
 } from "./components/modals";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useChatPresence } from "@/hooks/useChatPresence";
@@ -24,6 +23,7 @@ import {
   useCreateGroupMutation,
   useBroadcastListsQuery,
 } from "@/store/api/chatSystemApi";
+import { ChatWindow } from "./components/chat-window";
 
 const mapConversation = (c: IChatConversation): IConversation => ({
   id: c._id,
@@ -71,6 +71,7 @@ const mapBroadcastListToConversation = (
 export default function ChatPage() {
   const { t } = useTranslation("chat");
   const { bgSecondary, textPrimary, textTertiary } = useThemeClasses();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: chatUsers } = useChatUsersQuery({
     page: 1,
@@ -233,6 +234,24 @@ export default function ChatPage() {
     setShowInbox(false); // hide inbox on mobile view to show chat window
   };
 
+  // Deep-link support: opening /chat?conversationId=<id> (e.g. from the
+  // header chat notification bell) selects that conversation directly
+  // instead of landing on the empty inbox state.
+  useEffect(() => {
+    const conversationId = searchParams.get("conversationId");
+    if (!conversationId || !currentUser) return;
+    handleSelectConversation(conversationId);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("conversationId");
+        return next;
+      },
+      { replace: true },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, currentUser]);
+
   // Start (or resume) a direct message thread. If a real conversation with
   // this user already exists, open it; otherwise open a pending/local DM
   // shell — the real conversation is created server-side on first send.
@@ -300,11 +319,6 @@ export default function ChatPage() {
   const handleBroadcastCreated = async (broadcastList: IChatBroadcastList) => {
     await refetchBroadcastLists();
     handleSelectConversation(broadcastList._id);
-  };
-
-  // Silence user globally
-  const handleSilenceUser = () => {
-    // No-op for now
   };
 
   return (
@@ -405,12 +419,12 @@ export default function ChatPage() {
         chatUsers={chatUsersList}
         onBroadcastCreated={handleBroadcastCreated}
       />
-      <SilenceUserModal
+      {/* <SilenceUserModal
         isOpen={modalOpen.silence}
         onClose={() => setModalOpen({ ...modalOpen, silence: false })}
         onSilence={handleSilenceUser}
         chatUsers={chatUsersList}
-      />
+      /> */}
     </div>
   );
 }

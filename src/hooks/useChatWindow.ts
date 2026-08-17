@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import DOMPurify from "dompurify";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import DOMPurify from "dompurify";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 import { useSocket } from "@/providers/SocketProvider";
 import {
@@ -57,7 +57,10 @@ const sanitizeMessageHtml = (html: string): string =>
       "code",
       "span",
     ],
-    ALLOWED_ATTR: ["href", "target", "rel"],
+    // "style" is allowed so the sender's rich-text formatting (color,
+    // background, font size, alignment, etc. set via RichTextEditor) is
+    // preserved exactly when rendered on either side of the conversation.
+    ALLOWED_ATTR: ["href", "target", "rel", "style"],
   });
 
 interface UseChatWindowProps {
