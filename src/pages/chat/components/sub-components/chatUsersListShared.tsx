@@ -4,6 +4,7 @@ import {
   Landmark,
   MapPin,
   Backpack,
+  User,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,6 +31,12 @@ export const roleIcons: Record<TUserRole, LucideIcon> = {
   dmo: MapPin,
   traveller: Backpack,
 };
+
+// Fallback for a role value outside the known TUserRole set (e.g. missing
+// or unrecognized data from the API) — avoids passing `undefined` as a
+// component to JSX, which crashes with React error #130.
+export const getRoleIcon = (role?: TUserRole): LucideIcon =>
+  (role && roleIcons[role]) || User;
 
 // "Online" / "Last seen <relative time>" / nothing (never connected)
 export const getPresenceLabel = (

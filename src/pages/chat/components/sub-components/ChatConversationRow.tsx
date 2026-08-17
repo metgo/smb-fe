@@ -7,7 +7,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   getRoleBadgeClasses,
   getPresenceLabel,
-  roleIcons,
+  getRoleIcon,
 } from "./chatUsersListShared";
 
 interface ChatConversationRowProps {
@@ -111,12 +111,12 @@ export const ChatConversationRow: React.FC<ChatConversationRowProps> = ({
             {conv.name}
             {dmUser &&
               (() => {
-                const RoleIcon = roleIcons[dmUser.role];
+                const RoleIcon = getRoleIcon(dmUser.role);
                 return (
                   <span
                     className={clsx(
                       "px-2 py-0.5 text-[9px] font-bold rounded-full capitalize shrink-0 flex items-center gap-1",
-                      roleBadgeClasses[dmUser.role],
+                      dmUser.role && roleBadgeClasses[dmUser.role],
                     )}
                   >
                     <RoleIcon className="w-2.5 h-2.5" />

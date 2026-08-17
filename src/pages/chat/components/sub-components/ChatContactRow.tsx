@@ -5,7 +5,7 @@ import { getInitials } from "@/helpers";
 import {
   getRoleBadgeClasses,
   getPresenceLabel,
-  roleIcons,
+  getRoleIcon,
 } from "./chatUsersListShared";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -36,7 +36,7 @@ export const ChatContactRow: React.FC<ChatContactRowProps> = ({
   } = useThemeClasses();
 
   const roleBadgeClasses = getRoleBadgeClasses(isDark);
-  const RoleIcon = roleIcons[user.role];
+  const RoleIcon = getRoleIcon(user.role);
 
   return (
     <div
@@ -73,7 +73,7 @@ export const ChatContactRow: React.FC<ChatContactRowProps> = ({
           <span
             className={clsx(
               "px-2 py-0.5 text-xs font-semibold rounded-full capitalize shrink-0 flex items-center gap-1",
-              roleBadgeClasses[user.role],
+              user.role && roleBadgeClasses[user.role],
             )}
           >
             <RoleIcon className="w-3 h-3" />
