@@ -1,9 +1,9 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import DOMPurify from "dompurify";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { useSocket } from "@/providers/SocketProvider";
+import { sanitizeMessageHtml } from "@/helpers";
 import {
   useLazyFetchConversationMessagesQuery,
   useSendMessageMutation,
@@ -33,35 +33,6 @@ const mapWireMessage = (
 // Typing a markdown-style formatting character or a leading "/" switches
 // the composer into the rich text editor, mirroring Teams' behavior.
 const RICH_TEXT_TRIGGER = /^\/|[*_`#>[\]-]/;
-
-const sanitizeMessageHtml = (html: string): string =>
-  DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
-      "p",
-      "br",
-      "strong",
-      "em",
-      "u",
-      "s",
-      "a",
-      "ul",
-      "ol",
-      "li",
-      "blockquote",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "hr",
-      "code",
-      "span",
-    ],
-    // "style" is allowed so the sender's rich-text formatting (color,
-    // background, font size, alignment, etc. set via RichTextEditor) is
-    // preserved exactly when rendered on either side of the conversation.
-    ALLOWED_ATTR: ["href", "target", "rel", "style"],
-  });
 
 interface UseChatWindowProps {
   conversationId: string;
@@ -695,6 +666,7 @@ export const useChatWindow = ({
     typingUsers,
     lightboxUrl,
     conversation,
+    groupDetails,
     isComposerDisabled,
 
     // Refs

@@ -77,7 +77,9 @@ export const ChatUsersListHeader: React.FC<ChatUsersListHeaderProps> = ({
     { key: "all", label: t("all"), icon: null },
     { key: "dm", label: t("direct_messages"), icon: Mail },
     { key: "group", label: t("groups"), icon: Users },
-    { key: "broadcast", label: t("broadcasts"), icon: Megaphone },
+    ...(canManageBroadcasts
+      ? [{ key: "broadcast" as const, label: t("broadcasts"), icon: Megaphone }]
+      : []),
   ];
 
   return (

@@ -82,15 +82,14 @@ export const ChatCreatorBubble: React.FC<ChatCreatorBubbleProps> = ({
         onClick={() => setCollapsed(false)}
         title={`Message ${sender.name}`}
         className={clsx(
-          "fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full border shadow-lg flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
+          "fixed bottom-6 right-6 z-40 w-14 h-14 bg-[#ff6634] rounded-full border animate-pulse shadow-lg flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
           borderColor,
-          isDark ? "bg-gray-900" : "bg-white",
         )}
       >
-        <span className="relative">
-          <MessageCircle className={clsx("w-5 h-5", textPrimary)} />
+        <span className="relative animate-bounce">
+          <MessageCircle className={clsx("w-6 h-6 text-white")} />
           {conversation.unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-teal-500 ring-2 ring-white dark:ring-gray-900" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-teal-500" />
           )}
         </span>
       </button>

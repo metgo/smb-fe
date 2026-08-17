@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+
 import { formatDateRange } from "@/helpers/formatter";
 
 export function uploadWithProgress(
@@ -132,6 +134,37 @@ export function getPlainTextFromRichText(html: string): string {
 
   return temp.textContent?.trim() || "";
 }
+
+// Shared sanitizer for RichTextEditor-authored HTML sent as chat/broadcast
+// message content, keeping only the formatting tags/attrs CKEditor emits.
+export const sanitizeMessageHtml = (html: string): string =>
+  DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "u",
+      "s",
+      "a",
+      "ul",
+      "ol",
+      "li",
+      "blockquote",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "hr",
+      "code",
+      "span",
+    ],
+    // "style" is allowed so the sender's rich-text formatting (color,
+    // background, font size, alignment, etc. set via RichTextEditor) is
+    // preserved exactly when rendered on either side of the conversation.
+    ALLOWED_ATTR: ["href", "target", "rel", "style"],
+  });
 
 export function getMatchedItems(originalList: any, selectedIds?: string[]) {
   if (!originalList?.length || !selectedIds?.length) return [];
