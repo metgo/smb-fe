@@ -344,7 +344,10 @@ export function useEventWizardState({
         noOfPeople: capacity,
         isUnlimited: capacityType === "unlimited",
       },
-      customQuestions,
+      customQuestions: customQuestions.map((q) => ({
+        question: q.label,
+        isRequired: q.required,
+      })),
     }),
     [registrationRequired, capacity, capacityType, customQuestions],
   );
@@ -382,10 +385,9 @@ export function useEventWizardState({
   const stepPayloadMap = useMemo(
     () => ({
       1: buildBasicInfoPayload,
-      2: buildBasicInfoPayload,
-      3: buildDateTimePayload,
-      4: buildRegistrationPayload,
-      6: buildMessagingPayload,
+      2: buildDateTimePayload,
+      3: buildRegistrationPayload,
+      4: buildMessagingPayload,
       5: () => ({ images: eventImages }),
     }),
     [
@@ -539,7 +541,14 @@ export function useEventWizardState({
     setCapacityType(
       editData.registration?.isUnlimited ? "unlimited" : "limited",
     );
-    setCustomQuestions(editData.customQuestions ?? []);
+    setCustomQuestions(
+      (editData.customQuestions ?? []).map((q: any, index: number) => ({
+        id: q._id ?? q.id ?? `${Date.now()}-${index}`,
+        label: q.question ?? q.label ?? "",
+        type: "text" as const,
+        required: q.isRequired ?? q.required ?? false,
+      })),
+    );
     setSelectAssociatedWebsiteIds(editData?.associatedWebsiteIds);
     setEventImages(editData.images ?? []);
 
