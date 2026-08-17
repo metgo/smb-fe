@@ -15,6 +15,7 @@ import { OrdersService } from 'src/modules/orders/orders.services';
 import { ExpireOrderService } from 'src/modules/orders/expire-orders.services';
 import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
 import { ProductsModule } from 'src/modules/products/products.module';
+import { TicketModule } from 'src/modules/tickets/tickets.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
@@ -41,6 +42,7 @@ import { DocUploadModule } from '../doc-upload/doc-upload.module';
     forwardRef(() => ExternalApiModule),
     forwardRef(() => PaymentsModule),
     ProductsModule,
+    TicketModule,
     forwardRef(() => UsersModule),
     forwardRef(() => VoucherModule),
     ConfigModule,

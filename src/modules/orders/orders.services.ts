@@ -56,6 +56,7 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { SessionBookingsService } from 'src/modules/session-bookings/session-bookings.service';
 import { GetTicketByIdsQuery } from '../tickets/queries/get-ticket-by-ids.query';
 import { Ticket } from '../tickets/schema/tickets.schema';
+import { TicketsService } from '../tickets/tickets.services';
 import { GetEventByIdsQuery } from '../events/queries/get-by-ids.query';
 import { DocUploadService } from '../doc-upload/doc-upload.service';
 
@@ -96,6 +97,7 @@ export class OrdersService {
     private readonly businessService: BusinessService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
+    private readonly ticketsService: TicketsService,
     private readonly orderProductService: OrderProductService,
     @Inject(forwardRef(() => VoucherService))
     private readonly voucherService: VoucherService,
@@ -646,6 +648,10 @@ export class OrdersService {
       await this.productsService.deductQuantity(cartItemsProduct);
     }
 
+    if (cartItemsTicket?.length) {
+      await this.ticketsService.deductQuantity(cartItemsTicket);
+    }
+
     await this.cartService.updateCartPostCheckout(
       command.cartId,
       order._id,
@@ -877,7 +883,7 @@ export class OrdersService {
           .filter(ticket => ticket.itemType === OrderItemType.TICKET)
           .map(ticket => ticket.id.toString());
 
-        // await this.productsService.deductQuantity(findCartProducts);
+        await this.ticketsService.deductQuantity(findCartTickets);
         getTicketsInformation = await this.queryBus.execute(
           new GetTicketByIdsQuery(cartTickets),
         );

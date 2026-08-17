@@ -27,6 +27,12 @@ export class GetAllTicketsHandler implements IQueryHandler<GetAllTicketsQuery> {
       const query: any = {
         $and: [
           { isDeleted: { $ne: true } },
+          {
+            $or: [
+              { 'quantity.remaining': { $gt: 0 } },
+              { 'quantity.isUnlimited': true },
+            ],
+          },
           ...(eventId ? [{ eventId: new mongoose.Types.ObjectId(eventId) }] : []),
           ...(status ? [{ status }] : []),
           ...(type ? [{ type }] : []),
