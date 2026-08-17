@@ -12,6 +12,13 @@ interface UseFilesUploadOptions {
   initialImages?: IImage[];
   onChange?: (images: TImages) => void;
   onImagesChange?: (updatedImages: TImages) => void;
+  /**
+   * When true, deleting an existing (already-uploaded) image only clears it
+   * locally so a new image can be uploaded in its place — the remote GCS
+   * file is never removed. Use this when the images belong to a source
+   * record being duplicated, not to the record currently being edited.
+   */
+  skipRemoteDelete?: boolean;
 }
 
 /**
@@ -22,6 +29,7 @@ export function useFilesUpload({
   initialImages = [],
   onChange,
   onImagesChange,
+  skipRemoteDelete = false,
 }: UseFilesUploadOptions = {}) {
   const { t } = useTranslation("toast");
 
@@ -36,10 +44,12 @@ export function useFilesUpload({
   const [images, setImages] = useState<IImageUpload[]>([]);
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<IDeleteTarget | null>(null);
+  const hasHydratedRef = useRef(false);
 
   /* ─── Hydrate existing images (edit mode) ────────────────────────── */
   useEffect(() => {
-    if (!initialImages?.length || images.length) return;
+    if (!initialImages?.length || hasHydratedRef.current) return;
+    hasHydratedRef.current = true;
 
     const hasPrimary = initialImages.some((img) => img.isPrimary);
     const hydrated: IImageUpload[] = initialImages.map((img, index) => ({
@@ -53,7 +63,7 @@ export function useFilesUpload({
 
     setImages(hydrated);
     setPrimaryImageIndex(hydrated.findIndex((i) => i.isPrimary) || 0);
-  }, [initialImages, images.length]);
+  }, [initialImages]);
 
   /* ─── Sync payload to parent ─────────────────────────────────────── */
   useEffect(() => {
@@ -190,6 +200,18 @@ export function useFilesUpload({
   const handleDeleteImage = (image: IImageUpload, index: number) => {
     if (image.status !== "success") {
       removeImage(index);
+      return;
+    }
+    if (skipRemoteDelete) {
+      // Source image belongs to the record being duplicated — never
+      // touch it on GCS, just free up the slot for a new upload.
+      const updatedImages: TImages = images
+        .filter((_, i) => i !== index)
+        .filter((img) => img.status === "success")
+        .map((img, i) => ({ image: img.gcsURL!, isPrimary: i === 0 }));
+
+      removeImage(index);
+      onImagesChangeRef.current?.(updatedImages);
       return;
     }
     if (image.gcsURL) setDeleteTarget({ imageUrl: image.gcsURL, index });

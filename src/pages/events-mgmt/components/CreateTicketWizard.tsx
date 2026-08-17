@@ -86,6 +86,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
     handleDeleteImage,
   } = useFilesUpload({
     initialImages: editData?.imageUrl ? [{ image: editData.imageUrl }] : [],
+    skipRemoteDelete: opMode === IOpMode.DUPLICATE,
   });
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
@@ -807,7 +808,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDeleteImage(images[0], 0)}
-                    className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
