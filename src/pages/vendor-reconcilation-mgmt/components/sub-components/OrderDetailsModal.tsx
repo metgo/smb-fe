@@ -33,7 +33,6 @@ export default function OrderDetailsModal({
   // onReject,
   loading,
 }: OrderDetailsModalProps) {
-  console.log(order);
   const { t } = useTranslation("reconciliation");
   const { isDark } = useThemeClasses();
   const { isRTL, theme } = useAppSelector((state) => state.settings);
@@ -204,21 +203,19 @@ export default function OrderDetailsModal({
                     <div className="mt-1">
                       <span
                         className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === "pending"
+                          // order.status is OrderStatus - used to wrongly
+                          // check ReconciliationStatus values here, so completed orders fell through to red
+                          order.status === "completed"
                             ? isDark
-                              ? "bg-yellow-900/20 text-yellow-400"
-                              : "bg-yellow-100 text-yellow-800"
-                            : order.status === "approved"
+                              ? "bg-green-900/20 text-green-400"
+                              : "bg-green-100 text-green-800"
+                            : order.status === "canceled"
                               ? isDark
-                                ? "bg-green-900/20 text-green-400"
-                                : "bg-green-100 text-green-800"
-                              : order.status === "disputed"
-                                ? isDark
-                                  ? "bg-orange-900/20 text-orange-400"
-                                  : "bg-orange-100 text-orange-800"
-                                : isDark
-                                  ? "bg-red-900/20 text-red-400"
-                                  : "bg-red-100 text-red-800"
+                                ? "bg-red-900/20 text-red-400"
+                                : "bg-red-100 text-red-800"
+                              : isDark
+                                ? "bg-yellow-900/20 text-yellow-400"
+                                : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
                         {t(order.status)}

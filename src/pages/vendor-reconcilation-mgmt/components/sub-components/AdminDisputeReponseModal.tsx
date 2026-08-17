@@ -44,7 +44,8 @@ export const AdminDisputeResponseModal = ({
 
   const isResolved =
     order.reconciliationStatus === "approved" ||
-    order.reconciliationStatus === "rejected";
+    order.reconciliationStatus === "rejected" ||
+    order.reconciliationStatus === "closed";
 
   const isDark = theme === "dark";
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";

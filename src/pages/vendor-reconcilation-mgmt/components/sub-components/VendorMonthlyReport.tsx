@@ -67,7 +67,7 @@ interface OrderProduct {
     platformFee: number;
     disputeId?: string;
     reconciliationStatus?:
-      "pending" | "approved" | "canceled" | "disputed" | "rejected" | "closed";
+      "pending" | "approved" | "cancelled" | "disputed" | "rejected" | "closed";
     vendorFacingResponse?: string;
   };
   customerInformation: {
@@ -128,7 +128,9 @@ function mapOrderProductList(d: any, language: Language) {
     netToVendor: (d.totalAmount || 0) - (d.fee || 0),
     status: d.status,
     reconciliationStatus: d.reconciliationStatus,
-    paymentStatus: d.reconciliationStatus || "",
+    // list endpoint has no real payment-status field - leave blank rather
+    // than fake it from reconciliationStatus, which briefly leaked through
+    paymentStatus: "",
     externalApiId: d.externalApiId || "",
 
     paymentMethod: "",
@@ -194,10 +196,7 @@ function mapOrderProductDetails(
     deliveryMethod: d?.deliveryInformation?.deliveryMethod || "",
     deliveryAddress: address,
     specialInstructions: d?.deliveryInformation?.specialInstructions || "",
-    // The details endpoint nests disputeId under orderInformation, but the
-    // list endpoint (mapOrderProductList) puts it top-level - fall back to
-    // that shape too so we never end up substituting the orderProductId for
-    // a real disputeId downstream.
+    // details endpoint nests disputeId under orderInformation, list puts it top-level - check both
     disputeId: d.orderInformation?.disputeId || (d as any).disputeId,
   };
 }
@@ -230,7 +229,6 @@ export const VendorMonthlyReport = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<MonthlyOrder | null>(null);
-  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [isReopenDisputeFlow, setIsReopenDisputeFlow] = useState(false);
@@ -803,13 +801,8 @@ export const VendorMonthlyReport = () => {
     }
   };
 
-  // Prefer the backend's own authoritative targetMonth (computed in
-  // Asia/Jerusalem time, same as the actual finalize call) once the preview
-  // loads - the client-side "last calendar month" guess below is only a
-  // placeholder shown for the brief moment before that response arrives,
-  // since the browser's local clock/timezone can disagree with the server
-  // near a month boundary or under clock skew, and this label is what the
-  // CFO confirms against.
+  // prefer the backend's authoritative targetMonth once the preview loads -
+  // the client-side guess below is just a placeholder (browser clock/timezone can disagree near month boundaries)
   const targetMonth = finalizeSweepPreview?.targetMonth;
   const closeAllOrdersTargetMonthLabel = useMemo(() => {
     if (targetMonth) {
@@ -881,6 +874,12 @@ export const VendorMonthlyReport = () => {
         label: t("disputed"),
       },
       canceled: {
+        bg: isDark ? "bg-red-900/20" : "bg-red-100",
+        text: isDark ? "text-red-400" : "text-red-800",
+        icon: XCircle,
+        label: t("canceled"),
+      },
+      cancelled: {
         bg: isDark ? "bg-red-900/20" : "bg-red-100",
         text: isDark ? "text-red-400" : "text-red-800",
         icon: XCircle,
@@ -1045,6 +1044,7 @@ export const VendorMonthlyReport = () => {
             order.reconciliationStatus !== "closed" &&
             order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "rejected" &&
+            order.reconciliationStatus !== "cancelled" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -1099,6 +1099,7 @@ export const VendorMonthlyReport = () => {
             order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "rejected" &&
             order.reconciliationStatus !== "closed" &&
+            order.reconciliationStatus !== "cancelled" &&
             order.status !== "completed" && (
               <button
                 onClick={() => handleCancelOrder(order)}
@@ -1294,7 +1295,7 @@ export const VendorMonthlyReport = () => {
                 <option value="processing">{t("processing")}</option>
                 <option value="shipped">{t("shipped")}</option>
                 <option value="completed">{t("completed")}</option>
-                <option value="cancelled">{t("canceled")}</option>
+                <option value="canceled">{t("canceled")}</option>
               </select>
             </div>
 
@@ -1317,6 +1318,7 @@ export const VendorMonthlyReport = () => {
                 <option value="approved">{t("approved")}</option>
                 <option value="disputed">{t("disputed")}</option>
                 <option value="rejected">{t("rejected")}</option>
+                <option value="cancelled">{t("canceled")}</option>
                 <option value="closed">{t("paid")}</option>
               </select>
             </div>
