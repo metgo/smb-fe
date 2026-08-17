@@ -205,22 +205,29 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
                         placeholder={t("question_placeholder")}
                         className={`flex-1 px-4 py-3 rounded-lg border ${inputClasses}`}
                       />
-                      <select
-                        value={q.type}
-                        onChange={(e) => {
-                          const updated = [...customQuestions];
-                          updated[index] = {
-                            ...updated[index],
-                            type: e.target.value as CustomQuestion["type"],
-                          };
-                          setCustomQuestions(updated);
-                        }}
-                        className={`px-4 py-3 rounded-lg border ${inputClasses}`}
+                      <label
+                        className={clsx(
+                          "flex items-center gap-2 px-4 py-3 whitespace-nowrap select-none cursor-pointer",
+                          textSecondary,
+                        )}
                       >
-                        <option value="text">{t("text")}</option>
-                        <option value="textarea">{t("textarea")}</option>
-                        <option value="checkbox">{t("checkbox")}</option>
-                      </select>
+                        <input
+                          type="checkbox"
+                          checked={q.required}
+                          onChange={(e) => {
+                            const updated = [...customQuestions];
+                            updated[index] = {
+                              ...updated[index],
+                              required: e.target.checked,
+                            };
+                            setCustomQuestions(updated);
+                          }}
+                          className="w-4 h-4 rounded accent-teal-600"
+                        />
+                        <span className="text-sm font-medium">
+                          {t("required")}
+                        </span>
+                      </label>
                       <button
                         onClick={() =>
                           setCustomQuestions(
