@@ -44,20 +44,20 @@ const TicketRegDetailModal = ({
   } = useThemeClasses();
   const [resendTicketEmailToCustomer, { isLoading: isResendingEmail }] =
     useResendTicketEmailToCustomerMutation();
-  const [activeTab, setActiveTab] = useState<"general" | "answers">(
-    "general",
-  );
+  const [activeTab, setActiveTab] = useState<"general" | "answers">("general");
 
-  // ticketId is compulsory for this lookup - email/phone are supporting
-  // filters and get dropped from the request when absent (see cleanParams
-  // in axiosBaseQuery), so skip the call entirely without a ticketId.
+  // ticketId is compulsory for this lookup - it's the ticket-type id
+  // (ticketDetails.ticketId), not this registration record's own _id.
+  // email/phone are supporting filters and get dropped from the request
+  // when absent (see cleanParams in axiosBaseQuery), so skip the call
+  // entirely without a ticketId.
   const { data: ticketAnswersData } = useGetEventTicketAnswersQuery(
     {
-      ticketId: ticketDetails?._id as string,
+      ticketId: ticketDetails?.ticketId as string,
       email: ticketDetails?.email,
       phone: ticketDetails?.phone,
     },
-    { skip: !ticketDetails?._id },
+    { skip: !ticketDetails?.ticketId },
   );
 
   if (!ticketDetails) return null;
@@ -218,9 +218,7 @@ const TicketRegDetailModal = ({
                     textTertiary,
                   )}
                 />
-                <p className={textTertiary}>
-                  {t("no_registration_answers")}
-                </p>
+                <p className={textTertiary}>{t("no_registration_answers")}</p>
               </div>
             )
           ) : (

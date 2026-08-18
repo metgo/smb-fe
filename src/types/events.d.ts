@@ -347,6 +347,7 @@ interface IEventTicket {
   lastName: string | null;
   paymentMode: string[];
   paymentDate: string | null;
+  ticketId: string;
   ticketName: string;
   ticketImage: { image: string }[];
   orderProductId?: string;
