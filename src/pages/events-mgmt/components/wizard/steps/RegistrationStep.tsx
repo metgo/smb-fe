@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -58,6 +58,21 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
     customQuestions,
     markDirty,
   ]);
+
+  // Scroll the newly-added question into view - it renders at the bottom
+  // of the list, below the fold, so without this the user has no visual
+  // confirmation that clicking "Add question" did anything.
+  const lastQuestionRef = useRef<HTMLDivElement>(null);
+  const prevQuestionCountRef = useRef(customQuestions.length);
+  useEffect(() => {
+    if (customQuestions.length > prevQuestionCountRef.current) {
+      lastQuestionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+    prevQuestionCountRef.current = customQuestions.length;
+  }, [customQuestions.length]);
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -183,6 +198,7 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
                 customQuestions.map((q, index) => (
                   <div
                     key={q.id}
+                    ref={index === customQuestions.length - 1 ? lastQuestionRef : undefined}
                     className={clsx(
                       "p-5 rounded-xl border",
                       isDark
