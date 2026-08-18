@@ -114,13 +114,9 @@ const TicketRegDetailModal = ({
   );
 
   return (
-    <ModalWrapper
-      onClose={() => setIsOpen(false)}
-      height="h-max-[40vh]"
-      maxWidth="max-w-3xl"
-    >
-      <div className="p-6 sm:p-7">
-        <div className="mb-5">
+    <ModalWrapper onClose={() => setIsOpen(false)} maxWidth="max-w-3xl">
+      <div className="flex flex-col h-full overflow-hidden">
+        <div className="shrink-0 p-6 pb-0 sm:p-7 sm:pb-0">
           <h1 className={clsx("text-2xl font-semibold", textPrimary)}>
             {t("ticket_reg_detail_title")}
           </h1>
@@ -130,7 +126,7 @@ const TicketRegDetailModal = ({
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-7 space-y-4">
           <Section title={t("customer_information")}>
             <Field
               icon={User}
@@ -230,24 +226,29 @@ const TicketRegDetailModal = ({
               />
             )}
           </Section>
+        </div>
 
-          <div className={clsx("flex justify-end pt-3 border-t", borderColor)}>
-            <button
-              onClick={handleResendEmail}
-              disabled={isResendingEmail}
-              className={clsx(
-                "px-4 py-2 cursor-pointer bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center gap-2 shadow-sm",
-                isResendingEmail && "opacity-50 cursor-not-allowed",
-              )}
-            >
-              {isResendingEmail ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-              {t("resend_email_to_customer")}
-            </button>
-          </div>
+        <div
+          className={clsx(
+            "shrink-0 flex justify-end p-6 pt-3 sm:p-7 sm:pt-3 border-t",
+            borderColor,
+          )}
+        >
+          <button
+            onClick={handleResendEmail}
+            disabled={isResendingEmail}
+            className={clsx(
+              "px-4 py-2 cursor-pointer bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center gap-2 shadow-sm",
+              isResendingEmail && "opacity-50 cursor-not-allowed",
+            )}
+          >
+            {isResendingEmail ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            {t("resend_email_to_customer")}
+          </button>
         </div>
       </div>
     </ModalWrapper>

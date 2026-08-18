@@ -451,7 +451,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   }
 
   return (
-    <div className="max-h-[75vh]">
+    <div className="max-h-[75vh] overflow-y-auto">
       <section>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`text-2xl font-semibold ${textPrimary}`}>
