@@ -85,6 +85,17 @@ export const eventQueryApi = createApi({
       }),
     }),
 
+    getEventTicketAnswers: builder.query<
+      IEventTicketAnswersResponse,
+      { ticketId: string; email?: string; phone?: string }
+    >({
+      query: ({ ticketId, email, phone }) => ({
+        url: `${endpoints.eventTicketAnswers}/${ticketId}`,
+        method: "GET",
+        params: { email, phone },
+      }),
+    }),
+
     getAllEvents: builder.query<any, EventListParams>({
       query: (params) => ({
         url: `${endpoints.events}?sortBy=DESC`,
@@ -160,6 +171,7 @@ export const {
   useGetAllUpcomingEventsQuery,
   useGetEventTicketsQuery,
   useLazyGetEventTicketsQuery,
+  useGetEventTicketAnswersQuery,
   useGetPublicEventTicketQuery,
   useLazyGetPublicEventTicketQuery,
   useGetSessionsByEventIdQuery,

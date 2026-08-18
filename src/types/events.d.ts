@@ -347,12 +347,38 @@ interface IEventTicket {
   lastName: string | null;
   paymentMode: string[];
   paymentDate: string | null;
+  ticketId: string;
   ticketName: string;
   ticketImage: { image: string }[];
   orderProductId?: string;
   amount?: number;
   quantity?: number;
   paymentStatus?: string;
+}
+
+interface IEventTicketQuestionAnswer {
+  _id: string;
+  questionId: string;
+  question: string;
+  answer: string;
+}
+
+interface IEventTicketAnswerRecord {
+  _id: string;
+  eventInfo: {
+    eventId: string;
+    ticketIds: string[];
+  };
+  purchaserInfo: {
+    email: string;
+    phone: string;
+  };
+  questionAnswer: IEventTicketQuestionAnswer[];
+}
+
+interface IEventTicketAnswersResponse {
+  message: string;
+  data: IEventTicketAnswerRecord[];
 }
 
 interface IEventColumnVisibility {

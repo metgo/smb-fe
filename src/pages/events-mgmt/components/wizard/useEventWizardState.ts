@@ -344,7 +344,12 @@ export function useEventWizardState({
         noOfPeople: capacity,
         isUnlimited: capacityType === "unlimited",
       },
-      customQuestions,
+      customQuestions: customQuestions
+        .filter((q) => q.label.trim() !== "")
+        .map((q) => ({
+          question: q.label,
+          isRequired: q.required,
+        })),
     }),
     [registrationRequired, capacity, capacityType, customQuestions],
   );
@@ -382,10 +387,9 @@ export function useEventWizardState({
   const stepPayloadMap = useMemo(
     () => ({
       1: buildBasicInfoPayload,
-      2: buildBasicInfoPayload,
-      3: buildDateTimePayload,
-      4: buildRegistrationPayload,
-      6: buildMessagingPayload,
+      2: buildDateTimePayload,
+      3: buildRegistrationPayload,
+      4: buildMessagingPayload,
       5: () => ({ images: eventImages }),
     }),
     [
@@ -539,7 +543,14 @@ export function useEventWizardState({
     setCapacityType(
       editData.registration?.isUnlimited ? "unlimited" : "limited",
     );
-    setCustomQuestions(editData.customQuestions ?? []);
+    setCustomQuestions(
+      (editData.customQuestions ?? []).map((q: any, index: number) => ({
+        id: q._id ?? q.id ?? `${Date.now()}-${index}`,
+        label: q.question ?? q.label ?? "",
+        type: "text" as const,
+        required: q.isRequired ?? q.required ?? false,
+      })),
+    );
     setSelectAssociatedWebsiteIds(editData?.associatedWebsiteIds);
     setEventImages(editData.images ?? []);
 
@@ -852,11 +863,18 @@ export function useEventWizardState({
   }, []);
 
   const addCustomQuestion = useCallback(() => {
+    // Side effects (toast) must stay out of the setState updater below -
+    // StrictMode double-invokes functional updaters in dev, which would
+    // fire the toast twice for a single click.
+    if (customQuestions.some((q) => !q.label.trim())) {
+      toast.error(tc("complete_question_before_adding"));
+      return;
+    }
     setCustomQuestions((prev) => [
-      ...prev,
       { id: Date.now().toString(), label: "", type: "text", required: false },
+      ...prev,
     ]);
-  }, []);
+  }, [customQuestions, tc]);
 
   return {
     // Navigation
