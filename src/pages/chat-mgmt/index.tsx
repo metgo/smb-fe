@@ -410,13 +410,11 @@ export default function ChatPage() {
         onClose={() => setModalOpen({ ...modalOpen, newGroup: false })}
         currentUser={currentUser}
         onGroupCreated={handleGroupCreated}
-        chatUsers={chatUsersList}
       />
       <NewBroadcastModal
         isOpen={modalOpen.newBroadcast}
         onClose={() => setModalOpen({ ...modalOpen, newBroadcast: false })}
         currentUser={currentUser}
-        chatUsers={chatUsersList}
         onBroadcastCreated={handleBroadcastCreated}
       />
       {/* <SilenceUserModal

@@ -2,12 +2,15 @@ import clsx from "clsx";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getInitials } from "@/helpers";
-import { Search, ShieldAlert, Check } from "lucide-react";
+import { Search, ShieldAlert, Check, SlidersHorizontal } from "lucide-react";
 
 import type { ModalProps } from "./types";
 import { ModalHeader } from "./ModalHeader";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
+import { useChatUserPicker } from "../../hooks/useChatUserPicker";
+import { ChatUsersFilterPopover } from "../ChatUsersFilterPopover";
+import { ChatUserRowSkeleton } from "../sub-components";
 
 interface NewGroupModalProps extends ModalProps {
   currentUser: IChatUser | null;
@@ -16,7 +19,6 @@ interface NewGroupModalProps extends ModalProps {
     description: string,
     memberIds: string[],
   ) => void;
-  chatUsers: IChatUser[];
 }
 
 export const NewGroupModal: React.FC<NewGroupModalProps> = ({
@@ -24,27 +26,34 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   onClose,
   currentUser,
   onGroupCreated,
-  chatUsers,
 }) => {
   const { t } = useTranslation("chat");
   const { isDark, borderColor, inputClasses, textPrimary, textSecondary } =
     useThemeClasses();
   const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
   const [description, setDescription] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+
+  const {
+    users: chatUsers,
+    isFetching: isUsersFetching,
+    listRef,
+    search,
+    setSearch,
+    filters,
+    setFilters,
+    showFilterPopover,
+    setShowFilterPopover,
+    appliedFilterCount,
+    lockDmo,
+    lockAuthority,
+  } = useChatUserPicker(currentUser, isOpen);
 
   // Group creation is only for ADMIN, SUPERADMIN, DMO, AUTHORITY. Travellers cannot.
   const isEligible =
     currentUser &&
     ["superadmin", "dmo", "authority"].includes(currentUser.role);
-
-  const filtered = chatUsers.filter((u) => {
-    const term = search.toLowerCase();
-    const userName = u.name;
-    return userName.toLowerCase().includes(term);
-  });
 
   const toggleMember = (id: string) => {
     if (selectedMembers.includes(id)) {
@@ -187,88 +196,134 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
             >
               {t("add_members_selected", { count: selectedMembers.length })}
             </label>
-            <div className="relative mb-2">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder={t("search_contacts")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className={clsx(
-                  "w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm",
-                  inputClasses,
-                  "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+            <div className="flex items-start gap-2 mb-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={t("search_contacts")}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className={clsx(
+                    "w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm",
+                    inputClasses,
+                    "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+                  )}
+                />
+              </div>
+
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowFilterPopover((v) => !v)}
+                  title={t("filters")}
+                  className={clsx(
+                    "relative p-2.5 rounded-lg border cursor-pointer transition-colors",
+                    borderColor,
+                    appliedFilterCount > 0
+                      ? isDark
+                        ? "bg-teal-900/30 text-teal-400 border-teal-700"
+                        : "bg-teal-50 text-teal-700 border-teal-300"
+                      : isDark
+                        ? "text-gray-400 hover:bg-gray-800"
+                        : "text-gray-500 hover:bg-gray-100",
+                  )}
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  {appliedFilterCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 flex items-center justify-center rounded-full bg-teal-600 text-white text-[10px] font-bold">
+                      {appliedFilterCount}
+                    </span>
+                  )}
+                </button>
+
+                {showFilterPopover && (
+                  <ChatUsersFilterPopover
+                    filters={filters}
+                    onChange={setFilters}
+                    onClose={() => setShowFilterPopover(false)}
+                    lockDmo={lockDmo}
+                    lockAuthority={lockAuthority}
+                  />
                 )}
-              />
+              </div>
             </div>
 
             <div
+              ref={listRef}
               className={clsx(
                 "max-h-45 overflow-y-auto space-y-1.5 border rounded-lg p-2",
                 borderColor,
               )}
             >
-              {filtered.length > 0 ? (
-                filtered.map((user) => {
-                  const isSelected = selectedMembers.includes(user._id);
-                  return (
-                    <button
-                      key={user._id}
-                      type="button"
-                      onClick={() => toggleMember(user._id)}
-                      className={clsx(
-                        "w-full flex items-center justify-between p-2 rounded-md text-left transition-colors cursor-pointer",
-                        isDark ? "hover:bg-gray-800" : "hover:bg-gray-50",
-                      )}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div
-                          className={clsx(
-                            "w-9 h-9 rounded-full shrink-0 flex items-center justify-center font-bold text-xs",
-                            isDark
-                              ? "bg-gray-800 border-gray-700 text-gray-200"
-                              : "bg-gray-100 border-gray-200 text-gray-600",
-                            "border",
-                          )}
-                        >
-                          {getInitials(user?.name)}
-                        </div>
-                        <div className="min-w-0">
-                          <p
-                            className={clsx(
-                              "text-sm font-semibold",
-                              textPrimary,
-                              "truncate",
-                            )}
-                          >
-                            {user.name}
-                          </p>
-                          <p className="text-[11px] text-gray-400 capitalize truncate">
-                            {user.role}
-                          </p>
-                        </div>
-                      </div>
-                      <div
+              {chatUsers.length > 0
+                ? chatUsers.map((user) => {
+                    const isSelected = selectedMembers.includes(user._id);
+                    return (
+                      <button
+                        key={user._id}
+                        type="button"
+                        onClick={() => toggleMember(user._id)}
                         className={clsx(
-                          "w-5 h-5 rounded-full border flex items-center justify-center transition-all",
-                          isSelected
-                            ? "bg-teal-500 border-teal-500 text-white"
-                            : isDark
-                              ? "border-gray-700"
-                              : "border-gray-300",
+                          "w-full flex items-center justify-between p-2 rounded-md text-left transition-colors cursor-pointer",
+                          isDark ? "hover:bg-gray-800" : "hover:bg-gray-50",
                         )}
                       >
-                        {isSelected && (
-                          <Check className="w-3.5 h-3.5 stroke-3" />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })
-              ) : (
-                <p className="text-center py-4 text-xs text-gray-400">
-                  {t("no_contacts_found")}
-                </p>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div
+                            className={clsx(
+                              "w-9 h-9 rounded-full shrink-0 flex items-center justify-center font-bold text-xs",
+                              isDark
+                                ? "bg-gray-800 border-gray-700 text-gray-200"
+                                : "bg-gray-100 border-gray-200 text-gray-600",
+                              "border",
+                            )}
+                          >
+                            {getInitials(user?.name)}
+                          </div>
+                          <div className="min-w-0">
+                            <p
+                              className={clsx(
+                                "text-sm font-semibold",
+                                textPrimary,
+                                "truncate",
+                              )}
+                            >
+                              {user.name}
+                            </p>
+                            <p className="text-[11px] text-gray-400 capitalize truncate">
+                              {user.role}
+                            </p>
+                          </div>
+                        </div>
+                        <div
+                          className={clsx(
+                            "w-5 h-5 rounded-full border flex items-center justify-center transition-all shrink-0",
+                            isSelected
+                              ? "bg-teal-500 border-teal-500 text-white"
+                              : isDark
+                                ? "border-gray-700"
+                                : "border-gray-300",
+                          )}
+                        >
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 stroke-3" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })
+                : !isUsersFetching && (
+                    <p className="text-center py-4 text-xs text-gray-400">
+                      {t("no_contacts_found")}
+                    </p>
+                  )}
+
+              {isUsersFetching && (
+                <ChatUserRowSkeleton
+                  borderColor={borderColor}
+                  isDark={isDark}
+                />
               )}
             </div>
           </div>
