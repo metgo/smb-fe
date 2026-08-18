@@ -344,10 +344,12 @@ export function useEventWizardState({
         noOfPeople: capacity,
         isUnlimited: capacityType === "unlimited",
       },
-      customQuestions: customQuestions.map((q) => ({
-        question: q.label,
-        isRequired: q.required,
-      })),
+      customQuestions: customQuestions
+        .filter((q) => q.label.trim() !== "")
+        .map((q) => ({
+          question: q.label,
+          isRequired: q.required,
+        })),
     }),
     [registrationRequired, capacity, capacityType, customQuestions],
   );
