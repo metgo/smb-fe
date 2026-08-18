@@ -402,7 +402,6 @@ export default function ChatPage() {
         onClose={() => setModalOpen({ ...modalOpen, newDm: false })}
         currentUser={currentUser}
         onStartChat={handleStartDm}
-        chatUsers={chatUsersList}
         conversations={conversations}
       />
       <NewGroupModal
