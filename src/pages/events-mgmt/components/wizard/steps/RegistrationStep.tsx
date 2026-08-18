@@ -59,14 +59,14 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
     markDirty,
   ]);
 
-  // Scroll the newly-added question into view - it renders at the bottom
-  // of the list, below the fold, so without this the user has no visual
-  // confirmation that clicking "Add question" did anything.
-  const lastQuestionRef = useRef<HTMLDivElement>(null);
+  // Scroll the newly-added question into view - new questions are
+  // prepended to the top of the list, so without this the user has no
+  // visual confirmation that clicking "Add question" did anything.
+  const firstQuestionRef = useRef<HTMLDivElement>(null);
   const prevQuestionCountRef = useRef(customQuestions.length);
   useEffect(() => {
     if (customQuestions.length > prevQuestionCountRef.current) {
-      lastQuestionRef.current?.scrollIntoView({
+      firstQuestionRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
@@ -198,7 +198,7 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
                 customQuestions.map((q, index) => (
                   <div
                     key={q.id}
-                    ref={index === customQuestions.length - 1 ? lastQuestionRef : undefined}
+                    ref={index === 0 ? firstQuestionRef : undefined}
                     className={clsx(
                       "p-5 rounded-xl border",
                       isDark

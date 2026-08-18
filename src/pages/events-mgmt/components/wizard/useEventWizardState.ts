@@ -863,11 +863,18 @@ export function useEventWizardState({
   }, []);
 
   const addCustomQuestion = useCallback(() => {
+    // Side effects (toast) must stay out of the setState updater below -
+    // StrictMode double-invokes functional updaters in dev, which would
+    // fire the toast twice for a single click.
+    if (customQuestions.some((q) => !q.label.trim())) {
+      toast.error(tc("complete_question_before_adding"));
+      return;
+    }
     setCustomQuestions((prev) => [
-      ...prev,
       { id: Date.now().toString(), label: "", type: "text", required: false },
+      ...prev,
     ]);
-  }, []);
+  }, [customQuestions, tc]);
 
   return {
     // Navigation

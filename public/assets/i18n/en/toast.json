@@ -8,6 +8,7 @@
   "draft_saved": "Draft Saved",
   "draft_failed": "Failed to save draft",
   "fill_all_fields": "Fill all required fields before proceeding",
+  "complete_question_before_adding": "Please fill in the current question before adding a new one",
   "name_required": "Please enter a name before saving",
   "short_description_required": "Please enter a short description before saving",
   "full_description_required": "Please enter a full description before saving",
