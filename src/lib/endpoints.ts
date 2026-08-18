@@ -89,6 +89,7 @@ export const endpoints = {
   contentManagementEvents: "/content-management-events",
   tickets: "/tickets",
   eventTickets: "/event-tickets",
+  eventTicketAnswers: "/event-ticket-answers/by-ticket",
   resendTicketEmailToCustomer: "/resend-order-emails",
 
   // event sessions

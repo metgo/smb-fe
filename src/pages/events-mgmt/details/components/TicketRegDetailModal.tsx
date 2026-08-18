@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
@@ -15,8 +16,10 @@ import {
   Package,
   Send,
   Loader2,
+  HelpCircle,
 } from "lucide-react";
 import { useResendTicketEmailToCustomerMutation } from "@/store/api/eventMutationApi";
+import { useGetEventTicketAnswersQuery } from "@/store/api/eventQueryApi";
 import { toast } from "sonner";
 
 interface TicketRegDetailModalProps {
@@ -41,8 +44,29 @@ const TicketRegDetailModal = ({
   } = useThemeClasses();
   const [resendTicketEmailToCustomer, { isLoading: isResendingEmail }] =
     useResendTicketEmailToCustomerMutation();
+  const [activeTab, setActiveTab] = useState<"general" | "answers">(
+    "general",
+  );
+
+  // ticketId is compulsory for this lookup - email/phone are supporting
+  // filters and get dropped from the request when absent (see cleanParams
+  // in axiosBaseQuery), so skip the call entirely without a ticketId.
+  const { data: ticketAnswersData } = useGetEventTicketAnswersQuery(
+    {
+      ticketId: ticketDetails?._id as string,
+      email: ticketDetails?.email,
+      phone: ticketDetails?.phone,
+    },
+    { skip: !ticketDetails?._id },
+  );
 
   if (!ticketDetails) return null;
+
+  // one record per purchase submission, each carrying its own Q&A set -
+  // flatten since a single ticket normally has exactly one submission
+  const ticketAnswers = (ticketAnswersData?.data ?? []).flatMap(
+    (record) => record.questionAnswer,
+  );
 
   const handleResendEmail = async () => {
     try {
@@ -126,106 +150,190 @@ const TicketRegDetailModal = ({
           </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 sm:p-7 space-y-4">
-          <Section title={t("customer_information")}>
-            <Field
-              icon={User}
-              label={t("full_name")}
-              value={`${ticketDetails.firstName} ${ticketDetails.lastName || ""}`}
-            />
-            <Field icon={Mail} label={t("email")} value={ticketDetails.email} />
-            <Field
-              icon={Phone}
-              label={t("phone")}
-              value={ticketDetails.phone}
-            />
-            <Field
-              icon={CalendarClock}
-              label={t("registration_date")}
-              value={formatDate(ticketDetails.createdAt)}
-            />
-          </Section>
-
-          <Section title={t("ticket_information")}>
-            <Field
-              icon={Ticket}
-              label={t("ticket_name")}
-              value={ticketDetails.ticketName}
-            />
-            <Field
-              icon={Hash}
-              label={t("ticket_id")}
-              value={
-                <span className="font-mono text-xs">{ticketDetails._id}</span>
-              }
-            />
-            {ticketDetails.quantity && (
-              <Field
-                icon={Layers}
-                label={t("quantity")}
-                value={ticketDetails.quantity}
-              />
+        <div
+          className={clsx(
+            "flex border-b mt-4 px-6 sm:px-7 shrink-0",
+            borderColor,
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => setActiveTab("general")}
+            className={clsx(
+              "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+              activeTab === "general"
+                ? "border-teal-500 text-teal-500"
+                : clsx("border-transparent", textTertiary),
             )}
-            <Field
-              icon={DollarSign}
-              label={t("amount")}
-              value={`₪${ticketDetails?.amount?.toFixed(2)}`}
-            />
-            <Field
-              icon={Package}
-              label={t("status")}
-              value={
-                <span
-                  className={pillClasses(
-                    ticketDetails.status === "active" ? "success" : "neutral",
-                  )}
-                >
-                  {ticketDetails.status}
-                </span>
-              }
-            />
-            {ticketDetails.paymentStatus && (
-              <Field
-                icon={CreditCard}
-                label={t("payment_status")}
-                value={
-                  <span
-                    className={pillClasses(
-                      ticketDetails.paymentStatus === "completed"
-                        ? "success"
-                        : "warning",
+          >
+            {t("general_info")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("answers")}
+            className={clsx(
+              "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+              activeTab === "answers"
+                ? "border-teal-500 text-teal-500"
+                : clsx("border-transparent", textTertiary),
+            )}
+          >
+            {t("registration_answers")}
+            {ticketAnswers.length > 0 && ` (${ticketAnswers.length})`}
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 sm:p-7 space-y-4">
+          {activeTab === "answers" ? (
+            ticketAnswers.length > 0 ? (
+              <div className="space-y-3">
+                {ticketAnswers.map((qa) => (
+                  <div
+                    key={qa._id}
+                    className={clsx(
+                      "rounded-xl border p-4",
+                      cardClasses,
+                      borderColor,
                     )}
                   >
-                    {ticketDetails.paymentStatus}
-                  </span>
-                }
-              />
-            )}
-          </Section>
+                    <p className={clsx("text-xs mb-1.5", textTertiary)}>
+                      {qa.question}
+                    </p>
+                    <p
+                      className={clsx(
+                        textPrimary,
+                        "font-medium text-sm wrap-break-word",
+                      )}
+                    >
+                      {qa.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <HelpCircle
+                  className={clsx(
+                    "w-16 h-16 mx-auto mb-4 opacity-50",
+                    textTertiary,
+                  )}
+                />
+                <p className={textTertiary}>
+                  {t("no_registration_answers")}
+                </p>
+              </div>
+            )
+          ) : (
+            <>
+              <Section title={t("customer_information")}>
+                <Field
+                  icon={User}
+                  label={t("full_name")}
+                  value={`${ticketDetails.firstName} ${ticketDetails.lastName || ""}`}
+                />
+                <Field
+                  icon={Mail}
+                  label={t("email")}
+                  value={ticketDetails.email}
+                />
+                <Field
+                  icon={Phone}
+                  label={t("phone")}
+                  value={ticketDetails.phone}
+                />
+                <Field
+                  icon={CalendarClock}
+                  label={t("registration_date")}
+                  value={formatDate(ticketDetails.createdAt)}
+                />
+              </Section>
 
-          <Section title={t("payment_information")}>
-            <Field
-              icon={CreditCard}
-              label={t("payment_mode")}
-              value={ticketDetails.paymentMode.join(", ")}
-            />
-            <Field
-              icon={CalendarClock}
-              label={t("payment_date")}
-              value={formatDate(ticketDetails.paymentDate)}
-            />
-            {ticketDetails.orderProductId && (
-              <Field
-                icon={Hash}
-                label={t("order_product_id")}
-                value={
-                  <span className="font-mono text-xs">
-                    {ticketDetails.orderProductId}
-                  </span>
-                }
-              />
-            )}
-          </Section>
+              <Section title={t("ticket_information")}>
+                <Field
+                  icon={Ticket}
+                  label={t("ticket_name")}
+                  value={ticketDetails.ticketName}
+                />
+                <Field
+                  icon={Hash}
+                  label={t("ticket_id")}
+                  value={
+                    <span className="font-mono text-xs">
+                      {ticketDetails._id}
+                    </span>
+                  }
+                />
+                {ticketDetails.quantity && (
+                  <Field
+                    icon={Layers}
+                    label={t("quantity")}
+                    value={ticketDetails.quantity}
+                  />
+                )}
+                <Field
+                  icon={DollarSign}
+                  label={t("amount")}
+                  value={`₪${ticketDetails?.amount?.toFixed(2)}`}
+                />
+                <Field
+                  icon={Package}
+                  label={t("status")}
+                  value={
+                    <span
+                      className={pillClasses(
+                        ticketDetails.status === "active"
+                          ? "success"
+                          : "neutral",
+                      )}
+                    >
+                      {ticketDetails.status}
+                    </span>
+                  }
+                />
+                {ticketDetails.paymentStatus && (
+                  <Field
+                    icon={CreditCard}
+                    label={t("payment_status")}
+                    value={
+                      <span
+                        className={pillClasses(
+                          ticketDetails.paymentStatus === "completed"
+                            ? "success"
+                            : "warning",
+                        )}
+                      >
+                        {ticketDetails.paymentStatus}
+                      </span>
+                    }
+                  />
+                )}
+              </Section>
+
+              <Section title={t("payment_information")}>
+                <Field
+                  icon={CreditCard}
+                  label={t("payment_mode")}
+                  value={ticketDetails.paymentMode.join(", ")}
+                />
+                <Field
+                  icon={CalendarClock}
+                  label={t("payment_date")}
+                  value={formatDate(ticketDetails.paymentDate)}
+                />
+                {ticketDetails.orderProductId && (
+                  <Field
+                    icon={Hash}
+                    label={t("order_product_id")}
+                    value={
+                      <span className="font-mono text-xs">
+                        {ticketDetails.orderProductId}
+                      </span>
+                    }
+                  />
+                )}
+              </Section>
+            </>
+          )}
         </div>
 
         <div
