@@ -61,6 +61,7 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
 import { AppCacheModule } from './services/cache/cache.module';
 import { PartnersModule } from './modules/partners/partners.module';
 import { SessionBookingsModule } from './modules/session-bookings/session-bookings.module';
+import { EventTicketAnswersModule } from './modules/event-ticket-answers/event-ticket-answers.module';
 // import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
@@ -123,6 +124,7 @@ import { SessionBookingsModule } from './modules/session-bookings/session-bookin
     PromotionsModule,
     PartnersModule,
     SessionBookingsModule,
+    EventTicketAnswersModule,
   ],
   providers: [
     {
