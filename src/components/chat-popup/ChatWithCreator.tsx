@@ -23,7 +23,7 @@ export const ChatWithCreator: React.FC<ChatWithCreatorProps> = ({
   const dispatch = useAppDispatch();
   const authUser = useAppSelector((state) => state.auth.user);
 
-  if (!creator?._id) return null;
+  if (!creator?._id || creator.role === "superadmin") return null;
 
   const chatUser: IChatUser = {
     _id: creator._id,
