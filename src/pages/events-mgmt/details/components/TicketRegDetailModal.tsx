@@ -46,11 +46,6 @@ const TicketRegDetailModal = ({
     useResendTicketEmailToCustomerMutation();
   const [activeTab, setActiveTab] = useState<"general" | "answers">("general");
 
-  // ticketId is compulsory for this lookup - it's the ticket-type id
-  // (ticketDetails.ticketId), not this registration record's own _id.
-  // email/phone are supporting filters and get dropped from the request
-  // when absent (see cleanParams in axiosBaseQuery), so skip the call
-  // entirely without a ticketId.
   const { data: ticketAnswersData } = useGetEventTicketAnswersQuery(
     {
       ticketId: ticketDetails?.ticketId as string,
