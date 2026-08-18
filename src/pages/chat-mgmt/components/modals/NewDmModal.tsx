@@ -131,7 +131,7 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
           {/* User List - scrollable */}
           <div
             ref={listRef}
-            className="max-h-90 flex-1 overflow-y-auto pr-1 space-y-1"
+            className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1"
           >
             {filtered.length > 0
               ? filtered.map((user) => (
