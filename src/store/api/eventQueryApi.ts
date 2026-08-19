@@ -85,6 +85,22 @@ export const eventQueryApi = createApi({
       }),
     }),
 
+    getEventTicketsExportCsv: builder.query<Blob, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `${endpoints.eventTickets}/${eventId}/export/csv`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
+
+    getEventTicketsExportPdf: builder.query<Blob, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `${endpoints.eventTickets}/${eventId}/export/pdf`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
+
     getEventTicketAnswers: builder.query<
       IEventTicketAnswersResponse,
       { ticketId: string; email?: string; phone?: string }
@@ -171,6 +187,8 @@ export const {
   useGetAllUpcomingEventsQuery,
   useGetEventTicketsQuery,
   useLazyGetEventTicketsQuery,
+  useLazyGetEventTicketsExportCsvQuery,
+  useLazyGetEventTicketsExportPdfQuery,
   useGetEventTicketAnswersQuery,
   useGetPublicEventTicketQuery,
   useLazyGetPublicEventTicketQuery,
