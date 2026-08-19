@@ -128,10 +128,10 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
       onClose={onClose}
       showSpinner={isLoading}
       maxWidth="max-w-md"
-      height="h-[85dvh] md:h-max"
+      height="h-[85dvh] md:h-[85vh]"
     >
       <ModalHeader title={t("new_broadcast_list")} />
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 min-h-0">
         <div className="space-y-4 text-left">
           {error && (
             <div

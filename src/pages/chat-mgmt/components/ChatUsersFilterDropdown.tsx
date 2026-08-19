@@ -97,20 +97,34 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
   };
 
   return (
-    <div className="space-y-3 ">
-      <div className="flex items-center justify-between">
-        <h3 className={clsx("text-sm font-bold", textPrimary)}>
-          {t("filters")}
-        </h3>
-        {appliedCount > 0 && (
-          <button
-            type="button"
-            onClick={handleClearAll}
-            className="text-xs font-semibold text-teal-600 hover:text-teal-700 cursor-pointer"
-          >
-            {t("clear_all")}
-          </button>
-        )}
+    <div className="space-y-3">
+      {/* Roles Filter Section */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {ALL_ROLES.map((role) => {
+          const RoleIcon = roleIcons[role];
+          const active = filters.role === role;
+          return (
+            <button
+              key={role}
+              type="button"
+              onClick={() => selectRole(role)}
+              className={clsx(
+                "px-2.5 py-1 text-xs font-semibold rounded-full capitalize flex items-center gap-1.5 border transition-colors cursor-pointer",
+                active
+                  ? "bg-teal-600 border-teal-600 text-white"
+                  : clsx(
+                      borderColor,
+                      isDark
+                        ? "text-gray-300 hover:bg-gray-800"
+                        : "text-gray-600 hover:bg-gray-100",
+                    ),
+              )}
+            >
+              <RoleIcon className="w-3 h-3" />
+              {role}
+            </button>
+          );
+        })}
       </div>
 
       {/* DMO and AUTHORITY on same line for desktop, different lines for mobile */}
@@ -352,43 +366,21 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
         </div>
       </div>
 
-      {/* ROLE Section */}
-      <div>
-        <p
+      {/* Clear All below DMO and Authority */}
+      <div className="flex justify-end pt-1">
+        <button
+          type="button"
+          onClick={handleClearAll}
+          disabled={appliedCount === 0}
           className={clsx(
-            "text-[11px] font-semibold uppercase tracking-wider mb-1.5",
-            textTertiary,
+            "text-xs font-semibold transition-colors",
+            appliedCount > 0
+              ? "text-teal-600 hover:text-teal-700 cursor-pointer"
+              : "text-gray-400 opacity-50 cursor-not-allowed",
           )}
         >
-          {t("role")}
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {ALL_ROLES.map((role) => {
-            const RoleIcon = roleIcons[role];
-            const active = filters.role === role;
-            return (
-              <button
-                key={role}
-                type="button"
-                onClick={() => selectRole(role)}
-                className={clsx(
-                  "px-2.5 py-1 text-xs font-semibold rounded-full capitalize flex items-center gap-1.5 border transition-colors cursor-pointer",
-                  active
-                    ? "bg-teal-600 border-teal-600 text-white"
-                    : clsx(
-                        borderColor,
-                        isDark
-                          ? "text-gray-300 hover:bg-gray-800"
-                          : "text-gray-600 hover:bg-gray-100",
-                      ),
-                )}
-              >
-                <RoleIcon className="w-3 h-3" />
-                {role}
-              </button>
-            );
-          })}
-        </div>
+          {t("clear_all")}
+        </button>
       </div>
     </div>
   );
