@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { getInitials } from "@/helpers";
 import { Search, ShieldAlert, Check, SlidersHorizontal } from "lucide-react";
@@ -34,6 +34,8 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   const [error, setError] = useState("");
   const [description, setDescription] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const {
     users: chatUsers,
@@ -71,14 +73,19 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   const handleCreate = () => {
     if (!name.trim()) {
       setError(t("group_name_required"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      nameInputRef.current?.focus();
       return;
     }
     if (name.length > 60) {
       setError(t("group_name_max_length"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      nameInputRef.current?.focus();
       return;
     }
     if (selectedMembers.length < 2) {
       setError(t("group_min_members"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     onGroupCreated(name.trim(), description.trim(), selectedMembers);
@@ -117,10 +124,10 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
     <ModalWrapper
       onClose={onClose}
       maxWidth="max-w-md"
-      height="h-[85dvh] md:h-[85vh]"
+      height="h-auto max-h-[85dvh] md:max-h-[85vh]"
     >
       <ModalHeader title={t("create_group_chat")} />
-      <div className="flex-1 overflow-y-auto p-4 min-h-0">
+      <div ref={contentRef} className="flex-1 overflow-y-auto p-4 min-h-0">
         <div className="space-y-4 text-left">
           {error && (
             <div
@@ -147,6 +154,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                 {t("group_name_char_count", { count: name.length })}
               </label>
               <input
+                ref={nameInputRef}
                 type="text"
                 maxLength={60}
                 placeholder={t("group_name_placeholder")}

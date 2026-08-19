@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Search, ShieldAlert, Check, SlidersHorizontal } from "lucide-react";
 
@@ -34,6 +34,8 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
   const [description, setDescription] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const {
     users: chatUsers,
@@ -74,14 +76,19 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
     const trimmedName = name.trim();
     if (!trimmedName) {
       setError(t("broadcast_name_required"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      nameInputRef.current?.focus();
       return;
     }
     if (trimmedName.length > 60) {
       setError(t("broadcast_name_max_length"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      nameInputRef.current?.focus();
       return;
     }
     if (selectedMembers.length === 0) {
       setError(t("broadcast_min_members"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     try {
@@ -128,10 +135,10 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
       onClose={onClose}
       showSpinner={isLoading}
       maxWidth="max-w-md"
-      height="h-[85dvh] md:h-[85vh]"
+      height="h-auto max-h-[85dvh] md:max-h-[85vh]"
     >
       <ModalHeader title={t("new_broadcast_list")} />
-      <div className="flex-1 overflow-y-auto p-4 min-h-0">
+      <div ref={contentRef} className="flex-1 overflow-y-auto p-4 min-h-0">
         <div className="space-y-4 text-left">
           {error && (
             <div
@@ -157,6 +164,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
                 {t("broadcast_name_char_count", { count: name.length })}
               </label>
               <input
+                ref={nameInputRef}
                 type="text"
                 maxLength={60}
                 placeholder={t("broadcast_name_placeholder")}
