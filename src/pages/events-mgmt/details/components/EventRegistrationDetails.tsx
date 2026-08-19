@@ -10,7 +10,8 @@ import { ExportBtns } from "@/components/btns";
 import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi";
 import {
   useLazyGetEventTicketsQuery,
-  useLazyGetEventTicketsExportCsvQuery,
+  useLazyGetEventTicketsExportXlsxQuery,
+  // useLazyGetEventTicketsExportCsvQuery,
   // useLazyGetEventTicketsExportPdfQuery,
 } from "@/store/api/eventQueryApi";
 import TicketRegDetailModal from "./TicketRegDetailModal";
@@ -359,7 +360,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   const filteredTickets = allTickets;
 
   const [fetchExportCsv, { isFetching, isLoading }] =
-    useLazyGetEventTicketsExportCsvQuery();
+    useLazyGetEventTicketsExportXlsxQuery();
   // const [fetchExportPdf] = useLazyGetEventTicketsExportPdfQuery();
 
   const downloadBlob = (blob: Blob, fileName: string) => {
@@ -377,7 +378,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
       const blob = await fetchExportCsv({ eventId }).unwrap();
       downloadBlob(
         blob,
-        `${eventDetails?.name?.replace(/\s+/g, "_") ?? "event"}_registrants.csv`,
+        `${eventDetails?.name?.replace(/\s+/g, "_") ?? "event"}_registrants.xlsx`,
       );
     } catch {
       toast.error(t("failed_to_export"));
