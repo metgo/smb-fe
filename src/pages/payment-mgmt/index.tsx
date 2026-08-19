@@ -10,6 +10,7 @@ import {
   VendorMonthlySummaryCards,
   ExportOrdersButton,
 } from "./components"
+import clsx from "clsx";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
@@ -17,12 +18,10 @@ import type { VendorPaymentSummaryRow } from "@/store/api/reconciliationQueryApi
 import SearchInput from "@/components/shared/SearchInput";
 import {
   ReordableDataTable,
-  FilterChips,
   ConfirmDialog,
 } from "@/components/shared";
 import MonthFilter from "@/pages/orders-mgmt/components/MonthFilter";
 import FilterButton from "@/components/btns/FilterButton";
-import clsx from "clsx";
 import { useVendorMonthlyReportData } from "./hooks/useVendorMonthlyReportData";
 import { useVendorPaymentSummaryData } from "./hooks/useVendorPaymentSummaryData";
 import { useBusinessSearch } from "./hooks/useBusinessSearch";
@@ -66,7 +65,7 @@ export const PaymentMgmtPage = () => {
     showBusinessDropdown,
     setShowBusinessDropdown,
     isSearchingBusinesses,
-    selectedBusinessName,
+    // selectedBusinessName,
     searchBusinesses,
     resetBusinessSearch,
     selectBusiness,
@@ -89,6 +88,7 @@ export const PaymentMgmtPage = () => {
 
   const {
     vendors: vendorSummaries,
+    summaryOverview: vendorSummaryOverview,
     isLoading: isVendorSummaryLoading,
     isFetching: isVendorSummaryFetching,
     hasMore: hasMoreVendorSummaries,
@@ -96,6 +96,7 @@ export const PaymentMgmtPage = () => {
   } = useVendorPaymentSummaryData(
     { month: filters.month, startDate: filters.startDate, endDate: filters.endDate },
     searchTerm,
+    adminView,
   );
 
   const orders = useMemo(
@@ -116,28 +117,17 @@ export const PaymentMgmtPage = () => {
     );
   }, [allWebsites]);
 
-  const hasActiveFilters = useMemo(() => {
-    return (
-      filters.status !== "all" ||
-      filters.reconciliationStatus !== "all" ||
-      filters.businessId !== "" ||
-      filters.month !== "all" ||
-      filters.startDate !== "" ||
-      filters.endDate !== ""
-    );
-  }, [filters]);
-
-  const handleClearAllFilters = () => {
-    setFilters({
-      status: "all",
-      reconciliationStatus: "all",
-      startDate: "",
-      endDate: "",
-      month: "all",
-      businessId: "",
-    });
-    resetBusinessSearch();
-  };
+  // const handleClearAllFilters = () => {
+  //   setFilters({
+  //     status: "all",
+  //     reconciliationStatus: "all",
+  //     startDate: "",
+  //     endDate: "",
+  //     month: "all",
+  //     businessId: "",
+  //   });
+  //   resetBusinessSearch();
+  // };
 
   const handleViewVendorOrders = (vendor: VendorPaymentSummaryRow) => {
     setActiveVendor(vendor);
@@ -257,73 +247,122 @@ export const PaymentMgmtPage = () => {
       </div>
 
       {/* Stats Dashboard */}
-      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
-            <div className={`text-xs ${textTertiary}`}>{t("total_orders")}</div>
-            <div className={`text-lg font-bold ${textPrimary}`}>
-              {stats.totalOrders}
+      {adminView ?
+        <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+              <div className={`text-xs ${textTertiary}`}>{t("total_vendors")}</div>
+              <div className={`text-lg font-bold ${textPrimary}`}>
+                {vendorSummaryOverview?.totalVendors}
+              </div>
             </div>
-          </div>
-          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
-            <div className={`text-xs ${textTertiary}`}>
-              {t("total_revenue")}
+            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+              <div className={`text-xs ${textTertiary}`}>
+                {t("total_revenue")}
+              </div>
+              <div
+                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪{(vendorSummaryOverview?.totalRevenue || 0).toLocaleString()}
+              </div>
             </div>
-            <div className={`text-lg font-bold ${textPrimary}`}>
-              ₪{(stats.totalRevenue || 0).toLocaleString()}
-            </div>
-          </div>
 
-          <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
-            <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
-            <div
-              className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
-            >
-              ₪{(stats.netPayout || 0).toLocaleString()}
+
+
+            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+              <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
+              <div
+                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪{(vendorSummaryOverview?.totalNetPayment || 0).toLocaleString()}
+              </div>
+            </div>
+            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+              <div className={`text-xs ${textTertiary}`}>{t("platform_fee")}</div>
+              <div
+                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪{(vendorSummaryOverview?.totalPlatformCharge || 0).toLocaleString()}
+              </div>
+            </div>
+            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+              <div className={`text-xs ${textTertiary}`}>{t("delivery_fee")}</div>
+              <div
+                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪{(vendorSummaryOverview?.totalDeliveryFee || 0).toLocaleString()}
+              </div>
             </div>
           </div>
-
-          <div className={`${bgSecondary} rounded-lg px-3 py-2 col-span-2`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>
-              {t("status_overview")}
+        </div> :
+        <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+              <div className={`text-xs ${textTertiary}`}>{t("total_orders")}</div>
+              <div className={`text-lg font-bold ${textPrimary}`}>
+                {stats.totalOrders}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-              <span className="flex items-center gap-1">
-                <Clock
-                  className={`w-3.5 h-3.5 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}
-                />
-                <span className={textSecondary}>
-                  {stats.pending} {t("pending")}
+            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+              <div className={`text-xs ${textTertiary}`}>
+                {t("total_revenue")}
+              </div>
+              <div className={`text-lg font-bold ${textPrimary}`}>
+                ₪{(stats.totalRevenue || 0).toLocaleString()}
+              </div>
+            </div>
+
+            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+              <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
+              <div
+                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪{(stats.netPayout || 0).toLocaleString()}
+              </div>
+            </div>
+
+            <div className={`${bgSecondary} rounded-lg px-3 py-2 col-span-2`}>
+              <div className={`text-xs ${textTertiary} mb-1`}>
+                {t("status_overview")}
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                <span className="flex items-center gap-1">
+                  <Clock
+                    className={`w-3.5 h-3.5 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}
+                  />
+                  <span className={textSecondary}>
+                    {stats.pending} {t("pending")}
+                  </span>
                 </span>
-              </span>
-              <span className="flex items-center gap-1">
-                <CheckCircle
-                  className={`w-3.5 h-3.5 ${isDark ? "text-green-400" : "text-green-600"}`}
-                />
-                <span className={textSecondary}>
-                  {stats.approved} {t("approved")}
+                <span className="flex items-center gap-1">
+                  <CheckCircle
+                    className={`w-3.5 h-3.5 ${isDark ? "text-green-400" : "text-green-600"}`}
+                  />
+                  <span className={textSecondary}>
+                    {stats.approved} {t("approved")}
+                  </span>
                 </span>
-              </span>
-              <span className="flex items-center gap-1">
-                <AlertTriangle
-                  className={`w-3.5 h-3.5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
-                />
-                <span className={textSecondary}>
-                  {stats.disputed} {t("disputed")}
+                <span className="flex items-center gap-1">
+                  <AlertTriangle
+                    className={`w-3.5 h-3.5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
+                  />
+                  <span className={textSecondary}>
+                    {stats.disputed} {t("disputed")}
+                  </span>
                 </span>
-              </span>
-              <span className="flex items-center gap-1">
-                <XCircle
-                  className={`w-3.5 h-3.5 ${isDark ? "text-red-400" : "text-red-600"}`}
-                />
-                <span className={textSecondary}>
-                  {stats.cancelled} {t("canceled")}
+                <span className="flex items-center gap-1">
+                  <XCircle
+                    className={`w-3.5 h-3.5 ${isDark ? "text-red-400" : "text-red-600"}`}
+                  />
+                  <span className={textSecondary}>
+                    {stats.cancelled} {t("canceled")}
+                  </span>
                 </span>
-              </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      }
 
       {/* Search and Filters */}
       <div className={`$ mb-6`}>
@@ -370,7 +409,7 @@ export const PaymentMgmtPage = () => {
 
         {showFilters && (
           <div
-            className={`mt-4 pt-4 border-t ${borderColor} grid grid-cols-1 md:grid-cols-3 gap-4`}
+            className={`mt-4 pt-4 border-t ${borderColor} grid grid-cols-1 md:grid-cols-4 gap-4`}
           >
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
@@ -482,141 +521,95 @@ export const PaymentMgmtPage = () => {
               }
               t={t}
             />
-
-            {hasActiveFilters && (
-              <div className="col-span-full w-full">
-                <div className="flex flex-wrap gap-1.5 items-center pt-2">
-                  {filters.status !== "all" && (
-                    <FilterChips
-                      label={t(filters.status)}
-                      onRemove={() => setFilters({ ...filters, status: "all" })}
-                    />
-                  )}
-                  {filters.reconciliationStatus !== "all" && (
-                    <FilterChips
-                      label={t(
-                        filters.reconciliationStatus === "closed"
-                          ? "paid"
-                          : filters.reconciliationStatus,
-                      )}
-                      onRemove={() =>
-                        setFilters({ ...filters, reconciliationStatus: "all" })
-                      }
-                    />
-                  )}
-                  {filters.businessId && (
-                    <FilterChips
-                      label={selectedBusinessName || filters.businessId}
-                      onRemove={() => {
-                        setFilters({ ...filters, businessId: "" });
-                        resetBusinessSearch();
-                      }}
-                    />
-                  )}
-                  {filters.month !== "all" && filters.month !== "custom" && (
-                    <FilterChips
-                      label={filters.month}
-                      onRemove={() => setFilters({ ...filters, month: "all" })}
-                    />
-                  )}
-                  {filters.month === "custom" && filters.startDate && (
-                    <FilterChips
-                      label={`From: ${filters.startDate}`}
-                      onRemove={() => setFilters({ ...filters, startDate: "" })}
-                    />
-                  )}
-                  {filters.month === "custom" && filters.endDate && (
-                    <FilterChips
-                      label={`To: ${filters.endDate}`}
-                      onRemove={() => setFilters({ ...filters, endDate: "" })}
-                    />
-                  )}
-
-                  {hasActiveFilters && (
-                    <button
-                      onClick={handleClearAllFilters}
-                      className="px-2.5 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors shrink-0"
-                    >
-                      {t("clear_filters")}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
 
-      {/* Orders Table / Superadmin Monthly Summary */}
-      {showVenderWiseOrderTable ? (
-        <>
-          {filters.businessId && (
-            <div className="mb-3 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleBackToVendorSummary}
-                className={clsx(
-                  "px-3 py-1.5 rounded-lg border text-sm transition-colors flex items-center gap-2 shrink-0",
-                  isDark
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-600",
-                )}
-              >
-                <ArrowLeft className="w-4 h-4" />
-                {t("back_to_vendor_summary")}
-              </button>
+      {adminView ? <>
+        {/* Orders Table / Superadmin Monthly Summary */}
+        {showVenderWiseOrderTable ? (
+          <>
+            {filters.businessId && (
+              <div className="mb-3 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleBackToVendorSummary}
+                  className={clsx(
+                    "px-3 py-1.5 rounded-lg border text-sm transition-colors flex items-center gap-2 shrink-0",
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-600",
+                  )}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  {t("back_to_vendor_summary")}
+                </button>
 
-              {activeVendor && (
-                <div className="flex items-center gap-2 min-w-0">
-                  <div
-                    className={clsx(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
-                      isDark ? "bg-teal-900/30 text-teal-400" : "bg-teal-50 text-teal-700",
-                    )}
-                  >
-                    {activeVendor.vendor_info.businessLogo?.image ? (
-                      <img
-                        src={activeVendor.vendor_info.businessLogo.image}
-                        alt={activeVendor.vendor_info.businessLogo.alt || activeVendor.vendor_info.name || "-"}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Building2 className="w-4 h-4" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className={clsx("font-semibold text-sm truncate", textPrimary)}>
-                      {activeVendor.vendor_info.name || "-"}
+                {activeVendor && (
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div
+                      className={clsx(
+                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
+                        isDark ? "bg-teal-900/30 text-teal-400" : "bg-teal-50 text-teal-700",
+                      )}
+                    >
+                      {activeVendor.vendor_info.businessLogo?.image ? (
+                        <img
+                          src={activeVendor.vendor_info.businessLogo.image}
+                          alt={activeVendor.vendor_info.businessLogo.alt || activeVendor.vendor_info.name || "-"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Building2 className="w-4 h-4" />
+                      )}
                     </div>
-                    <div className={clsx("text-xs truncate", textTertiary)}>
-                      {activeVendor.owner_info.email || "-"}
+                    <div className="min-w-0">
+                      <div className={clsx("font-semibold text-sm truncate", textPrimary)}>
+                        {activeVendor.vendor_info.name || "-"}
+                      </div>
+                      <div className={clsx("text-xs truncate", textTertiary)}>
+                        {activeVendor.owner_info.email || "-"}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-          <ReordableDataTable
-            rowKey="_id"
-            data={orders}
-            isDataLoading={isLoading || isFetching}
-            onRowClick={(order: IMonthlyOrder) => handleViewDetails(order)}
-            storageKey="vendorMonthlyReportColumnOrder"
-            columns={columns}
-            hasMore={hasMore}
-            next={fetchNextPage}
-            selectedItems={undefined}
-            onSelectionChange={undefined}
+                )}
+              </div>
+            )}
+            <ReordableDataTable
+              rowKey="_id"
+              data={orders}
+              isDataLoading={isLoading || isFetching}
+              onRowClick={(order: IMonthlyOrder) => handleViewDetails(order)}
+              storageKey="vendorMonthlyReportColumnOrder"
+              columns={columns}
+              hasMore={hasMore}
+              next={fetchNextPage}
+              selectedItems={undefined}
+              onSelectionChange={undefined}
+            />
+          </>
+        ) : (
+          <VendorMonthlySummaryCards
+            vendors={vendorSummaries}
+            isLoading={isVendorSummaryLoading}
+            isFetching={isVendorSummaryFetching}
+            hasMore={hasMoreVendorSummaries}
+            fetchNextPage={fetchNextVendorSummaryPage}
+            onViewVendorOrders={handleViewVendorOrders}
           />
-        </>
-      ) : (
-        <VendorMonthlySummaryCards
-          vendors={vendorSummaries}
-          isLoading={isVendorSummaryLoading}
-          isFetching={isVendorSummaryFetching}
-          hasMore={hasMoreVendorSummaries}
-          fetchNextPage={fetchNextVendorSummaryPage}
-          onViewVendorOrders={handleViewVendorOrders}
+        )}
+      </> : (
+        <ReordableDataTable
+          rowKey="_id"
+          data={orders}
+          isDataLoading={isLoading || isFetching}
+          onRowClick={(order: IMonthlyOrder) => handleViewDetails(order)}
+          storageKey="vendorMonthlyReportColumnOrder"
+          columns={columns}
+          hasMore={hasMore}
+          next={fetchNextPage}
+          selectedItems={undefined}
+          onSelectionChange={undefined}
         />
       )}
 

@@ -17,6 +17,7 @@ export interface VendorPaymentSummaryFilters {
 export function useVendorPaymentSummaryData(
   filters: VendorPaymentSummaryFilters,
   searchTerm: string,
+  adminView: boolean,
 ) {
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
@@ -51,6 +52,7 @@ export function useVendorPaymentSummaryData(
   const { data, isLoading, isFetching, refetch } =
     useGetVendorPaymentSummaryQuery(queryParams, {
       refetchOnMountOrArgChange: true,
+      skip: !adminView,
     });
 
   useEffect(() => {
@@ -75,7 +77,7 @@ export function useVendorPaymentSummaryData(
 
   return {
     vendors: combinedVendors,
-    overview: data?.overview,
+    summaryOverview: data?.overview,
     isLoading,
     isFetching,
     refetch,

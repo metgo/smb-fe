@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { X, AlertTriangle, Upload, FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { X, AlertTriangle, Upload, FileText } from "lucide-react";
+
 import { useAppSelector } from "@/hooks/hooks";
 
 interface DisputeModalProps {
@@ -159,7 +160,7 @@ export default function DisputeModal({
           >
             <div className="flex items-start gap-2">
               <AlertTriangle
-                className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                className={`w-5 h-5 shrink-0 mt-0.5 ${
                   isDark ? "text-orange-400" : "text-orange-600"
                 }`}
               />

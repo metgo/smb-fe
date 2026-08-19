@@ -1,12 +1,12 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Loader2, Save, User, Mail, Phone } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
+import { Loader2, Save, User, Mail, Phone } from "lucide-react";
 
-import { useUpdateProfileInfoMutation } from "@/store/api/userMutationApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
+import { useUpdateProfileInfoMutation } from "@/store/api/userMutationApi";
 
 interface VendorBankDetailsOwnerInfo {
   name: string;

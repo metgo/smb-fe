@@ -15,10 +15,11 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+
+import VendorBankDetails from "./VendorBankDetails";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import EmptyState from "@/components/reordable-data-table/EmptyState";
 import type { VendorPaymentSummaryRow } from "@/store/api/reconciliationQueryApi";
-import VendorBankDetails from "./VendorBankDetails";
 
 const formatCurrency = (amount?: number) => {
   if (amount === null || amount === undefined) return "-";
@@ -86,8 +87,8 @@ export const VendorMonthlySummaryCards = ({
   }
 
   return (
-    <div className="relative">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+    <div className="relative h-[calc(100vh-430px)] overflow-y-auto pr-2 pb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
         {vendors.map((vendor) => {
           const vendorName = vendor.vendor_info.name || "-";
           return (
@@ -144,9 +145,9 @@ export const VendorMonthlySummaryCards = ({
                       }}
                       className={clsx(
                         "w-7 h-7 rounded-md flex items-center justify-center shrink-0 cursor-pointer transition-colors",
-                        isDark
-                          ? "bg-slate-800 text-slate-400 hover:bg-teal-900/40 hover:text-teal-400"
-                          : "bg-slate-100 text-slate-600 hover:bg-teal-50 hover:text-teal-700",
+                        vendor.hasBankDetails
+                          ? "bg-teal-100/80 text-teal-600 hover:bg-teal-50 hover:text-teal-700"
+                          : "bg-red-100/80 text-red-600 hover:bg-red-50 hover:text-red-700",
                       )}
                     >
                       <Landmark className="w-4 h-4" />
@@ -233,7 +234,7 @@ export const VendorMonthlySummaryCards = ({
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
                       {formatCurrency(vendor.amount.platformCharge)}
                     </div>
-                    <div className={clsx("text-[10px]", textTertiary)}>{t("fee")}</div>
+                    <div className={clsx("text-[10px]", textTertiary)}>{t("platform_fee")}</div>
                   </div>
                 </div>
               </div>
