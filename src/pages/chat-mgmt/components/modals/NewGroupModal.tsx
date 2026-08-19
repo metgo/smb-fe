@@ -9,7 +9,7 @@ import { ModalHeader } from "./ModalHeader";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
 import { useChatUserPicker } from "../../hooks/useChatUserPicker";
-import { ChatUsersFilterPopover } from "../ChatUsersFilterPopover";
+import { ChatUsersFilterDropdown } from "../ChatUsersFilterDropdown";
 import { ChatUserRowSkeleton } from "../sub-components";
 
 interface NewGroupModalProps extends ModalProps {
@@ -196,29 +196,29 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
             >
               {t("add_members_selected", { count: selectedMembers.length })}
             </label>
-            <div className="flex items-start gap-2 mb-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={t("search_contacts")}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className={clsx(
-                    "w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm",
-                    inputClasses,
-                    "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
-                  )}
-                />
-              </div>
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder={t("search_contacts")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={clsx(
+                      "w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm",
+                      inputClasses,
+                      "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+                    )}
+                  />
+                </div>
 
-              <div className="relative shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowFilterPopover((v) => !v)}
                   title={t("filters")}
                   className={clsx(
-                    "relative p-2.5 rounded-lg border cursor-pointer transition-colors",
+                    "relative p-2.5 rounded-lg border cursor-pointer transition-colors shrink-0",
                     borderColor,
                     appliedFilterCount > 0
                       ? isDark
@@ -236,23 +236,22 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                     </span>
                   )}
                 </button>
-
-                {showFilterPopover && (
-                  <ChatUsersFilterPopover
-                    filters={filters}
-                    onChange={setFilters}
-                    onClose={() => setShowFilterPopover(false)}
-                    lockDmo={lockDmo}
-                    lockAuthority={lockAuthority}
-                  />
-                )}
               </div>
+
+              {showFilterPopover && (
+                <ChatUsersFilterDropdown
+                  filters={filters}
+                  onChange={setFilters}
+                  lockDmo={lockDmo}
+                  lockAuthority={lockAuthority}
+                />
+              )}
             </div>
 
             <div
               ref={listRef}
               className={clsx(
-                "max-h-45 overflow-y-auto space-y-1.5 border rounded-lg p-2",
+                "max-h-45 overflow-y-auto mt-2 space-y-1.5 border rounded-lg p-2",
                 borderColor,
               )}
             >
