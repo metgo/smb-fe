@@ -1,4 +1,10 @@
-import { Clock, CheckCircle, AlertTriangle, XCircle, RotateCcw } from "lucide-react";
+import {
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  RotateCcw,
+} from "lucide-react";
 import clsx from "clsx";
 import { getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";

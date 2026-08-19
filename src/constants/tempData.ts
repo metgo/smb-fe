@@ -22,12 +22,12 @@ export const monthlyOrderSummary = [
       disputeCount: 2,
     },
     amountSummary: {
-      total: 1200.00,
+      total: 1200.0,
       payable: 800,
       deliveryFee: 200,
       platformFee: 60,
     },
-    platform: ["665ea1ebb543b9e55f3bff71", "689aca6896fc4dd7086c8834"]
+    platform: ["665ea1ebb543b9e55f3bff71", "689aca6896fc4dd7086c8834"],
   },
   {
     vendorId: "69e217df883f154071b49de2",
@@ -52,12 +52,12 @@ export const monthlyOrderSummary = [
       disputeCount: 1,
     },
     amountSummary: {
-      total: 2450.50,
+      total: 2450.5,
       payable: 1980,
       deliveryFee: 350,
       platformFee: 120,
     },
-    platform: ["665ea1ebb543b9e55f3bff72", "689aca6896fc4dd7086c8835"]
+    platform: ["665ea1ebb543b9e55f3bff72", "689aca6896fc4dd7086c8835"],
   },
   {
     vendorId: "69e217df883f154071b49de3",
@@ -82,12 +82,12 @@ export const monthlyOrderSummary = [
       disputeCount: 0,
     },
     amountSummary: {
-      total: 640.00,
+      total: 640.0,
       payable: 520,
       deliveryFee: 90,
       platformFee: 30,
     },
-    platform: ["665ea1ebb543b9e55f3bff73"]
+    platform: ["665ea1ebb543b9e55f3bff73"],
   },
   {
     vendorId: "69e217df883f154071b49de4",
@@ -117,7 +117,7 @@ export const monthlyOrderSummary = [
       deliveryFee: 560,
       platformFee: 260,
     },
-    platform: ["665ea1ebb543b9e55f3bff74", "689aca6896fc4dd7086c8836"]
+    platform: ["665ea1ebb543b9e55f3bff74", "689aca6896fc4dd7086c8836"],
   },
   {
     vendorId: "69e217df883f154071b49de5",
@@ -147,7 +147,7 @@ export const monthlyOrderSummary = [
       deliveryFee: 275,
       platformFee: 100,
     },
-    platform: ["665ea1ebb543b9e55f3bff75"]
+    platform: ["665ea1ebb543b9e55f3bff75"],
   },
   {
     vendorId: "69e217df883f154071b49de6",
@@ -172,12 +172,12 @@ export const monthlyOrderSummary = [
       disputeCount: 1,
     },
     amountSummary: {
-      total: 9800.00,
+      total: 9800.0,
       payable: 8500,
       deliveryFee: 900,
       platformFee: 400,
     },
-    platform: ["665ea1ebb543b9e55f3bff76", "689aca6896fc4dd7086c8837"]
+    platform: ["665ea1ebb543b9e55f3bff76", "689aca6896fc4dd7086c8837"],
   },
   {
     vendorId: "69e217df883f154071b49de7",
@@ -202,12 +202,12 @@ export const monthlyOrderSummary = [
       disputeCount: 0,
     },
     amountSummary: {
-      total: 780.00,
+      total: 780.0,
       payable: 640,
       deliveryFee: 110,
       platformFee: 40,
     },
-    platform: ["665ea1ebb543b9e55f3bff77"]
+    platform: ["665ea1ebb543b9e55f3bff77"],
   },
   {
     vendorId: "69e217df883f154071b49de8",
@@ -232,12 +232,12 @@ export const monthlyOrderSummary = [
       disputeCount: 1,
     },
     amountSummary: {
-      total: 1340.40,
+      total: 1340.4,
       payable: 1100,
       deliveryFee: 180,
       platformFee: 70,
     },
-    platform: ["665ea1ebb543b9e55f3bff78", "689aca6896fc4dd7086c8838"]
+    platform: ["665ea1ebb543b9e55f3bff78", "689aca6896fc4dd7086c8838"],
   },
   {
     vendorId: "69e217df883f154071b49de9",
@@ -262,12 +262,12 @@ export const monthlyOrderSummary = [
       disputeCount: 0,
     },
     amountSummary: {
-      total: 960.50,
+      total: 960.5,
       payable: 800,
       deliveryFee: 120,
       platformFee: 45,
     },
-    platform: ["665ea1ebb543b9e55f3bff79"]
+    platform: ["665ea1ebb543b9e55f3bff79"],
   },
   {
     vendorId: "69e217df883f154071b49dea",
@@ -292,11 +292,11 @@ export const monthlyOrderSummary = [
       disputeCount: 0,
     },
     amountSummary: {
-      total: 2100.00,
+      total: 2100.0,
       payable: 1750,
       deliveryFee: 260,
       platformFee: 90,
     },
-    platform: ["665ea1ebb543b9e55f3bff7a", "689aca6896fc4dd7086c8839"]
+    platform: ["665ea1ebb543b9e55f3bff7a", "689aca6896fc4dd7086c8839"],
   },
-]
+];

@@ -1,4 +1,4 @@
- interface IMonthlyOrder {
+interface IMonthlyOrder {
   _id: string;
   orderId: string;
   productName: string;

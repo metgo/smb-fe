@@ -15,7 +15,11 @@ const formatLocalDate = (d: Date) => {
 
 // Shared by the orders table and the vendor payment summary cards so both
 // scope to the same calendar month/range for a given MonthFilter value.
-export function buildDateScopeParams(month: string, startDate: string, endDate: string) {
+export function buildDateScopeParams(
+  month: string,
+  startDate: string,
+  endDate: string,
+) {
   const params: { startDate?: string; endDate?: string } = {};
 
   if (month !== "all" && month !== "custom") {

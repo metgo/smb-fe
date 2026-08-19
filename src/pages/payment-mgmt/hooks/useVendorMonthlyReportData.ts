@@ -24,7 +24,8 @@ export function useVendorMonthlyReportData(
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [page, setPage] = useState(1);
-  const [showVenderWiseOrderTable, setShowVendorWiseOrderTable] = useState(false)
+  const [showVenderWiseOrderTable, setShowVendorWiseOrderTable] =
+    useState(false);
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
 
   // Reset pagination whenever query inputs change

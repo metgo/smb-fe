@@ -36,7 +36,6 @@ import ChatPage from "./chat-mgmt";
 import StatsSummaryPage from "./stats-summary";
 import { PaymentMgmtPage } from "./payment-mgmt";
 
-
 export {
   ChatPage,
   AuthPage,

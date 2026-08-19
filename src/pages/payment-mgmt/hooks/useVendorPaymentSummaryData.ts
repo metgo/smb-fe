@@ -29,7 +29,14 @@ export function useVendorPaymentSummaryData(
   useEffect(() => {
     setPage(1);
     setCombinedVendors([]);
-  }, [searchTerm, filters.month, filters.startDate, filters.endDate, dmoId, authorityId]);
+  }, [
+    searchTerm,
+    filters.month,
+    filters.startDate,
+    filters.endDate,
+    dmoId,
+    authorityId,
+  ]);
 
   const queryParams = useMemo(() => {
     const params: Record<string, any> = {
@@ -47,7 +54,15 @@ export function useVendorPaymentSummaryData(
     );
 
     return params;
-  }, [page, filters.month, filters.startDate, filters.endDate, searchTerm, dmoId, authorityId]);
+  }, [
+    page,
+    filters.month,
+    filters.startDate,
+    filters.endDate,
+    searchTerm,
+    dmoId,
+    authorityId,
+  ]);
 
   const { data, isLoading, isFetching, refetch } =
     useGetVendorPaymentSummaryQuery(queryParams, {

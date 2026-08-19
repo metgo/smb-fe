@@ -18,4 +18,4 @@ export {
   OrderDetailsModal,
   VendorBankDetails,
   VendorMonthlySummaryCards,
-}
+};

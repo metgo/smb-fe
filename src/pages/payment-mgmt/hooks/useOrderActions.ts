@@ -37,7 +37,9 @@ export function useOrderActions({
   const navigate = useNavigate();
   const { userRole } = useAppSelector((state) => state.auth);
 
-  const [selectedOrder, setSelectedOrder] = useState<IMonthlyOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<IMonthlyOrder | null>(
+    null,
+  );
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [isReopenDisputeFlow, setIsReopenDisputeFlow] = useState(false);
