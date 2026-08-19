@@ -2,6 +2,38 @@ import DOMPurify from "dompurify";
 
 import { formatDateRange } from "@/helpers/formatter";
 
+// format from the Date's own local year/month/day, not toISOString() -
+// that converts to UTC first, which silently shifts the date back a day
+// for any timezone ahead of UTC (midnight local time is still "yesterday
+// evening" in UTC)
+const formatLocalDate = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+// Shared by the orders table and the vendor payment summary cards so both
+// scope to the same calendar month/range for a given MonthFilter value.
+export function buildDateScopeParams(month: string, startDate: string, endDate: string) {
+  const params: { startDate?: string; endDate?: string } = {};
+
+  if (month !== "all" && month !== "custom") {
+    const [m, year] = month.split("-");
+    const firstDay = new Date(Number(year), Number(m) - 1, 1);
+    const lastDay = new Date(Number(year), Number(m), 0);
+    params.startDate = formatLocalDate(firstDay);
+    params.endDate = formatLocalDate(lastDay);
+  }
+
+  if (month === "custom") {
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+  }
+
+  return params;
+}
+
 export function uploadWithProgress(
   file: File,
   signedUrl: string,

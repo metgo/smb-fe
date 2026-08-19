@@ -1,0 +1,302 @@
+export const monthlyOrderSummary = [
+  {
+    vendorId: "69e217df883f154071b49de1",
+    vendorInfo: {
+      name: "Everest Organic Foods",
+      email: "everestorganic@gmail.com",
+      phone: "9841234567",
+    },
+    ownerInfo: {
+      name: "Rajesh Sharma",
+      email: "rajesh.sharma@gmail.com",
+      phone: "9841234567",
+    },
+    hasBankDetails: true,
+    orderSummury: {
+      totalCount: 20,
+      pendingCount: 2,
+      completedCount: 10,
+      processingCount: 5,
+      cancledCount: 5,
+      shippedCount: 3,
+      disputeCount: 2,
+    },
+    amountSummary: {
+      total: 1200.00,
+      payable: 800,
+      deliveryFee: 200,
+      platformFee: 60,
+    },
+    platform: ["665ea1ebb543b9e55f3bff71", "689aca6896fc4dd7086c8834"]
+  },
+  {
+    vendorId: "69e217df883f154071b49de2",
+    vendorInfo: {
+      name: "Himalayan Handicrafts",
+      email: "himalayanhandicrafts@gmail.com",
+      phone: "9851122334",
+    },
+    ownerInfo: {
+      name: "Sunita Gurung",
+      email: "sunita.gurung@gmail.com",
+      phone: "9851122334",
+    },
+    hasBankDetails: false,
+    orderSummury: {
+      totalCount: 35,
+      pendingCount: 5,
+      completedCount: 18,
+      processingCount: 6,
+      cancledCount: 3,
+      shippedCount: 4,
+      disputeCount: 1,
+    },
+    amountSummary: {
+      total: 2450.50,
+      payable: 1980,
+      deliveryFee: 350,
+      platformFee: 120,
+    },
+    platform: ["665ea1ebb543b9e55f3bff72", "689aca6896fc4dd7086c8835"]
+  },
+  {
+    vendorId: "69e217df883f154071b49de3",
+    vendorInfo: {
+      name: "Kathmandu Spice Traders",
+      email: "kathmanduspice@gmail.com",
+      phone: "9812345678",
+    },
+    ownerInfo: {
+      name: "Bikash Thapa",
+      email: "bikash.thapa@gmail.com",
+      phone: "9812345678",
+    },
+    hasBankDetails: true,
+    orderSummury: {
+      totalCount: 12,
+      pendingCount: 1,
+      completedCount: 8,
+      processingCount: 1,
+      cancledCount: 1,
+      shippedCount: 1,
+      disputeCount: 0,
+    },
+    amountSummary: {
+      total: 640.00,
+      payable: 520,
+      deliveryFee: 90,
+      platformFee: 30,
+    },
+    platform: ["665ea1ebb543b9e55f3bff73"]
+  },
+  {
+    vendorId: "69e217df883f154071b49de4",
+    vendorInfo: {
+      name: "Pashmina House Nepal",
+      email: "pashminahouse@gmail.com",
+      phone: "9803344556",
+    },
+    ownerInfo: {
+      name: "Anjali Shrestha",
+      email: "anjali.shrestha@gmail.com",
+      phone: "9803344556",
+    },
+    hasBankDetails: true,
+    orderSummury: {
+      totalCount: 48,
+      pendingCount: 6,
+      completedCount: 30,
+      processingCount: 5,
+      cancledCount: 4,
+      shippedCount: 3,
+      disputeCount: 0,
+    },
+    amountSummary: {
+      total: 5320.75,
+      payable: 4600,
+      deliveryFee: 560,
+      platformFee: 260,
+    },
+    platform: ["665ea1ebb543b9e55f3bff74", "689aca6896fc4dd7086c8836"]
+  },
+  {
+    vendorId: "69e217df883f154071b49de5",
+    vendorInfo: {
+      name: "Sherpa Coffee Roasters",
+      email: "sherpacoffee@gmail.com",
+      phone: "9865432190",
+    },
+    ownerInfo: {
+      name: "Pemba Sherpa",
+      email: "pemba.sherpa@gmail.com",
+      phone: "9865432190",
+    },
+    hasBankDetails: false,
+    orderSummury: {
+      totalCount: 27,
+      pendingCount: 4,
+      completedCount: 15,
+      processingCount: 3,
+      cancledCount: 2,
+      shippedCount: 3,
+      disputeCount: 3,
+    },
+    amountSummary: {
+      total: 1875.25,
+      payable: 1500,
+      deliveryFee: 275,
+      platformFee: 100,
+    },
+    platform: ["665ea1ebb543b9e55f3bff75"]
+  },
+  {
+    vendorId: "69e217df883f154071b49de6",
+    vendorInfo: {
+      name: "Thamel Tech Store",
+      email: "thameltech@gmail.com",
+      phone: "9820011223",
+    },
+    ownerInfo: {
+      name: "Suman Maharjan",
+      email: "suman.maharjan@gmail.com",
+      phone: "9820011223",
+    },
+    hasBankDetails: true,
+    orderSummury: {
+      totalCount: 60,
+      pendingCount: 8,
+      completedCount: 40,
+      processingCount: 6,
+      cancledCount: 4,
+      shippedCount: 2,
+      disputeCount: 1,
+    },
+    amountSummary: {
+      total: 9800.00,
+      payable: 8500,
+      deliveryFee: 900,
+      platformFee: 400,
+    },
+    platform: ["665ea1ebb543b9e55f3bff76", "689aca6896fc4dd7086c8837"]
+  },
+  {
+    vendorId: "69e217df883f154071b49de7",
+    vendorInfo: {
+      name: "Pokhara Lakeside Crafts",
+      email: "pokharacrafts@gmail.com",
+      phone: "9847788990",
+    },
+    ownerInfo: {
+      name: "Nirmala Adhikari",
+      email: "nirmala.adhikari@gmail.com",
+      phone: "9847788990",
+    },
+    hasBankDetails: false,
+    orderSummury: {
+      totalCount: 15,
+      pendingCount: 2,
+      completedCount: 9,
+      processingCount: 2,
+      cancledCount: 1,
+      shippedCount: 1,
+      disputeCount: 0,
+    },
+    amountSummary: {
+      total: 780.00,
+      payable: 640,
+      deliveryFee: 110,
+      platformFee: 40,
+    },
+    platform: ["665ea1ebb543b9e55f3bff77"]
+  },
+  {
+    vendorId: "69e217df883f154071b49de8",
+    vendorInfo: {
+      name: "Bhaktapur Pottery Works",
+      email: "bhaktapurpottery@gmail.com",
+      phone: "9858899001",
+    },
+    ownerInfo: {
+      name: "Kiran Rai",
+      email: "kiran.rai@gmail.com",
+      phone: "9858899001",
+    },
+    hasBankDetails: true,
+    orderSummury: {
+      totalCount: 22,
+      pendingCount: 3,
+      completedCount: 13,
+      processingCount: 3,
+      cancledCount: 2,
+      shippedCount: 1,
+      disputeCount: 1,
+    },
+    amountSummary: {
+      total: 1340.40,
+      payable: 1100,
+      deliveryFee: 180,
+      platformFee: 70,
+    },
+    platform: ["665ea1ebb543b9e55f3bff78", "689aca6896fc4dd7086c8838"]
+  },
+  {
+    vendorId: "69e217df883f154071b49de9",
+    vendorInfo: {
+      name: "Lumbini Herbal Products",
+      email: "lumbiniherbal@gmail.com",
+      phone: "9836677889",
+    },
+    ownerInfo: {
+      name: "Deepa Karki",
+      email: "deepa.karki@gmail.com",
+      phone: "9836677889",
+    },
+    hasBankDetails: false,
+    orderSummury: {
+      totalCount: 18,
+      pendingCount: 2,
+      completedCount: 11,
+      processingCount: 2,
+      cancledCount: 2,
+      shippedCount: 1,
+      disputeCount: 0,
+    },
+    amountSummary: {
+      total: 960.50,
+      payable: 800,
+      deliveryFee: 120,
+      platformFee: 45,
+    },
+    platform: ["665ea1ebb543b9e55f3bff79"]
+  },
+  {
+    vendorId: "69e217df883f154071b49dea",
+    vendorInfo: {
+      name: "Chitwan Organic Tea",
+      email: "chitwanorganictea@gmail.com",
+      phone: "9807766554",
+    },
+    ownerInfo: {
+      name: "Prakash Basnet",
+      email: "prakash.basnet@gmail.com",
+      phone: "9807766554",
+    },
+    hasBankDetails: true,
+    orderSummury: {
+      totalCount: 33,
+      pendingCount: 4,
+      completedCount: 20,
+      processingCount: 4,
+      cancledCount: 3,
+      shippedCount: 2,
+      disputeCount: 0,
+    },
+    amountSummary: {
+      total: 2100.00,
+      payable: 1750,
+      deliveryFee: 260,
+      platformFee: 90,
+    },
+    platform: ["665ea1ebb543b9e55f3bff7a", "689aca6896fc4dd7086c8839"]
+  },
+]

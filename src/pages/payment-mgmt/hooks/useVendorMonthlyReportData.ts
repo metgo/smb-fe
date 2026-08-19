@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAppSelector } from "@/hooks/hooks";
+import { buildDateScopeParams } from "@/helpers";
 import {
   useGetOrderProductsQuery,
   useGetReconciliationStatsQuery,
@@ -23,6 +24,7 @@ export function useVendorMonthlyReportData(
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [page, setPage] = useState(1);
+  const [showVenderWiseOrderTable, setShowVendorWiseOrderTable] = useState(false)
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
 
   // Reset pagination whenever query inputs change
@@ -46,32 +48,11 @@ export function useVendorMonthlyReportData(
     }
     if (searchTerm) params.search = searchTerm;
 
-    if (filters.month !== "all" && filters.month !== "custom") {
-      const [month, year] = filters.month.split("-");
+    Object.assign(
+      params,
+      buildDateScopeParams(filters.month, filters.startDate, filters.endDate),
+    );
 
-      // format from the Date's own local year/month/day, not
-      // toISOString() - that converts to UTC first, which silently shifts
-      // the date back a day for any timezone ahead of UTC (midnight local
-      // time is still "yesterday evening" in UTC)
-      const formatLocalDate = (d: Date) => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
-      };
-
-      const firstDay = new Date(Number(year), Number(month) - 1, 1);
-      const lastDay = new Date(Number(year), Number(month), 0);
-
-      params.startDate = formatLocalDate(firstDay);
-      params.endDate = formatLocalDate(lastDay);
-    }
-
-    // Custom date range
-    if (filters.month === "custom") {
-      if (filters.startDate) params.startDate = filters.startDate;
-      if (filters.endDate) params.endDate = filters.endDate;
-    }
     return params;
   }, [page, filters, searchTerm, dmoId, authorityId]);
 
@@ -136,5 +117,7 @@ export function useVendorMonthlyReportData(
       startDate: queryParams.startDate,
       endDate: queryParams.endDate,
     },
+    showVenderWiseOrderTable,
+    setShowVendorWiseOrderTable,
   };
 }

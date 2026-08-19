@@ -2,7 +2,6 @@ import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import {
   useRespondDisputeMutation,
@@ -12,7 +11,7 @@ import ModalWrapper from "@/components/wrapper/ModalWrapper";
 import DisputeTimeline from "./DisputeTimeline";
 
 interface AdminDisputeResponseModalProps {
-  order: MonthlyOrder;
+  order: IMonthlyOrder;
   onClose: () => void;
   onResolve: () => void;
   disputeId?: string;

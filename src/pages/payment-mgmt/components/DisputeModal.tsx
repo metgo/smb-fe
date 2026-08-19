@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { X, AlertTriangle, Upload, FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 
 interface DisputeModalProps {
-  order: MonthlyOrder;
+  order: IMonthlyOrder;
   onClose: () => void;
   onSubmit: (reason: string, details: string, files: File[]) => void;
   isReopen?: boolean;

@@ -34,6 +34,8 @@ import TripsMgmtPage from "./trips-mgmt";
 import TripDetailsPage from "./trips-mgmt/details";
 import ChatPage from "./chat-mgmt";
 import StatsSummaryPage from "./stats-summary";
+import { PaymentMgmtPage } from "./payment-mgmt";
+
 
 export {
   ChatPage,
@@ -42,6 +44,7 @@ export {
   NoInternetPage,
   ProfilePage,
   DmosMgmtPage,
+  PaymentMgmtPage,
   CampaignsMgmtPage,
   AuthoritiesMgmtPage,
   TripsMgmtPage,

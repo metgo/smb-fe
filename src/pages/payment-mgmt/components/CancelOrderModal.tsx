@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { XCircle, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
 
 interface CancelOrderModalProps {
-  order: MonthlyOrder;
+  order: IMonthlyOrder;
   onClose: () => void;
   onSubmit: (reason: string, notes: string, sendEmail: boolean) => void;
 }
@@ -95,7 +94,7 @@ export default function CancelOrderModal({
         >
           <div className="flex items-start gap-2">
             <AlertTriangle
-              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+              className={`w-5 h-5 shrink-0 mt-0.5 ${
                 isDark ? "text-red-400" : "text-red-600"
               }`}
             />

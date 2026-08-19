@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Package, User, CreditCard, Truck } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -12,7 +11,7 @@ import DisputeTimeline from "./DisputeTimeline";
 const DISPUTE_TIMELINE_STATUSES = ["approved", "rejected", "disputed"];
 
 interface OrderDetailsModalProps {
-  order: MonthlyOrder;
+  order: IMonthlyOrder;
   onClose: () => void;
   onDispute: () => void;
   onReopenDispute: () => void;

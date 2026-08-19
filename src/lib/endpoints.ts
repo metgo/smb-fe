@@ -73,6 +73,7 @@ export const endpoints = {
   updateOrderStatus: "/update-order-status",
   bulkApprove: "/orders/bulk-approve",
   reconciliationStats: "/orders/reconciliation-stats",
+  paymentSummary: "/payment-summary",
   bulkMarkAsComplete: "/orders/bulk-order-product-status",
   finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
   previewFinaliseApprovedOrders:
