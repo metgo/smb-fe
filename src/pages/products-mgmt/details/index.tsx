@@ -36,6 +36,7 @@ import {
   MediaDetails,
 } from "@/components/details-sections";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { ChatWithCreator } from "@/components/chat-popup";
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate();
@@ -303,6 +304,8 @@ export default function ProductDetailsPage() {
           opMode={opMode}
         />
       )}
+
+      <ChatWithCreator creator={product?.creator} />
     </div>
   );
 }
