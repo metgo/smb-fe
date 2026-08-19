@@ -31,6 +31,7 @@ interface VendorMonthlySummaryCardsProps {
   isLoading: boolean;
   isFetching: boolean;
   hasMore: boolean;
+  adminView: boolean;
   fetchNextPage: () => void;
   onViewVendorOrders: (vendor: VendorPaymentSummaryRow) => void;
 }
@@ -40,15 +41,23 @@ export const VendorMonthlySummaryCards = ({
   isLoading,
   isFetching,
   hasMore,
+  adminView,
   fetchNextPage,
   onViewVendorOrders,
 }: VendorMonthlySummaryCardsProps) => {
   const { t } = useTranslation("reconciliation");
-  const { bgPrimary, bgSecondary, textPrimary, textTertiary, borderColor, isDark } =
-    useThemeClasses();
+  const {
+    bgPrimary,
+    bgSecondary,
+    textPrimary,
+    textTertiary,
+    borderColor,
+    isDark,
+  } = useThemeClasses();
 
-  const [bankDetailsVendor, setBankDetailsVendor] = useState<VendorPaymentSummaryRow | null>(null);
-  const [isBankModalOpen, setIsBankModalOpen] = useState(false)
+  const [bankDetailsVendor, setBankDetailsVendor] =
+    useState<VendorPaymentSummaryRow | null>(null);
+  const [isBankModalOpen, setIsBankModalOpen] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -107,13 +116,17 @@ export const VendorMonthlySummaryCards = ({
                     <div
                       className={clsx(
                         "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
-                        isDark ? "bg-teal-900/30 text-teal-400" : "bg-teal-50 text-teal-700",
+                        isDark
+                          ? "bg-teal-900/30 text-teal-400"
+                          : "bg-teal-50 text-teal-700",
                       )}
                     >
                       {vendor.vendor_info.businessLogo?.image ? (
                         <img
                           src={vendor.vendor_info.businessLogo.image}
-                          alt={vendor.vendor_info.businessLogo.alt || vendorName}
+                          alt={
+                            vendor.vendor_info.businessLogo.alt || vendorName
+                          }
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -121,12 +134,24 @@ export const VendorMonthlySummaryCards = ({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className={clsx("font-semibold text-base truncate", textPrimary)}>
+                      <h3
+                        className={clsx(
+                          "font-semibold text-base truncate",
+                          textPrimary,
+                        )}
+                      >
                         {vendorName}
                       </h3>
-                      <div className={clsx("flex items-center gap-1 text-xs truncate", textTertiary)}>
+                      <div
+                        className={clsx(
+                          "flex items-center gap-1 text-xs truncate",
+                          textTertiary,
+                        )}
+                      >
                         <Mail className="w-3 h-3 shrink-0" />
-                        <span className="truncate">{vendor.owner_info.email || "-"}</span>
+                        <span className="truncate">
+                          {vendor.owner_info.email || "-"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -141,7 +166,7 @@ export const VendorMonthlySummaryCards = ({
                       }
                       onClick={() => {
                         setIsBankModalOpen(true);
-                        setBankDetailsVendor(vendor)
+                        setBankDetailsVendor(vendor);
                       }}
                       className={clsx(
                         "w-7 h-7 rounded-md flex items-center justify-center shrink-0 cursor-pointer transition-colors",
@@ -173,7 +198,12 @@ export const VendorMonthlySummaryCards = ({
               {/* Order summary */}
               <div className="px-4 py-3">
                 <div className="flex items-center justify-between mb-2">
-                  <div className={clsx("flex items-center gap-1.5 text-xs font-medium", textTertiary)}>
+                  <div
+                    className={clsx(
+                      "flex items-center gap-1.5 text-xs font-medium",
+                      textTertiary,
+                    )}
+                  >
                     <Package className="w-3.5 h-3.5" />
                     {t("total_orders")}
                   </div>
@@ -185,14 +215,32 @@ export const VendorMonthlySummaryCards = ({
                   {orderStats.map(({ key, label, icon: Icon }) => (
                     <div
                       key={key}
-                      className={clsx("rounded-lg px-2 py-1.5 flex items-center gap-1.5", bgSecondary)}
+                      className={clsx(
+                        "rounded-lg px-2 py-1.5 flex items-center gap-1.5",
+                        bgSecondary,
+                      )}
                     >
-                      <Icon className={clsx("w-3.5 h-3.5 shrink-0", isDark ? "text-teal-400" : "text-teal-700")} />
+                      <Icon
+                        className={clsx(
+                          "w-3.5 h-3.5 shrink-0",
+                          isDark ? "text-teal-400" : "text-teal-700",
+                        )}
+                      />
                       <div className="min-w-0">
-                        <div className={clsx("text-sm font-semibold leading-tight", textPrimary)}>
+                        <div
+                          className={clsx(
+                            "text-sm font-semibold leading-tight",
+                            textPrimary,
+                          )}
+                        >
                           {vendor.orderSummary[key]}
                         </div>
-                        <div className={clsx("text-[10px] leading-tight truncate", textTertiary)}>
+                        <div
+                          className={clsx(
+                            "text-[10px] leading-tight truncate",
+                            textTertiary,
+                          )}
+                        >
                           {label}
                         </div>
                       </div>
@@ -204,7 +252,12 @@ export const VendorMonthlySummaryCards = ({
               {/* Amount summary */}
               <div className={clsx("px-4 py-3 mt-auto border-t", borderColor)}>
                 <div className="flex items-center justify-between mb-2">
-                  <div className={clsx("flex items-center gap-1.5 text-xs font-medium", textTertiary)}>
+                  <div
+                    className={clsx(
+                      "flex items-center gap-1.5 text-xs font-medium",
+                      textTertiary,
+                    )}
+                  >
                     <Wallet className="w-3.5 h-3.5" />
                     {t("amount_summary")}
                   </div>
@@ -222,19 +275,25 @@ export const VendorMonthlySummaryCards = ({
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
                       {formatCurrency(vendor.amount.netPayment)}
                     </div>
-                    <div className={clsx("text-[10px]", textTertiary)}>{t("payable")}</div>
+                    <div className={clsx("text-[10px]", textTertiary)}>
+                      {t("payable")}
+                    </div>
                   </div>
                   <div>
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
                       {formatCurrency(vendor.amount.deliveryFee)}
                     </div>
-                    <div className={clsx("text-[10px]", textTertiary)}>{t("delivery_fee")}</div>
+                    <div className={clsx("text-[10px]", textTertiary)}>
+                      {t("delivery_fee")}
+                    </div>
                   </div>
                   <div>
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
                       {formatCurrency(vendor.amount.platformCharge)}
                     </div>
-                    <div className={clsx("text-[10px]", textTertiary)}>{t("platform_fee")}</div>
+                    <div className={clsx("text-[10px]", textTertiary)}>
+                      {t("platform_fee")}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -244,13 +303,19 @@ export const VendorMonthlySummaryCards = ({
       </div>
 
       {hasMore && (
-        <div ref={sentinelRef} className="flex items-center justify-center py-6">
-          {isFetching && <Loader2 className="w-5 h-5 animate-spin text-teal-600" />}
+        <div
+          ref={sentinelRef}
+          className="flex items-center justify-center py-6"
+        >
+          {isFetching && (
+            <Loader2 className="w-5 h-5 animate-spin text-teal-600" />
+          )}
         </div>
       )}
 
       {isBankModalOpen && bankDetailsVendor && (
         <VendorBankDetails
+          adminView={adminView}
           userId={bankDetailsVendor.owner_info._id}
           ownerInfo={{
             name: bankDetailsVendor.owner_info.name,
@@ -263,13 +328,13 @@ export const VendorMonthlySummaryCards = ({
           savedBankAccount={
             bankDetailsVendor.bankDetails
               ? {
-                bankNumber: bankDetailsVendor.bankDetails.bankNumber,
-                branchNumber: bankDetailsVendor.bankDetails.branchNumber,
-                accountNumber: bankDetailsVendor.bankDetails.accountNumber,
-                businessNumberByGovt:
-                  bankDetailsVendor.bankDetails.businessNumberByGovt,
-                invoiceName: bankDetailsVendor.bankDetails.name,
-              }
+                  bankNumber: bankDetailsVendor.bankDetails.bankNumber,
+                  branchNumber: bankDetailsVendor.bankDetails.branchNumber,
+                  accountNumber: bankDetailsVendor.bankDetails.accountNumber,
+                  businessNumberByGovt:
+                    bankDetailsVendor.bankDetails.businessNumberByGovt,
+                  invoiceName: bankDetailsVendor.bankDetails.name,
+                }
               : undefined
           }
         />

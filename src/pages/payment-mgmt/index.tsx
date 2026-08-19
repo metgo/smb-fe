@@ -1,6 +1,13 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle, XCircle, Clock, AlertTriangle, Building2, ArrowLeft } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  Building2,
+  ArrowLeft,
+} from "lucide-react";
 import {
   AdminDisputeResponseModal,
   CancelOrderModal,
@@ -9,17 +16,14 @@ import {
   OrderDetailsModal,
   VendorMonthlySummaryCards,
   ExportOrdersButton,
-} from "./components"
+} from "./components";
 import clsx from "clsx";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import type { VendorPaymentSummaryRow } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
-import {
-  ReordableDataTable,
-  ConfirmDialog,
-} from "@/components/shared";
+import { ReordableDataTable, ConfirmDialog } from "@/components/shared";
 import MonthFilter from "@/pages/orders-mgmt/components/MonthFilter";
 import FilterButton from "@/components/btns/FilterButton";
 import { useVendorMonthlyReportData } from "./hooks/useVendorMonthlyReportData";
@@ -57,7 +61,8 @@ export const PaymentMgmtPage = () => {
     businessId: "",
   });
 
-  const [activeVendor, setActiveVendor] = useState<VendorPaymentSummaryRow | null>(null);
+  const [activeVendor, setActiveVendor] =
+    useState<VendorPaymentSummaryRow | null>(null);
 
   const {
     businessSearch,
@@ -94,7 +99,11 @@ export const PaymentMgmtPage = () => {
     hasMore: hasMoreVendorSummaries,
     fetchNextPage: fetchNextVendorSummaryPage,
   } = useVendorPaymentSummaryData(
-    { month: filters.month, startDate: filters.startDate, endDate: filters.endDate },
+    {
+      month: filters.month,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+    },
     searchTerm,
     adminView,
   );
@@ -223,112 +232,82 @@ export const PaymentMgmtPage = () => {
   }
 
   return (
-    <div className="h-screen">
+    <div className="h-[60vh]">
       {/* Header */}
-      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-5 mb-6`}>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className={`text-lg font-bold ${textPrimary}`}>
+      <div className="flex items-center justify-between gap-4 py-4 px-2">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1
+              className={`text-2xl md:text-3xl mb-1 md:mb-2 bg-clip-text ${textPrimary}`}
+            >
               {tc("vendor_reconciliation")}
             </h1>
-            <p className={`text-sm ${textTertiary}`}>
-              {t("review_and_approve_orders")}
-            </p>
+            {filters.month !== "all" && (
+              <span
+                className={`text-xs font-medium px-2 py-0.5 rounded-full ${bgSecondary} ${textSecondary}`}
+              >
+                {filters.month === "custom"
+                  ? filters.startDate && filters.endDate
+                    ? `${filters.startDate} - ${filters.endDate}`
+                    : t("customRange")
+                  : filters.month.split("-").join("/")}
+              </span>
+            )}
           </div>
-          {adminView && (
-            <button
-              onClick={() => setShowCloseAllOrdersModal(true)}
-              className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
-            >
-              {t("close_all_orders")}
-            </button>
-          )}
+          <p className={clsx("text-sm md:text-base", textSecondary)}>
+            {t("review_and_approve_orders")}
+          </p>
         </div>
+        {adminView && (
+          <button
+            onClick={() => setShowCloseAllOrdersModal(true)}
+            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+          >
+            {t("close_all_orders")}
+          </button>
+        )}
       </div>
 
       {/* Stats Dashboard */}
-      {adminView ?
-        <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
-              <div className={`text-xs ${textTertiary}`}>{t("total_vendors")}</div>
-              <div className={`text-lg font-bold ${textPrimary}`}>
-                {vendorSummaryOverview?.totalVendors}
-              </div>
-            </div>
-            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+      {!adminView || showVenderWiseOrderTable ? (
+        <div
+          className={`${bgPrimary} rounded-lg border ${borderColor} px-4 py-3 mb-3`}
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5`}>
               <div className={`text-xs ${textTertiary}`}>
-                {t("total_revenue")}
+                {t("total_orders")}
               </div>
-              <div
-                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
-              >
-                ₪{(vendorSummaryOverview?.totalRevenue || 0).toLocaleString()}
-              </div>
-            </div>
-
-
-
-            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
-              <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
-              <div
-                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
-              >
-                ₪{(vendorSummaryOverview?.totalNetPayment || 0).toLocaleString()}
-              </div>
-            </div>
-            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
-              <div className={`text-xs ${textTertiary}`}>{t("platform_fee")}</div>
-              <div
-                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
-              >
-                ₪{(vendorSummaryOverview?.totalPlatformCharge || 0).toLocaleString()}
-              </div>
-            </div>
-            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
-              <div className={`text-xs ${textTertiary}`}>{t("delivery_fee")}</div>
-              <div
-                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
-              >
-                ₪{(vendorSummaryOverview?.totalDeliveryFee || 0).toLocaleString()}
-              </div>
-            </div>
-          </div>
-        </div> :
-        <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
-              <div className={`text-xs ${textTertiary}`}>{t("total_orders")}</div>
-              <div className={`text-lg font-bold ${textPrimary}`}>
+              <div className={`text-base font-bold ${textPrimary}`}>
                 {stats.totalOrders}
               </div>
             </div>
-            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5`}>
               <div className={`text-xs ${textTertiary}`}>
                 {t("total_revenue")}
               </div>
-              <div className={`text-lg font-bold ${textPrimary}`}>
+              <div className={`text-base font-bold ${textPrimary}`}>
                 ₪{(stats.totalRevenue || 0).toLocaleString()}
               </div>
             </div>
 
-            <div className={`${bgSecondary} rounded-lg px-3 py-2`}>
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5`}>
               <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
               <div
-                className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+                className={`text-base font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
               >
                 ₪{(stats.netPayout || 0).toLocaleString()}
               </div>
             </div>
 
-            <div className={`${bgSecondary} rounded-lg px-3 py-2 col-span-2`}>
-              <div className={`text-xs ${textTertiary} mb-1`}>
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5 col-span-2`}>
+              <div className={`text-xs ${textTertiary} mb-0.5`}>
                 {t("status_overview")}
               </div>
               <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
                 <span className="flex items-center gap-1">
                   <Clock
-                    className={`w-3.5 h-3.5 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}
+                    className={`w-3 h-3 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}
                   />
                   <span className={textSecondary}>
                     {stats.pending} {t("pending")}
@@ -336,7 +315,7 @@ export const PaymentMgmtPage = () => {
                 </span>
                 <span className="flex items-center gap-1">
                   <CheckCircle
-                    className={`w-3.5 h-3.5 ${isDark ? "text-green-400" : "text-green-600"}`}
+                    className={`w-3 h-3 ${isDark ? "text-green-400" : "text-green-600"}`}
                   />
                   <span className={textSecondary}>
                     {stats.approved} {t("approved")}
@@ -344,7 +323,7 @@ export const PaymentMgmtPage = () => {
                 </span>
                 <span className="flex items-center gap-1">
                   <AlertTriangle
-                    className={`w-3.5 h-3.5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
+                    className={`w-3 h-3 ${isDark ? "text-orange-400" : "text-orange-600"}`}
                   />
                   <span className={textSecondary}>
                     {stats.disputed} {t("disputed")}
@@ -352,7 +331,7 @@ export const PaymentMgmtPage = () => {
                 </span>
                 <span className="flex items-center gap-1">
                   <XCircle
-                    className={`w-3.5 h-3.5 ${isDark ? "text-red-400" : "text-red-600"}`}
+                    className={`w-3 h-3 ${isDark ? "text-red-400" : "text-red-600"}`}
                   />
                   <span className={textSecondary}>
                     {stats.cancelled} {t("canceled")}
@@ -362,11 +341,71 @@ export const PaymentMgmtPage = () => {
             </div>
           </div>
         </div>
-      }
+      ) : (
+        <div
+          className={`${bgPrimary} rounded-lg border ${borderColor} px-4 py-3 mb-3`}
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5`}>
+              <div className={`text-xs ${textTertiary}`}>
+                {t("total_vendors")}
+              </div>
+              <div className={`text-base font-bold ${textPrimary}`}>
+                {vendorSummaryOverview?.totalVendors}
+              </div>
+            </div>
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5`}>
+              <div className={`text-xs ${textTertiary}`}>
+                {t("total_revenue")}
+              </div>
+              <div
+                className={`text-base font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪{(vendorSummaryOverview?.totalRevenue || 0).toLocaleString()}
+              </div>
+            </div>
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5`}>
+              <div className={`text-xs ${textTertiary}`}>{t("net_payout")}</div>
+              <div
+                className={`text-base font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪
+                {(vendorSummaryOverview?.totalNetPayment || 0).toLocaleString()}
+              </div>
+            </div>
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5`}>
+              <div className={`text-xs ${textTertiary}`}>
+                {t("platform_fee")}
+              </div>
+              <div
+                className={`text-base font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪
+                {(
+                  vendorSummaryOverview?.totalPlatformCharge || 0
+                ).toLocaleString()}
+              </div>
+            </div>
+            <div className={`${bgSecondary} rounded-lg px-3 py-1.5`}>
+              <div className={`text-xs ${textTertiary}`}>
+                {t("delivery_fee")}
+              </div>
+              <div
+                className={`text-base font-bold ${isDark ? "text-green-400" : "text-green-600"}`}
+              >
+                ₪
+                {(
+                  vendorSummaryOverview?.totalDeliveryFee || 0
+                ).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search and Filters */}
-      <div className={`$ mb-6`}>
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+      <div className="mb-3">
+        <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
           <div className="flex-1 w-full min-w-0">
             <SearchInput
               placeholder={t("search_by_order")}
@@ -379,21 +418,21 @@ export const PaymentMgmtPage = () => {
             {(stats.orderProductPending > 0 ||
               stats.orderProductProcessing > 0 ||
               stats.orderProductShipped > 0) && (
-                <button
-                  onClick={() => setShowBulkCompleteConfirm(true)}
-                  className={clsx(
-                    "px-4 py-2 rounded-lg cursor-pointer border transition-colors flex items-center gap-2",
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-600",
-                  )}
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="hidden md:block">
-                    {t("approve_pending_orders")}
-                  </span>
-                </button>
-              )}
+              <button
+                onClick={() => setShowBulkCompleteConfirm(true)}
+                className={clsx(
+                  "px-4 py-2 rounded-lg cursor-pointer border transition-colors flex items-center gap-2",
+                  isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-600",
+                )}
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span className="hidden md:block">
+                  {t("approve_pending_orders")}
+                </span>
+              </button>
+            )}
 
             <ExportOrdersButton
               orders={orders}
@@ -525,80 +564,94 @@ export const PaymentMgmtPage = () => {
         )}
       </div>
 
-      {adminView ? <>
-        {/* Orders Table / Superadmin Monthly Summary */}
-        {showVenderWiseOrderTable ? (
-          <>
-            {filters.businessId && (
-              <div className="mb-3 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleBackToVendorSummary}
-                  className={clsx(
-                    "px-3 py-1.5 rounded-lg border text-sm transition-colors flex items-center gap-2 shrink-0",
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-600",
-                  )}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t("back_to_vendor_summary")}
-                </button>
+      {adminView ? (
+        <>
+          {/* Orders Table / Superadmin Monthly Summary */}
+          {showVenderWiseOrderTable ? (
+            <>
+              {filters.businessId && (
+                <div className="mb-3 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleBackToVendorSummary}
+                    className={clsx(
+                      "px-3 py-1.5 rounded-lg border text-sm transition-colors flex items-center gap-2 shrink-0",
+                      isDark
+                        ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                        : "border-gray-300 hover:bg-gray-100 text-gray-600",
+                    )}
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    {t("back_to_vendor_summary")}
+                  </button>
 
-                {activeVendor && (
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div
-                      className={clsx(
-                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
-                        isDark ? "bg-teal-900/30 text-teal-400" : "bg-teal-50 text-teal-700",
-                      )}
-                    >
-                      {activeVendor.vendor_info.businessLogo?.image ? (
-                        <img
-                          src={activeVendor.vendor_info.businessLogo.image}
-                          alt={activeVendor.vendor_info.businessLogo.alt || activeVendor.vendor_info.name || "-"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Building2 className="w-4 h-4" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className={clsx("font-semibold text-sm truncate", textPrimary)}>
-                        {activeVendor.vendor_info.name || "-"}
+                  {activeVendor && (
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div
+                        className={clsx(
+                          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
+                          isDark
+                            ? "bg-teal-900/30 text-teal-400"
+                            : "bg-teal-50 text-teal-700",
+                        )}
+                      >
+                        {activeVendor.vendor_info.businessLogo?.image ? (
+                          <img
+                            src={activeVendor.vendor_info.businessLogo.image}
+                            alt={
+                              activeVendor.vendor_info.businessLogo.alt ||
+                              activeVendor.vendor_info.name ||
+                              "-"
+                            }
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Building2 className="w-4 h-4" />
+                        )}
                       </div>
-                      <div className={clsx("text-xs truncate", textTertiary)}>
-                        {activeVendor.owner_info.email || "-"}
+                      <div className="min-w-0">
+                        <div
+                          className={clsx(
+                            "font-semibold text-sm truncate",
+                            textPrimary,
+                          )}
+                        >
+                          {activeVendor.vendor_info.name || "-"}
+                        </div>
+                        <div className={clsx("text-xs truncate", textTertiary)}>
+                          {activeVendor.owner_info.email || "-"}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-            <ReordableDataTable
-              rowKey="_id"
-              data={orders}
-              isDataLoading={isLoading || isFetching}
-              onRowClick={(order: IMonthlyOrder) => handleViewDetails(order)}
-              storageKey="vendorMonthlyReportColumnOrder"
-              columns={columns}
-              hasMore={hasMore}
-              next={fetchNextPage}
-              selectedItems={undefined}
-              onSelectionChange={undefined}
+                  )}
+                </div>
+              )}
+              <ReordableDataTable
+                rowKey="_id"
+                data={orders}
+                isDataLoading={isLoading || isFetching}
+                onRowClick={(order: IMonthlyOrder) => handleViewDetails(order)}
+                storageKey="vendorMonthlyReportColumnOrder"
+                columns={columns}
+                hasMore={hasMore}
+                next={fetchNextPage}
+                selectedItems={undefined}
+                onSelectionChange={undefined}
+              />
+            </>
+          ) : (
+            <VendorMonthlySummaryCards
+              adminView={adminView}
+              vendors={vendorSummaries}
+              isLoading={isVendorSummaryLoading}
+              isFetching={isVendorSummaryFetching}
+              hasMore={hasMoreVendorSummaries}
+              fetchNextPage={fetchNextVendorSummaryPage}
+              onViewVendorOrders={handleViewVendorOrders}
             />
-          </>
-        ) : (
-          <VendorMonthlySummaryCards
-            vendors={vendorSummaries}
-            isLoading={isVendorSummaryLoading}
-            isFetching={isVendorSummaryFetching}
-            hasMore={hasMoreVendorSummaries}
-            fetchNextPage={fetchNextVendorSummaryPage}
-            onViewVendorOrders={handleViewVendorOrders}
-          />
-        )}
-      </> : (
+          )}
+        </>
+      ) : (
         <ReordableDataTable
           rowKey="_id"
           data={orders}
