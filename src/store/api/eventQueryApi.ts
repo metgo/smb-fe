@@ -101,6 +101,14 @@ export const eventQueryApi = createApi({
       }),
     }),
 
+    getEventTicketsExportXlsx: builder.query<Blob, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `${endpoints.eventTickets}/${eventId}/export/xlsx`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
+
     getEventTicketAnswers: builder.query<
       IEventTicketAnswersResponse,
       { ticketId: string; email?: string; phone?: string }
@@ -189,6 +197,7 @@ export const {
   useLazyGetEventTicketsQuery,
   useLazyGetEventTicketsExportCsvQuery,
   useLazyGetEventTicketsExportPdfQuery,
+  useLazyGetEventTicketsExportXlsxQuery,
   useGetEventTicketAnswersQuery,
   useGetPublicEventTicketQuery,
   useLazyGetPublicEventTicketQuery,
