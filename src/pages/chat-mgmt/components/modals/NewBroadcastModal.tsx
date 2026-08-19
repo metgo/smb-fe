@@ -52,6 +52,23 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
     lockAuthority,
   } = useChatUserPicker(currentUser, isOpen);
 
+  const userSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleFilterPopover = () => {
+    setShowFilterPopover((v) => {
+      const next = !v;
+      if (next) {
+        setTimeout(() => {
+          userSectionRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 50);
+      }
+      return next;
+    });
+  };
+
   // Only SUPERADMIN/DMO/AUTHORITY may manage broadcast lists — TRAVELLER
   // gets a 403 on every broadcast endpoint.
   const isEligible =
@@ -204,7 +221,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
             </div>
           </div>
 
-          <div>
+          <div ref={userSectionRef}>
             <label
               className={clsx(
                 "block text-xs font-semibold mb-1",
@@ -234,7 +251,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setShowFilterPopover((v) => !v)}
+                  onClick={handleToggleFilterPopover}
                   title={t("filters")}
                   className={clsx(
                     "relative p-2.5 rounded-lg border cursor-pointer transition-colors shrink-0",

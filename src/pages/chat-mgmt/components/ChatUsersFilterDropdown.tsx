@@ -367,21 +367,17 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
       </div>
 
       {/* Clear All below DMO and Authority */}
-      <div className="flex justify-end pt-1">
-        <button
-          type="button"
-          onClick={handleClearAll}
-          disabled={appliedCount === 0}
-          className={clsx(
-            "text-xs font-semibold transition-colors",
-            appliedCount > 0
-              ? "text-teal-600 hover:text-teal-700 cursor-pointer"
-              : "text-gray-400 opacity-50 cursor-not-allowed",
-          )}
-        >
-          {t("clear_all")}
-        </button>
-      </div>
+      {appliedCount > 0 && (
+        <div className="flex justify-end pt-1">
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="text-xs font-semibold text-teal-600 hover:text-teal-700 cursor-pointer"
+          >
+            {t("clear_all")}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

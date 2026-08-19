@@ -52,6 +52,23 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
     lockAuthority,
   } = useChatUserPicker(currentUser, isOpen);
 
+  const userSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleFilterPopover = () => {
+    setShowFilterPopover((v) => {
+      const next = !v;
+      if (next) {
+        setTimeout(() => {
+          userSectionRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 50);
+      }
+      return next;
+    });
+  };
+
   // Group creation is only for ADMIN, SUPERADMIN, DMO, AUTHORITY. Travellers cannot.
   const isEligible =
     currentUser &&
@@ -195,7 +212,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
           </div>
 
           {/* Member selection */}
-          <div>
+          <div ref={userSectionRef}>
             <label
               className={clsx(
                 "block text-xs font-semibold mb-1",
@@ -223,7 +240,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setShowFilterPopover((v) => !v)}
+                  onClick={handleToggleFilterPopover}
                   title={t("filters")}
                   className={clsx(
                     "relative p-2.5 rounded-lg border cursor-pointer transition-colors shrink-0",
