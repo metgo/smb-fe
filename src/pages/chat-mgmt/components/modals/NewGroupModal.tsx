@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { getInitials } from "@/helpers";
 import { Search, ShieldAlert, Check, SlidersHorizontal } from "lucide-react";
@@ -9,7 +9,7 @@ import { ModalHeader } from "./ModalHeader";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
 import { useChatUserPicker } from "../../hooks/useChatUserPicker";
-import { ChatUsersFilterPopover } from "../ChatUsersFilterPopover";
+import { ChatUsersFilterDropdown } from "../ChatUsersFilterDropdown";
 import { ChatUserRowSkeleton } from "../sub-components";
 
 interface NewGroupModalProps extends ModalProps {
@@ -34,6 +34,8 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   const [error, setError] = useState("");
   const [description, setDescription] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const {
     users: chatUsers,
@@ -49,6 +51,23 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
     lockDmo,
     lockAuthority,
   } = useChatUserPicker(currentUser, isOpen);
+
+  const userSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleFilterPopover = () => {
+    setShowFilterPopover((v) => {
+      const next = !v;
+      if (next) {
+        setTimeout(() => {
+          userSectionRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 50);
+      }
+      return next;
+    });
+  };
 
   // Group creation is only for ADMIN, SUPERADMIN, DMO, AUTHORITY. Travellers cannot.
   const isEligible =
@@ -71,14 +90,19 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   const handleCreate = () => {
     if (!name.trim()) {
       setError(t("group_name_required"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      nameInputRef.current?.focus();
       return;
     }
     if (name.length > 60) {
       setError(t("group_name_max_length"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      nameInputRef.current?.focus();
       return;
     }
     if (selectedMembers.length < 2) {
       setError(t("group_min_members"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     onGroupCreated(name.trim(), description.trim(), selectedMembers);
@@ -116,11 +140,11 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
   return (
     <ModalWrapper
       onClose={onClose}
-      maxWidth="max-w-md"
-      height="h-[85dvh] md:h-max"
+      maxWidth="max-w-xl"
+      height="h-auto max-h-[85dvh] md:max-h-[85vh]"
     >
       <ModalHeader title={t("create_group_chat")} />
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={contentRef} className="flex-1 overflow-y-auto p-4 min-h-0">
         <div className="space-y-4 text-left">
           {error && (
             <div
@@ -147,6 +171,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                 {t("group_name_char_count", { count: name.length })}
               </label>
               <input
+                ref={nameInputRef}
                 type="text"
                 maxLength={60}
                 placeholder={t("group_name_placeholder")}
@@ -187,7 +212,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
           </div>
 
           {/* Member selection */}
-          <div>
+          <div ref={userSectionRef}>
             <label
               className={clsx(
                 "block text-xs font-semibold mb-1",
@@ -196,29 +221,29 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
             >
               {t("add_members_selected", { count: selectedMembers.length })}
             </label>
-            <div className="flex items-start gap-2 mb-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={t("search_contacts")}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className={clsx(
-                    "w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm",
-                    inputClasses,
-                    "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
-                  )}
-                />
-              </div>
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder={t("search_contacts")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={clsx(
+                      "w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm",
+                      inputClasses,
+                      "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+                    )}
+                  />
+                </div>
 
-              <div className="relative shrink-0">
                 <button
                   type="button"
-                  onClick={() => setShowFilterPopover((v) => !v)}
+                  onClick={handleToggleFilterPopover}
                   title={t("filters")}
                   className={clsx(
-                    "relative p-2.5 rounded-lg border cursor-pointer transition-colors",
+                    "relative p-2.5 rounded-lg border cursor-pointer transition-colors shrink-0",
                     borderColor,
                     appliedFilterCount > 0
                       ? isDark
@@ -236,23 +261,22 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                     </span>
                   )}
                 </button>
-
-                {showFilterPopover && (
-                  <ChatUsersFilterPopover
-                    filters={filters}
-                    onChange={setFilters}
-                    onClose={() => setShowFilterPopover(false)}
-                    lockDmo={lockDmo}
-                    lockAuthority={lockAuthority}
-                  />
-                )}
               </div>
+
+              {showFilterPopover && (
+                <ChatUsersFilterDropdown
+                  filters={filters}
+                  onChange={setFilters}
+                  lockDmo={lockDmo}
+                  lockAuthority={lockAuthority}
+                />
+              )}
             </div>
 
             <div
               ref={listRef}
               className={clsx(
-                "max-h-45 overflow-y-auto space-y-1.5 border rounded-lg p-2",
+                "max-h-45 overflow-y-auto mt-2 space-y-1.5 border rounded-lg p-2",
                 borderColor,
               )}
             >
@@ -327,14 +351,15 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
               )}
             </div>
           </div>
-
-          <button
-            onClick={handleCreate}
-            className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
-          >
-            {t("create_group")}
-          </button>
         </div>
+      </div>
+      <div className={clsx("p-4 border-t shrink-0", borderColor)}>
+        <button
+          onClick={handleCreate}
+          className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+        >
+          {t("create_group")}
+        </button>
       </div>
     </ModalWrapper>
   );

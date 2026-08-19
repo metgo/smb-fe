@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Search, ShieldAlert, Check, SlidersHorizontal } from "lucide-react";
 
@@ -11,7 +11,7 @@ import { useCreateBroadcastListMutation } from "@/store/api/chatSystemApi";
 import { ModalHeader } from "./ModalHeader";
 import type { ModalProps } from "./types";
 import { useChatUserPicker } from "../../hooks/useChatUserPicker";
-import { ChatUsersFilterPopover } from "../ChatUsersFilterPopover";
+import { ChatUsersFilterDropdown } from "../ChatUsersFilterDropdown";
 import { ChatUserRowSkeleton } from "../sub-components";
 
 interface NewBroadcastModalProps extends ModalProps {
@@ -34,6 +34,8 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
   const [description, setDescription] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const {
     users: chatUsers,
@@ -49,6 +51,23 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
     lockDmo,
     lockAuthority,
   } = useChatUserPicker(currentUser, isOpen);
+
+  const userSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleFilterPopover = () => {
+    setShowFilterPopover((v) => {
+      const next = !v;
+      if (next) {
+        setTimeout(() => {
+          userSectionRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 50);
+      }
+      return next;
+    });
+  };
 
   // Only SUPERADMIN/DMO/AUTHORITY may manage broadcast lists — TRAVELLER
   // gets a 403 on every broadcast endpoint.
@@ -74,14 +93,19 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
     const trimmedName = name.trim();
     if (!trimmedName) {
       setError(t("broadcast_name_required"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      nameInputRef.current?.focus();
       return;
     }
     if (trimmedName.length > 60) {
       setError(t("broadcast_name_max_length"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      nameInputRef.current?.focus();
       return;
     }
     if (selectedMembers.length === 0) {
       setError(t("broadcast_min_members"));
+      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     try {
@@ -127,11 +151,11 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
     <ModalWrapper
       onClose={onClose}
       showSpinner={isLoading}
-      maxWidth="max-w-md"
-      height="h-[85dvh] md:h-max"
+      maxWidth="max-w-xl"
+      height="h-auto max-h-[85dvh] md:max-h-[85vh]"
     >
       <ModalHeader title={t("new_broadcast_list")} />
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={contentRef} className="flex-1 overflow-y-auto p-4 min-h-0">
         <div className="space-y-4 text-left">
           {error && (
             <div
@@ -157,6 +181,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
                 {t("broadcast_name_char_count", { count: name.length })}
               </label>
               <input
+                ref={nameInputRef}
                 type="text"
                 maxLength={60}
                 placeholder={t("broadcast_name_placeholder")}
@@ -196,7 +221,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
             </div>
           </div>
 
-          <div>
+          <div ref={userSectionRef}>
             <label
               className={clsx(
                 "block text-xs font-semibold mb-1",
@@ -207,29 +232,29 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
                 count: selectedMembers.length,
               })}
             </label>
-            <div className="flex items-start gap-2 mb-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={t("search_contacts")}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className={clsx(
-                    "w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm",
-                    inputClasses,
-                    "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
-                  )}
-                />
-              </div>
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder={t("search_contacts")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={clsx(
+                      "w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm",
+                      inputClasses,
+                      "focus:outline-hidden focus:ring-2 focus:ring-teal-500",
+                    )}
+                  />
+                </div>
 
-              <div className="relative shrink-0">
                 <button
                   type="button"
-                  onClick={() => setShowFilterPopover((v) => !v)}
+                  onClick={handleToggleFilterPopover}
                   title={t("filters")}
                   className={clsx(
-                    "relative p-2.5 rounded-lg border cursor-pointer transition-colors",
+                    "relative p-2.5 rounded-lg border cursor-pointer transition-colors shrink-0",
                     borderColor,
                     appliedFilterCount > 0
                       ? isDark
@@ -247,23 +272,22 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
                     </span>
                   )}
                 </button>
-
-                {showFilterPopover && (
-                  <ChatUsersFilterPopover
-                    filters={filters}
-                    onChange={setFilters}
-                    onClose={() => setShowFilterPopover(false)}
-                    lockDmo={lockDmo}
-                    lockAuthority={lockAuthority}
-                  />
-                )}
               </div>
+
+              {showFilterPopover && (
+                <ChatUsersFilterDropdown
+                  filters={filters}
+                  onChange={setFilters}
+                  lockDmo={lockDmo}
+                  lockAuthority={lockAuthority}
+                />
+              )}
             </div>
 
             <div
               ref={listRef}
               className={clsx(
-                "max-h-45 overflow-y-auto space-y-1.5 border rounded-lg p-2",
+                "max-h-45 overflow-y-auto mt-2 space-y-1.5 border rounded-lg p-2",
                 borderColor,
               )}
             >
@@ -336,15 +360,16 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
               )}
             </div>
           </div>
-
-          <button
-            onClick={handleCreate}
-            disabled={isLoading}
-            className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
-          >
-            {t("create_broadcast_list_button")}
-          </button>
         </div>
+      </div>
+      <div className={clsx("p-4 border-t shrink-0", borderColor)}>
+        <button
+          onClick={handleCreate}
+          disabled={isLoading}
+          className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+        >
+          {t("create_broadcast_list_button")}
+        </button>
       </div>
     </ModalWrapper>
   );
