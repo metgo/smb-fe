@@ -11,7 +11,7 @@ import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi
 import {
   useLazyGetEventTicketsQuery,
   useLazyGetEventTicketsExportCsvQuery,
-  useLazyGetEventTicketsExportPdfQuery,
+  // useLazyGetEventTicketsExportPdfQuery,
 } from "@/store/api/eventQueryApi";
 import TicketRegDetailModal from "./TicketRegDetailModal";
 import { formatDateTime } from "@/helpers/formatter";
@@ -358,8 +358,9 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
 
   const filteredTickets = allTickets;
 
-  const [fetchExportCsv] = useLazyGetEventTicketsExportCsvQuery();
-  const [fetchExportPdf] = useLazyGetEventTicketsExportPdfQuery();
+  const [fetchExportCsv, { isFetching, isLoading }] =
+    useLazyGetEventTicketsExportCsvQuery();
+  // const [fetchExportPdf] = useLazyGetEventTicketsExportPdfQuery();
 
   const downloadBlob = (blob: Blob, fileName: string) => {
     const blobUrl = URL.createObjectURL(blob);
@@ -383,18 +384,18 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
     }
   };
 
-  const exportToPDF = async () => {
-    if (!eventId) return;
-    try {
-      const blob = await fetchExportPdf({ eventId }).unwrap();
-      downloadBlob(
-        blob,
-        `${eventDetails?.name?.replace(/\s+/g, "_") ?? "event"}_registrants.pdf`,
-      );
-    } catch {
-      toast.error(t("failed_to_export"));
-    }
-  };
+  // const exportToPDF = async () => {
+  //   if (!eventId) return;
+  //   try {
+  //     const blob = await fetchExportPdf({ eventId }).unwrap();
+  //     downloadBlob(
+  //       blob,
+  //       `${eventDetails?.name?.replace(/\s+/g, "_") ?? "event"}_registrants.pdf`,
+  //     );
+  //   } catch {
+  //     toast.error(t("failed_to_export"));
+  //   }
+  // };
 
   function handleTicketRegRowClick(ticket: IEventTicket) {
     setTicketDetails(ticket);
@@ -408,7 +409,10 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
           <h3 className={`text-2xl font-semibold ${textPrimary}`}>
             {t("registrants")} ({totalData})
           </h3>
-          <ExportBtns exportToCSV={exportToCSV} exportToPDF={exportToPDF} />
+          <ExportBtns
+            exportToCSV={exportToCSV}
+            isCsvExporting={isFetching || isLoading}
+          />
         </div>
 
         <div className="relative mb-6">
