@@ -151,7 +151,7 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
     <ModalWrapper
       onClose={onClose}
       showSpinner={isLoading}
-      maxWidth="max-w-md"
+      maxWidth="max-w-xl"
       height="h-auto max-h-[85dvh] md:max-h-[85vh]"
     >
       <ModalHeader title={t("new_broadcast_list")} />
