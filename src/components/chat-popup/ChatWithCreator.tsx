@@ -16,7 +16,6 @@ interface ChatWithCreatorProps {
   creator?: RawCreator | null;
 }
 
-
 export const ChatWithCreator: React.FC<ChatWithCreatorProps> = ({
   creator,
 }) => {

@@ -38,7 +38,6 @@ export function useChatUserPicker(
     setPage(1);
   }, [debouncedSearch, filters.dmoId, filters.authorityId, filters.role]);
 
-
   useEffect(() => {
     if (!isOpen) return;
     setSearch("");

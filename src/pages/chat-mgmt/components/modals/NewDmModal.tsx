@@ -187,7 +187,9 @@ export const NewDmModal: React.FC<NewDmModalProps> = ({
                   </button>
                 ))
               : !isUsersFetching && (
-                  <p className={clsx("text-center py-8 text-sm", textSecondary)}>
+                  <p
+                    className={clsx("text-center py-8 text-sm", textSecondary)}
+                  >
                     {t("no_matching_contacts")}
                   </p>
                 )}
