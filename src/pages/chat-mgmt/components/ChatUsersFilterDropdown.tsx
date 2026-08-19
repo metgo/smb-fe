@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { X, Crown, Landmark, MapPin, Backpack, ChevronDown } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -53,12 +53,9 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
   const { t } = useTranslation("chat");
   const {
     isDark,
-    isRTL,
     borderColor,
-    bgPrimary,
-    textPrimary,
+
     textTertiary,
-    hoverBg,
   } = useThemeClasses();
   const { dmosAuthorities } = useCommon();
 
@@ -113,11 +110,11 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
                 active
                   ? "bg-teal-600 border-teal-600 text-white"
                   : clsx(
-                      borderColor,
-                      isDark
-                        ? "text-gray-300 hover:bg-gray-800"
-                        : "text-gray-600 hover:bg-gray-100",
-                    ),
+                    borderColor,
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-600 hover:bg-gray-100",
+                  ),
               )}
             >
               <RoleIcon className="w-3 h-3" />
