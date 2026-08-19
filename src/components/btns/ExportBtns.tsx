@@ -1,16 +1,18 @@
 import { useTranslation } from "react-i18next";
 import { TooltipWrapper } from "../wrapper";
-import { FileDown, FileSpreadsheet } from "lucide-react";
+import { FileDown, FileSpreadsheet, Loader2 } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ExportBtnsProps {
   exportToCSV?: () => void;
   exportToPDF?: () => void;
+  isCsvExporting: boolean;
 }
 
 const ExportBtns: React.FC<ExportBtnsProps> = ({
   exportToCSV,
   exportToPDF,
+  isCsvExporting,
 }) => {
   const { t } = useTranslation("common");
   const { exportBtnBgClasses } = useThemeClasses();
@@ -24,7 +26,11 @@ const ExportBtns: React.FC<ExportBtnsProps> = ({
             title={t("download_csv")}
             className={`p-2 rounded-lg transition-colors cursor-pointer ${exportBtnBgClasses}`}
           >
-            <FileSpreadsheet className="w-4 h-4" />
+            {isCsvExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="w-4 h-4" />
+            )}
           </button>
         </TooltipWrapper>
       )}

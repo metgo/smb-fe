@@ -178,6 +178,12 @@ interface ITripDetailsRes {
   estimatedDuration: number;
   totalDistanceCovered: number;
   images: Array<ITripImage>;
+  creator?: {
+    _id: string;
+    name: string;
+    email: string;
+    role: TUserRole;
+  };
 }
 
 interface ITripImage {

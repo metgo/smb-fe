@@ -31,6 +31,7 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { ChatWithCreator } from "@/components/chat-popup";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
   AttributesDetails,
@@ -368,6 +369,8 @@ export default function EventDetailsPage() {
           eventDataRefetch={refetch}
         />
       )}
+
+      <ChatWithCreator creator={eventDetails?.creator} />
     </div>
   );
 }

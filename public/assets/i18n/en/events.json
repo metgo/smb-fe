@@ -321,6 +321,7 @@
   "confirm_cancel": "Confirm Cancel",
   "order_status_updated": "Order status updated to {{status}}",
   "failed_to_update_order_status": "Failed to update order status",
+  "failed_to_export": "Failed to export file",
 
   "actions": "Actions",
   "create_session": "Create Session",

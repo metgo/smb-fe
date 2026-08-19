@@ -9,6 +9,7 @@ import { tripTabs } from "@/constants/tabs";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Spinner, TabsSection } from "@/components/shared";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { ChatWithCreator } from "@/components/chat-popup";
 import {
   DetailTitleSection,
   MediaDetails,
@@ -197,6 +198,8 @@ export default function TripDetailsPage() {
       {isEditOpen && (
         <CreateTripWizard onClose={handleClose} onPublishSuccess={refetch} />
       )}
+
+      <ChatWithCreator creator={trip?.creator} />
     </div>
   );
 }

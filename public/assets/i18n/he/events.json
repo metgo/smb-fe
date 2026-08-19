@@ -350,6 +350,7 @@
   "confirm_cancel": "אשר ביטול",
   "order_status_updated": "סטטוס ההזמנה עודכן ל-{{status}}",
   "failed_to_update_order_status": "עדכון סטטוס ההזמנה נכשל",
+  "failed_to_export": "ייצוא הקובץ נכשל",
 
   "actions": "פעולות",
   "create_session": "צור סשן",

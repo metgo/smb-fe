@@ -22,6 +22,7 @@ import {
   useGetIndividualPoiStatsQuery,
 } from "@/store/api/poiQueryApi";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { ChatWithCreator } from "@/components/chat-popup";
 import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
 import { CreatePoiWizard } from "../components";
 import {
@@ -254,6 +255,8 @@ export default function PoiDetailsPage() {
           opMode={IOpMode.EDIT}
         />
       )}
+
+      <ChatWithCreator creator={poi?.creator} />
     </div>
   );
 }
