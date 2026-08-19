@@ -351,14 +351,15 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
               )}
             </div>
           </div>
-
-          <button
-            onClick={handleCreate}
-            className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
-          >
-            {t("create_group")}
-          </button>
         </div>
+      </div>
+      <div className={clsx("p-4 border-t shrink-0", borderColor)}>
+        <button
+          onClick={handleCreate}
+          className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+        >
+          {t("create_group")}
+        </button>
       </div>
     </ModalWrapper>
   );

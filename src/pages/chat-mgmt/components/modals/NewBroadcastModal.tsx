@@ -360,15 +360,16 @@ export const NewBroadcastModal: React.FC<NewBroadcastModalProps> = ({
               )}
             </div>
           </div>
-
-          <button
-            onClick={handleCreate}
-            disabled={isLoading}
-            className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer mt-4"
-          >
-            {t("create_broadcast_list_button")}
-          </button>
         </div>
+      </div>
+      <div className={clsx("p-4 border-t shrink-0", borderColor)}>
+        <button
+          onClick={handleCreate}
+          disabled={isLoading}
+          className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+        >
+          {t("create_broadcast_list_button")}
+        </button>
       </div>
     </ModalWrapper>
   );
