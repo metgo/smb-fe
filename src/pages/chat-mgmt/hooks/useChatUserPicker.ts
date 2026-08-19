@@ -9,9 +9,6 @@ import {
   type ChatUsersFilters,
 } from "../components/ChatUsersFilterPopover";
 
-// Server-side search/filter/pagination over /chats/users, shared by every
-// "pick members" surface (New Group, New Broadcast) so they behave like the
-// main chats sidebar instead of filtering a locally-loaded page of users.
 export function useChatUserPicker(
   currentUser: IChatUser | null,
   isOpen: boolean,
@@ -41,9 +38,7 @@ export function useChatUserPicker(
     setPage(1);
   }, [debouncedSearch, filters.dmoId, filters.authorityId, filters.role]);
 
-  // Modals stay mounted while closed (visibility is just `isOpen`) - reset
-  // the picker each time it opens instead of leaking the previous session's
-  // search/filters/selection state into the next one.
+
   useEffect(() => {
     if (!isOpen) return;
     setSearch("");
