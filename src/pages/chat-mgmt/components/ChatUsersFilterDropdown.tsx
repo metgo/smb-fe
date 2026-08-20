@@ -2,7 +2,14 @@ import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import React from "react";
-import { X, Crown, Landmark, MapPin, Backpack, ChevronDown } from "lucide-react";
+import {
+  X,
+  Crown,
+  Landmark,
+  MapPin,
+  Backpack,
+  ChevronDown,
+} from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
@@ -44,12 +51,9 @@ interface ChatUsersFilterDropdownProps {
   lockAuthority?: boolean;
 }
 
-export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = ({
-  filters,
-  onChange,
-  lockDmo = false,
-  lockAuthority = false,
-}) => {
+export const ChatUsersFilterDropdown: React.FC<
+  ChatUsersFilterDropdownProps
+> = ({ filters, onChange, lockDmo = false, lockAuthority = false }) => {
   const { t } = useTranslation("chat");
   const {
     isDark,
@@ -110,11 +114,11 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
                 active
                   ? "bg-teal-600 border-teal-600 text-white"
                   : clsx(
-                    borderColor,
-                    isDark
-                      ? "text-gray-300 hover:bg-gray-800"
-                      : "text-gray-600 hover:bg-gray-100",
-                  ),
+                      borderColor,
+                      isDark
+                        ? "text-gray-300 hover:bg-gray-800"
+                        : "text-gray-600 hover:bg-gray-100",
+                    ),
               )}
             >
               <RoleIcon className="w-3 h-3" />
@@ -206,7 +210,9 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
               <div
                 className={clsx(
                   "absolute left-0 right-0 mt-1 rounded-lg border shadow-lg overflow-hidden z-50",
-                  isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200",
+                  isDark
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-200",
                 )}
               >
                 <div className="overflow-y-auto max-h-60">
@@ -257,11 +263,17 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
           <div className="relative">
             <button
               type="button"
-              onClick={() => !lockAuthority && selectedDmo && setAuthorityOpen(!authorityOpen)}
+              onClick={() =>
+                !lockAuthority &&
+                selectedDmo &&
+                setAuthorityOpen(!authorityOpen)
+              }
               disabled={lockAuthority || !selectedDmo}
               className={clsx(
                 "w-full flex items-center justify-between px-3 py-2 border rounded-lg text-sm transition-colors cursor-pointer",
-                lockAuthority || !selectedDmo ? "opacity-50 cursor-not-allowed" : "",
+                lockAuthority || !selectedDmo
+                  ? "opacity-50 cursor-not-allowed"
+                  : "",
                 authorityOpen
                   ? isDark
                     ? "border-teal-400 shadow-[0_0_0_2px_#2dd4bf]"
@@ -324,7 +336,9 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
               <div
                 className={clsx(
                   "absolute left-0 right-0 mt-1 rounded-lg border shadow-lg overflow-hidden z-50",
-                  isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200",
+                  isDark
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-200",
                 )}
               >
                 <div className="overflow-y-auto max-h-60">
@@ -350,7 +364,9 @@ export const ChatUsersFilterDropdown: React.FC<ChatUsersFilterDropdownProps> = (
                           className="w-6 h-6 object-contain flex-shrink-0"
                         />
                       )}
-                      <span className="font-semibold truncate">{authority.name}</span>
+                      <span className="font-semibold truncate">
+                        {authority.name}
+                      </span>
                       {filters.authorityId === authority._id && (
                         <span className="ml-auto text-teal-500">✓</span>
                       )}
