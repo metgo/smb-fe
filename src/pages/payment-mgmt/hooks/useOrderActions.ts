@@ -15,6 +15,7 @@ import {
   useFinalizeClosedOrdersMutation,
   usePreviewFinalizeClosedOrdersQuery,
 } from "@/store/api/reconciliationQueryApi";
+import { useLazyGetUserInfoQuery } from "@/store/api/userQueryApi";
 import { mapOrderProductDetails } from "../helpers";
 
 export interface UseOrderActionsParams {
@@ -32,9 +33,9 @@ export function useOrderActions({
   refetchReconciliationStats,
   scopeParams,
 }: UseOrderActionsParams) {
+  const navigate = useNavigate();
   const { t } = useTranslation("reconciliation");
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { userRole } = useAppSelector((state) => state.auth);
 
   const [selectedOrder, setSelectedOrder] = useState<IMonthlyOrder | null>(
@@ -50,6 +51,9 @@ export function useOrderActions({
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [reopenFetchingId, setReopenFetchingId] = useState<string | null>(null);
+  const [showVendorBankDetailsModal, setShowVendorBankDetailsModal] =
+    useState(false);
+  const [vendorBankDetails, setVendorBankDetails] = useState<any>(null);
 
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
     useGetOrderProductDetailsQuery(detailsOrderId as string, {
@@ -65,6 +69,7 @@ export function useOrderActions({
     useBulkMarkOrderAsCompletedMutation();
   const [finalizeClosedOrders, { isLoading: isClosingAllOrders }] =
     useFinalizeClosedOrdersMutation();
+  const [getUserInfo] = useLazyGetUserInfoQuery();
   // only fetched while the confirmation modal is actually open - no point
   // hitting this on every page load
   const {
@@ -378,6 +383,18 @@ export function useOrderActions({
     }
   };
 
+  const handleUpdateVendorBankDetails = async () => {
+    try {
+      const result = await getUserInfo().unwrap();
+      setVendorBankDetails(result);
+      setShowVendorBankDetailsModal(true);
+    } catch (error) {
+      console.error("Failed to fetch user info:", error);
+      toast.error("Failed to fetch vendor bank details");
+      setShowVendorBankDetailsModal(true);
+    }
+  };
+
   return {
     userRole,
     selectedOrder,
@@ -422,5 +439,10 @@ export function useOrderActions({
     handleAdminResolveDispute,
     handleBulkMarkOrderCompleted,
     handleCloseAllOrders,
+
+    vendorBankDetails,
+    showVendorBankDetailsModal,
+    setShowVendorBankDetailsModal,
+    handleUpdateVendorBankDetails,
   };
 }

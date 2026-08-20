@@ -78,6 +78,7 @@ export const endpoints = {
   finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
   previewFinaliseApprovedOrders:
     "/admin/monthly-reports/finalize-closed-orders/preview",
+  exportBankTransferXlsx: "/monthly-reports/export/bank-transfer-xlsx",
 
   // public
   publicEventTicket: "/public/event-tickets",
@@ -114,6 +115,7 @@ export const endpoints = {
   userAdmin: "/users/admin",
   createUser: "/users/create",
   resetLoginAttempts: "/users/reset-login-attempts",
+  notifyUserByEmailSms: "vendors/notify-missing-bank-details",
 
   // Media
   mediaSignedUrl: "/media-signed-url",

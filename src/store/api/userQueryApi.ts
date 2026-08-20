@@ -51,6 +51,7 @@ export const userQueryApi = createApi({
 
 export const {
   useGetUserInfoQuery,
+  useLazyGetUserInfoQuery,
   useGetUsersQuery,
   useGetUserDetailsByEmailQuery,
 } = userQueryApi;

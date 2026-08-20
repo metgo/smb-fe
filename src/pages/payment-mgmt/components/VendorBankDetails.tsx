@@ -2,13 +2,26 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Save, User, Mail, Phone, MessageSquare } from "lucide-react";
+import {
+  Loader2,
+  Save,
+  User,
+  Mail,
+  Phone,
+  MessageSquare,
+  Building2,
+} from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
-import { useUpdateProfileInfoMutation } from "@/store/api/userMutationApi";
+import {
+  useSendEmailSmsMutation,
+  useUpdateProfileInfoMutation,
+} from "@/store/api/userMutationApi";
+import { InputField, ReactSelect } from "@/components/form-fields";
 
 interface VendorBankDetailsOwnerInfo {
+  _id: string;
   name: string;
   email: string | null;
   phone: string | null;
@@ -31,54 +44,49 @@ const VendorBankDetails = ({
 }: VendorBankDetailsProps) => {
   const { t } = useTranslation("profile");
   const { t: tBank } = useTranslation("banks");
+  const { t: tVouchers } = useTranslation("vouchers");
+  const { t: tToast } = useTranslation("toast");
   const banks = useMemo(
     () => tBank("banks", { returnObjects: true }) as Bank[],
     [tBank],
   );
 
-  const { isDark, textSecondary } = useThemeClasses();
+  const { isDark, textSecondary, textPrimary } = useThemeClasses();
 
   const [updateProfileInfo, { isLoading }] = useUpdateProfileInfoMutation();
+  const [sendEmailSms, { isLoading: isSendingEmailSms }] =
+    useSendEmailSmsMutation();
 
   const [selectedBankNumber, setSelectedBankNumber] = useState("");
 
   const [selectedBranchNumber, setSelectedBranchNumber] = useState("");
-  const [bankSearch, setBankSearch] = useState("");
-  const [branchSearch, setBranchSearch] = useState("");
-  const [isBankDropdownOpen, setIsBankDropdownOpen] = useState(false);
-  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const selectedBank = useMemo(
     () => banks.find((b) => b.bankId === selectedBankNumber),
     [banks, selectedBankNumber],
   );
 
-  const filteredBanks = useMemo(() => {
-    const list = !bankSearch.trim()
-      ? banks
-      : banks.filter((b) => {
-          const q = bankSearch.toLowerCase();
-          return (
-            b.bankId.toLowerCase().includes(q) ||
-            b.bankName.toLowerCase().includes(q)
-          );
-        });
-    return [...list].sort((a, b) => Number(a.bankId) - Number(b.bankId));
-  }, [banks, bankSearch]);
+  // Convert banks to ReactSelect format
+  const bankOptions = useMemo(
+    () =>
+      banks.map((bank) => ({
+        _id: bank.bankId,
+        name: `${bank.bankId} - ${bank.bankName}`,
+      })),
+    [banks],
+  );
 
-  const filteredBranches = useMemo(() => {
-    const branches = selectedBank?.branches ?? [];
-    const list = !branchSearch.trim()
-      ? branches
-      : branches.filter((br) => {
-          const q = branchSearch.toLowerCase();
-          return (
-            br.branchId.toLowerCase().includes(q) ||
-            br.branchName.toLowerCase().includes(q)
-          );
-        });
-    return [...list].sort((a, b) => Number(a.branchId) - Number(b.branchId));
-  }, [selectedBank, branchSearch]);
+  // Convert branches to ReactSelect format
+  const branchOptions = useMemo(
+    () =>
+      selectedBank?.branches.map((branch) => ({
+        _id: branch.branchId,
+        name: `${branch.branchId} - ${branch.branchName}`,
+      })) || [],
+    [selectedBank],
+  );
+
   const [errors, setErrors] = useState<BankAccountErrors>({});
 
   const validate = (): boolean => {
@@ -131,9 +139,6 @@ const VendorBankDetails = ({
       [field]: value,
       ...(field === "bankNumber" ? { branchName: "" } : {}),
     }));
-    if (field === "bankNumber") {
-      setBranchSearch("");
-    }
   };
 
   const handleCloseBankModal = () => {
@@ -145,21 +150,6 @@ const VendorBankDetails = ({
       setSelectedBankNumber(savedBankAccount.bankNumber);
       setSelectedBranchNumber(savedBankAccount.branchNumber);
 
-      const matchedBank = banks.find(
-        (b) => b.bankId === savedBankAccount.bankNumber,
-      );
-      if (matchedBank) {
-        setBankSearch(`${matchedBank.bankId} - ${matchedBank.bankName}`);
-        const matchedBranch = matchedBank.branches.find(
-          (br) => br.branchId === savedBankAccount.branchNumber,
-        );
-        if (matchedBranch) {
-          setBranchSearch(
-            `${matchedBranch.branchId} - ${matchedBranch.branchName}`,
-          );
-        }
-      }
-
       setBankAccountData({
         accountNumber: savedBankAccount.accountNumber,
         bnNumber: savedBankAccount.businessNumberByGovt,
@@ -168,30 +158,42 @@ const VendorBankDetails = ({
         branchNumber: savedBankAccount.branchNumber,
       });
     }
-    // depend on savedBankAccount's fields, not its reference - the caller
-    // passes a freshly-built object each render, which would otherwise
-    // re-run this effect (and its setState calls) on every render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    savedBankAccount?.bankNumber,
-    savedBankAccount?.branchNumber,
-    savedBankAccount?.accountNumber,
-    savedBankAccount?.businessNumberByGovt,
-    savedBankAccount?.invoiceName,
-    banks,
-  ]);
+  }, [savedBankAccount, banks]);
 
   const labelClass = `block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`;
   const errorClass = "text-red-500 text-xs font-normal ml-1";
 
-  const inputClass = (hasError?: boolean) =>
+  // Input classes for InputField component
+  const getInputFieldClasses = () =>
     clsx(
-      "w-full px-4 py-2.5 rounded-lg border text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500",
       isDark
         ? "bg-gray-700/60 border-gray-600 text-gray-100 placeholder-gray-500"
         : "bg-white border-gray-300 text-gray-900 placeholder-gray-400",
-      hasError && "border-red-500 focus:ring-red-400",
     );
+
+  const notifyUserHandler = async (type: "email" | "sms") => {
+    try {
+      await sendEmailSms({
+        type,
+        userId: ownerInfo?._id,
+      });
+      // Show success toast
+      if (type === "email") {
+        toast.success(tToast("vendor_email_sent_success"));
+      } else {
+        toast.success(tToast("vendor_sms_sent_success"));
+      }
+    } catch (error) {
+      console.error(`Failed to send ${type}:`, error);
+
+      // Show error toast
+      if (type === "email") {
+        toast.error(tToast("vendor_email_sent_failed"));
+      } else {
+        toast.error(tToast("vendor_sms_sent_failed"));
+      }
+    }
+  };
 
   return (
     <ModalWrapper
@@ -229,7 +231,7 @@ const VendorBankDetails = ({
         </div>
 
         {/* Modal Body */}
-        <div className="px-6 py-5 space-y-4">
+        <div className="px-3 py-5 space-y-4">
           {/* Owner Info */}
           <div
             className={clsx(
@@ -305,207 +307,69 @@ const VendorBankDetails = ({
             )}
           >
             {!adminView ? (
-              <div>
-                {/* Bank Name - Searchable Combobox */}
-                <div className="relative">
+              <div className="space-y-4">
+                {/* Bank Name - ReactSelect */}
+                <div>
                   <label className={labelClass}>
                     {t("bank_name")} *
                     {errors.bankNumber && (
                       <span className={errorClass}>{errors.bankNumber}</span>
                     )}
                   </label>
-
-                  <input
-                    type="text"
-                    value={bankSearch}
-                    onChange={(e) => {
-                      setBankSearch(e.target.value);
-                      setIsBankDropdownOpen(true);
-                      // Clear selection when user edits the input
-                      if (selectedBankNumber) {
-                        setSelectedBankNumber("");
-                        setSelectedBranchNumber("");
-                        setBranchSearch("");
-                        setBankAccountData((prev) => ({
-                          ...prev,
-                          bankNumber: "",
-                          branchNumber: "",
-                        }));
-                      }
+                  <ReactSelect
+                    items={bankOptions}
+                    value={selectedBankNumber}
+                    onChange={(value) => {
+                      setSelectedBankNumber(value);
+                      setSelectedBranchNumber("");
+                      setBankAccountData((prev) => ({
+                        ...prev,
+                        bankNumber: value,
+                        branchNumber: "",
+                      }));
+                      setErrors((prev) => ({
+                        ...prev,
+                        bankNumber: undefined,
+                      }));
                     }}
-                    onFocus={() => {
-                      // setBankSearch("");
-                      setIsBankDropdownOpen(true);
-                      if (selectedBankNumber) {
-                        setBankSearch(""); // temporarily clear to show full list
-                      }
-                    }}
-                    onBlur={() =>
-                      setTimeout(() => {
-                        setIsBankDropdownOpen(false);
-                        if (selectedBankNumber && selectedBank) {
-                          setBankSearch(
-                            `${selectedBank.bankId} - ${selectedBank.bankName}`,
-                          );
-                        } else {
-                          setBankSearch("");
-                        }
-                      }, 150)
-                    }
                     placeholder={
                       t("select_bank") || "Search by bank name or ID..."
                     }
-                    className={inputClass(!!errors.bankNumber)}
+                    isClearable
                   />
-
-                  {isBankDropdownOpen && banks.length > 0 && (
-                    <ul
-                      className={clsx(
-                        "absolute z-20 w-full mt-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto text-sm",
-                        isDark
-                          ? "bg-gray-700 border-gray-600 text-gray-100"
-                          : "bg-white border-gray-200 text-gray-900",
-                      )}
-                    >
-                      {filteredBanks.map((bank) => (
-                        <li
-                          key={bank.bankId}
-                          onMouseDown={() => {
-                            setSelectedBankNumber(bank.bankId);
-                            setSelectedBranchNumber("");
-                            setBankSearch(`${bank.bankId} - ${bank.bankName}`);
-                            setBranchSearch("");
-                            setBankAccountData((prev) => ({
-                              ...prev,
-                              bankNumber: bank.bankId,
-                              branchNumber: "",
-                            }));
-                            setErrors((prev) => ({
-                              ...prev,
-                              bankNumber: undefined,
-                            }));
-                            setIsBankDropdownOpen(false);
-                          }}
-                          className={clsx(
-                            "px-4 py-2.5 cursor-pointer transition-colors",
-                            isDark ? "hover:bg-gray-600" : "hover:bg-teal-50",
-                            selectedBankNumber === bank.bankId &&
-                              (isDark
-                                ? "bg-gray-600"
-                                : "bg-teal-50 font-medium"),
-                          )}
-                        >
-                          <span className="font-mono text-teal-500">
-                            {bank.bankId}
-                          </span>
-                          <span className="mx-2">—</span>
-                          {bank.bankName}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
 
-                {/* Branch Name */}
-                <div className="relative">
+                {/* Branch Name - ReactSelect */}
+                <div>
                   <label className={labelClass}>
                     {t("branch_name")} *
                     {errors.branchNumber && (
                       <span className={errorClass}>{errors.branchNumber}</span>
                     )}
                   </label>
+                  <ReactSelect
+                    items={branchOptions}
+                    value={selectedBranchNumber}
+                    onChange={(value) => {
+                      setSelectedBranchNumber(value);
+                      setBankAccountData((prev) => ({
+                        ...prev,
+                        branchNumber: value,
+                      }));
+                      setErrors((prev) => ({
+                        ...prev,
+                        branchNumber: undefined,
+                      }));
+                    }}
 
-                  <input
-                    type="text"
-                    value={branchSearch}
-                    disabled={
-                      !selectedBank || selectedBank.branches.length === 0
-                    }
-                    onChange={(e) => {
-                      setBranchSearch(e.target.value);
-                      setIsBranchDropdownOpen(true);
-                      if (selectedBranchNumber) {
-                        setSelectedBranchNumber("");
-                        setBankAccountData((prev) => ({
-                          ...prev,
-                          branchNumber: "",
-                        }));
-                      }
-                    }}
-                    onFocus={() => {
-                      setIsBranchDropdownOpen(true);
-                      if (selectedBranchNumber) {
-                        setBranchSearch("");
-                      }
-                    }}
-                    onBlur={() =>
-                      setTimeout(() => {
-                        setIsBranchDropdownOpen(false);
-                        if (selectedBranchNumber && selectedBank) {
-                          const b = selectedBank.branches.find(
-                            (br) => br.branchId === selectedBranchNumber,
-                          );
-                          setBranchSearch(
-                            b ? `${b.branchId} - ${b.branchName}` : "",
-                          );
-                        } else {
-                          setBranchSearch("");
-                        }
-                      }, 150)
-                    }
                     placeholder={
                       !selectedBank
                         ? t("select_bank_first") || "Select a bank first..."
                         : t("select_branch") || "Search by branch name or ID..."
                     }
-                    className={inputClass(!!errors.branchNumber)}
+                    isClearable
+                    isDisabled={!selectedBank}
                   />
-
-                  {isBranchDropdownOpen && filteredBranches.length > 0 && (
-                    <ul
-                      className={clsx(
-                        "absolute z-20 w-full mt-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto text-sm",
-                        isDark
-                          ? "bg-gray-700 border-gray-600 text-gray-100"
-                          : "bg-white border-gray-200 text-gray-900",
-                      )}
-                    >
-                      {filteredBranches.map((branch) => (
-                        <li
-                          key={branch.branchId}
-                          onMouseDown={() => {
-                            setSelectedBranchNumber(branch.branchId);
-                            setBranchSearch(
-                              `${branch.branchId} - ${branch.branchName}`,
-                            );
-                            setBankAccountData((prev) => ({
-                              ...prev,
-                              branchNumber: branch.branchId,
-                            }));
-                            setErrors((prev) => ({
-                              ...prev,
-                              branchNumber: undefined,
-                            }));
-                            setIsBranchDropdownOpen(false);
-                          }}
-                          className={clsx(
-                            "px-4 py-2.5 cursor-pointer transition-colors",
-                            isDark ? "hover:bg-gray-600" : "hover:bg-teal-50",
-                            selectedBranchNumber === branch.branchId &&
-                              (isDark
-                                ? "bg-gray-600"
-                                : "bg-teal-50 font-medium"),
-                          )}
-                        >
-                          <span className="font-mono text-teal-500">
-                            {branch.branchId}
-                          </span>
-                          <span className="mx-2">—</span>
-                          {branch.branchName}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -519,18 +383,18 @@ const VendorBankDetails = ({
                         </span>
                       )}
                     </label>
-                    <input
-                      type="text"
+                    <InputField
                       value={bankAccountData.accountNumber}
-                      onChange={(e) => {
-                        handleBankChange("accountNumber", e.target.value);
+                      onChange={(value) => {
+                        handleBankChange("accountNumber", value);
                         setErrors((prev) => ({
                           ...prev,
                           accountNumber: undefined,
                         }));
                       }}
                       placeholder="123456789"
-                      className={inputClass(!!errors.accountNumber)}
+                      inputClasses={getInputFieldClasses()}
+                      error={errors.accountNumber}
                     />
                   </div>
 
@@ -542,15 +406,15 @@ const VendorBankDetails = ({
                         <span className={errorClass}>{errors.bnNumber}</span>
                       )}
                     </label>
-                    <input
-                      type="text"
+                    <InputField
                       value={bankAccountData.bnNumber}
-                      onChange={(e) => {
-                        handleBankChange("bnNumber", e.target.value);
+                      onChange={(value) => {
+                        handleBankChange("bnNumber", value);
                         setErrors((prev) => ({ ...prev, bnNumber: undefined }));
                       }}
                       placeholder="123456789"
-                      className={inputClass(!!errors.bnNumber)}
+                      inputClasses={getInputFieldClasses()}
+                      error={errors.bnNumber}
                     />
                   </div>
                 </div>
@@ -563,52 +427,222 @@ const VendorBankDetails = ({
                       <span className={errorClass}>{errors.invoiceName}</span>
                     )}
                   </label>
-                  <input
-                    type="text"
+                  <InputField
                     value={bankAccountData.invoiceName}
-                    onChange={(e) => {
-                      handleBankChange("invoiceName", e.target.value);
+                    onChange={(value) => {
+                      handleBankChange("invoiceName", value);
                       setErrors((prev) => ({
                         ...prev,
                         invoiceName: undefined,
                       }));
                     }}
                     placeholder="MetGo LTD"
-                    className={inputClass(!!errors.invoiceName)}
+                    inputClasses={getInputFieldClasses()}
+                    error={errors.invoiceName}
                   />
                 </div>
               </div>
+            ) : adminView && !isEditing ? (
+              // Admin view (read-only)
+              savedBankAccount ? (
+                <div>
+                  <div className="flex items-start gap-4 mb-6">
+                    <div
+                      className={`p-3 rounded-lg ${isDark ? "bg-teal-900/30" : "bg-teal-50"}`}
+                    >
+                      <Building2
+                        className={`w-6 h-6 ${isDark ? "text-teal-400" : "text-teal-600"}`}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className={`font-semibold text-lg ${textPrimary}`}>
+                        {savedBankAccount.invoiceName || "Business Name"}
+                      </h4>
+                      <p className={`text-sm ${textSecondary}`}>
+                        {t("bank_account_details") || "Bank Account Details"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bank Information Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Bank Number */}
+                    <div
+                      className={`p-4 rounded-lg ${isDark ? "bg-gray-700/50" : "bg-gray-50"}`}
+                    >
+                      <div
+                        className={`text-xs uppercase tracking-wide mb-1 ${textSecondary}`}
+                      >
+                        {t("bank_name") || "Bank Name"}
+                      </div>
+                      <div className={`font-medium ${textPrimary}`}>
+                        {(() => {
+                          const bank = banks.find(
+                            (b) => b.bankId === savedBankAccount.bankNumber,
+                          );
+                          return bank
+                            ? `${bank.bankId} - ${bank.bankName}`
+                            : savedBankAccount.bankNumber;
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Branch Number */}
+                    <div
+                      className={`p-4 rounded-lg ${isDark ? "bg-gray-700/50" : "bg-gray-50"}`}
+                    >
+                      <div
+                        className={`text-xs uppercase tracking-wide mb-1 ${textSecondary}`}
+                      >
+                        {t("branch_name") || "Branch Name"}
+                      </div>
+                      <div className={`font-medium ${textPrimary}`}>
+                        {(() => {
+                          const bank = banks.find(
+                            (b) => b.bankId === savedBankAccount.bankNumber,
+                          );
+                          const branch = bank?.branches.find(
+                            (br) =>
+                              br.branchId === savedBankAccount.branchNumber,
+                          );
+                          return branch
+                            ? `${branch.branchId} - ${branch.branchName}`
+                            : savedBankAccount.branchNumber;
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Account Number */}
+                    <div
+                      className={`p-4 rounded-lg ${isDark ? "bg-gray-700/50" : "bg-gray-50"}`}
+                    >
+                      <div
+                        className={`text-xs uppercase tracking-wide mb-1 ${textSecondary}`}
+                      >
+                        {t("account_number") || "Account Number"}
+                      </div>
+                      <div className={`font-medium ${textPrimary}`}>
+                        {savedBankAccount.accountNumber}
+                      </div>
+                    </div>
+
+                    {/* BN Number */}
+                    <div
+                      className={`p-4 rounded-lg ${isDark ? "bg-gray-700/50" : "bg-gray-50"}`}
+                    >
+                      <div
+                        className={`text-xs uppercase tracking-wide mb-1 ${textSecondary}`}
+                      >
+                        {t("bn_number") || "Business Number"}
+                      </div>
+                      <div className={`font-medium ${textPrimary}`}>
+                        {savedBankAccount.businessNumberByGovt}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Button for Admin */}
+                  <div className="flex justify-end mt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditing(true);
+                        // Pre-fill the form with existing data
+                        if (savedBankAccount) {
+                          setSelectedBankNumber(savedBankAccount.bankNumber);
+                          setSelectedBranchNumber(
+                            savedBankAccount.branchNumber,
+                          );
+                          setBankAccountData({
+                            bankNumber: savedBankAccount.bankNumber,
+                            branchNumber: savedBankAccount.branchNumber,
+                            accountNumber: savedBankAccount.accountNumber,
+                            bnNumber: savedBankAccount.businessNumberByGovt,
+                            invoiceName: savedBankAccount.invoiceName,
+                          });
+                        }
+                      }}
+                      className="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                      <Save className="w-4 h-4" />
+                      {t("edit_bank_account") || "Edit Bank Account"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className={`mb-6 text-sm ${textSecondary}`}>
+                    {t("vendor_no_bank_details") ||
+                      "This vendor does not have bank account details. Please send them an email or SMS to update their information."}
+                  </div>
+                  <div className="flex items-center justify-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => notifyUserHandler("email")}
+                      disabled={isSendingEmailSms}
+                      className={clsx(
+                        "flex items-center gap-2 px-5 py-2.5 cursor-pointer rounded-lg text-sm font-medium transition-colors border border-teal-400",
+                        isDark
+                          ? "bg-teal-900/50 hover:bg-teal-800 text-teal-400"
+                          : "bg-teal-50 hover:bg-teal-100 text-teal-700",
+                      )}
+                    >
+                      <Mail className="w-4 h-4" />
+                      {tVouchers("send_email") || "Send Email"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSendingEmailSms}
+                      onClick={() => notifyUserHandler("sms")}
+                      className={clsx(
+                        "flex items-center gap-2 px-5 py-2.5  cursor-pointer rounded-lg text-sm font-medium transition-colors border border-blue-400",
+                        isDark
+                          ? "bg-blue-900/50 hover:bg-blue-800 text-blue-400"
+                          : "bg-blue-50 hover:bg-blue-100 text-blue-700",
+                      )}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      {tVouchers("send_sms") || "Send SMS"}
+                    </button>
+                  </div>
+                </div>
+              )
             ) : (
+              // Non-admin view - show email/SMS buttons when no bank account
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <div className={`mb-6 text-sm ${textSecondary}`}>
                   {t("vendor_no_bank_details") ||
                     "This vendor does not have bank account details. Please send them an email or SMS to update their information."}
                 </div>
                 <div className="flex items-center justify-center gap-4">
-                  <a
-                    href={`mailto:${ownerInfo.email || ""}`}
+                  <button
+                    type="button"
+                    onClick={() => notifyUserHandler("email")}
+                    disabled={isSendingEmailSms}
                     className={clsx(
-                      "flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                      "flex items-center gap-2 px-5 py-2.5 cursor-pointer rounded-lg text-sm font-medium transition-colors border border-teal-400",
                       isDark
                         ? "bg-teal-900/50 hover:bg-teal-800 text-teal-400"
                         : "bg-teal-50 hover:bg-teal-100 text-teal-700",
                     )}
                   >
                     <Mail className="w-4 h-4" />
-                    {t("send_email") || "Send Email"}
-                  </a>
-                  <a
-                    href={`sms:${ownerInfo.phone || ""}`}
+                    {tVouchers("send_email") || "Send Email"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSendingEmailSms}
+                    onClick={() => notifyUserHandler("sms")}
                     className={clsx(
-                      "flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                      "flex items-center gap-2 px-5 py-2.5  cursor-pointer rounded-lg text-sm font-medium transition-colors border border-blue-400",
                       isDark
-                        ? "bg-teal-900/50 hover:bg-teal-800 text-teal-400"
-                        : "bg-teal-50 hover:bg-teal-100 text-teal-700",
+                        ? "bg-blue-900/50 hover:bg-blue-800 text-blue-400"
+                        : "bg-blue-50 hover:bg-blue-100 text-blue-700",
                     )}
                   >
                     <MessageSquare className="w-4 h-4" />
-                    {t("send_sms") || "Send SMS"}
-                  </a>
+                    {tVouchers("send_sms") || "Send SMS"}
+                  </button>
                 </div>
               </div>
             )}
@@ -616,7 +650,7 @@ const VendorBankDetails = ({
         </div>
 
         {/* Modal Footer */}
-        {!adminView && (
+        {!adminView || isEditing ? (
           <div
             className={clsx(
               "sticky bottom-0 px-6 py-4 flex items-center justify-end gap-3 border-t",
@@ -625,17 +659,19 @@ const VendorBankDetails = ({
                 : "bg-gray-50 border-gray-100",
             )}
           >
-            <button
-              onClick={handleCloseBankModal}
-              className={clsx(
-                "px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer",
-                isDark
-                  ? "border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-100",
-              )}
-            >
-              {t("cancel") || "Cancel"}
-            </button>
+            {isEditing && (
+              <button
+                onClick={() => setIsEditing(false)}
+                className={clsx(
+                  "px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer",
+                  isDark
+                    ? "border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                    : "border-gray-300 text-gray-700 hover:bg-gray-100",
+                )}
+              >
+                {t("cancel") || "Cancel"}
+              </button>
+            )}
             <button
               onClick={handleSaveBankAccount}
               disabled={
@@ -658,6 +694,27 @@ const VendorBankDetails = ({
                 <Save className="w-4 h-4" />
               )}
               <span>{t("save") || "Save"}</span>
+            </button>
+          </div>
+        ) : (
+          <div
+            className={clsx(
+              "sticky bottom-0 px-6 py-4 flex items-center justify-end gap-3 border-t",
+              isDark
+                ? "bg-gray-800 border-gray-700"
+                : "bg-gray-50 border-gray-100",
+            )}
+          >
+            <button
+              onClick={handleCloseBankModal}
+              className={clsx(
+                "px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer",
+                isDark
+                  ? "border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                  : "border-gray-300 text-gray-700 hover:bg-gray-100",
+              )}
+            >
+              {t("close") || "Close"}
             </button>
           </div>
         )}

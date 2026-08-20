@@ -217,5 +217,8 @@
   "missing": "Missing",
   "amount_summary": "Amount Summary",
   "payable": "Payable",
-  "delivery_fee": "Delivery Fee"
+  "delivery_fee": "Delivery Fee",
+  "bank_transfer_export_ready": "Bank Transfer Export Ready",
+  "bank_transfer_export_desc": "The bank transfer Excel file has been generated and downloaded automatically.",
+  "close": "Close"
 }

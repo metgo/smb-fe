@@ -296,6 +296,18 @@ export const reconciliationQueryApi = createApi({
         params: params || {},
       }),
     }),
+
+    exportBankTransferXlsx: builder.mutation<
+      Blob,
+      { year: number; month: number }
+    >({
+      query: (body) => ({
+        url: endpoints.exportBankTransferXlsx,
+        method: "POST",
+        data: body,
+        responseType: "blob",
+      }),
+    }),
   }),
 });
 
@@ -315,4 +327,5 @@ export const {
   useFinalizeClosedOrdersMutation,
   usePreviewFinalizeClosedOrdersQuery,
   useGetVendorPaymentSummaryQuery,
+  useExportBankTransferXlsxMutation,
 } = reconciliationQueryApi;

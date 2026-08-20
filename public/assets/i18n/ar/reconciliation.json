@@ -213,5 +213,8 @@
   "missing": "مفقود",
   "amount_summary": "ملخص المبالغ",
   "payable": "المستحق",
-  "delivery_fee": "رسوم التوصيل"
+  "delivery_fee": "رسوم التوصيل",
+  "bank_transfer_export_ready": "تصدير التحويل البنكي جاهز",
+  "bank_transfer_export_desc": "تم إنشاء ملف Excel للتحويل البنكي وتنزيله تلقائيًا.",
+  "close": "إغلاق"
 }

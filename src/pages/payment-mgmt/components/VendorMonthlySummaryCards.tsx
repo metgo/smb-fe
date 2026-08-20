@@ -318,6 +318,7 @@ export const VendorMonthlySummaryCards = ({
           adminView={adminView}
           userId={bankDetailsVendor.owner_info._id}
           ownerInfo={{
+            _id: bankDetailsVendor.owner_info._id,
             name: bankDetailsVendor.owner_info.name,
             email: bankDetailsVendor.owner_info.email,
             phone: bankDetailsVendor.owner_info.phone,

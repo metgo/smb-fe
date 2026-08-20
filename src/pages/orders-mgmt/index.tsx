@@ -430,10 +430,17 @@ export default function OrdersMgmtPage() {
     return params;
   }, [page, limit, searchTerm, filters, websiteId]);
 
+  // Create stats params without page and limit
+  const orderStatsQueryParams = useMemo(() => {
+    const { page: _, limit: __, ...statsParams } = orderQueryParams;
+    return statsParams;
+  }, [orderQueryParams]);
+
   const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
-    orderQueryParams,
+    orderStatsQueryParams,
     { skip: !canUseAuthenticatedOrderApis },
   );
+
   const {
     data: orders,
     isLoading,

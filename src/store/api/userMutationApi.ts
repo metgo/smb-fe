@@ -44,6 +44,18 @@ export const userMutationApi = createApi({
       }),
       invalidatesTags: ["user"],
     }),
+
+    sendEmailSms: builder.mutation<
+      any,
+      { userId: string; type: "sms" | "email" }
+    >({
+      query: ({ userId, type }) => ({
+        url: endpoints.notifyUserByEmailSms,
+        method: "POST",
+        data: { vendorId: userId, type },
+      }),
+      invalidatesTags: ["user"],
+    }),
   }),
 });
 
@@ -52,4 +64,5 @@ export const {
   useUpdateUserMutation,
   useUpdateProfileInfoMutation,
   useDeleteUserMutation,
+  useSendEmailSmsMutation,
 } = userMutationApi;

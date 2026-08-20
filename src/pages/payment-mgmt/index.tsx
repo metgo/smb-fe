@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   Building2,
   ArrowLeft,
+  Landmark,
 } from "lucide-react";
 import {
   AdminDisputeResponseModal,
@@ -16,6 +17,7 @@ import {
   OrderDetailsModal,
   VendorMonthlySummaryCards,
   ExportOrdersButton,
+  VendorBankDetails,
 } from "./components";
 import clsx from "clsx";
 import { useAppSelector } from "@/hooks/hooks";
@@ -195,6 +197,10 @@ export const PaymentMgmtPage = () => {
     handleAdminResolveDispute,
     handleBulkMarkOrderCompleted,
     handleCloseAllOrders,
+    vendorBankDetails,
+    showVendorBankDetailsModal,
+    setShowVendorBankDetailsModal,
+    handleUpdateVendorBankDetails,
   } = useOrderActions({
     language,
     adminView,
@@ -258,13 +264,27 @@ export const PaymentMgmtPage = () => {
             {t("review_and_approve_orders")}
           </p>
         </div>
-        {adminView && (
+        {adminView ? (
           <button
             onClick={() => setShowCloseAllOrdersModal(true)}
             className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
           >
             {t("close_all_orders")}
           </button>
+        ) : (
+          <div className="flex flex-col justify-end items-end gap-2">
+            <button
+              onClick={handleUpdateVendorBankDetails}
+              className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+            >
+              <Landmark className="w-4 h-4" />
+              {t("bank_details")}
+            </button>
+            <span className={clsx("text-xs", textSecondary)}>
+              Your bank details is not completed. So please complete your for
+              got your order payments.
+            </span>
+          </div>
         )}
       </div>
 
@@ -752,6 +772,35 @@ export const PaymentMgmtPage = () => {
         onCancel={() => setShowBulkCompleteConfirm(false)}
         onConfirm={handleBulkMarkOrderCompleted}
       />
+
+      {showVendorBankDetailsModal && !adminView && (
+        <VendorBankDetails
+          adminView={adminView}
+          userId={vendorBankDetails.id}
+          ownerInfo={{
+            _id: vendorBankDetails.id,
+            name:
+              vendorBankDetails.firstName + " " + vendorBankDetails.lastName,
+            email: vendorBankDetails.email || "",
+            phone: vendorBankDetails.phoneDetails?.phoneNumber || "",
+          }}
+          setIsOpen={(open) => {
+            if (!open) setShowVendorBankDetailsModal(false);
+          }}
+          savedBankAccount={
+            vendorBankDetails.bankAccount
+              ? {
+                  bankNumber: vendorBankDetails.bankAccount.bankNumber,
+                  branchNumber: vendorBankDetails.bankAccount.branchNumber,
+                  accountNumber: vendorBankDetails.bankAccount.accountNumber,
+                  businessNumberByGovt:
+                    vendorBankDetails.bankAccount.businessNumberByGovt,
+                  invoiceName: vendorBankDetails.bankAccount.invoiceName,
+                }
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 };

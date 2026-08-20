@@ -78,5 +78,9 @@
   "trip_create_failed": "יצירת הטיול נכשלה",
 
   "ticket_email_resend_success": "אימייל הכרטיס נשלח מחדש בהצלחה",
-  "ticket_email_resend_failed": "שליחת אימייל הכרטיס מחדש נכשלה"
+  "ticket_email_resend_failed": "שליחת אימייל הכרטיס מחדש נכשלה",
+  "vendor_email_sent_success": "אימייל נשלח לספק בהצלחה",
+  "vendor_email_sent_failed": "שליחת אימייל לספק נכשלה",
+  "vendor_sms_sent_success": "SMS נשלח לספק בהצלחה",
+  "vendor_sms_sent_failed": "שליחת SMS לספק נכשלה"
 }

@@ -215,5 +215,8 @@
   "missing": "חסר",
   "amount_summary": "סיכום סכומים",
   "payable": "לתשלום",
-  "delivery_fee": "דמי משלוח"
+  "delivery_fee": "דמי משלוח",
+  "bank_transfer_export_ready": "ייצוא העברה בנקאית מוכן",
+  "bank_transfer_export_desc": "קובץ האקסל של העברה בנקאית נוצר והורד באופן אוטומטי.",
+  "close": "סגור"
 }

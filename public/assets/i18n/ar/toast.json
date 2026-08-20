@@ -79,5 +79,9 @@
   "trip_create_failed": "فشل إنشاء الرحلة",
 
   "ticket_email_resend_success": "تمت إعادة إرسال بريد التذكرة الإلكتروني بنجاح",
-  "ticket_email_resend_failed": "فشل في إعادة إرسال بريد التذكرة الإلكتروني"
+  "ticket_email_resend_failed": "فشل في إعادة إرسال بريد التذكرة الإلكتروني",
+  "vendor_email_sent_success": "تم إرسال البريد الإلكتروني إلى المورد بنجاح",
+  "vendor_email_sent_failed": "فشل إرسال البريد الإلكتروني إلى المورد",
+  "vendor_sms_sent_success": "تم إرسال الرسالة النصية إلى المورد بنجاح",
+  "vendor_sms_sent_failed": "فشل إرسال الرسالة النصية إلى المورد"
 }
