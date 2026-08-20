@@ -42,6 +42,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
 
   return (
     <div className="space-y-6">
+     
       {/* Short Description */}
       <DescriptionCard
         title={t("short_description")}
@@ -91,7 +92,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         pathname={clientSitePath.businessDetails + "/" + business?.slug}
       />
       {/* Internal Notes */}
-      {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
+      {/* {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
         <div
           className={`p-4 rounded-lg ${isDark ? "bg-yellow-900/20 border border-yellow-800" : "bg-yellow-50 border border-yellow-200"}`}
         >
@@ -104,7 +105,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
             {business?.internalNotes}
           </p>
         </div>
-      )}
+      )} */}
       {/* Rejection Note */}
       {business?.status === "rejected" && business?.rejectionNote && (
         <div

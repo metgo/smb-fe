@@ -30,7 +30,7 @@ import {
 import { routes } from "@/lib/routes";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageStats, Spinner, TabsSection } from "@/components/shared";
+import { Spinner, TabsSection } from "@/components/shared";
 import {
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
@@ -55,6 +55,7 @@ import { getLngWiseStr } from "@/helpers";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { openChatPopup } from "@/features/chatPopupSlice";
 import { ChatCreatorBubble } from "@/components/chat-popup";
+import { StatsMarquee } from "@/components/shared/StatsMarquee";
 
 // ─── Tour trigger (inner — needs TourProvider in scope) ───────────────────────
 
@@ -258,36 +259,43 @@ function BusinessDetailsPageInner() {
 
   const businessStats = [
     {
+      id: "page-views",
       icon: <Eye className="w-5 h-5 text-green-600" />,
       title: t("page_views"),
       value: data?.pageViews?.toLocaleString() || 0,
     },
     {
+      id: "unique-visitors",
       icon: <Users className="w-5 h-5 text-green-600" />,
       title: t("unique_visitors"),
       value: data?.uniqueVisitors?.toLocaleString() || 0,
     },
     {
+      id: "clicks",
       icon: <MousePointer className="w-5 h-5 text-green-600" />,
       title: t("clicks"),
       value: data?.clicks?.toLocaleString() || 0,
     },
     {
+      id: "bookmarks",
       icon: <Bookmark className="w-5 h-5 text-green-600" />,
       title: t("bookmarks"),
       value: data?.bookmarks?.toLocaleString() || 0,
     },
     {
+      id: "shares",
       icon: <Share2 className="w-5 h-5 text-green-600" />,
       title: t("shares"),
       value: data?.shares?.toLocaleString() || 0,
     },
     {
+      id: "avg-time-on-page",
       icon: <Timer className="w-5 h-5 text-green-600" />,
       title: t("avg_time_on_page"),
       value: `${data?.averageEngagementTime}`,
     },
     {
+      id: "conversion-rate",
       icon: <TrendingUp className="w-5 h-5 text-green-600" />,
       title: t("conversion_rate"),
       value: `${data?.conversionRate || 0}%`,
@@ -444,121 +452,11 @@ function BusinessDetailsPageInner() {
       <Spinner isLoading={isLoading} />
 
       {/* Top Row */}
-      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+      <div className="flex items-center justify-between mb-2 gap-2">
         <BackToListBtn navPath={routes.businessMgmt} />
-        <div className="flex items-center gap-2">
-          {/* Status */}
-          <div data-tour="status-btn">
-            <StatusChangeBtn
-              handleStatusChange={onStatusChangeHandler}
-              status={business?.status}
-            />
-          </div>
-
-          {/* Actions dropdown */}
-          <div className="relative" ref={dropdownRef} data-tour="actions-btn">
-            <button
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
-              }`}
-            >
-              <span className="inline text-sm font-medium">{t("actions")}</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {isDropdownOpen && (
-              <div
-                data-tour="actions-dropdown"
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border overflow-hidden ${
-                  isTourOpen ? "z-10001" : "z-50"
-                } ${
-                  isDark
-                    ? "bg-gray-900 border-gray-700"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                {/* Edit */}
-                <button
-                  onClick={() => {
-                    handleMutateData(IOpMode.EDIT);
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                    isDark
-                      ? "text-teal-400 hover:bg-gray-800"
-                      : "text-teal-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <Edit className="w-4 h-4 shrink-0" />
-                  {t("edit")}
-                </button>
-
-                {/* Change Owner */}
-                {!isTraveller && (
-                  <button
-                    onClick={() => {
-                      setIsOwnerChangeModalOpen(true);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                      isDark
-                        ? "text-gray-300 hover:bg-gray-800"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <UserCog className="w-4 h-4 shrink-0" />
-                    {t("change_owner")}
-                  </button>
-                )}
-
-                <div
-                  className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
-                />
-                {onCreateProduct && (
-                  <button
-                    onClick={() => {
-                      onCreateProduct();
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                      isDark
-                        ? "text-indigo-400 hover:bg-gray-800"
-                        : "text-indigo-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Plus className="w-4 h-4 shrink-0" />
-                    {t("create_product")}
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    onViewProduct();
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                    isDark
-                      ? "text-gray-300 hover:bg-gray-800"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <Eye className="w-4 h-4 shrink-0" />
-                  View Product
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Tour trigger */}
-          <TourTrigger />
-        </div>
       </div>
 
-      <div className="details-top shrink-0" data-tour="business-header">
+      <div className="details-top shrink-0 !mb-2 !p-2" data-tour="business-header">
         <DetailTitleSection
           {...business}
           imageSrc={
@@ -566,19 +464,131 @@ function BusinessDetailsPageInner() {
             business?.images?.[0]?.image ||
             business?.logo?.image
           }
+          actions={
+            <>
+              {/* Status */}
+              <div data-tour="status-btn">
+                <StatusChangeBtn
+                  handleStatusChange={onStatusChangeHandler}
+                  status={business?.status}
+                />
+              </div>
+
+              {/* Actions dropdown */}
+              <div className="relative" ref={dropdownRef} data-tour="actions-btn">
+                <button
+                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+                  }`}
+                >
+                  <span className="inline text-sm font-medium">{t("actions")}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div
+                    data-tour="actions-dropdown"
+                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border overflow-hidden ${
+                      isTourOpen ? "z-10001" : "z-50"
+                    } ${
+                      isDark
+                        ? "bg-gray-900 border-gray-700"
+                        : "bg-white border-gray-200"
+                    }`}
+                  >
+                    {/* Edit */}
+                    <button
+                      onClick={() => {
+                        handleMutateData(IOpMode.EDIT);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-teal-400 hover:bg-gray-800"
+                          : "text-teal-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Edit className="w-4 h-4 shrink-0" />
+                      {t("edit")}
+                    </button>
+
+                    {/* Change Owner */}
+                    {!isTraveller && (
+                      <button
+                        onClick={() => {
+                          setIsOwnerChangeModalOpen(true);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-gray-300 hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <UserCog className="w-4 h-4 shrink-0" />
+                        {t("change_owner")}
+                      </button>
+                    )}
+
+                    <div
+                      className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
+                    />
+                    {onCreateProduct && (
+                      <button
+                        onClick={() => {
+                          onCreateProduct();
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-indigo-400 hover:bg-gray-800"
+                            : "text-indigo-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Plus className="w-4 h-4 shrink-0" />
+                        {t("create_product")}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        onViewProduct();
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-gray-300 hover:bg-gray-800"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Eye className="w-4 h-4 shrink-0" />
+                      View Product
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Tour trigger */}
+              <TourTrigger />
+            </>
+          }
         />
         <div data-tour="business-stats">
-          <PageStats
+          <StatsMarquee
+            data-tour="stats"
             stats={businessStats}
             isLoading={isDetailStatsLoading}
-            className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
-            wrapperClassName=" my-2 sm:my-4"
+            className="gap-1.5 md:gap-2"
           />
         </div>
       </div>
 
       {/* Content */}
-      <div className="mt-2 sm:mt-4 flex flex-col flex-1 min-h-0">
+      <div className="mt-1 flex flex-col flex-1 min-h-0">
         <div className="shrink-0" data-tour="tabs-section">
           <TabsSection
             tabs={businessTabs}
@@ -587,7 +597,7 @@ function BusinessDetailsPageInner() {
           />
         </div>
         <div
-          className="details-content flex-1 overflow-y-auto min-h-0"
+          className="details-content flex-1 overflow-y-auto min-h-0 !p-2"
           data-tour="tab-content"
         >
           {renderContent()}

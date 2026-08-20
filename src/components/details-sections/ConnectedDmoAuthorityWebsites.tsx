@@ -87,15 +87,15 @@ const ConnectedDmoAuthorityWebsites = ({
     <>
       <div
         className={clsx(
-          "rounded-xl border p-2 md:p-6 transition-all duration-200",
+          "rounded-xl flex flex-col md:flex-row border p-2 md:p-6 gap-6 transition-all duration-200",
           isDark
             ? "bg-linear-to-br from-gray-800 to-gray-800/50 border-gray-700"
             : "bg-linear-to-br from-blue-50 to-purple-50 border-blue-200",
         )}
       >
         {(dmo || authority) && (
-          <div className="mb-5">
-            <div className="flex items-center gap-3  mb-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-4">
               <div
                 className={clsx(
                   "p-2 rounded-lg",
@@ -187,9 +187,18 @@ const ConnectedDmoAuthorityWebsites = ({
             </div>
           </div>
         )}
-        <hr />
+
+        {(dmo || authority) && associatedWebsites?.length > 0 && (
+          <div
+            className={clsx(
+              "hidden md:block w-px self-stretch",
+              isDark ? "bg-gray-700" : "bg-blue-200",
+            )}
+          />
+        )}
+
         {associatedWebsites?.length > 0 && (
-          <>
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-5">
               <div
                 className={clsx(
@@ -293,7 +302,7 @@ const ConnectedDmoAuthorityWebsites = ({
                 </div>
               ))}
             </div>
-          </>
+          </div>
         )}
       </div>
 

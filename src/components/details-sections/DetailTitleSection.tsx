@@ -16,6 +16,7 @@ interface DetailTitleSectionProps {
   updatedAt: string;
   completionPercent: number;
   imageSrc?: string;
+  actions?: React.ReactNode;
 }
 
 const DetailTitleSection = ({
@@ -27,6 +28,7 @@ const DetailTitleSection = ({
   updatedAt,
   completionPercent,
   imageSrc,
+  actions,
 }: DetailTitleSectionProps) => {
   const { t } = useTranslation("common");
   const { isDark, textTertiary, language } = useThemeClasses();
@@ -49,7 +51,7 @@ const DetailTitleSection = ({
         )}
       />
 
-      <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 min-w-0">
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 min-w-0">
         <div className="min-w-0">
           <h1
             className={`text-base sm:text-lg font-semibold leading-tight truncate ${
@@ -124,29 +126,30 @@ const DetailTitleSection = ({
                 </span>
               </>
             )}
+
+            {/* Completion percentage inline with metadata */}
+            {divider}
+            <div className="flex items-center gap-1.5">
+              <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-teal-500 transition-all duration-300"
+                  style={{ width: `${completionPercent}%` }}
+                />
+              </div>
+              <span
+                className={clsx("text-xs font-medium", textTertiary)}
+              >
+                {completionPercent}%
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="shrink-0 flex flex-col items-start sm:items-end gap-1">
-          <span className={clsx("text-[10px]", textTertiary)}>
-            {t("completion_percentage")}
-          </span>
-          <div className="flex items-center gap-2">
-            <div className="w-20 sm:w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-teal-500 transition-all duration-300"
-                style={{ width: `${completionPercent}%` }}
-              />
-            </div>
-            <span
-              className={`text-xs font-medium ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              {completionPercent}%
-            </span>
+        {actions && (
+          <div className="shrink-0 flex items-center gap-2">
+            {actions}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
