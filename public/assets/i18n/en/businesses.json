@@ -306,5 +306,10 @@
   "scanToVisit": "Scan to visit",
   "last_active": "Last Active",
   "member_since": "Member Since",
-  "tour": "Take a Tour"
+  "tour": "Take a Tour",
+  "stats": "Stats",
+  "hide_stats": "Hide Stats",
+  "show_stats": "Show Stats",
+  "stats_hidden": "Stats Hidden",
+  "key_metrics": "Key Metrics"
 }
