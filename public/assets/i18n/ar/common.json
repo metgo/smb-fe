@@ -419,5 +419,9 @@
   "hide_stats": "إخفاء الإحصائيات",
   "show_stats": "إظهار الإحصائيات",
   "stats_hidden": "الإحصائيات مخفية",
-  "key_metrics": "المقاييس الرئيسية"
+  "key_metrics": "المقاييس الرئيسية",
+  "search_and_filters": "البحث والتصفية",
+  "close_options": "إغلاق الخيارات",
+  "options": "خيارات",
+  "hide_options": "إخفاء الخيارات"
 }

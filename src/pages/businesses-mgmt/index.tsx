@@ -26,6 +26,10 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
+  Plus,
+  SlidersHorizontal,
+  Search,
+  Filter,
 } from "lucide-react";
 
 import { FilterButton } from "@/components/btns";
@@ -93,9 +97,29 @@ function BusinessesMgmtPageInner() {
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
+  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
+
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (
+        (target && target.scrollTop && target.scrollTop > 20) ||
+        window.scrollY > 20
+      ) {
+        setIsScrolled(true);
+        setShowControlsDrawer(false);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    return () =>
+      window.removeEventListener("scroll", handleScroll, { capture: true } as any);
+  }, []);
   const [columnVisibility, setColumnVisibility] =
     useState<IBusinessColumnVisibility>(defaultColumns);
 
@@ -341,178 +365,193 @@ function BusinessesMgmtPageInner() {
   // ─── Render ─────────────────────────────────────────────────────────
   return (
     <>
-      <div className="flex flex-col pt-4 md:pt-0 gap-3">
-        {/* Top Header & Stats Section (Scrolls out of view on page scroll) */}
-        <div className="flex flex-col gap-2">
-          <div data-tour="page-header">
-            <PageHeader
-              title={t("businesses_management")}
-              // description={t("businesses_management_desc")}
-              btnLabel={t("add_business")}
-              onClick={() => setIsCreateModalOpen(true)}
-              h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-              totalCount={totalData ?? 0}
-            />
-          </div>
-
-          <div data-tour="stats" className="transition-all duration-300">
-            <div className="flex items-center gap-2 mb-2 px-1">
-              <span
-                className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-gray-300" : "text-gray-700"
-                  }`}
-              >
-                {t("stats") ?? "Stats"}
-              </span>
-              <button
-                onClick={() => setIsStatsCollapsed((prev) => !prev)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border transition-all cursor-pointer shadow-xs ${isStatsCollapsed
-                    ? isDark
-                      ? "bg-teal-950/80 text-teal-400 border-teal-600/50 hover:bg-teal-900/80"
-                      : "bg-teal-50 text-teal-700 border-teal-300 hover:bg-teal-100"
-                    : isDark
-                      ? "bg-gray-800/90 text-gray-200 border-gray-700 hover:bg-gray-700"
-                      : "bg-gray-200/90 text-gray-800 border-gray-300 hover:bg-gray-300"
-                  }`}
-                title={
-                  isStatsCollapsed
-                    ? "Expand statistics"
-                    : "Collapse statistics to see maximum table data"
-                }
-              >
-                {isStatsCollapsed ? (
-                  <>
-                    <Eye className="w-3.5 h-3.5 text-teal-500" />
-                    <span>{t("show_stats") ?? "Show Stats"}</span>
-                    <ChevronDown className="w-3.5 h-3.5 opacity-70" />
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                    <span>{t("hide_stats") ?? "Hide Stats"}</span>
-                    <ChevronUp className="w-3.5 h-3.5 opacity-70" />
-                  </>
-                )}
-              </button>
-            </div>
-
-            {!isStatsCollapsed && (
-              <PageStats
-                stats={businessStats}
-                isLoading={isStatsLoading}
-                wrapperClassName="mb-1"
-                className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-3"
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Sticky Toolbar & Search Bar (Pins to top on scroll, stacking under navigation) */}
+      <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
+        {/* Sticky Top Header Bar (Title + Add Button + Horizontal Scrollable Stats) */}
         <div
           className={clsx(
-            "transition-all duration-200 py-2.5 px-3 rounded-xl border shadow-xs flex flex-col gap-2",
+            "sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
             isDark
-              ? "bg-gray-900/80 border-gray-800"
-              : "bg-white border-gray-200"
+              ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
+              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900"
           )}
         >
-          <div className="flex-1 relative" data-tour="search">
-            <SearchInput
-              placeholder={t("search_businesses_placeholder")}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-            />
+          {/* Left: Title + Business Count (Top), Add Business Button (Below) */}
+          <div className="flex flex-col items-start gap-1 shrink-0" data-tour="page-header">
+            <div className="flex items-center gap-2">
+              <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
+                {t("businesses_management")}
+              </h1>
+              {totalData !== undefined && (
+                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
+                  {totalData}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-3.5 py-1 text-xs font-semibold bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 hover:opacity-90 active:scale-95 text-white rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm whitespace-nowrap border border-white/10"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{t("add_business")}</span>
+            </button>
           </div>
 
+          {/* Right: Horizontal Scrollable Stats Cards Row (Flowing Left-to-Right!) */}
           <div
-            className="flex items-center justify-between gap-2 w-full flex-wrap"
-            data-tour="toolbar"
+            data-tour="stats"
+            dir="ltr"
+            className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
           >
-            <div className="flex items-center gap-2">
-              <FilterButton value={showFilters} onChange={setShowFilters} />
-              <ShowColumns
-                t={t}
-                viewMode={viewMode}
-                columnDefinitions={columnDefinitions}
-                columnVisibility={columnVisibility}
-                showColumnSettings={showColumnSettings}
-                setShowColumnSettings={setShowColumnSettings}
-                setColumnVisibility={setColumnVisibility}
-                resetToDefault={resetToDefault}
-              />
-              <ExportBusinessButton
-                businesses={combinedBusinesses}
-                selectedBusinesses={selectedBusinesses}
-                columnVisibility={columnVisibility}
-                t={t}
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsStatsCollapsed((prev) => !prev)}
-                title={
-                  isStatsCollapsed
-                    ? "Show stats"
-                    : "Collapse stats to maximize table data"
-                }
-                className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${isStatsCollapsed
-                    ? isDark
-                      ? "border-teal-600/50 bg-teal-950/40 text-teal-400"
-                      : "border-teal-300 bg-teal-50 text-teal-700"
-                    : isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-400"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-500"
-                  }`}
-              >
-                <BarChart2 className="w-4 h-4" />
-                <span className="hidden sm:inline text-xs font-medium">
-                  {isStatsCollapsed
-                    ? t("stats_hidden") ?? "Stats Hidden"
-                    : t("stats") ?? "Stats"}
-                </span>
-              </button>
-
-              <button
-                onClick={() => startTour(buildSteps())}
-                title={tt("start_tour")}
-                className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${isDark
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
-                  }`}
-              >
-                <Compass className="w-4 h-4" />
-                <span className="hidden sm:inline text-sm font-medium">
-                  {t("tour") ?? tt("start_tour")}
-                </span>
-              </button>
-              <ViewModeToggle
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="businessViewMode"
-              />
-            </div>
+            {isStatsLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="shrink-0 w-36 h-10 rounded-xl bg-gray-800/40 animate-pulse border border-gray-800"
+                  />
+                ))
+              : businessStats.map((item) => (
+                  <div
+                    key={item.id}
+                    className={clsx(
+                      "shrink-0 flex items-center gap-2.5 px-3 py-1.5 rounded-xl border transition-all shadow-2xs hover:border-teal-500/40 cursor-default",
+                      isDark
+                        ? "bg-gray-900/90 border-gray-800/90 text-gray-200"
+                        : "bg-gray-50 border-gray-200 text-gray-800"
+                    )}
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-teal-500/10 flex items-center justify-center shrink-0">
+                      {item.icon}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs font-bold leading-none">{item.value ?? 0}</span>
+                        {item.label && (
+                          <span className="text-[9px] text-gray-400 leading-none truncate max-w-16">
+                            {item.label}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-gray-400 leading-tight truncate max-w-24">
+                        {item.title}
+                      </span>
+                    </div>
+                  </div>
+                ))}
           </div>
 
-          {/* Filters Panel */}
-          {(showFilters || hasSavedFilters) && (
-            <BusinessFiltersPanel
-              filters={filters}
-              setFilters={setFilters}
-              hasSavedFilters={hasSavedFilters}
-              clearFilter={clearFilter}
-              isHighlighted={isFilterPanelTourStep}
-            />
-          )}
-
-          <BulkActionBar
-            selectedItemCount={selectedBusinesses.size}
-            handleBulkStatusChange={handleBulkStatusChange}
-            handleBulkDelete={promptBulkDelete}
-            hancleClearSelection={() => setSelectedBusinesses(new Set())}
-          />
+          {/* Search & Filters Toggle Button Next to Stats */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowControlsDrawer((prev) => !prev)}
+              className={clsx(
+                "px-3 py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-xs whitespace-nowrap",
+                showControlsDrawer
+                  ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
+                  : isDark
+                    ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
+                    : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
+              )}
+              title="Toggle Search, Filters & Options"
+            >
+              <SlidersHorizontal className="w-4 h-4 shrink-0" />
+              <span>
+                {showControlsDrawer
+                  ? t("close_options") ?? "Close Options"
+                  : t("search_and_filters") ?? "Search & Filters"}
+              </span>
+              {(searchTerm || hasSavedFilters) && (
+                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Content Area (Maximum height table view) */}
+        {/* Expandable Search, Filters & Controls Panel (Collapses on scroll or when toggled) */}
+        {showControlsDrawer && (
+          <div
+            className={clsx(
+              "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
+              isDark
+                ? "bg-gray-900/90 border-gray-800/90"
+                : "bg-white border-gray-200"
+            )}
+          >
+            <div className="flex-1 relative" data-tour="search">
+              <SearchInput
+                placeholder={t("search_businesses_placeholder")}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+              />
+            </div>
+
+            <div
+              className="flex items-center justify-between gap-2 w-full flex-wrap"
+              data-tour="toolbar"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
+                <ShowColumns
+                  t={t}
+                  viewMode={viewMode}
+                  columnDefinitions={columnDefinitions}
+                  columnVisibility={columnVisibility}
+                  showColumnSettings={showColumnSettings}
+                  setShowColumnSettings={setShowColumnSettings}
+                  setColumnVisibility={setColumnVisibility}
+                  resetToDefault={resetToDefault}
+                />
+                <ExportBusinessButton
+                  businesses={combinedBusinesses}
+                  selectedBusinesses={selectedBusinesses}
+                  columnVisibility={columnVisibility}
+                  t={t}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => startTour(buildSteps())}
+                  title={tt("start_tour")}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+                  }`}
+                >
+                  <Compass className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {t("tour") ?? tt("start_tour")}
+                  </span>
+                </button>
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="businessViewMode"
+                />
+              </div>
+            </div>
+
+            {/* Filters Panel */}
+            {(showFilters || hasSavedFilters) && (
+              <BusinessFiltersPanel
+                filters={filters}
+                setFilters={setFilters}
+                hasSavedFilters={hasSavedFilters}
+                clearFilter={clearFilter}
+                isHighlighted={isFilterPanelTourStep}
+              />
+            )}
+
+            <BulkActionBar
+              selectedItemCount={selectedBusinesses.size}
+              handleBulkStatusChange={handleBulkStatusChange}
+              handleBulkDelete={promptBulkDelete}
+              hancleClearSelection={() => setSelectedBusinesses(new Set())}
+            />
+          </div>
+        )}
+
+        {/* Content Area (ReordableDataTable rendered naturally) */}
         <div className="flex-1 mt-1" data-tour="business-list">
           {!isLoading && !isFetching && combinedBusinesses?.length === 0 ? (
             <div
@@ -531,11 +570,6 @@ function BusinessesMgmtPageInner() {
               onBusinessClick={handleBusinessClick}
               selectedBusinesses={selectedBusinesses}
               setSelectedBusinesses={setSelectedBusinesses}
-              maxHeight={
-                isStatsCollapsed
-                  ? "calc(100vh - 180px)"
-                  : "calc(100vh - 220px)"
-              }
             />
           ) : (
             <BusinessGridView

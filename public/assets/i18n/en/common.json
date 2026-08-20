@@ -430,5 +430,9 @@
   "hide_stats": "Hide Stats",
   "show_stats": "Show Stats",
   "stats_hidden": "Stats Hidden",
-  "key_metrics": "Key Metrics"
+  "key_metrics": "Key Metrics",
+  "search_and_filters": "Search & Filters",
+  "close_options": "Close Options",
+  "options": "Options",
+  "hide_options": "Hide Options"
 }

@@ -433,6 +433,10 @@
   "show_stats": "הצג סטטיסטיקות",
   "stats_hidden": "סטטיסטיקות מוסתרות",
   "key_metrics": "מדדי מפתח",
+  "search_and_filters": "חיפוש וסינון",
+  "close_options": "סגור אפשרויות",
+  "options": "אפשרויות",
+  "hide_options": "הסתר אפשרויות",
   "selected_dmo_authority": "DMO ורשות נבחרים",
   "no_connected_dmo_authority_websites": "אין DMO, רשות או אתרים מחוברים"
 }
