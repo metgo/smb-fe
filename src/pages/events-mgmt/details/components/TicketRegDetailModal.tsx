@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { ModalWrapper } from "@/components/wrapper";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { toast } from "sonner";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   User,
@@ -15,12 +14,12 @@ import {
   CreditCard,
   Package,
   Send,
-  Loader2,
   HelpCircle,
 } from "lucide-react";
-import { useResendTicketEmailToCustomerMutation } from "@/store/api/eventMutationApi";
+import { useNotifyTicketCustomerByEmailSmsMutation } from "@/store/api/eventMutationApi";
 import { useGetEventTicketAnswersQuery } from "@/store/api/eventQueryApi";
-import { toast } from "sonner";
+import { ModalWrapper } from "@/components/wrapper";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface TicketRegDetailModalProps {
   setIsOpen: (v: boolean) => void;
@@ -42,8 +41,8 @@ const TicketRegDetailModal = ({
     cardClasses,
     isDark,
   } = useThemeClasses();
-  const [resendTicketEmailToCustomer, { isLoading: isResendingEmail }] =
-    useResendTicketEmailToCustomerMutation();
+  const [notifyTicketCustomer, { isLoading: isResendingEmail }] =
+    useNotifyTicketCustomerByEmailSmsMutation();
   const [activeTab, setActiveTab] = useState<"general" | "answers">("general");
 
   const { data: ticketAnswersData } = useGetEventTicketAnswersQuery(
@@ -63,16 +62,25 @@ const TicketRegDetailModal = ({
     (record) => record.questionAnswer,
   );
 
-  const handleResendEmail = async () => {
+  const handleResendEmailSms = async (type: "email" | "sms") => {
     try {
-      await resendTicketEmailToCustomer({
+      await notifyTicketCustomer({
         ordersId: [ticketDetails.orderProductId!],
         emailRecipient: "CUSTOMER",
+        type,
       }).unwrap();
-      toast.success(tt("ticket_email_resend_success"));
+      toast.success(
+        type === "email"
+          ? tt("ticket_email_resend_success")
+          : tt("ticket_sms_resend_success"),
+      );
     } catch (error) {
-      toast.error(tt("ticket_email_resend_failed"));
-      console.error("Failed to resend email:", error);
+      toast.error(
+        type === "email"
+          ? tt("ticket_email_resend_failed")
+          : tt("ticket_sms_resend_faild"),
+      );
+      console.error(`Failed to resend ${type}:`, error);
     }
   };
 
@@ -331,25 +339,35 @@ const TicketRegDetailModal = ({
 
         <div
           className={clsx(
-            "shrink-0 flex justify-end p-6 pt-3 sm:p-7 sm:pt-3 border-t",
+            "shrink-0 flex justify-between items-center p-6 pt-3 sm:p-7 sm:pt-3 border-t",
             borderColor,
           )}
         >
-          <button
-            onClick={handleResendEmail}
-            disabled={isResendingEmail}
-            className={clsx(
-              "px-4 py-2 cursor-pointer bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center gap-2 shadow-sm",
-              isResendingEmail && "opacity-50 cursor-not-allowed",
-            )}
-          >
-            {isResendingEmail ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
+          <div className={textPrimary}>{t("notify_customer_by")}:</div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleResendEmailSms("email")}
+              disabled={isResendingEmail}
+              className={clsx(
+                "px-4 py-2 cursor-pointer bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 active:bg-green-800 transition-colors flex items-center gap-2 shadow-sm",
+                isResendingEmail && "opacity-50 cursor-not-allowed",
+              )}
+            >
+              <Mail className="h-4 w-4" />
+              {t("email")}
+            </button>
+            <button
+              onClick={() => handleResendEmailSms("sms")}
+              disabled={isResendingEmail}
+              className={clsx(
+                "px-4 py-2 cursor-pointer bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center gap-2 shadow-sm",
+                isResendingEmail && "opacity-50 cursor-not-allowed",
+              )}
+            >
               <Send className="h-4 w-4" />
-            )}
-            {t("resend_email_to_customer")}
-          </button>
+              {t("sms")}
+            </button>
+          </div>
         </div>
       </div>
     </ModalWrapper>

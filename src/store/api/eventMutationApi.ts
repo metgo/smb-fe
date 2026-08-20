@@ -105,6 +105,17 @@ export const eventMutationApi = createApi({
         data: payload,
       }),
     }),
+
+    notifyTicketCustomerByEmailSms: builder.mutation<
+      any,
+      { ordersId: string[]; type: "email" | "sms"; emailRecipient: string }
+    >({
+      query: (payload) => ({
+        url: endpoints.sendOrderNotification,
+        method: "POST",
+        data: payload,
+      }),
+    }),
   }),
 });
 
@@ -118,4 +129,5 @@ export const {
   useUpdateEventTicketStatusMutation,
 
   useResendTicketEmailToCustomerMutation,
+  useNotifyTicketCustomerByEmailSmsMutation,
 } = eventMutationApi;
