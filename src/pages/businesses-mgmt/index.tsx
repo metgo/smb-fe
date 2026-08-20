@@ -51,6 +51,7 @@ import type { TourStep } from "@/components/tour";
 import { useBusinessFilters } from "./hooks/useBusinessFilters";
 import { useBusinessListData } from "./hooks/useBusinessListData";
 import { BUSINESS_COLUMNS } from "@/lib/utils";
+import StatsMarquee from "@/components/shared/StatsMarquee";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -102,6 +103,55 @@ function BusinessesMgmtPageInner() {
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
+
+
+  // ─── Compute active filter count (search term + any non-empty filter values) ──
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+
+    if (searchTerm?.trim()) count += 1;
+    if (filters.status !== "all") count += 1;
+    if (filters.hasProductFilter !== "all") count += 1;
+    if (filters.dmoFilter !== "all") count += 1;
+    if (filters.authorityFilter !== "all") count += 1;
+
+    return count;
+  }, [filters, searchTerm]);
+
+  // ─── Reusable icon-only filter toggle button ──────────────────────────
+  const filterToggleButton = (
+    <button
+      onClick={() => setShowControlsDrawer((prev) => !prev)}
+      className={clsx(
+        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
+        showControlsDrawer
+          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
+          : isDark
+            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
+      )}
+      title={
+        showControlsDrawer
+          ? t("close_options") ?? "Close Options"
+          : t("search_and_filters") ?? "Search & Filters"
+      }
+    >
+      <SlidersHorizontal className="w-4 h-4" />
+      {activeFilterCount > 0 && (
+        <span
+          className={clsx(
+            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+            showControlsDrawer
+              ? "bg-white text-teal-600"
+              : "bg-teal-500 text-white"
+          )}
+        >
+          {activeFilterCount > 9 ? "9+" : activeFilterCount}
+        </span>
+      )}
+    </button>
+  );
+
 
   useEffect(() => {
     const handleScroll = (e: Event) => {
@@ -377,23 +427,33 @@ function BusinessesMgmtPageInner() {
         >
           {/* Left: Title + Business Count (Top), Add Business Button (Below) */}
           <div className="flex flex-col items-start gap-1 shrink-0" data-tour="page-header">
-            <div className="flex items-center gap-2">
-              <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
-                {t("businesses_management")}
-              </h1>
-              {totalData !== undefined && (
-                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
-                  {totalData}
-                </span>
-              )}
+            <div className="flex items-center w-full justify-between gap-2">
+              <div className="flex">
+                <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
+                  {t("businesses_management")}
+                </h1>
+                {totalData !== undefined && (
+                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
+                    {totalData}
+                  </span>
+                )}
+              </div>
+
+              <div className="block xl:hidden items-center gap-2 shrink-0">
+                {filterToggleButton}
+              </div>
             </div>
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="px-3.5 py-1 text-xs font-semibold bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 hover:opacity-90 active:scale-95 text-white rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm whitespace-nowrap border border-white/10"
+              className="px-3.5 py-2 text-xs font-semibold 
+              bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 
+              hover:opacity-90 active:scale-95 text-white rounded-lg transition-all 
+              flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm whitespace-nowrap "
             >
               <Plus className="w-3.5 h-3.5" />
               <span>{t("add_business")}</span>
             </button>
+
           </div>
 
           {/* Right: Horizontal Scrollable Stats Cards Row (Flowing Left-to-Right!) */}
@@ -402,67 +462,18 @@ function BusinessesMgmtPageInner() {
             dir="ltr"
             className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
           >
-            {isStatsLoading
-              ? Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="shrink-0 w-36 h-10 rounded-xl bg-gray-800/40 animate-pulse border border-gray-800"
-                  />
-                ))
-              : businessStats.map((item) => (
-                  <div
-                    key={item.id}
-                    className={clsx(
-                      "shrink-0 flex items-center gap-2.5 px-3 py-1.5 rounded-xl border transition-all shadow-2xs hover:border-teal-500/40 cursor-default",
-                      isDark
-                        ? "bg-gray-900/90 border-gray-800/90 text-gray-200"
-                        : "bg-gray-50 border-gray-200 text-gray-800"
-                    )}
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-teal-500/10 flex items-center justify-center shrink-0">
-                      {item.icon}
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xs font-bold leading-none">{item.value ?? 0}</span>
-                        {item.label && (
-                          <span className="text-[9px] text-gray-400 leading-none truncate max-w-16">
-                            {item.label}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-gray-400 leading-tight truncate max-w-24">
-                        {item.title}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+            <StatsMarquee
+              data-tour="stats"
+              stats={businessStats}
+              isLoading={isStatsLoading}
+              className="flex-1 min-w-0"
+            />
+
           </div>
 
           {/* Search & Filters Toggle Button Next to Stats */}
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setShowControlsDrawer((prev) => !prev)}
-              className={clsx(
-                "px-3 py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-xs whitespace-nowrap",
-                showControlsDrawer
-                  ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
-                  : isDark
-                    ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-                    : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
-              )}
-              title="Toggle Search, Filters & Options"
-            >
-              <SlidersHorizontal className="w-4 h-4 shrink-0" />
-              <span>
-                {showControlsDrawer
-                  ? t("close_options") ?? "Close Options"
-                  : t("search_and_filters") ?? "Search & Filters"}
-              </span>
-              {(searchTerm || hasSavedFilters) && (
-                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-              )}
-            </button>
+          <div className=" hidden xl:flex items-center gap-2 shrink-0">
+            {filterToggleButton}
           </div>
         </div>
 
@@ -512,11 +523,10 @@ function BusinessesMgmtPageInner() {
                 <button
                   onClick={() => startTour(buildSteps())}
                   title={tt("start_tour")}
-                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
-                  }`}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+                    }`}
                 >
                   <Compass className="w-4 h-4" />
                   <span className="hidden sm:inline text-sm font-medium">
