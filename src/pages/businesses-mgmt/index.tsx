@@ -428,7 +428,7 @@ function BusinessesMgmtPageInner() {
           {/* Left: Title + Business Count (Top), Add Business Button (Below) */}
           <div className="flex flex-col items-start gap-1 shrink-0" data-tour="page-header">
             <div className="flex items-center w-full justify-between gap-2">
-              <div className="flex">
+              <div className="flex items-center gap-1">
                 <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
                   {t("businesses_management")}
                 </h1>
