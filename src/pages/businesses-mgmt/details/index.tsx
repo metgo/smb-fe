@@ -35,15 +35,14 @@ import {
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
-import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import {  StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
 import {
   AttributesDetails,
   DeliveryPolicyOptionDetails,
   DetailTitleSection,
-  LocationDetails,
-  LocationDetailsclosed,
+ 
   MediaDetails,
 } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
@@ -56,7 +55,6 @@ import { getLngWiseStr } from "@/helpers";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { openChatPopup } from "@/features/chatPopupSlice";
 import { ChatCreatorBubble } from "@/components/chat-popup";
-import { StatsMarquee } from "@/components/shared/StatsMarquee";
 
 // ─── Tour trigger (inner — needs TourProvider in scope) ───────────────────────
 

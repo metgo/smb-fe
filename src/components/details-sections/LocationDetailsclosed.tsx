@@ -3,7 +3,7 @@ import { type FC } from "react";
 import clsx from "clsx";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useTranslation } from "react-i18next";
+// import { useTranslation } from "react-i18next";
 import { openWithUserLocation } from "@/utils/googleMapUtils";
 
 interface LocationDetailsclosedProps {
@@ -63,7 +63,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
   address,
   purpose,
 }) => {
-  const { t } = useTranslation("common");
+//   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
 
   const hasLocation = address?.location || address?.city || address?.country;

@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { type FC } from "react";
 import { AlignLeft, FileText } from "lucide-react";
-import { UserRole } from "@/enums/user.types";
-import { useAppSelector } from "@/hooks/hooks";
+// import { UserRole } from "@/enums/user.types";
+// import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
@@ -49,7 +49,7 @@ interface BusinessInfoDetailsProps {
 
 const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
   const { isDark, language } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
+  // const { userRole } = useAppSelector((state) => state.auth);
 
   return (
     <div className="space-y-6">

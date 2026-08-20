@@ -1,13 +1,13 @@
 import clsx from "clsx";
 import { TrendingUp } from "lucide-react";
-import { useTranslation } from "react-i18next";
+// import { useTranslation } from "react-i18next";
 
 import { getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
-import BackToListBtn from "../btns/BackToListBtn";
-import { routes } from "@/lib/routes";
+// import BackToListBtn from "../btns/BackToListBtn";
+// import { routes } from "@/lib/routes";
 
 interface DetailTitleSectionProps {
   name: string;
@@ -32,7 +32,7 @@ const DetailTitleSection = ({
   imageSrc,
   actions,
 }: DetailTitleSectionProps) => {
-  const { t } = useTranslation("common");
+  // const { t } = useTranslation("common");
   const { isDark, textTertiary, language } = useThemeClasses();
 
   const divider = (

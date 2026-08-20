@@ -21,15 +21,11 @@ import {
   Theater,
   Map,
   Compass,
-  BarChart2,
-  ChevronUp,
-  ChevronDown,
-  Eye,
-  EyeOff,
+  
   Plus,
   SlidersHorizontal,
-  Search,
-  Filter,
+  // Search,
+  // Filter,
 } from "lucide-react";
 
 import { FilterButton } from "@/components/btns";
@@ -37,8 +33,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   BulkActionBar,
   ConfirmDialog,
-  PageHeader,
-  PageStats,
+ 
   ShowColumns,
   ViewModeToggle,
 } from "@/components/shared";
@@ -97,9 +92,9 @@ function BusinessesMgmtPageInner() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
-  const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
+  const [_isStatsCollapsed, setIsStatsCollapsed] = useState(false);
   const [showControlsDrawer, setShowControlsDrawer] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [_isScrolled, setIsScrolled] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
