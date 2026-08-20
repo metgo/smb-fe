@@ -6,6 +6,8 @@ import { getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
+import BackToListBtn from "../btns/BackToListBtn";
+import { routes } from "@/lib/routes";
 
 interface DetailTitleSectionProps {
   name: string;
@@ -41,6 +43,13 @@ const DetailTitleSection = ({
   );
 
   return (
+  <div className="flex flex-col gap-2">
+    {/* Back button on its own row, slightly above */}
+    <div className="flex items-center">
+      <BackToListBtn navPath={routes.businessMgmt} />
+    </div>
+
+    {/* Image + title row */}
     <div className="flex items-center gap-3">
       <ImageWithFallback
         src={imageSrc}
@@ -127,7 +136,6 @@ const DetailTitleSection = ({
               </>
             )}
 
-            {/* Completion percentage inline with metadata */}
             {divider}
             <div className="flex items-center gap-1.5">
               <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -136,9 +144,7 @@ const DetailTitleSection = ({
                   style={{ width: `${completionPercent}%` }}
                 />
               </div>
-              <span
-                className={clsx("text-xs font-medium", textTertiary)}
-              >
+              <span className={clsx("text-xs font-medium", textTertiary)}>
                 {completionPercent}%
               </span>
             </div>
@@ -152,7 +158,8 @@ const DetailTitleSection = ({
         )}
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default DetailTitleSection;

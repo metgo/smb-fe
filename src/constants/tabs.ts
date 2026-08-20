@@ -24,7 +24,6 @@ export const businessTabs = [
     icon: Accessibility,
   },
   { id: "contact", label: "contact_ownership", icon: Users },
-  { id: "location", label: "location_map", icon: MapPin },
   { id: "media", label: "images_branding", icon: ImageIcon },
   { id: "social", label: "social_networks", icon: Globe },
   { id: "delivery", label: "delivery_policy", icon: Truck },

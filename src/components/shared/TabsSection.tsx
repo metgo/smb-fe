@@ -61,7 +61,7 @@ const TabsSection = ({ tabs, activeTab, setActiveTab }: TabsSectionProps) => {
             key={tab.id}
             ref={isActive ? activeTabRef : null}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-2 py-1.5 sm:px-4 sm:py-2 cursor-pointer rounded-t-lg flex items-center gap-1.5 whitespace-nowrap transition-colors font-semibold text-sm ${
+            className={`px-1 py-1.5 sm:px-2 sm:py-2 cursor-pointer rounded-t-lg flex items-center gap-1.5 whitespace-nowrap transition-colors font-semibold text-sm ${
               isActive
                 ? isDark
                   ? "bg-gray-800 text-teal-400 border-b-2 border-teal-500"
@@ -78,7 +78,7 @@ const TabsSection = ({ tabs, activeTab, setActiveTab }: TabsSectionProps) => {
                 className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain rounded-sm shrink-0"
               />
             ) : (
-              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <Icon className="w-3.5 h-3.5 shrink-0" />
             )}
             {t(tab.label)}
           </button>

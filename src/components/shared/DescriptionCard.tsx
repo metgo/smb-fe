@@ -43,15 +43,15 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
   return (
     <div
       className={clsx(
-        "rounded-xl border p-3 md:p-4 transition-all duration-200",
+        "rounded-xl border p-3 md:p-2 transition-all duration-200",
         isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
       )}
     >
       {icon && (
-        <div className="flex items-start gap-3 mb-3">
+        <div className="flex items-start gap-3 ">
           <div
             className={clsx(
-              "p-2 rounded-lg shrink-0",
+              "p-0.5 rounded-lg shrink-0",
               iconBgClass || (isDark ? "bg-gray-700/20" : "bg-gray-100"),
             )}
           >

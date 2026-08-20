@@ -43,6 +43,7 @@ import {
   DeliveryPolicyOptionDetails,
   DetailTitleSection,
   LocationDetails,
+  LocationDetailsclosed,
   MediaDetails,
 } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
@@ -411,20 +412,7 @@ function BusinessDetailsPageInner() {
             refetch={businessDataRefetch}
           />
         );
-      case "location":
-        return (
-          <LocationDetails
-            purpose="Business"
-            address={business?.address}
-            lat={
-              business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]
-            }
-            long={
-              business?.geoLocation?.long ??
-              business?.location?.coordinates?.[1]
-            }
-          />
-        );
+      
       case "media":
         return <MediaDetails {...mediaProps} />;
       case "social":
@@ -452,9 +440,7 @@ function BusinessDetailsPageInner() {
       <Spinner isLoading={isLoading} />
 
       {/* Top Row */}
-      <div className="flex items-center justify-between mb-2 gap-2">
-        <BackToListBtn navPath={routes.businessMgmt} />
-      </div>
+      
 
       <div className="details-top shrink-0 !mb-2 !p-2" data-tour="business-header">
         <DetailTitleSection

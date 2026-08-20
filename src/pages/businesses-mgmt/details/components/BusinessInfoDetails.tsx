@@ -6,12 +6,23 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
-import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
+import { ConnectedDmoAuthorityWebsites, LocationDetailsclosed } from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface Business {
   slug: string;
-  shortDescription: string;
+geoLocation : { 
+lat: string | number;
+  long: string | number;
+}
+  location?: {
+    coordinates?: [number, number] | number[]; 
+  };
+  address: {
+    location: string;
+    city: string;
+    country: string;
+  };  shortDescription: string;
   shortDescriptionAr: string;
   shortDescriptionHe: string;
   description: string;
@@ -55,7 +66,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         icon={
           <FileText
             className={clsx(
-              "w-5 h-5",
               isDark ? "text-blue-400" : "text-blue-600",
             )}
           />
@@ -75,7 +85,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         icon={
           <AlignLeft
             className={clsx(
-              "w-5 h-5",
               isDark ? "text-purple-400" : "text-purple-600",
             )}
           />
@@ -85,6 +94,18 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         preWrap={true} // preserves line breaks
       />
 
+      {/* Location details */}
+ <LocationDetailsclosed
+                  purpose="Business"
+                  address={business?.address}
+                  lat={
+                    business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]
+                  }
+                  long={
+                    business?.geoLocation?.long ??
+                    business?.location?.coordinates?.[1]
+                  }
+                />
       <ConnectedDmoAuthorityWebsites
         dmoId={business?.dmoId}
         authorityId={business?.authorityId}
@@ -106,6 +127,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
           </p>
         </div>
       )} */}
+     
       {/* Rejection Note */}
       {business?.status === "rejected" && business?.rejectionNote && (
         <div
