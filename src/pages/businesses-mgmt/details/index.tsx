@@ -30,7 +30,7 @@ import {
 import { routes } from "@/lib/routes";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { Spinner, TabsSection } from "@/components/shared";
+import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import {
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
@@ -260,43 +260,43 @@ function BusinessDetailsPageInner() {
 
   const businessStats = [
     {
-      id: "page-views",
+      // id: "page-views",
       icon: <Eye className="w-5 h-5 text-green-600" />,
       title: t("page_views"),
       value: data?.pageViews?.toLocaleString() || 0,
     },
     {
-      id: "unique-visitors",
+      // id: "unique-visitors",
       icon: <Users className="w-5 h-5 text-green-600" />,
       title: t("unique_visitors"),
       value: data?.uniqueVisitors?.toLocaleString() || 0,
     },
     {
-      id: "clicks",
+      // id: "clicks",
       icon: <MousePointer className="w-5 h-5 text-green-600" />,
       title: t("clicks"),
       value: data?.clicks?.toLocaleString() || 0,
     },
     {
-      id: "bookmarks",
+      // id: "bookmarks",
       icon: <Bookmark className="w-5 h-5 text-green-600" />,
       title: t("bookmarks"),
       value: data?.bookmarks?.toLocaleString() || 0,
     },
     {
-      id: "shares",
+      // id: "shares",
       icon: <Share2 className="w-5 h-5 text-green-600" />,
       title: t("shares"),
       value: data?.shares?.toLocaleString() || 0,
     },
     {
-      id: "avg-time-on-page",
+      // id: "avg-time-on-page",
       icon: <Timer className="w-5 h-5 text-green-600" />,
       title: t("avg_time_on_page"),
       value: `${data?.averageEngagementTime}`,
     },
     {
-      id: "conversion-rate",
+      // id: "conversion-rate",
       icon: <TrendingUp className="w-5 h-5 text-green-600" />,
       title: t("conversion_rate"),
       value: `${data?.conversionRate || 0}%`,
@@ -564,11 +564,11 @@ function BusinessDetailsPageInner() {
           }
         />
         <div data-tour="business-stats">
-          <StatsMarquee
-            data-tour="stats"
+         <PageStats
             stats={businessStats}
             isLoading={isDetailStatsLoading}
-            className="gap-1.5 md:gap-2"
+            className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
+            wrapperClassName=" my-2 sm:my-4"
           />
         </div>
       </div>

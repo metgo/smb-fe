@@ -45,9 +45,9 @@ const DetailTitleSection = ({
   return (
   <div className="flex flex-col gap-2">
     {/* Back button on its own row, slightly above */}
-    <div className="flex items-center">
+    {/* <div className="flex items-center">
       <BackToListBtn navPath={routes.businessMgmt} />
-    </div>
+    </div> */}
 
     {/* Image + title row */}
     <div className="flex items-center gap-3">

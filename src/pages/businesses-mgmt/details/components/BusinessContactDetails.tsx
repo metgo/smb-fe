@@ -271,7 +271,8 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
           </h3>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
+            <div className="md:flex md:items-center gap-4">
+ <div className="flex items-center gap-3">
               <Mail
                 className={`w-5 h-5 ${
                   isDark ? "text-gray-400" : "text-gray-600"
@@ -298,6 +299,8 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
                 {business?.phoneNumber ? business.phoneNumber : "-"}
               </a>
             </div>
+            </div>
+           
           </div>
         </div>
 
@@ -313,7 +316,7 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
             {t("contact_person")}
           </h3>
 
-          <div className="space-y-2">
+          <div className="space-y-2 md:flex gap-4">
             <p className={isDark ? "text-gray-300" : "text-gray-700"}>
               <span className={isDark ? "text-gray-500" : "text-gray-500"}>
                 {t("name")}:

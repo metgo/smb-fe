@@ -87,7 +87,7 @@ const ConnectedDmoAuthorityWebsites = ({
     <>
       <div
         className={clsx(
-          "rounded-xl flex flex-col md:flex-row border p-2 md:p-6 gap-6 transition-all duration-200",
+          "rounded-xl flex flex-col md:flex-row border p-2 md:p-3 gap-6 transition-all duration-200",
           isDark
             ? "bg-linear-to-br from-gray-800 to-gray-800/50 border-gray-700"
             : "bg-linear-to-br from-blue-50 to-purple-50 border-blue-200",

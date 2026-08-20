@@ -44,7 +44,7 @@ export default function PageStats({
           : stats?.map((item, index) => (
               <div
                 key={index}
-                className={`shrink-0 w-40 sm:w-auto ${bgSecondary} rounded-lg px-3 py-2.5 border ${borderClass} shadow-sm flex items-center gap-3 overflow-hidden`}
+                className={`shrink-0 w-40 sm:w-auto ${bgSecondary} rounded-lg px-3 py-2 border ${borderClass} shadow-sm flex items-center gap-3 overflow-hidden`}
               >
                 <div
                   className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
