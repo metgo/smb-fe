@@ -18,7 +18,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   onClose,
   children,
   showSpinner = false,
-  height = "h-[80dvh] md:h-[90vh]",
+  height = "h-[80dvh] md:h-[85vh]",
   maxWidth = "max-w-5xl",
   closeOnOutsideClick = false,
 }) => {

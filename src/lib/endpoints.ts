@@ -106,6 +106,7 @@ export const endpoints = {
   eventSessionSendHistory: "/event-sessions/send-history",
   eventSessionSendHistoryDetails: "/event-sessions/send-history-detail",
   eventSessionResendNotification: "/event-sessions/resend-notification",
+  sendOrderNotification: "/send-order-notification",
 
   // users
   users: "/users",

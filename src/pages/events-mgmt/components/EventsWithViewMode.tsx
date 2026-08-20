@@ -645,14 +645,6 @@ export default function EventsWithViewMode({
                 isDark={isDark}
                 actions={[
                   {
-                    title: t("edit_event"),
-                    icon: PenBox,
-                    color: "blue",
-                    onClick: () => {
-                      handleEditEvent(event._id);
-                    },
-                  },
-                  {
                     title: t("details"),
                     icon: Eye,
                     color: "green",
@@ -660,6 +652,14 @@ export default function EventsWithViewMode({
                       navigate(`${routes.eventDetails}?eventId=${event?._id}`, {
                         replace: true,
                       });
+                    },
+                  },
+                  {
+                    title: t("edit_event"),
+                    icon: PenBox,
+                    color: "blue",
+                    onClick: () => {
+                      handleEditEvent(event._id);
                     },
                   },
                   {
