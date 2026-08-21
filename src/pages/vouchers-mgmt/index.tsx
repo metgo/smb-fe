@@ -1,11 +1,9 @@
+// VouchersMgmtPage.tsx
 import { useState } from "react";
-
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { VouchersList, CreateVoucherWizard } from "./components";
 import { useGetAllCampaignsQuery } from "@/store/api/masterDataApi";
 
 export default function VouchersMgmtPage() {
-  const { isDark } = useThemeClasses();
   const { data: campaigns } = useGetAllCampaignsQuery({
     type: "CASH_IN",
   });
@@ -21,24 +19,21 @@ export default function VouchersMgmtPage() {
   };
 
   return (
-    <div
-      className={`h-[calc(108vh-180px)] transition-colors flex flex-col pt-10 md:pt-0 ${
-        isDark ? "bg-gray-950" : "bg-gray-50"
-      }`}
-    >
-      <VouchersList
-        campaigns={campaigns}
-        onAddVoucher={handleAddVoucher}
-        showAddWizard={showAddWizard}
-      />
+    <>
+      <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
+        <VouchersList
+          campaigns={campaigns}
+          onAddVoucher={handleAddVoucher}
+          showAddWizard={showAddWizard}
+        />
+      </div>
 
-      {/* Add Voucher Wizard Modal */}
       {showAddWizard && (
         <CreateVoucherWizard
           onClose={handleCloseAddWizard}
           campaigns={campaigns}
         />
       )}
-    </div>
+    </>
   );
 }
