@@ -1,18 +1,27 @@
 import { toast } from "sonner";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Package, Settings2, ArrowUpDown, ArrowUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 
+import clsx from "clsx";
+import {
+  Package,
+  Settings2,
+  ArrowUpDown,
+  ArrowUp,
+  Compass,
+  Plus,
+  SlidersHorizontal,
+} from "lucide-react";
+
+import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import {
   BulkActionBar,
   ConfirmDialog,
-  PageHeader,
-  PageStats,
   ShowColumns,
   ViewModeToggle,
 } from "@/components/shared";
@@ -27,32 +36,37 @@ import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import SearchInput from "@/components/shared/SearchInput";
-import { FilterButton } from "@/components/btns";
 import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
+import SearchInput from "@/components/shared/SearchInput";
 import EmptyState from "@/components/shared/EmptyState";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
+import type { TourStep } from "@/components/tour";
 import { formatILS } from "@/helpers/formatter";
+import StatsMarquee from "@/components/shared/StatsMarquee";
 
 import { useProductFilters } from "./hooks/useProductFilters";
 import { useProductListData } from "./hooks/useProductListData";
 import { PRODUCT_COLUMNS } from "@/lib/utils";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const { defaultColumns, columnDefinitions, COLUMNS_STORAGE_KEY } =
+  PRODUCT_COLUMNS;
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function ProductsMgmtPage() {
-  const { t } = useTranslation("products");
-  const { t: tc } = useTranslation("toast");
-
+function ProductsMgmtPageInner() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlBusinessId = searchParams?.get("businessId");
   const urlBusinessName = searchParams?.get("businessName");
   const urlBusinessNameProduct = searchParams?.get("businessNameProduct");
 
+  const { t } = useTranslation(["products", "common"]);
+  const { t: tc } = useTranslation("toast");
+  const { t: tt } = useTranslation("tour");
   const { startDate, endDate } = useAppSelector((state) => state.auth);
   const { isDark, bgSecondary, borderColor, language } = useThemeClasses();
-  const { defaultColumns, columnDefinitions, COLUMNS_STORAGE_KEY } =
-    PRODUCT_COLUMNS;
 
   // ─── Filter & Search (persisted to localStorage) ─────────────────────
   const {
@@ -78,19 +92,161 @@ export default function ProductsMgmtPage() {
   } = useProductListData(filters, searchTerm, urlBusinessId);
 
   // ─── UI State ─────────────────────────────────────────────────────────
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [showColumnSettings, setShowColumnSettings] = useState(false);
+  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
+  const [_isScrolled, setIsScrolled] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set(),
   );
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isBulkDelete, setIsBulkDelete] = useState(false);
-  const [showColumnSettings, setShowColumnSettings] = useState(false);
+
+  // ─── Compute active filter count (search term + any non-empty filter values) ──
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+
+    if (searchTerm?.trim()) count += 1;
+    if (filters?.status && filters.status !== "all") count += 1;
+    if (filters?.businessId && filters.businessId !== "all") count += 1;
+
+    return count;
+  }, [filters, searchTerm]);
+
+  // ─── Reusable icon-only filter toggle button ──────────────────────────
+  const filterToggleButton = (
+    <button
+      onClick={() => setShowControlsDrawer((prev) => !prev)}
+      className={clsx(
+        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
+        showControlsDrawer
+          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
+          : isDark
+            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
+      )}
+      title={
+        showControlsDrawer
+          ? t("close_options") ?? "Close Options"
+          : t("search_and_filters") ?? "Search & Filters"
+      }
+    >
+      <SlidersHorizontal className="w-4 h-4" />
+      {activeFilterCount > 0 && (
+        <span
+          className={clsx(
+            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+            showControlsDrawer
+              ? "bg-white text-teal-600"
+              : "bg-teal-500 text-white"
+          )}
+        >
+          {activeFilterCount > 9 ? "9+" : activeFilterCount}
+        </span>
+      )}
+    </button>
+  );
+
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (
+        (target && target.scrollTop && target.scrollTop > 20) ||
+        window.scrollY > 20
+      ) {
+        setIsScrolled(true);
+        setShowControlsDrawer(false);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    return () =>
+      window.removeEventListener("scroll", handleScroll, { capture: true } as any);
+  }, []);
+
   const [columnVisibility, setColumnVisibility] =
     useState<IProductColumnVisibility>(defaultColumns);
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
+
+  // ─── Tour integration ─────────────────────────────────────────────────
+  const {
+    isOpen: isTourOpen,
+    steps: tourSteps,
+    currentStep,
+    startTour,
+    refreshTargetRect,
+  } = useTour();
+
+  const buildSteps = useCallback(
+    (): TourStep[] => [
+      {
+        id: "welcome",
+        placement: "center",
+        title: "product_list.welcome.title",
+        desc: "product_list.welcome.desc",
+      },
+      {
+        id: "page-header",
+        target: '[data-tour="page-header"]',
+        placement: "bottom",
+        title: "product_list.page_header.title",
+        desc: "product_list.page_header.desc",
+      },
+      {
+        id: "stats",
+        target: '[data-tour="stats"]',
+        placement: "bottom",
+        title: "product_list.stats.title",
+        desc: "product_list.stats.desc",
+      },
+      {
+        id: "search",
+        target: '[data-tour="search"]',
+        placement: "bottom",
+        title: "product_list.search.title",
+        desc: "product_list.search.desc",
+      },
+      {
+        id: "toolbar",
+        target: '[data-tour="toolbar"]',
+        placement: "bottom",
+        title: "product_list.toolbar.title",
+        desc: "product_list.toolbar.desc",
+      },
+      {
+        id: "filter-panel",
+        target: '[data-tour="filter-panel"]',
+        placement: "bottom",
+        title: "product_list.filter_panel.title",
+        desc: "product_list.filter_panel.desc",
+      },
+      {
+        id: "product-list",
+        target: '[data-tour="product-list"]',
+        placement: "top",
+        title: "product_list.product_list.title",
+        desc: "product_list.product_list.desc",
+      },
+    ],
+    [],
+  );
+
+  // Open filter panel when tour lands on that step
+  useEffect(() => {
+    if (!isTourOpen) return;
+    const stepId = tourSteps[currentStep]?.id;
+    if (stepId === "filter-panel") {
+      setShowFilters(true);
+      const raf = requestAnimationFrame(() => {
+        setTimeout(() => refreshTargetRect(), 40);
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [isTourOpen, currentStep, tourSteps, refreshTargetRect]);
 
   // ─── Column visibility (persisted to localStorage) ────────────────────
   useEffect(() => {
@@ -266,29 +422,77 @@ export default function ProductsMgmtPage() {
   // ─── Render ─────────────────────────────────────────────────────────
   return (
     <>
-      <div className="flex flex-col pt-10 md:pt-0">
-        {/* Sticky Header */}
+      <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
+        {/* Sticky Top Header Bar (Title + Add Button + Horizontal Scrollable Stats) */}
         <div
-          className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-30`}
+          className={clsx(
+            "sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
+            isDark
+              ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
+              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900"
+          )}
         >
-          <PageHeader
-            title={t("products_management")}
-            description={t("products_management_desc")}
-            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-            btnLabel={t("add_products")}
-            onClick={handleCreateNew}
-            totalCount={totalData ?? 0}
-          />
+          {/* Left: Title + Product Count (Top), Add Product Button (Below) */}
+          <div className="flex flex-col items-start gap-1 shrink-0" data-tour="page-header">
+            <div className="flex items-center w-full justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
+                  {t("products_management")}
+                </h1>
+                {totalData !== undefined && (
+                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
+                    {totalData}
+                  </span>
+                )}
+              </div>
 
-          <PageStats
-            stats={salesStats}
-            isLoading={isStatsLoading}
-            className="sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4"
-          />
+              <div className="block xl:hidden items-center gap-2 shrink-0">
+                {filterToggleButton}
+              </div>
+            </div>
+            <button
+              onClick={handleCreateNew}
+              className="px-3.5 py-2 text-xs font-semibold 
+              bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 
+              hover:opacity-90 active:scale-95 text-white rounded-lg transition-all 
+              flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm whitespace-nowrap "
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{t("add_products")}</span>
+            </button>
+          </div>
 
-          {/* Search & Actions */}
-          <div className="py-3 flex flex-col gap-2">
-            <div className="flex-1 relative">
+          {/* Right: Horizontal Scrollable Stats Cards Row (Flowing Left-to-Right!) */}
+          <div
+            data-tour="stats"
+            dir="ltr"
+            className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
+          >
+            <StatsMarquee
+              data-tour="stats"
+              stats={salesStats}
+              isLoading={isStatsLoading}
+              className="flex-1 min-w-0"
+            />
+          </div>
+
+          {/* Search & Filters Toggle Button Next to Stats */}
+          <div className=" hidden xl:flex items-center gap-2 shrink-0">
+            {filterToggleButton}
+          </div>
+        </div>
+
+        {/* Expandable Search, Filters & Controls Panel (Collapses on scroll or when toggled) */}
+        {showControlsDrawer && (
+          <div
+            className={clsx(
+              "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
+              isDark
+                ? "bg-gray-900/90 border-gray-800/90"
+                : "bg-white border-gray-200"
+            )}
+          >
+            <div className="flex-1 relative" data-tour="search">
               <SearchInput
                 placeholder={t("search_products")}
                 searchTerm={searchTerm}
@@ -296,8 +500,11 @@ export default function ProductsMgmtPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between gap-2 w-full">
-              <div className="flex items-center gap-2">
+            <div
+              className="flex items-center justify-between gap-2 w-full flex-wrap"
+              data-tour="toolbar"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
                 <FilterButton value={showFilters} onChange={setShowFilters} />
                 <ShowColumns
                   t={t}
@@ -317,42 +524,57 @@ export default function ProductsMgmtPage() {
                 />
               </div>
 
-              <ViewModeToggle
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="productViewMode"
-              />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => startTour(buildSteps())}
+                  title={tt("start_tour")}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+                    }`}
+                >
+                  <Compass className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {t("tour") ?? tt("start_tour")}
+                  </span>
+                </button>
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="productViewMode"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Filters Panel */}
-          {(showFilters || urlBusinessId || hasSavedFilters) && (
-            <ProductFiltersPanel
-              filters={filters}
-              setFilters={setFilters}
-              hasSavedFilters={hasSavedFilters}
-              clearFilter={clearFilter}
-              urlBusinessId={urlBusinessId}
-              urlBusinessName={urlBusinessName}
-              urlBusinessNameProduct={urlBusinessNameProduct}
-              removeQueryParams={removeQueryParams}
-              businesses={businesses ?? []}
-              searchBusiness={searchBusiness}
-              isSearching={isSearching}
-              isBusinessesLoading={isBusinessesLoading}
+            {/* Filters Panel */}
+            {(showFilters || urlBusinessId || hasSavedFilters) && (
+              <ProductFiltersPanel
+                filters={filters}
+                setFilters={setFilters}
+                hasSavedFilters={hasSavedFilters}
+                clearFilter={clearFilter}
+                urlBusinessId={urlBusinessId}
+                urlBusinessName={urlBusinessName}
+                urlBusinessNameProduct={urlBusinessNameProduct}
+                removeQueryParams={removeQueryParams}
+                businesses={businesses ?? []}
+                searchBusiness={searchBusiness}
+                isSearching={isSearching}
+                isBusinessesLoading={isBusinessesLoading}
+              />
+            )}
+
+            <BulkActionBar
+              selectedItemCount={selectedProducts.size}
+              handleBulkStatusChange={handleBulkStatusChange}
+              handleBulkDelete={promptBulkDelete}
+              hancleClearSelection={() => setSelectedProducts(new Set())}
             />
-          )}
+          </div>
+        )}
 
-          <BulkActionBar
-            selectedItemCount={selectedProducts.size}
-            handleBulkStatusChange={handleBulkStatusChange}
-            handleBulkDelete={promptBulkDelete}
-            hancleClearSelection={() => setSelectedProducts(new Set())}
-          />
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto mt-2">
+        {/* Content Area (product list/grid rendered naturally) */}
+        <div className="flex-1 mt-1" data-tour="product-list">
           {!isLoading && !isFetching && combinedProducts?.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
@@ -395,34 +617,45 @@ export default function ProductsMgmtPage() {
             />
           )}
         </div>
-
-        {/* Modals */}
-        <ConfirmDialog
-          open={isConfirmOpen}
-          title={t("delete_product")}
-          message={t("delete_product_confirm")}
-          confirmText="delete"
-          loading={isDeleting}
-          variant="danger"
-          onCancel={() => {
-            setIsConfirmOpen(false);
-            setIsBulkDelete(false);
-          }}
-          onConfirm={() => {
-            if (isBulkDelete) {
-              handleBulkDelete();
-            }
-            setIsConfirmOpen(false);
-          }}
-        />
       </div>
 
+      {/* Modals */}
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={t("delete_product")}
+        message={t("delete_product_confirm")}
+        confirmText="delete"
+        loading={isDeleting}
+        variant="danger"
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setIsBulkDelete(false);
+        }}
+        onConfirm={() => {
+          if (isBulkDelete) {
+            handleBulkDelete();
+          }
+          setIsConfirmOpen(false);
+        }}
+      />
       {isCreateModalOpen && (
         <CreateProductWizard
           onClose={() => setIsCreateModalOpen(false)}
           refetch={refetchFromPage1}
         />
       )}
+
+      <TourPortal />
     </>
+  );
+}
+
+// ─── Exported page (wraps with TourProvider) ──────────────────────────────────
+
+export default function ProductsMgmtPage() {
+  return (
+    <TourProvider>
+      <ProductsMgmtPageInner />
+    </TourProvider>
   );
 }
