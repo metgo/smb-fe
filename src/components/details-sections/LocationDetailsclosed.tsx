@@ -1,9 +1,9 @@
 import { MapPin, Globe2, Navigation, Compass } from "lucide-react";
 import { type FC } from "react";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-// import { useTranslation } from "react-i18next";
 import { openWithUserLocation } from "@/utils/googleMapUtils";
 
 interface LocationDetailsclosedProps {
@@ -63,7 +63,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
   address,
   purpose,
 }) => {
-//   const { t } = useTranslation("common");
+  const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
 
   const hasLocation = address?.location || address?.city || address?.country;
@@ -217,7 +217,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
             )}
           >
             <GoogleMapsIcon />
-            <span>Maps</span>
+            <span>{t("open_in_google_maps")}</span>
           </button>
 
           <button
@@ -230,7 +230,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
             )}
           >
             <WazeIcon />
-            <span>Waze</span>
+            <span>{t("open_in_waze")}</span>
           </button>
         </div>
       )}

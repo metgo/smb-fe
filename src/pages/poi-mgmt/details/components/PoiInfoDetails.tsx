@@ -6,7 +6,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
-import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
+import { ConnectedDmoAuthorityWebsites, LocationDetailsclosed } from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface PoiInfoDetailsProps {
@@ -58,6 +58,13 @@ const PoiInfoDetails: FC<PoiInfoDetailsProps> = ({ t, poi }) => {
         iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
         isDark={isDark}
         preWrap={true}
+      />
+
+      <LocationDetailsclosed
+        purpose="POI"
+        address={poi?.address}
+        lat={poi?.geoLocation?.lat ?? poi?.location?.coordinates?.[0]}
+        long={poi?.geoLocation?.long ?? poi?.location?.coordinates?.[1]}
       />
 
       <ConnectedDmoAuthorityWebsites

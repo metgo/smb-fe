@@ -423,5 +423,7 @@
   "search_and_filters": "البحث والتصفية",
   "close_options": "إغلاق الخيارات",
   "options": "خيارات",
-  "hide_options": "إخفاء الخيارات"
+  "hide_options": "إخفاء الخيارات",
+  "open_in_google_maps": "فتح في خرائط Google",
+  "open_in_waze": "فتح في Waze"
 }

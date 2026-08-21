@@ -21,14 +21,14 @@ import {
   useGetPoiByIdQuery,
   useGetIndividualPoiStatsQuery,
 } from "@/store/api/poiQueryApi";
-import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import {  StatusChangeBtn } from "@/components/btns";
 import { ChatWithCreator } from "@/components/chat-popup";
 import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
 import { CreatePoiWizard } from "../components";
 import {
   AttributesDetails,
   DetailTitleSection,
-  LocationDetails,
+  // LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
 import { poiTabs } from "@/constants/tabs";
@@ -145,15 +145,6 @@ export default function PoiDetailsPage() {
     switch (activeTab) {
       case "overview":
         return <PoiInfoDetails t={t} poi={poi} />;
-      case "location":
-        return (
-          <LocationDetails
-            purpose="POI"
-            address={poi?.address}
-            lat={poi?.geoLocation?.lat ?? poi?.location?.coordinates?.[0]}
-            long={poi?.geoLocation?.long ?? poi?.location?.coordinates?.[1]}
-          />
-        );
       case "media":
         return <MediaDetails {...mediaProps} />;
       case "accessibility":

@@ -30,13 +30,13 @@ import {
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { StatusChangeBtn } from "@/components/btns";
 import { ChatWithCreator } from "@/components/chat-popup";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
   AttributesDetails,
   DetailTitleSection,
-  LocationDetails,
+  // LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
@@ -207,15 +207,6 @@ export default function EventDetailsPage() {
         return <EventInfoDetails {...commonProps} />;
       case "date_time":
         return <EventDateTimeDetails {...(eventDetails ?? {})} />;
-      case "location":
-        return (
-          <LocationDetails
-            purpose="Event"
-            lat={eventDetails?.geoLocation?.lat}
-            long={eventDetails?.geoLocation?.long}
-            address={eventDetails?.address}
-          />
-        );
       case "media":
         return <MediaDetails {...mediaProps} />;
       case "tickets":

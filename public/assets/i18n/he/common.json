@@ -438,5 +438,7 @@
   "options": "אפשרויות",
   "hide_options": "הסתר אפשרויות",
   "selected_dmo_authority": "DMO ורשות נבחרים",
-  "no_connected_dmo_authority_websites": "אין DMO, רשות או אתרים מחוברים"
+  "no_connected_dmo_authority_websites": "אין DMO, רשות או אתרים מחוברים",
+  "open_in_google_maps": "פתח ב-Google Maps",
+  "open_in_waze": "פתח ב-Waze"
 }

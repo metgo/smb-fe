@@ -434,5 +434,7 @@
   "search_and_filters": "Search & Filters",
   "close_options": "Close Options",
   "options": "Options",
-  "hide_options": "Hide Options"
+  "hide_options": "Hide Options",
+  "open_in_google_maps": "Open in Google Maps",
+  "open_in_waze": "Open in Waze"
 }

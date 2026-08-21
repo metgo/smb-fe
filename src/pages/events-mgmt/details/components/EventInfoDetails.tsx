@@ -11,7 +11,7 @@ import {
 import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
-import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
+import { ConnectedDmoAuthorityWebsites, LocationDetailsclosed } from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface EventInfoDetailsProps {
@@ -85,6 +85,13 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
         iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
         isDark={isDark}
         preWrap={true} // preserves line breaks
+      />
+
+      <LocationDetailsclosed
+        purpose="Event"
+        address={eventDetails?.address}
+        lat={eventDetails?.geoLocation?.lat}
+        long={eventDetails?.geoLocation?.long}
       />
 
       <ConnectedDmoAuthorityWebsites

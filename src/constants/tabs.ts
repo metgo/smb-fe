@@ -36,7 +36,6 @@ export const eventTabs = [
   { id: "sessions", label: "landing_pages", icon: LayoutList },
   { id: "attributes", label: "attributes", icon: Accessibility },
   { id: "date_time", label: "date_time", icon: Calendar },
-  { id: "location", label: "location_map", icon: MapPin },
   { id: "media", label: "media", icon: ImageIcon },
   { id: "tickets", label: "tickets", icon: Ticket },
   { id: "registration", label: "registration", icon: Users },
@@ -72,7 +71,6 @@ export const productTabs = [
 export const poiTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "accessibility", label: "attributes", icon: Accessibility },
-  { id: "location", label: "location_map", icon: MapPin },
   { id: "media", label: "images", icon: ImageIcon },
 ];
 
