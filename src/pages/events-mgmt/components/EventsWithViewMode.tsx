@@ -465,7 +465,10 @@ export default function EventsWithViewMode({
     }
 
     return (
-      <div ref={scrollRef} className="py-4 px-3 overflow-y-auto max-h-full">
+      <div
+        ref={scrollRef}
+        className="py-4 px-3 overflow-y-auto max-h-[calc(100vh-200px)]"
+      >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
           {displayedEvents?.map((event) => {
             const imageUrl =
@@ -527,6 +530,7 @@ export default function EventsWithViewMode({
           setSelectedEvents(selected as Set<string>)
         }
         // onRowClick={(item) => handleEventSelect(item)}
+        maxHeight="calc(100vh - 180px)"
         storageKey="eventsTableColumnOrder"
         hasMore={hasMore}
         next={fetchNextPage}
@@ -806,25 +810,23 @@ export default function EventsWithViewMode({
         </div>
 
         {/* Main Content */}
-        <div
-          className={clsx(
-            bgSecondary,
-            borderColor,
-            "border flex-1 overflow-y-auto max-h-[calc(100vh-400px)] rounded-2xl",
-          )}
-        >
-          {calendarViewMode === "calendar-month" && viewMode === "calendar" && (
-            <MonthView />
-          )}
-          {calendarViewMode === "calendar-week" && viewMode === "calendar" && (
-            <WeekView />
-          )}
-          {calendarViewMode === "calendar-day" && viewMode === "calendar" && (
-            <DayView />
-          )}
-          {viewMode === "list" && <ListView />}
-          {viewMode === "grid" && <GridView />}
-        </div>
+        {viewMode === "calendar" ? (
+          <div
+            className={clsx(
+              bgSecondary,
+              borderColor,
+              "border flex-1 overflow-y-auto max-h-[calc(100vh-200px)] rounded-2xl",
+            )}
+          >
+            {calendarViewMode === "calendar-month" && <MonthView />}
+            {calendarViewMode === "calendar-week" && <WeekView />}
+            {calendarViewMode === "calendar-day" && <DayView />}
+          </div>
+        ) : viewMode === "list" ? (
+          <ListView />
+        ) : (
+          <GridView />
+        )}
 
         <ConfirmDialog
           open={isConfirmOpen}

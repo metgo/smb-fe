@@ -535,7 +535,7 @@ export default function EventsMgmtPage() {
         )}
 
         {/* Events with different View */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 mt-1">
           <EventsWithViewMode
             isLoading={isLoading || isFetching}
             events={combinedEvents}
