@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useState, useMemo, useEffect } from "react";
 import {
   Package,
@@ -20,8 +21,7 @@ import {
 import { StatusPill } from "@/components/pills";
 import { routes } from "@/lib/routes";
 import TabsSection from "@/components/shared/TabsSection";
-import PageStats from "@/components/shared/PageStats";
-import PageHeader from "@/components/shared/PageHeader";
+import StatsMarquee from "@/components/shared/StatsMarquee";
 import { ReordableDataTable } from "@/components/shared";
 import { ViewChangesModal } from "@/components/change-tracking";
 
@@ -37,8 +37,6 @@ const getItemTypeIcon = (type: string) => {
       return <Calendar size={16} className="text-purple-500" />;
     case "poi":
       return <MapPin size={16} className="text-orange-500" />;
-    // case "order":
-    //   return <ShoppingCart size={16} className="text-red-500" />;
     default:
       return <Package size={16} className="text-gray-500" />;
   }
@@ -54,8 +52,6 @@ const getItemTypeLabel = (type: string, t: any) => {
       return t("event");
     case "poi":
       return t("poi");
-    // case "order":
-    //   return t("order");
     default:
       return "Item";
   }
@@ -187,7 +183,7 @@ export default function PendingApprovalsPage() {
     });
   }, [approvalsData, page]);
 
-  // Filter items based on active tab (API already filters by DMO/Authority)
+  // Filter items based on active tab
   const filteredItems =
     activeTab === "all"
       ? combinedItems
@@ -211,46 +207,46 @@ export default function PendingApprovalsPage() {
     }
   }, [activeTab, filteredItems.length, hasMore, isFetching, apiCounts]);
 
-  const pendingStats = useMemo(() => {
-    return [
+  const pendingStats = useMemo(
+    () => [
       {
         id: 1,
         title: t("total"),
         value: total,
-        icon: <AlertCircle className="w-5 h-5 text-orange-600" />,
+        icon: <AlertCircle className="w-5 h-5 text-orange-500" />,
       },
       {
         id: 2,
         title: t("total_businesses"),
         value: apiCounts.business,
         label: t("pending"),
-        icon: <Store className="w-5 h-5 text-blue-600" />,
+        icon: <Store className="w-5 h-5 text-blue-500" />,
       },
       {
         id: 3,
         title: t("total_products"),
         value: apiCounts.product,
         label: t("pending"),
-        icon: <Package className="w-5 h-5 text-green-600" />,
+        icon: <Package className="w-5 h-5 text-green-500" />,
       },
       {
         id: 4,
         title: t("total_events"),
         value: apiCounts.event,
         label: t("pending"),
-        icon: <Calendar className="w-5 h-5 text-purple-600" />,
+        icon: <Calendar className="w-5 h-5 text-purple-500" />,
       },
       {
         id: 5,
         title: t("total_pois"),
         value: apiCounts.poi,
         label: t("pending"),
-        icon: <MapPin className="w-5 h-5 text-orange-600" />,
+        icon: <MapPin className="w-5 h-5 text-orange-500" />,
       },
-    ];
-  }, [total, apiCounts, t]);
+    ],
+    [total, apiCounts, t],
+  );
 
-  // Define columns for ReordableDataTable
   const columns = useMemo(
     () => [
       {
@@ -336,95 +332,136 @@ export default function PendingApprovalsPage() {
   );
 
   return (
-    <div className="flex flex-col pt-10 md:pt-0">
-      {/* Sticky Header */}
-      <div
-        className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
-      >
-        <PageHeader
-          title={t("pending_approvals")}
-          description={t("pending_approvals_desc")}
-          totalCount={total}
-          h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-        />
-        <PageStats
-          stats={pendingStats}
-          isLoading={isLoading}
-          className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 md:gap-4"
-        />
-      </div>
+    <>
+      <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
+        {/* Sticky Top Header Bar (Title + Count + Stats) — same as Events */}
+        <div
+          className={clsx(
+            "shrink-0 sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
+            isDark
+              ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
+              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900",
+          )}
+        >
+          {/* Left: Title + Count */}
+          <div className="flex flex-col items-start gap-1 shrink-0">
+            <div className="flex items-center gap-1">
+              <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
+                {t("pending_approvals")}
+              </h1>
+              {total !== undefined && (
+                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
+                  {total}
+                </span>
+              )}
+            </div>
+            <p
+              className={clsx(
+                "text-xs max-w-xs",
+                isDark ? "text-gray-400" : "text-gray-500",
+              )}
+            >
+              {t("pending_approvals_desc")}
+            </p>
+          </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto mt-2">
-        {/* Error State */}
-        {isError && (
+          {/* Right: Horizontal Scrollable Stats Cards */}
           <div
-            className={`mb-6 p-4 rounded-lg border ${isDark ? "bg-red-900/20 border-red-700" : "bg-red-50 border-red-200"}`}
+            dir="ltr"
+            className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
           >
-            <div className="flex items-center gap-2 text-red-600">
-              <AlertCircle size={20} />
-              <span>
-                Failed to load pending approvals. Please check your permissions
-                or try again later.
-              </span>
-            </div>
+            <StatsMarquee
+              stats={pendingStats}
+              isLoading={isLoading}
+              className="flex-1 min-w-0"
+            />
           </div>
-        )}
+        </div>
 
-        {/* Items List */}
-        {isLoading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              {/* <p className="text-gray-500">{t("loading_pending_approvals")}</p> */}
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Error State */}
+          {isError && (
+            <div
+              className={clsx(
+                "mb-4 p-4 rounded-2xl border",
+                isDark
+                  ? "bg-red-900/20 border-red-700"
+                  : "bg-red-50 border-red-200",
+              )}
+            >
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertCircle size={20} />
+                <span>
+                  Failed to load pending approvals. Please check your
+                  permissions or try again later.
+                </span>
+              </div>
             </div>
-          </div>
-        ) : isError ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="text-center">
-              <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
-              <p className="text-gray-500">Unable to load pending approvals</p>
-              <p className="text-sm text-gray-400 mt-2">
-                Please ensure you have the correct permissions
-              </p>
+          )}
+
+          {isLoading ? (
+            <div className="flex justify-center items-center py-16">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" />
+              </div>
             </div>
-          </div>
-        ) : (
-          <>
-            <div className="mb-6">
-              <TabsSection
-                tabs={tabs}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-              />
-            </div>
-            {pendingItems.length === 0 ? (
-              <div
-                className={`text-center py-16 rounded-lg border ${isDark ? "border-gray-700 bg-gray-800/30" : "border-gray-200 bg-gray-50"}`}
-              >
-                <div
-                  className={`${isDark ? "text-gray-400" : "text-gray-600"} mb-2`}
-                >
-                  ✓ {t("all_clear")}
-                </div>
-                <p className={isDark ? "text-gray-500" : "text-gray-600"}>
-                  {t("no_pending_approvals")}
+          ) : isError ? (
+            <div className="flex justify-center items-center py-16">
+              <div className="text-center">
+                <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
+                <p className="text-gray-500">Unable to load pending approvals</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Please ensure you have the correct permissions
                 </p>
               </div>
-            ) : (
-              <ReordableDataTable
-                rowKey="_id"
-                data={pendingItems}
-                isDataLoading={isFetching}
-                onRowClick={(item) => handleViewDetails(item)}
-                storageKey="pendingApprovalsTableColumnOrder"
-                columns={columns}
-                hasMore={hasMore}
-                next={() => setPage((prev) => prev + 1)}
-              />
-            )}
-          </>
-        )}
+            </div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <TabsSection
+                  tabs={tabs}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                />
+              </div>
+
+              {pendingItems.length === 0 ? (
+                <div
+                  className={clsx(
+                    "text-center py-16 rounded-2xl border",
+                    isDark
+                      ? "border-gray-700 bg-gray-800/30"
+                      : "border-gray-200 bg-gray-50",
+                  )}
+                >
+                  <div
+                    className={clsx(
+                      "mb-2",
+                      isDark ? "text-gray-400" : "text-gray-600",
+                    )}
+                  >
+                    ✓ {t("all_clear")}
+                  </div>
+                  <p className={isDark ? "text-gray-500" : "text-gray-600"}>
+                    {t("no_pending_approvals")}
+                  </p>
+                </div>
+              ) : (
+                <ReordableDataTable
+                  rowKey="_id"
+                  data={pendingItems}
+                  isDataLoading={isFetching}
+                  onRowClick={(item) => handleViewDetails(item)}
+                  storageKey="pendingApprovalsTableColumnOrder"
+                  columns={columns}
+                  hasMore={hasMore}
+                  next={() => setPage((prev) => prev + 1)}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       <ViewChangesModal
@@ -461,6 +498,6 @@ export default function PendingApprovalsPage() {
           await refetchApprovals();
         }}
       />
-    </div>
+    </>
   );
 }

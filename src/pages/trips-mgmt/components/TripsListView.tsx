@@ -151,7 +151,6 @@ export default function TripsListView({
   }
 
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(100vh-400px)]">
       <div className="sticky">
         <ReordableDataTable
           rowKey="_id"
@@ -165,7 +164,6 @@ export default function TripsListView({
           next={next}
           t={t}
         />
-      </div>
     </div>
   );
 }
