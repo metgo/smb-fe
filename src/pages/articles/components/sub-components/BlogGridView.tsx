@@ -88,11 +88,7 @@ const BlogGridView = ({
     <div
       className={`pb-6 pt-2 px-2 ${isDark ? "border-gray-700 bg-gray-900" : "border-gray-300"}`}
     >
-      <div
-        ref={scrollRef}
-        id="blog-table-scroll"
-        className="overflow-x-auto max-h-[calc(100vh-250px)] sm:max-h-[calc(100vh-300px)] overflow-y-auto mb-20"
-      >
+     
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
           {data?.map((blog) => {
             const isChecked = selectedItems?.has(blog?._id) ?? false;
@@ -140,7 +136,7 @@ const BlogGridView = ({
                 </div>
 
                 {/* Image Section */}
-                <div className="relative h-48">
+                <div className="relative h-36">
                   {blog.image ? (
                     <ImageWithFallback
                       src={blog.image.image}
@@ -233,7 +229,6 @@ const BlogGridView = ({
             <p className="text-gray-500">{t("no_articles_found")}</p>
           </div>
         )}
-      </div>
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
