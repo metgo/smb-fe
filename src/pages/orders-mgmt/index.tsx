@@ -491,10 +491,17 @@ export default function OrdersMgmtPage() {
     return params;
   }, [page, limit, searchTerm, filters, websiteId]);
 
-  const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
-    orderQueryParams,
-    { skip: !canUseAuthenticatedOrderApis },
-  );
+  // Stats query shouldn't be re-triggered by pagination or carry page/limit —
+// strip those two keys out for the stats call.
+const orderStatsParams = useMemo(() => {
+  const { page: _page, limit: _limit, ...rest } = orderQueryParams;
+  return rest;
+}, [orderQueryParams]);
+
+const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
+  orderStatsParams,
+  { skip: !canUseAuthenticatedOrderApis },
+);
   const {
     data: orders,
     isLoading,
