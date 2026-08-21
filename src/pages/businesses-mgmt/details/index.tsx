@@ -437,9 +437,6 @@ function BusinessDetailsPageInner() {
     <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isLoading} />
 
-      {/* Top Row */}
-      
-
       <div className="details-top shrink-0 !mb-2 !p-2" data-tour="business-header">
         <DetailTitleSection
           {...business}
@@ -448,6 +445,7 @@ function BusinessDetailsPageInner() {
             business?.images?.[0]?.image ||
             business?.logo?.image
           }
+          backPath={routes.businessMgmt}
           actions={
             <>
               {/* Status */}

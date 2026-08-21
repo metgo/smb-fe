@@ -181,7 +181,6 @@ export default function ProductDetailsPage() {
 
       {/* Action bar */}
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <BackToListBtn navPath={routes.productsMgmt} />
 
         <div className="flex items-center gap-3">
           <StatusChangeBtn
@@ -273,6 +272,7 @@ export default function ProductDetailsPage() {
             product?.images?.find((img: IImage) => img.isPrimary)?.image ||
             product?.images?.[0]?.image
           }
+          backPath={routes.productsMgmt}
         />
         <PageStats
           stats={salesStats}

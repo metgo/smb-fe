@@ -262,7 +262,6 @@ export default function EventDetailsPage() {
 
       {/* Action bar */}
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <BackToListBtn navPath={routes.eventsMgmt} />
         <div className="flex items-center gap-3">
           <StatusChangeBtn
             handleStatusChange={onStatusChangeHandler}
@@ -331,6 +330,7 @@ export default function EventDetailsPage() {
             eventDetails?.images?.find((img: any) => img.isPrimary)?.image ||
             eventDetails?.images?.[0]?.image
           }
+          backPath={routes.eventsMgmt}
         />
         <PageStats
           stats={singleEventStats}

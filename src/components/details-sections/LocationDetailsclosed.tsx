@@ -210,7 +210,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
           <button
             onClick={handleOpenGoogleMaps}
             className={clsx(
-              "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors",
+              "flex md:min-w-[310px] min-w-[110px] items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-colors",
               isDark
                 ? "bg-gray-700/80 hover:bg-gray-700 text-gray-200 border border-gray-600"
                 : "bg-gray-50 hover:bg-blue-50 text-gray-700 border border-gray-200 hover:border-blue-200",
@@ -223,7 +223,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
           <button
             onClick={handleOpenWaze}
             className={clsx(
-              "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors",
+              " flex items-center md:min-w-[310px] min-w-[110px] justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors",
               isDark
                 ? "bg-gray-700/80 hover:bg-gray-700 text-gray-200 border border-gray-600"
                 : "bg-gray-50 hover:bg-sky-50 text-gray-700 border border-gray-200 hover:border-sky-200",

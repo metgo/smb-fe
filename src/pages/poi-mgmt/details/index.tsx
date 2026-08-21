@@ -175,7 +175,6 @@ export default function PoiDetailsPage() {
       <Spinner isLoading={isLoading} />
 
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <BackToListBtn navPath={routes.poiMgmt} />
         <div className="flex items-center gap-2">
           <StatusChangeBtn
             handleStatusChange={onStatusChangeHandler}
@@ -224,6 +223,7 @@ export default function PoiDetailsPage() {
             poi?.images?.find((img: IImage) => img.isPrimary)?.image ||
             poi?.images?.[0]?.image
           }
+          backPath={routes.poiMgmt}
         />
         <PageStats
           stats={poiStats}

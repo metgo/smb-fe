@@ -1,13 +1,11 @@
 import clsx from "clsx";
 import { TrendingUp } from "lucide-react";
-// import { useTranslation } from "react-i18next";
 
 import { getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
-// import BackToListBtn from "../btns/BackToListBtn";
-// import { routes } from "@/lib/routes";
+import BackToListBtn from "@/components/btns/BackToListBtn";
 
 interface DetailTitleSectionProps {
   name: string;
@@ -19,6 +17,10 @@ interface DetailTitleSectionProps {
   completionPercent: number;
   imageSrc?: string;
   actions?: React.ReactNode;
+  /** Route path for the back-to-list button. Omit to hide the button. */
+  backPath?: string;
+  /** Optional label override for the back button. */
+  backLabel?: string;
 }
 
 const DetailTitleSection = ({
@@ -31,8 +33,9 @@ const DetailTitleSection = ({
   completionPercent,
   imageSrc,
   actions,
+  backPath,
+  backLabel,
 }: DetailTitleSectionProps) => {
-  // const { t } = useTranslation("common");
   const { isDark, textTertiary, language } = useThemeClasses();
 
   const divider = (
@@ -43,24 +46,33 @@ const DetailTitleSection = ({
   );
 
   return (
-  <div className="flex flex-col gap-2">
-    {/* Back button on its own row, slightly above */}
-    {/* <div className="flex items-center">
-      <BackToListBtn navPath={routes.businessMgmt} />
-    </div> */}
-
-    {/* Image + title row */}
     <div className="flex items-center gap-3">
-      <ImageWithFallback
-        src={imageSrc}
-        alt={name || nameHe || nameAr}
-        className={clsx(
-          "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover shrink-0 border",
-          isDark ? "border-gray-600" : "border-gray-200",
-        )}
-      />
+      {/* Back button stacked above the image, aligned to its left edge */}
+      {backPath ? (
+        <div className="flex flex-col items-center gap-1 shrink-0">
+          <BackToListBtn navPath={backPath} label={backLabel} />
+          <ImageWithFallback
+            src={imageSrc}
+            alt={name || nameHe || nameAr}
+            className={clsx(
+              "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover border",
+              isDark ? "border-gray-600" : "border-gray-200",
+            )}
+          />
+        </div>
+      ) : (
+        <ImageWithFallback
+          src={imageSrc}
+          alt={name || nameHe || nameAr}
+          className={clsx(
+            "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover shrink-0 border",
+            isDark ? "border-gray-600" : "border-gray-200",
+          )}
+        />
+      )}
 
-      <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 min-w-0">
+      {/* Title + metadata + actions */}
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-center mt-7 sm:justify-between gap-2 sm:gap-4 min-w-0">
         <div className="min-w-0">
           <h1
             className={`text-base sm:text-lg font-semibold leading-tight truncate ${
@@ -158,8 +170,7 @@ const DetailTitleSection = ({
         )}
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default DetailTitleSection;

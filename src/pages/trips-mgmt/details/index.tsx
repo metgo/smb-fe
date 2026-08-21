@@ -118,7 +118,6 @@ export default function TripDetailsPage() {
       <Spinner isLoading={isLoading || isFetching} />
 
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <BackToListBtn navPath={routes.tripsMgmt} />
 
         <div className="flex items-center gap-3">
           <StatusChangeBtn
@@ -179,6 +178,7 @@ export default function TripDetailsPage() {
           createdAt={trip?.createdAt ?? ""}
           updatedAt={trip?.updatedAt ?? ""}
           imageSrc={trip?.images?.find((item) => item.isPrimary)?.image ?? ""}
+          backPath={routes.tripsMgmt}
         />
       </div>
 
