@@ -68,21 +68,47 @@ export class OrdersController {
     tags: ['Orders'],
     response: {
       status: HttpStatus.OK,
+      description: 'Get dynamic email layout variables for order confirmation',
+    },
+    operation: 'Get order confirmation layout details by ID',
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('orders/:id/confirmation-details')
+  async getOrderConfirmationDetails(
+    @Param('id') orderId: string,
+    @Res() response: Response,
+  ) {
+    try {
+      const details = await this.ordersService.getOrderConfirmationDetails(
+        orderId,
+      );
+
+      return responseHelper(
+        response,
+        HttpStatus.OK,
+        'Order confirmation details fetched successfully',
+        details,
+        null,
+        null,
+      );
+    } catch (error) {
+      exceptionHandling(error);
+    }
+  }
+
+  @ApiEndpoint({
+    tags: ['Orders'],
+    response: {
+      status: HttpStatus.OK,
       description: 'Get order by ID with vendor details',
     },
     operation: 'Get order details by ID',
   })
   @HttpCode(HttpStatus.OK)
   @Get('orders/:id')
-  async getOrderById(
-    @Param('id') orderId: string,
-    @Res() response: Response,
-  ) {
+  async getOrderById(@Param('id') orderId: string, @Res() response: Response) {
     try {
-      const order = await this.ordersService.findOneById(
-        orderId,
-        'vendorId',
-      );
+      const order = await this.ordersService.findOneById(orderId, 'vendorId');
 
       if (!order) {
         return responseHelper(

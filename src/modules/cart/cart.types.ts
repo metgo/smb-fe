@@ -42,12 +42,12 @@ export interface CartVendorProductPayload {
   deliveryMethod: DeliveryMethod;
   deliveryArea: string;
   deliveryPickupLocation: string;
-  houseNo: String,
-  apartment: String,
-  city: String,
-  street: String,
-  additionalInfo: String,
-  isPricePerProduct?: boolean,
+  houseNo: String;
+  apartment: String;
+  city: String;
+  street: String;
+  additionalInfo: String;
+  isPricePerProduct?: boolean;
 }
 
 export interface CartProductResponse extends CartProductPayload {

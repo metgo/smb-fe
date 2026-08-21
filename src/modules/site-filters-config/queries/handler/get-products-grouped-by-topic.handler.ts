@@ -130,14 +130,19 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       .populate([
         {
           path: 'businessId',
-          select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea geoLocation status isDeleted',
+          select:
+            '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea geoLocation status isDeleted',
         },
       ])
       .lean();
 
     const filteredProducts = products.filter(p => {
       const business = p.businessId as any;
-      return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+      return (
+        business
+        && business.status === CommonStatus.APPROVED
+        && !business.isDeleted
+      );
     });
 
     const productMap = new Map(
@@ -228,14 +233,22 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
         '_id productId name nameHe nameAr slug description descriptionHe descriptionAr shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId primaryCategoryId',
       )
       .populate([
-        { path: 'businessId', select: '_id logo name nameHe nameAr slug status isDeleted deliveryArea isPickUpAvailable vendorDelivers globalDelivery globalDeliveryArea geoLocation' },
+        {
+          path: 'businessId',
+          select:
+            '_id logo name nameHe nameAr slug status isDeleted deliveryArea isPickUpAvailable vendorDelivers globalDelivery globalDeliveryArea geoLocation',
+        },
         { path: 'primaryCategoryId', select: 'name hebrewName' },
       ])
       .lean();
 
     const filteredProducts = products.filter(p => {
       const business = p.businessId as any;
-      return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+      return (
+        business
+        && business.status === CommonStatus.APPROVED
+        && !business.isDeleted
+      );
     });
 
     const groupMap = new Map<string, any[]>();
@@ -298,7 +311,8 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
       rest.businessId.vendorDelivers = rest.businessId.vendorDelivers ?? false;
       rest.businessId.globalDelivery = rest.businessId.globalDelivery ?? false;
-      rest.businessId.globalDeliveryArea = rest.businessId.globalDeliveryArea ?? [];
+      rest.businessId.globalDeliveryArea
+        = rest.businessId.globalDeliveryArea ?? [];
     }
 
     const localizedBase = localizeFields({ ...rest, _id: pid }, locale);

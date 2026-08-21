@@ -29,7 +29,8 @@ export const DynamicEmailTemplate = {
   OfflineVoucherPurchase: 'offline-voucher',
   PurchaseVoucher: 'purchasing-multiple-vouchers',
   OrderConfirmationForClient: 'order-confirmation-client-side-en',
-  OrderConfirmationForClientMultiVendor: 'order-confirmation-client-with-multi-vendor-qr',
+  OrderConfirmationForClientMultiVendor:
+    'order-confirmation-client-with-multi-vendor-qr',
   OrderConfirmationForClientMiniSite: 'create-minisite-orders-for-client',
   TicketConfirmationForCustomers: 'ticket-confirmation-for-customers',
   TicketConfirmationForEventCreator: 'ticket-confirmation-for-event-creator',

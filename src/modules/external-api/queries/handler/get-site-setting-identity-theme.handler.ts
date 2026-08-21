@@ -95,9 +95,7 @@ implements IQueryHandler<GetSiteSettingIdentityThemeQuery> {
         .lean();
 
       if (!siteSetting) {
-        throw new NotFoundException(
-          `Site Setting ${ServerErrors.NOT_FOUND}`,
-        );
+        throw new NotFoundException(`Site Setting ${ServerErrors.NOT_FOUND}`);
       }
 
       this.logger.info('[SITE_SETTING]: IDENTITY & THEME FETCHED', {
@@ -107,8 +105,12 @@ implements IQueryHandler<GetSiteSettingIdentityThemeQuery> {
       const suffix = LOCALE_SUFFIX_MAP[query.locale] || 'En';
 
       const {
-        websiteNameEn, websiteNameHe, websiteNameAr,
-        sloganEn, sloganHe, sloganAr,
+        websiteNameEn,
+        websiteNameHe,
+        websiteNameAr,
+        sloganEn,
+        sloganHe,
+        sloganAr,
         desktopVideos,
         mobileVideos,
         desktopVideoThumbnails,
@@ -118,22 +120,17 @@ implements IQueryHandler<GetSiteSettingIdentityThemeQuery> {
 
       return {
         ...rest,
-        websiteName:
-          siteSetting[`websiteName${suffix}`] || websiteNameEn || '',
-        slogan:
-          siteSetting[`slogan${suffix}`] || sloganEn || '',
+        websiteName: siteSetting[`websiteName${suffix}`] || websiteNameEn || '',
+        slogan: siteSetting[`slogan${suffix}`] || sloganEn || '',
         desktopVideos: getActiveItem(desktopVideos),
         mobileVideos: getActiveItem(mobileVideos),
         desktopVideoThumbnails: getActiveItem(desktopVideoThumbnails),
         mobileVideoThumbnails: getActiveItem(mobileVideoThumbnails),
       };
     } catch (err) {
-      this.logger.error(
-        '[SITE_SETTING]: FAILED TO GET IDENTITY & THEME',
-        {
-          err: err.message,
-        },
-      );
+      this.logger.error('[SITE_SETTING]: FAILED TO GET IDENTITY & THEME', {
+        err: err.message,
+      });
 
       exceptionHandling(err);
     }

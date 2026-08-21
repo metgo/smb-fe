@@ -13,7 +13,7 @@ export class TicketsService {
     private readonly logger: Logger,
     @InjectModel(Ticket.name)
     private TicketModel: Model<Ticket>,
-  ) { }
+  ) {}
 
   async deductQuantity(tickets) {
     try {
@@ -37,9 +37,12 @@ export class TicketsService {
 
       await this.TicketModel.bulkWrite(ticketBulkOps);
 
-      this.logger.info('[DEDUCT TICKET QUANTITY]: Successfully deducted quantity', {
-        ticketCount: tickets.length,
-      });
+      this.logger.info(
+        '[DEDUCT TICKET QUANTITY]: Successfully deducted quantity',
+        {
+          ticketCount: tickets.length,
+        },
+      );
     } catch (error) {
       this.logger.error('[DEDUCT TICKET QUANTITY]: Failed to deduct quantity', {
         err: error.message,

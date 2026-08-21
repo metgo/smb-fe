@@ -12,9 +12,7 @@ import { GetAllEventsRawQuery } from '../get-all-events-rawquery.query';
 @QueryHandler(GetAllEventsRawQuery)
 export class GetAllEventsRawQueryHandler
 implements IQueryHandler<GetAllEventsRawQuery> {
-  constructor(
-    private campaignService: CampaignService,
-  ) {}
+  constructor(private campaignService: CampaignService) {}
 
   async execute(queries: GetAllEventsRawQuery): Promise<any> {
     try {

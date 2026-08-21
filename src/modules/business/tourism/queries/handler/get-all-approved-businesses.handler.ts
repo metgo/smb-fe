@@ -33,10 +33,8 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
     private CategoryModel: Model<BussCategory>,
     @InjectModel(ExternalApi.name)
     private ExternalApiModel: Model<ExternalApi>,
-    private readonly businessService: BusinessService,
-    // OLD:
-    // private campaignService: CampaignService,
-  ) {}
+    private readonly businessService: BusinessService, // OLD:
+  ) {} // private campaignService: CampaignService,
 
   async execute(queries: GetAllApprovedBusinessesQuery): Promise<any> {
     try {

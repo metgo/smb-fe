@@ -48,7 +48,10 @@ export class OrdersPublicController {
         || req.socket.remoteAddress
         || '';
 
-      const decodedToken = await this.qrTokenService.verifyToken(token, clientIp);
+      const decodedToken = await this.qrTokenService.verifyToken(
+        token,
+        clientIp,
+      );
       const order = await this.ordersService.findOneById(
         decodedToken.orderId,
         'vendorId',
@@ -101,7 +104,10 @@ export class OrdersPublicController {
         || req.socket.remoteAddress
         || '';
 
-      const decodedToken = await this.qrTokenService.verifyToken(token, clientIp);
+      const decodedToken = await this.qrTokenService.verifyToken(
+        token,
+        clientIp,
+      );
       const order = await this.ordersService.findOneById(decodedToken.orderId);
 
       if (!order) {

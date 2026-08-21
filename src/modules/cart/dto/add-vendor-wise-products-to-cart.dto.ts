@@ -1,5 +1,9 @@
 import {
-  IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { DeliveryMethod, OrderItemType } from 'src/modules/orders/orders.type';

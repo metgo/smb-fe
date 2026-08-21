@@ -60,7 +60,8 @@ implements IQueryHandler<GetAllProductsForMapQuery> {
       const populate = [
         {
           path: 'businessId',
-          select: '_id name nameHe nameAr address geoLocation deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
+          select:
+            '_id name nameHe nameAr address geoLocation deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
         },
         {
           path: 'categories subCategories',
@@ -104,7 +105,11 @@ implements IQueryHandler<GetAllProductsForMapQuery> {
 
       const filteredByVendorStatus = mappedProducts.filter((product: any) => {
         const business = product?.businessId as any;
-        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+        return (
+          business
+          && business.status === CommonStatus.APPROVED
+          && !business.isDeleted
+        );
       });
 
       productsList.data = await Promise.all(

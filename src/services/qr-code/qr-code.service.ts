@@ -37,13 +37,15 @@ export class QRCodeService {
       };
 
       // Create system user context if not provided
-      const systemUser = loggedInUser || ({
-        id: 'system',
-        firstName: 'System',
-        lastName: 'User',
-        email: 'system@metgo.local',
-        role: 'admin',
-      } as any);
+      const systemUser
+        = loggedInUser
+        || ({
+          id: 'system',
+          firstName: 'System',
+          lastName: 'User',
+          email: 'system@metgo.local',
+          role: 'admin',
+        } as any);
 
       // Upload the QR code image
       const uploadResult = await this.mediaServices.create(
@@ -57,7 +59,11 @@ export class QRCodeService {
 
       const qrCodeUrl = uploadResult[0]?.image;
       if (!qrCodeUrl) {
-        throw new Error(`QR code upload failed: no image URL returned. Upload result: ${JSON.stringify(uploadResult)}`);
+        throw new Error(
+          `QR code upload failed: no image URL returned. Upload result: ${JSON.stringify(
+            uploadResult,
+          )}`,
+        );
       }
 
       return qrCodeUrl;

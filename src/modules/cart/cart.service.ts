@@ -682,9 +682,11 @@ export class CartService {
         isPricePerProduct: vendor.isPricePerProduct,
       }));
 
-      const totalAmount = Math.round(
-        vendorProducts.reduce((sum, vendor) => sum + vendor.totalAmount, 0) * 100,
-      ) / 100;
+      const totalAmount
+        = Math.round(
+          vendorProducts.reduce((sum, vendor) => sum + vendor.totalAmount, 0)
+            * 100,
+        ) / 100;
 
       const newCart = new this.CartModel({
         vendorProducts,
@@ -701,9 +703,12 @@ export class CartService {
 
       const cart = await newCart.save();
 
-      this.logger.info(`[${command.campCode} - CART]: Vendor-wise products added to cart`, {
-        message: cart._id,
-      });
+      this.logger.info(
+        `[${command.campCode} - CART]: Vendor-wise products added to cart`,
+        {
+          message: cart._id,
+        },
+      );
 
       return { _id: cart._id };
     } catch (error) {

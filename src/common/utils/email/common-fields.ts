@@ -13,14 +13,19 @@ interface ExternalApi {
 }
 
 interface DocUploadService {
-  getImageUrlByExternalApiAndTemplate(apiId: string, templateKey: string): Promise<string | null>;
+  getImageUrlByExternalApiAndTemplate(
+    apiId: string,
+    templateKey: string
+  ): Promise<string | null>;
 }
 
 export async function getCommonEmailFields(
   externalApi: ExternalApi,
   docUploadService: DocUploadService,
 ) {
-  const safeId = (externalApi?.identifierId ?? 'default').toLowerCase().replace(/[^a-z0-9._-]/g, '');
+  const safeId = (externalApi?.identifierId ?? 'default')
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, '');
   const bucketUrl = `https://storage.googleapis.com/${safeId}/emails/`;
 
   // 2. Add try/catch to prevent one failed DB call from crashing the entire Promise.all
@@ -33,17 +38,27 @@ export async function getCommonEmailFields(
         );
       }
     } catch (error) {
-      console.error(`Failed to fetch template image for key "${templateKey}":`, error);
+      console.error(
+        `Failed to fetch template image for key "${templateKey}":`,
+        error,
+      );
     }
     return null;
   }
 
   // 3. Define keys to avoid repeating strings and destructuring 10 variables
   const imageKeys = [
-    'FOOTER1', 'FOOTER2', 'FOOTER3', 'FOOTER4', 'FOOTER5',
-    'FOOTER_BANNER', 'FOOTER_BANNER_MOBILE',
-    'BANNER_IMG', 'MOBILE_BANNER_IMG',
-    'FOOTER_BANNER_MINISITE_BANNER', 'FOOTER_BADGE',
+    'FOOTER1',
+    'FOOTER2',
+    'FOOTER3',
+    'FOOTER4',
+    'FOOTER5',
+    'FOOTER_BANNER',
+    'FOOTER_BANNER_MOBILE',
+    'BANNER_IMG',
+    'MOBILE_BANNER_IMG',
+    'FOOTER_BANNER_MINISITE_BANNER',
+    'FOOTER_BADGE',
   ] as const;
 
   // Fetch all concurrently
@@ -52,7 +67,7 @@ export async function getCommonEmailFields(
   // Map results back to an object: { FOOTER1: 'url...', FOOTER2: null, ... }
   const dbImages = Object.fromEntries(
     imageKeys.map((key, index) => [key, results[index]]),
-  ) as Record<typeof imageKeys[number], string | null>;
+  ) as Record<(typeof imageKeys)[number], string | null>;
 
   // Helper to easily apply fallbacks without repeating ${bucketUrl}...
   const getImg = (key: keyof typeof dbImages, fallbackPath: string) => dbImages[key] || `${bucketUrl}${fallbackPath}`;
@@ -84,10 +99,22 @@ export async function getCommonEmailFields(
 
       // Banners
       FOOTER_BANNER: getImg('FOOTER_BANNER', 'footer/footer-banner.png'),
-      FOOTER_BANNER_MOBILE: getImg('FOOTER_BANNER_MOBILE', 'footer/footer-banner-mobile.png'),
-      BANNER_IMG: dbImages.BANNER_IMG || dbImages.FOOTER_BANNER || `${bucketUrl}footer/banner-web.png`,
-      MOBILE_BANNER_IMG: dbImages.MOBILE_BANNER_IMG || dbImages.FOOTER_BANNER_MOBILE || `${bucketUrl}footer/banner-mobile.png`,
-      FOOTER_BANNER_MINISITE_BANNER: getImg('FOOTER_BANNER_MINISITE_BANNER', 'footer/footer-banner-mini-site.png'),
+      FOOTER_BANNER_MOBILE: getImg(
+        'FOOTER_BANNER_MOBILE',
+        'footer/footer-banner-mobile.png',
+      ),
+      BANNER_IMG:
+        dbImages.BANNER_IMG
+        || dbImages.FOOTER_BANNER
+        || `${bucketUrl}footer/banner-web.png`,
+      MOBILE_BANNER_IMG:
+        dbImages.MOBILE_BANNER_IMG
+        || dbImages.FOOTER_BANNER_MOBILE
+        || `${bucketUrl}footer/banner-mobile.png`,
+      FOOTER_BANNER_MINISITE_BANNER: getImg(
+        'FOOTER_BANNER_MINISITE_BANNER',
+        'footer/footer-banner-mini-site.png',
+      ),
     },
   };
 }

@@ -1,9 +1,5 @@
 import {
-  Controller,
-  Get,
-  Param,
-  Query,
-
+  Controller, Get, Param, Query,
 } from '@nestjs/common';
 
 import { Locale } from 'src/common/enum';

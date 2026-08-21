@@ -9,8 +9,14 @@ import { SessionBookingsModule } from 'src/modules/session-bookings/session-book
 import { OrdersController } from 'src/modules/orders/orders.controller';
 import { OrdersPublicController } from 'src/modules/orders/controllers/orders-public.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
-import { QrVerificationToken, QrVerificationTokenSchema } from 'src/modules/orders/schema/qr-verification-token.schema';
-import { OrderProduct, OrderProductSchema } from 'src/modules/order-product/schema/order-product.schema';
+import {
+  QrVerificationToken,
+  QrVerificationTokenSchema,
+} from 'src/modules/orders/schema/qr-verification-token.schema';
+import {
+  OrderProduct,
+  OrderProductSchema,
+} from 'src/modules/order-product/schema/order-product.schema';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { ExpireOrderService } from 'src/modules/orders/expire-orders.services';
 import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
@@ -25,6 +31,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 import { QrTokenModule } from 'src/services/qr-token/qr-token.module';
+import { SmsModule } from 'src/services/sms/sms.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-order.handler';
 import { DocUploadModule } from '../doc-upload/doc-upload.module';
@@ -53,6 +60,7 @@ import { DocUploadModule } from '../doc-upload/doc-upload.module';
     CartModule,
     QRCodeModule,
     QrTokenModule,
+    SmsModule,
     forwardRef(() => CampaignModule),
     SessionBookingsModule,
   ],

@@ -2,7 +2,11 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { CampaignStatus, CommonStatus, VoucherPaymentStatus } from 'src/common/enum';
+import {
+  CampaignStatus,
+  CommonStatus,
+  VoucherPaymentStatus,
+} from 'src/common/enum';
 import { GoneException, UnprocessableEntityException } from '@nestjs/common';
 import { PaymentRequiredException } from 'src/common/exception/payment-required';
 import { checkExpireDate } from 'src/common/expireDate';
@@ -67,7 +71,9 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
         orConditions.push({ dmoId: { $in: campaignDetail.dmoIds } });
       }
       if ((campaignDetail as any)?.authorityIds?.length) {
-        orConditions.push({ authorityId: { $in: (campaignDetail as any).authorityIds } });
+        orConditions.push({
+          authorityId: { $in: (campaignDetail as any).authorityIds },
+        });
       }
 
       let productsList: any[] = [];
@@ -92,12 +98,14 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
         const limitNum = Number(limit) || 20;
         const skip = (pageNum - 1) * limitNum;
 
-        const raw = await this.ProductsAuditModel
-          .find(findQuery)
-          .select('_id productId name description images price nameHe nameAr descriptionHe descriptionAr slug')
+        const raw = await this.ProductsAuditModel.find(findQuery)
+          .select(
+            '_id productId name description images price nameHe nameAr descriptionHe descriptionAr slug',
+          )
           .populate({
             path: 'businessId',
-            select: '_id logo name nameHe nameAr slug geoLocation vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
+            select:
+              '_id logo name nameHe nameAr slug geoLocation vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
           })
           .skip(skip)
           .limit(limitNum)

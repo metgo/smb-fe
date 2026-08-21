@@ -33,7 +33,9 @@ export class GetAllTicketsHandler implements IQueryHandler<GetAllTicketsQuery> {
               { 'quantity.isUnlimited': true },
             ],
           },
-          ...(eventId ? [{ eventId: new mongoose.Types.ObjectId(eventId) }] : []),
+          ...(eventId
+            ? [{ eventId: new mongoose.Types.ObjectId(eventId) }]
+            : []),
           ...(status ? [{ status }] : []),
           ...(type ? [{ type }] : []),
 

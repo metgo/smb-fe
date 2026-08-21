@@ -9,7 +9,8 @@ import { GetTripsByBusinessIdQuery } from '../get-trips-by-business-id.query';
 import { Trip } from '../../schema/trips.schema';
 
 @QueryHandler(GetTripsByBusinessIdQuery)
-export class GetTripsByBusinessIdHandler implements IQueryHandler<GetTripsByBusinessIdQuery> {
+export class GetTripsByBusinessIdHandler
+implements IQueryHandler<GetTripsByBusinessIdQuery> {
   constructor(
     @InjectModel(Trip.name)
     private readonly tripModel: Model<Trip>,
@@ -32,18 +33,15 @@ export class GetTripsByBusinessIdHandler implements IQueryHandler<GetTripsByBusi
         isDeleted: { $ne: true },
       };
 
-      const tripsList = await queryhandler<Trip>(
-        this.tripModel,
-        {
-          findQuery,
-          select,
-          sort: 'createdAt',
-          sortOrder: SortOrder.DESC,
-          isLean: true,
-          page: queryParams?.page,
-          limit: queryParams?.limit,
-        },
-      );
+      const tripsList = await queryhandler<Trip>(this.tripModel, {
+        findQuery,
+        select,
+        sort: 'createdAt',
+        sortOrder: SortOrder.DESC,
+        isLean: true,
+        page: queryParams?.page,
+        limit: queryParams?.limit,
+      });
 
       if (!tripsList?.data || !tripsList.data?.length) {
         return { totalData: 0, data: [] };

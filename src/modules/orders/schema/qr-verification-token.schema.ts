@@ -63,4 +63,5 @@ export class QrVerificationToken extends AuditableSchema {
 
 export type QrVerificationTokenDocument = HydratedDocument<QrVerificationToken>;
 
-export const QrVerificationTokenSchema = SchemaFactory.createForClass(QrVerificationToken);
+export const QrVerificationTokenSchema
+  = SchemaFactory.createForClass(QrVerificationToken);

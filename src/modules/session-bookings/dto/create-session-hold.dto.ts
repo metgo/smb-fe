@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsNotEmpty, IsOptional, IsString, IsArray, ValidateNested,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -52,7 +56,8 @@ export class CreateSessionHoldDto {
   @ApiProperty({
     required: true,
     type: [SessionSlotDto],
-    description: 'Array of 1-3 sessions to book atomically. TTL = 7 + (3 × extra sessions)',
+    description:
+      'Array of 1-3 sessions to book atomically. TTL = 7 + (3 × extra sessions)',
     example: [
       {
         sessionId: '507f1f77bcf86cd799439011',

@@ -1,10 +1,5 @@
 import {
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  Req,
-  Res,
+  Controller, Get, HttpStatus, Param, Req, Res,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 
@@ -49,7 +44,10 @@ export class UsersPublicController {
         || '';
 
       // Verify QR token and get orderId
-      const decodedToken = await this.qrTokenService.verifyToken(token, clientIp);
+      const decodedToken = await this.qrTokenService.verifyToken(
+        token,
+        clientIp,
+      );
 
       const vendorOwner = await this.ordersService.getVendorOwnerForOrder(
         decodedToken.orderId,

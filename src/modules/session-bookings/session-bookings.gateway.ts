@@ -68,7 +68,9 @@ implements OnGatewayConnection, OnGatewayDisconnect {
     const { wrapperId } = data;
 
     if (!wrapperId) {
-      this.logger.warn('[SESSION_BOOKINGS_GATEWAY]: Missing wrapperId in join-availability');
+      this.logger.warn(
+        '[SESSION_BOOKINGS_GATEWAY]: Missing wrapperId in join-availability',
+      );
       client.emit('error', { message: 'wrapperId is required' });
       return;
     }
@@ -84,7 +86,8 @@ implements OnGatewayConnection, OnGatewayDisconnect {
       this.availabilityRooms.get(wrapperId).add(client.id);
 
       // Send initial availability data to client
-      const availabilityData = await this.sessionBookingsService.getAvailability(wrapperId);
+      const availabilityData
+        = await this.sessionBookingsService.getAvailability(wrapperId);
 
       client.emit('availability-updated', {
         wrapperId,
@@ -93,17 +96,23 @@ implements OnGatewayConnection, OnGatewayDisconnect {
         isInitial: true,
       });
 
-      this.logger.info('[SESSION_BOOKINGS_GATEWAY]: Client joined availability room', {
-        socketId: client.id,
-        wrapperId,
-        roomSize: this.availabilityRooms.get(wrapperId).size,
-      });
+      this.logger.info(
+        '[SESSION_BOOKINGS_GATEWAY]: Client joined availability room',
+        {
+          socketId: client.id,
+          wrapperId,
+          roomSize: this.availabilityRooms.get(wrapperId).size,
+        },
+      );
     } catch (err) {
-      this.logger.error('[SESSION_BOOKINGS_GATEWAY]: Failed to join availability room', {
-        socketId: client.id,
-        wrapperId,
-        error: err instanceof Error ? err.message : String(err),
-      });
+      this.logger.error(
+        '[SESSION_BOOKINGS_GATEWAY]: Failed to join availability room',
+        {
+          socketId: client.id,
+          wrapperId,
+          error: err instanceof Error ? err.message : String(err),
+        },
+      );
       client.emit('error', { message: 'Failed to join availability room' });
     }
   }
@@ -127,11 +136,14 @@ implements OnGatewayConnection, OnGatewayDisconnect {
     client.leave(`availability:${wrapperId}`);
     this.availabilityRooms.get(wrapperId)?.delete(client.id);
 
-    this.logger.info('[SESSION_BOOKINGS_GATEWAY]: Client left availability room', {
-      socketId: client.id,
-      wrapperId,
-      roomSize: this.availabilityRooms.get(wrapperId)?.size || 0,
-    });
+    this.logger.info(
+      '[SESSION_BOOKINGS_GATEWAY]: Client left availability room',
+      {
+        socketId: client.id,
+        wrapperId,
+        roomSize: this.availabilityRooms.get(wrapperId)?.size || 0,
+      },
+    );
   }
 
   /**
@@ -141,7 +153,8 @@ implements OnGatewayConnection, OnGatewayDisconnect {
    */
   async emitAvailabilityUpdate(wrapperId: string): Promise<void> {
     try {
-      const availabilityData = await this.sessionBookingsService.getAvailability(wrapperId);
+      const availabilityData
+        = await this.sessionBookingsService.getAvailability(wrapperId);
       const roomSize = this.availabilityRooms.get(wrapperId)?.size || 0;
 
       this.server.to(`availability:${wrapperId}`).emit('availability-updated', {
@@ -151,16 +164,22 @@ implements OnGatewayConnection, OnGatewayDisconnect {
         isInitial: false,
       });
 
-      this.logger.info('[SESSION_BOOKINGS_GATEWAY]: Availability update emitted', {
-        wrapperId,
-        roomSize,
-        timestamp: new Date(),
-      });
+      this.logger.info(
+        '[SESSION_BOOKINGS_GATEWAY]: Availability update emitted',
+        {
+          wrapperId,
+          roomSize,
+          timestamp: new Date(),
+        },
+      );
     } catch (err) {
-      this.logger.error('[SESSION_BOOKINGS_GATEWAY]: Failed to emit availability update', {
-        wrapperId,
-        error: err instanceof Error ? err.message : String(err),
-      });
+      this.logger.error(
+        '[SESSION_BOOKINGS_GATEWAY]: Failed to emit availability update',
+        {
+          wrapperId,
+          error: err instanceof Error ? err.message : String(err),
+        },
+      );
     }
   }
 

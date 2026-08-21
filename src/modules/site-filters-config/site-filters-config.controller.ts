@@ -21,7 +21,7 @@ import { GetSiteConfigByIdentifierIdRequest } from './requests/get-site-config-b
 
 @Controller('')
 export class SiteSettingsController {
-  constructor(private readonly queryBus: QueryBus) { }
+  constructor(private readonly queryBus: QueryBus) {}
 
   @ApiEndpoint({
     tags: ['Site Configs'],
@@ -81,7 +81,10 @@ export class SiteSettingsController {
     @Query() query: GetProductsByTopicRequest,
   ) {
     console.log('Received request for products by topic with query:', query);
-    console.log('Received request for products by topic with externalApiId:', externalApiId);
+    console.log(
+      'Received request for products by topic with externalApiId:',
+      externalApiId,
+    );
     return this.queryBus.execute(
       new GetProductsByTopicQuery(externalApiId, query),
     );

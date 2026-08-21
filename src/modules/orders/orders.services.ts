@@ -18,10 +18,7 @@ import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import {
-  findOneById,
-  updateById,
-} from 'src/core/helper/query-helper';
+import { findOneById, updateById } from 'src/core/helper/query-helper';
 import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
@@ -45,6 +42,7 @@ import { OrderProductService } from 'src/modules/order-product/order-product.ser
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
+import { SmsService } from 'src/services/sms/sms.service';
 import { CreateOrderCommand } from 'src/modules/orders/interface/create-order.interface';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { QRCodeService } from 'src/services/qr-code/qr-code.service';
@@ -111,6 +109,7 @@ export class OrdersService {
     private readonly campaignService: CampaignService,
     private readonly docUploadService: DocUploadService,
     private readonly sessionBookingsService: SessionBookingsService,
+    private readonly smsService: SmsService,
   ) { }
 
   async getVendorOwnerForOrder(
@@ -206,7 +205,10 @@ export class OrdersService {
         );
       }
 
-      if (cartDetails?.vendorProducts?.length && (!cartDetails?.product || cartDetails?.product?.length === 0)) {
+      if (
+        cartDetails?.vendorProducts?.length
+        && (!cartDetails?.product || cartDetails?.product?.length === 0)
+      ) {
         this.logger.info('[ORDER]: Using vendor cart checkout', {
           cartId: body.cartId,
           vendorCount: cartDetails.vendorProducts.length,
@@ -220,16 +222,23 @@ export class OrdersService {
 
       // Log warning if both vendorProducts and product arrays exist (data inconsistency)
       if (cartDetails?.vendorProducts?.length && cartDetails?.product?.length) {
-        this.logger.warn('[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist during checkout', {
-          cartId: body.cartId,
-          vendorProductsCount: cartDetails.vendorProducts.length,
-          productCount: cartDetails.product.length,
-        });
+        this.logger.warn(
+          '[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist during checkout',
+          {
+            cartId: body.cartId,
+            vendorProductsCount: cartDetails.vendorProducts.length,
+            productCount: cartDetails.product.length,
+          },
+        );
         // Fall through to regular checkout to prevent issues
       }
 
-      if (!body.email && !body.phone) {
-        throw new BadRequestException('Please enter email or phone');
+      if (!body.email) {
+        throw new BadRequestException('Email is required');
+      }
+
+      if (!body.phone) {
+        throw new BadRequestException('Phone is required');
       }
 
       const cartProducts = cartDetails.product
@@ -251,13 +260,19 @@ export class OrdersService {
 
       // Check if any events are expired
       if (ticketsFromDB?.length) {
-        const eventIds = ticketsFromDB.map((ticket: any) => ticket.eventId?.toString()).filter(Boolean);
+        const eventIds = ticketsFromDB
+          .map((ticket: any) => ticket.eventId?.toString())
+          .filter(Boolean);
         if (eventIds?.length) {
-          const events = await this.queryBus.execute(new GetEventByIdsQuery(eventIds));
+          const events = await this.queryBus.execute(
+            new GetEventByIdsQuery(eventIds),
+          );
           const expiredEvents = events?.filter((event: any) => isEventExpired(event.dayDescription));
 
           if (expiredEvents?.length) {
-            const expiredEventNames = expiredEvents.map((e: any) => e.name).join(', ');
+            const expiredEventNames = expiredEvents
+              .map((e: any) => e.name)
+              .join(', ');
             throw new BadRequestException(
               `The following events have already ended and tickets cannot be purchased: ${expiredEventNames}`,
             );
@@ -296,7 +311,8 @@ export class OrdersService {
                 (total, item) => total + item.redeemedAmount,
                 0,
               );
-              totalAmountToPay = Math.round((totalAmountToPay - redeemedAmount) * 100) / 100;
+              totalAmountToPay
+                = Math.round((totalAmountToPay - redeemedAmount) * 100) / 100;
             }
           }
         }
@@ -344,19 +360,21 @@ export class OrdersService {
   ): Promise<any> {
     const { vendorProducts } = cartDetails;
 
-    const payableAmount = Math.round(
-      vendorProducts.reduce(
-        (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
-        0,
-      ) * 100,
-    ) / 100;
+    const payableAmount
+      = Math.round(
+        vendorProducts.reduce(
+          (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
+          0,
+        ) * 100,
+      ) / 100;
 
-    const totalDeliveryFee = Math.round(
-      vendorProducts.reduce(
-        (sum, vendor) => sum + (vendor.deliveryFee || 0),
-        0,
-      ) * 100,
-    ) / 100;
+    const totalDeliveryFee
+      = Math.round(
+        vendorProducts.reduce(
+          (sum, vendor) => sum + (vendor.deliveryFee || 0),
+          0,
+        ) * 100,
+      ) / 100;
 
     let totalAmountToPay = payableAmount;
     let redeemedVouchers;
@@ -383,7 +401,8 @@ export class OrdersService {
               (total: number, item: { redeemedAmount: number }) => total + item.redeemedAmount,
               0,
             );
-            totalAmountToPay = Math.round((totalAmountToPay - redeemedAmount) * 100) / 100;
+            totalAmountToPay
+              = Math.round((totalAmountToPay - redeemedAmount) * 100) / 100;
           }
         }
       }
@@ -561,7 +580,10 @@ export class OrdersService {
 
     // If cart has vendor products, use vendor split order creation
     // Only proceed if vendorProducts has data and regular product array is empty
-    if (cart?.vendorProducts?.length && (!cart?.product || cart?.product?.length === 0)) {
+    if (
+      cart?.vendorProducts?.length
+      && (!cart?.product || cart?.product?.length === 0)
+    ) {
       this.logger.info('[ORDER]: Using vendor split for voucher payment', {
         cartId: body?.cartId,
         vendorCount: cart.vendorProducts.length,
@@ -584,11 +606,14 @@ export class OrdersService {
 
     // Log warning if both vendorProducts and product arrays exist (data inconsistency)
     if (cart?.vendorProducts?.length && cart?.product?.length) {
-      this.logger.warn('[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist in voucher order', {
-        cartId: body?.cartId,
-        vendorProductsCount: cart.vendorProducts.length,
-        productCount: cart.product.length,
-      });
+      this.logger.warn(
+        '[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist in voucher order',
+        {
+          cartId: body?.cartId,
+          vendorProductsCount: cart.vendorProducts.length,
+          productCount: cart.product.length,
+        },
+      );
       // Fall through to regular order processing
     }
 
@@ -619,29 +644,31 @@ export class OrdersService {
           return { product, cartItem };
         })
         .filter(({ cartItem }) => cartItem)
-        .map(async ({ cartItem }) => await this.orderProductService.create({
-          itemId: cartItem.id,
-          quantity: cartItem.quantity,
-          email: cartItem.email,
-          countryCode: cartItem.countryCode,
-          phone: cartItem.phone,
-          firstName: cartItem.firstName,
-          lastName: cartItem.lastName,
-          deliveryFee: cartItem.deliveryFee,
-          deliveryMethod: cartItem.deliveryMethod,
-          deliveryArea: cartItem.deliveryArea,
-          deliveryPickupLocation: cartItem.deliveryPickupLocation,
-          houseNo: cartItem.houseNo,
-          apartment: cartItem.apartment,
-          city: cartItem.city,
-          street: cartItem.street,
-          isGift: cartItem.isGift,
-          additionalInfo: cartItem.additionalInfo,
-          amount: cartItem.amount,
-          orderId: order.id,
-          loggedInUserId: loggedInUser?.id,
-          itemType: cartItem.itemType,
-        })),
+        .map(
+          async ({ cartItem }) => await this.orderProductService.create({
+            itemId: cartItem.id,
+            quantity: cartItem.quantity,
+            email: cartItem.email,
+            countryCode: cartItem.countryCode,
+            phone: cartItem.phone,
+            firstName: cartItem.firstName,
+            lastName: cartItem.lastName,
+            deliveryFee: cartItem.deliveryFee,
+            deliveryMethod: cartItem.deliveryMethod,
+            deliveryArea: cartItem.deliveryArea,
+            deliveryPickupLocation: cartItem.deliveryPickupLocation,
+            houseNo: cartItem.houseNo,
+            apartment: cartItem.apartment,
+            city: cartItem.city,
+            street: cartItem.street,
+            isGift: cartItem.isGift,
+            additionalInfo: cartItem.additionalInfo,
+            amount: cartItem.amount,
+            orderId: order.id,
+            loggedInUserId: loggedInUser?.id,
+            itemType: cartItem.itemType,
+          }),
+        ),
     );
 
     if (cartItemsProduct?.length) {
@@ -707,10 +734,16 @@ export class OrdersService {
         additionalInformation: 'Paid via Voucher',
       });
     } catch (invoiceError) {
-      this.logger.warn('[ORDER]: Failed to send invoice after voucher payment', {
-        orderId: order._id,
-        error: invoiceError instanceof Error ? invoiceError.message : String(invoiceError),
-      });
+      this.logger.warn(
+        '[ORDER]: Failed to send invoice after voucher payment',
+        {
+          orderId: order._id,
+          error:
+            invoiceError instanceof Error
+              ? invoiceError.message
+              : String(invoiceError),
+        },
+      );
     }
 
     return order;
@@ -728,20 +761,33 @@ export class OrdersService {
           orderId,
           error: 'Order does not exist in database',
         });
-        throw new Error('Order not found. Cannot process payment success for non-existent order.');
+        throw new Error(
+          'Order not found. Cannot process payment success for non-existent order.',
+        );
       }
 
       // Check if order is already processed to prevent duplicates
       if (existingOrder?.paymentStatus === PaymentStatus.SUCCESS) {
-        this.logger.info('[ORDER]: Order already processed, skipping duplicate', {
-          orderId,
-          paymentStatus: existingOrder.paymentStatus,
-        });
-        // Return existing order data to avoid breaking the flow
-        const productInfo = await this.productsService.getProductInformationForOrders(
-          existingOrder.products.map(p => ({ id: p.id, quantity: 1, itemType: OrderItemType.PRODUCT })),
+        this.logger.info(
+          '[ORDER]: Order already processed, skipping duplicate',
+          {
+            orderId,
+            paymentStatus: existingOrder.paymentStatus,
+          },
         );
-        return { updateOrder: existingOrder, getProductInformation: productInfo };
+        // Return existing order data to avoid breaking the flow
+        const productInfo
+          = await this.productsService.getProductInformationForOrders(
+            existingOrder.products.map(p => ({
+              id: p.id,
+              quantity: 1,
+              itemType: OrderItemType.PRODUCT,
+            })),
+          );
+        return {
+          updateOrder: existingOrder,
+          getProductInformation: productInfo,
+        };
       }
 
       const updatedField = {
@@ -781,21 +827,34 @@ export class OrdersService {
 
       // Split into per-vendor orders when cart was created vendor-wise
       // Only proceed with vendor split if vendorProducts has actual data and regular product array is empty
-      if (cart?.vendorProducts?.length && (!cart?.product || cart?.product?.length === 0)) {
-        this.logger.info('[ORDER]: Proceeding with vendor split order creation', {
-          orderId,
-          vendorCount: cart.vendorProducts.length,
-        });
-        return await this.createVendorSplitOrders(updateOrder, cart, externalApi);
+      if (
+        cart?.vendorProducts?.length
+        && (!cart?.product || cart?.product?.length === 0)
+      ) {
+        this.logger.info(
+          '[ORDER]: Proceeding with vendor split order creation',
+          {
+            orderId,
+            vendorCount: cart.vendorProducts.length,
+          },
+        );
+        return await this.createVendorSplitOrders(
+          updateOrder,
+          cart,
+          externalApi,
+        );
       }
 
       // Log warning if both vendorProducts and product arrays exist (data inconsistency)
       if (cart?.vendorProducts?.length && cart?.product?.length) {
-        this.logger.warn('[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist', {
-          orderId,
-          vendorProductsCount: cart.vendorProducts.length,
-          productCount: cart.product.length,
-        });
+        this.logger.warn(
+          '[ORDER]: DATA INCONSISTENCY - Both vendorProducts and product arrays exist',
+          {
+            orderId,
+            vendorProductsCount: cart.vendorProducts.length,
+            productCount: cart.product.length,
+          },
+        );
         // Fall through to regular order processing to prevent order deletion
       }
 
@@ -825,10 +884,13 @@ export class OrdersService {
         );
 
         if (missingProductItems.length > 0) {
-          this.logger.warn('[ORDER]: Missing cart items for some products after payment', {
-            orderId: updateOrder._id,
-            missingProductIds: missingProductItems.map(p => p.id),
-          });
+          this.logger.warn(
+            '[ORDER]: Missing cart items for some products after payment',
+            {
+              orderId: updateOrder._id,
+              missingProductIds: missingProductItems.map(p => p.id),
+            },
+          );
         }
 
         const orderProduct = await Promise.all(
@@ -845,29 +907,31 @@ export class OrdersService {
               return { product, cartItem, productsInfo };
             })
             .filter(({ cartItem, productsInfo }) => cartItem && productsInfo)
-            .map(async ({ cartItem, productsInfo }) => await this.orderProductService.create({
-              itemId: new mongoose.Types.ObjectId(cartItem.id),
-              quantity: cartItem.quantity,
-              email: cartItem.email,
-              countryCode: cartItem.countryCode,
-              phone: cartItem.phone,
-              firstName: cartItem.firstName,
-              lastName: cartItem.lastName,
-              deliveryFee: cartItem.deliveryFee,
-              deliveryMethod: cartItem.deliveryMethod,
-              deliveryArea: cartItem.deliveryArea,
-              deliveryPickupLocation: cartItem.deliveryPickupLocation,
-              houseNo: cartItem.houseNo,
-              apartment: cartItem.apartment,
-              city: cartItem.city,
-              street: cartItem.street,
-              isGift: cartItem.isGift,
-              additionalInfo: cartItem.additionalInfo,
-              amount: productsInfo.price?.sellingPrice || 0,
-              loggedInUserId: updateOrder.userId,
-              orderId: updateOrder.id,
-              itemType: cartItem.itemType,
-            })),
+            .map(
+              async ({ cartItem, productsInfo }) => await this.orderProductService.create({
+                itemId: new mongoose.Types.ObjectId(cartItem.id),
+                quantity: cartItem.quantity,
+                email: cartItem.email,
+                countryCode: cartItem.countryCode,
+                phone: cartItem.phone,
+                firstName: cartItem.firstName,
+                lastName: cartItem.lastName,
+                deliveryFee: cartItem.deliveryFee,
+                deliveryMethod: cartItem.deliveryMethod,
+                deliveryArea: cartItem.deliveryArea,
+                deliveryPickupLocation: cartItem.deliveryPickupLocation,
+                houseNo: cartItem.houseNo,
+                apartment: cartItem.apartment,
+                city: cartItem.city,
+                street: cartItem.street,
+                isGift: cartItem.isGift,
+                additionalInfo: cartItem.additionalInfo,
+                amount: productsInfo.price?.sellingPrice || 0,
+                loggedInUserId: updateOrder.userId,
+                orderId: updateOrder.id,
+                itemType: cartItem.itemType,
+              }),
+            ),
         );
 
         await this.sendEmailPostOrderPayment(
@@ -896,10 +960,13 @@ export class OrdersService {
         );
 
         if (missingTicketItems.length > 0) {
-          this.logger.warn('[ORDER]: Missing cart items for some tickets after payment', {
-            orderId: updateOrder._id,
-            missingTicketIds: missingTicketItems.map(p => p.id),
-          });
+          this.logger.warn(
+            '[ORDER]: Missing cart items for some tickets after payment',
+            {
+              orderId: updateOrder._id,
+              missingTicketIds: missingTicketItems.map(p => p.id),
+            },
+          );
         }
 
         const orderProductArrays = await Promise.all(
@@ -950,29 +1017,32 @@ export class OrdersService {
               }
 
               const ticketQuantity = cartItem.quantity || 1;
-              const orderProductPromises = Array.from({ length: ticketQuantity }, () => this.orderProductService.create({
-                itemId: new mongoose.Types.ObjectId(cartItem.id),
-                quantity: 1, // Always 1 per TICKET
-                email: cartItem.email,
-                countryCode: cartItem.countryCode,
-                phone: cartItem.phone,
-                firstName: cartItem.firstName,
-                lastName: cartItem.lastName,
-                deliveryFee: cartItem.deliveryFee,
-                deliveryMethod: cartItem.deliveryMethod,
-                deliveryArea: cartItem.deliveryArea,
-                deliveryPickupLocation: cartItem.deliveryPickupLocation,
-                houseNo: cartItem.houseNo,
-                apartment: cartItem.apartment,
-                city: cartItem.city,
-                street: cartItem.street,
-                isGift: cartItem.isGift,
-                additionalInfo: cartItem.additionalInfo,
-                amount: ticketInfo.price?.sellingPrice || 0,
-                loggedInUserId: updateOrder.userId,
-                orderId: updateOrder.id,
-                itemType: cartItem.itemType,
-              }));
+              const orderProductPromises = Array.from(
+                { length: ticketQuantity },
+                () => this.orderProductService.create({
+                  itemId: new mongoose.Types.ObjectId(cartItem.id),
+                  quantity: 1, // Always 1 per TICKET
+                  email: cartItem.email,
+                  countryCode: cartItem.countryCode,
+                  phone: cartItem.phone,
+                  firstName: cartItem.firstName,
+                  lastName: cartItem.lastName,
+                  deliveryFee: cartItem.deliveryFee,
+                  deliveryMethod: cartItem.deliveryMethod,
+                  deliveryArea: cartItem.deliveryArea,
+                  deliveryPickupLocation: cartItem.deliveryPickupLocation,
+                  houseNo: cartItem.houseNo,
+                  apartment: cartItem.apartment,
+                  city: cartItem.city,
+                  street: cartItem.street,
+                  isGift: cartItem.isGift,
+                  additionalInfo: cartItem.additionalInfo,
+                  amount: ticketInfo.price?.sellingPrice || 0,
+                  loggedInUserId: updateOrder.userId,
+                  orderId: updateOrder.id,
+                  itemType: cartItem.itemType,
+                }),
+              );
               return Promise.all(orderProductPromises);
             }),
         );
@@ -1042,7 +1112,9 @@ export class OrdersService {
             savedOrder._id.toString(),
             vendor._id.toString(),
           );
-          await updateById(this.OrderModel, savedOrder._id.toString(), { qrCodeUrl });
+          await updateById(this.OrderModel, savedOrder._id.toString(), {
+            qrCodeUrl,
+          });
           savedOrder.qrCodeUrl = qrCodeUrl;
         } catch (qrError) {
           this.logger.warn('[ORDER]: VENDOR QR CODE GENERATION FAILED', {
@@ -1080,7 +1152,10 @@ export class OrdersService {
     // Get product information for calculating amounts
     const productInfoMap = {};
     if (allProductItems.length) {
-      const productInfo = await this.productsService.getProductInformationForOrders(allProductItems);
+      const productInfo
+        = await this.productsService.getProductInformationForOrders(
+          allProductItems,
+        );
       productInfo.forEach(p => {
         productInfoMap[p._id.toString()] = p;
       });
@@ -1090,12 +1165,16 @@ export class OrdersService {
     const orderProductsPerVendor = await Promise.all(
       vendorOrders.map(async (vendorOrder, index) => {
         const vendor = cart.vendorProducts[index];
-        const totalQty = vendor.products.reduce((sum, prod) => sum + prod.quantity, 0);
+        const totalQty = vendor.products.reduce(
+          (sum, prod) => sum + prod.quantity,
+          0,
+        );
         return Promise.all(
           vendor.products.map(p => {
-            const productDeliveryFee = totalQty > 0
-              ? ((vendor.deliveryFee || 0) * p.quantity) / totalQty
-              : 0;
+            const productDeliveryFee
+              = totalQty > 0
+                ? ((vendor.deliveryFee || 0) * p.quantity) / totalQty
+                : 0;
             const productInfo = productInfoMap[p._id.toString()];
             const amount = productInfo?.price?.sellingPrice || 0;
             return this.orderProductService.create({
@@ -1137,10 +1216,13 @@ export class OrdersService {
     }
 
     // Parent order is preserved - never deleted to prevent data loss
-    this.logger.info('[ORDER]: PARENT COMBO ORDER PRESERVED AFTER VENDOR SPLIT FROM VOUCHER', {
-      parentOrderId: parentOrder._id,
-      vendorOrdersCount: vendorOrders.length,
-    });
+    this.logger.info(
+      '[ORDER]: PARENT COMBO ORDER PRESERVED AFTER VENDOR SPLIT FROM VOUCHER',
+      {
+        parentOrderId: parentOrder._id,
+        vendorOrdersCount: vendorOrders.length,
+      },
+    );
 
     return {
       updateOrder: parentOrder,
@@ -1160,14 +1242,17 @@ export class OrdersService {
 
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
-        const vendorGrossAmount = Math.round(
-          (vendor.totalAmount + (vendor.deliveryFee || 0)) * 100,
-        ) / 100;
-        const vendorCreditCardPayment = totalVendorsAmount > 0
-          ? Math.round(
-            (parentOrder.creditCardPayment * (vendorGrossAmount / totalVendorsAmount)) * 100,
-          ) / 100
-          : vendorGrossAmount;
+        const vendorGrossAmount
+          = Math.round((vendor.totalAmount + (vendor.deliveryFee || 0)) * 100)
+          / 100;
+        const vendorCreditCardPayment
+          = totalVendorsAmount > 0
+            ? Math.round(
+              parentOrder.creditCardPayment
+              * (vendorGrossAmount / totalVendorsAmount)
+              * 100,
+            ) / 100
+            : vendorGrossAmount;
 
         const vendorOrder = new this.OrderModel({
           products: vendor.products.map(p => ({ id: p._id })),
@@ -1204,7 +1289,9 @@ export class OrdersService {
             savedOrder._id.toString(),
             vendor._id.toString(), // Pass vendorId for vendor-specific token
           );
-          await updateById(this.OrderModel, savedOrder._id.toString(), { qrCodeUrl });
+          await updateById(this.OrderModel, savedOrder._id.toString(), {
+            qrCodeUrl,
+          });
           savedOrder.qrCodeUrl = qrCodeUrl;
         } catch (qrError) {
           this.logger.warn('[ORDER]: VENDOR QR CODE GENERATION FAILED', {
@@ -1242,7 +1329,10 @@ export class OrdersService {
     // Get product information for calculating amounts
     const productInfoMap = {};
     if (allProductItems.length) {
-      const productInfo = await this.productsService.getProductInformationForOrders(allProductItems);
+      const productInfo
+        = await this.productsService.getProductInformationForOrders(
+          allProductItems,
+        );
       productInfo.forEach(p => {
         productInfoMap[p._id.toString()] = p;
       });
@@ -1252,13 +1342,17 @@ export class OrdersService {
     const orderProductsPerVendor = await Promise.all(
       vendorOrders.map(async (vendorOrder, index) => {
         const vendor = cart.vendorProducts[index];
-        const totalQty = vendor.products.reduce((sum, prod) => sum + prod.quantity, 0);
+        const totalQty = vendor.products.reduce(
+          (sum, prod) => sum + prod.quantity,
+          0,
+        );
         return Promise.all(
           vendor.products.map(p => {
             // Divide delivery fee proportionally by quantity for all models
-            const productDeliveryFee = totalQty > 0
-              ? ((vendor.deliveryFee || 0) * p.quantity) / totalQty
-              : 0;
+            const productDeliveryFee
+              = totalQty > 0
+                ? ((vendor.deliveryFee || 0) * p.quantity) / totalQty
+                : 0;
             const productInfo = productInfoMap[p._id.toString()];
             const amount = productInfo?.price?.sellingPrice || 0;
             return this.orderProductService.create({
@@ -1300,10 +1394,13 @@ export class OrdersService {
     }
 
     // Parent order is preserved - never deleted to prevent data loss
-    this.logger.info('[ORDER]: PARENT COMBO ORDER PRESERVED AFTER VENDOR SPLIT', {
-      parentOrderId: parentOrder._id,
-      vendorOrdersCount: vendorOrders.length,
-    });
+    this.logger.info(
+      '[ORDER]: PARENT COMBO ORDER PRESERVED AFTER VENDOR SPLIT',
+      {
+        parentOrderId: parentOrder._id,
+        vendorOrdersCount: vendorOrders.length,
+      },
+    );
 
     return {
       updateOrder: parentOrder,
@@ -1346,11 +1443,15 @@ export class OrdersService {
       extraFields = '',
     ) => {
       const totalPrice = quantity * price;
-      const productImage = product?.images?.[0]?.image || 'https://placehold.net/400x400.png';
+      const productImage
+        = product?.images?.[0]?.image || 'https://placehold.net/400x400.png';
       return `
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
         <tr>
-          <td style="padding: 10px; background: ${hexToRgba(externalApi?.primaryColor, 0.3)}; direction: rtl; border-radius: 20px;">
+          <td style="padding: 10px; background: ${hexToRgba(
+    externalApi?.primaryColor,
+    0.3,
+  )}; direction: rtl; border-radius: 20px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
               <tr>
                 <td style="padding: 0; vertical-align: middle;">
@@ -1358,7 +1459,8 @@ export class OrdersService {
                     style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                 </td>
                 <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                  <span style="display: block; font-size: 18px; color: #333333;">${product?.name}</span>
+                  <span style="display: block; font-size: 18px; color: #333333;">${product?.name
+}</span>
                   <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
                   <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${quantity} × ₪${price} = ₪${totalPrice}</span>
                   ${extraFields}
@@ -1454,14 +1556,22 @@ export class OrdersService {
           emailToGroupMap[email].vendorGroups.push(vendorGroup);
         }
 
-        vendorGroup.productsHtml += buildProductRow(product, quantity, price, '');
+        vendorGroup.productsHtml += buildProductRow(
+          product,
+          quantity,
+          price,
+          '',
+        );
         vendorGroup.subtotal += price * quantity;
         vendorGroup.vendorDeliveryFee += deliveryFee;
         vendorGroup.totalQuantity += quantity;
-        vendorGroup.perUnitDeliveryFee = vendorGroup.totalQuantity > 0
-          ? Math.round((vendorGroup.vendorDeliveryFee / vendorGroup.totalQuantity) * 100)
-          / 100
-          : 0;
+        vendorGroup.perUnitDeliveryFee
+          = vendorGroup.totalQuantity > 0
+            ? Math.round(
+              (vendorGroup.vendorDeliveryFee / vendorGroup.totalQuantity)
+              * 100,
+            ) / 100
+            : 0;
       }
 
       emailToGroupMap[email].totalAmount += price * quantity;
@@ -1476,19 +1586,32 @@ export class OrdersService {
             return `
             <div style="margin-bottom: 30px; padding: 20px; background: #ffffff; border-radius: 10px; border: 1px solid #e0e0e0;">
               <div style="border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 15px;">
-                <span style="display: block; font-size: 18px; font-weight: bold; color: #333333; text-align: right;">${vendor.vendorName}</span>
-                <span style="display: block; font-size: 13px; color: #666666; text-align: right; margin-top: 8px;">דוא"ל: ${vendor.vendorEmail}</span>
-                <span style="display: block; font-size: 13px; color: #666666; text-align: right;">טלפון: ${vendor.vendorPhone}</span>
+                <span style="display: block; font-size: 18px; font-weight: bold; color: #333333; text-align: right;">${vendor.vendorName
+}</span>
+                <span style="display: block; font-size: 13px; color: #666666; text-align: right; margin-top: 8px;">דוא"ל: ${vendor.vendorEmail
+}</span>
+                <span style="display: block; font-size: 13px; color: #666666; text-align: right;">טלפון: ${vendor.vendorPhone
+}</span>
               </div>
               ${vendor.productsHtml}
-              <div style="margin-top: 15px; padding: 12px; background: ${hexToRgba(externalApi?.primaryColor, 0.05)}; border-radius: 6px; direction: rtl;">
-                <span style="display: block; font-size: 13px; color: #666666; margin-bottom: 6px;">סה״כ מוצרים: ₪${vendor.subtotal}</span>
-                <span style="display: block; font-size: 13px; color: #666666; margin-bottom: 6px;">דמי משלוח: ${vendor.isPricePerProduct ? `₪${vendor.perUnitDeliveryFee} × ${vendor.totalQuantity} = ₪${vendor.vendorDeliveryFee}` : `₪${vendor.vendorDeliveryFee}`}</span>
-                <span style="display: block; font-size: 16px; font-weight: bold; color: #333333;">סה״כ עבור ${vendor.vendorName}: ₪${vendorTotal}</span>
+              <div style="margin-top: 15px; padding: 12px; background: ${hexToRgba(
+    externalApi?.primaryColor,
+    0.05,
+  )}; border-radius: 6px; direction: rtl;">
+                <span style="display: block; font-size: 13px; color: #666666; margin-bottom: 6px;">סה״כ מוצרים: ₪${vendor.subtotal
+}</span>
+                <span style="display: block; font-size: 13px; color: #666666; margin-bottom: 6px;">דמי משלוח: ${vendor.isPricePerProduct
+    ? `₪${vendor.perUnitDeliveryFee} × ${vendor.totalQuantity} = ₪${vendor.vendorDeliveryFee}`
+    : `₪${vendor.vendorDeliveryFee}`
+}</span>
+                <span style="display: block; font-size: 16px; font-weight: bold; color: #333333;">סה״כ עבור ${vendor.vendorName
+}: ₪${vendorTotal}</span>
               </div>
               <div style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; text-align: center;">
                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333; direction: rtl;">סרוק את ה-QR לאיסוף עצמי:</p>
-                <img src="${vendor.qrCodeUrl}" alt="QR" style="width: 150px; height: 150px; margin: 10px auto; display: block; border: 3px solid ${vendor.color};">
+                <img src="${vendor.qrCodeUrl
+}" alt="QR" style="width: 150px; height: 150px; margin: 10px auto; display: block; border: 3px solid ${vendor.color
+};">
               </div>
             </div>
           `;
@@ -1515,7 +1638,8 @@ export class OrdersService {
 
         return this.mailchimpService.sendTransactionalEmail({
           to: email,
-          templatedId: DynamicEmailTemplate.OrderConfirmationForClientMultiVendor,
+          templatedId:
+            DynamicEmailTemplate.OrderConfirmationForClientMultiVendor,
           from_email: externalApi?.companyDetails?.email,
           from_name: externalApi?.name,
           subject: 'הזמנתך התקבלה',
@@ -1546,7 +1670,9 @@ export class OrdersService {
           vp => vp.id?.toString() === op.itemId?.toString(),
         ));
 
-        const vendor = cart.vendorProducts.find(v => v._id?.toString() === vendorOrder.vendorId?.toString());
+        const vendor = cart.vendorProducts.find(
+          v => v._id?.toString() === vendorOrder.vendorId?.toString(),
+        );
         const isPricePerProduct = vendor?.isPricePerProduct === true;
 
         let vendorTotalAmount = 0;
@@ -1566,7 +1692,9 @@ export class OrdersService {
             const totalWithDelivery = isPricePerProduct
               ? totalProductPrice + deliveryFee
               : totalProductPrice;
-            const vendorProductImage = product?.images?.[0]?.image || 'https://placehold.net/400x400.png';
+            const vendorProductImage
+              = product?.images?.[0]?.image
+              || 'https://placehold.net/400x400.png';
             const address
               = orderItem.deliveryMethod === DeliveryMethod.DELIVER
                 ? [
@@ -1582,25 +1710,32 @@ export class OrdersService {
                 || ''
                 : `מיקום העסק שלך - ${business?.address?.location}`;
 
-            vendorTotalAmount += totalProductPrice + (isPricePerProduct ? deliveryFee : 0);
+            vendorTotalAmount
+              += totalProductPrice + (isPricePerProduct ? deliveryFee : 0);
             totalVendorDeliveryFee += deliveryFee;
 
             const shippingFeeHtml = isPricePerProduct
-              ? `<span style="display: block; font-size: 14px; color: #666666;">דמי משלוח: ${quantity} × ₪${Math.round((deliveryFee / quantity) * 100) / 100} = ₪${deliveryFee}</span>`
+              ? `<span style="display: block; font-size: 14px; color: #666666;">דמי משלוח: ${quantity} × ₪${Math.round((deliveryFee / quantity) * 100) / 100
+              } = ₪${deliveryFee}</span>`
               : '';
 
             return `
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
                 <tr>
-                  <td style="padding: 10px; background: ${hexToRgba(externalApi?.primaryColor, 0.3)}; direction: rtl; border-radius: 20px;">
+                  <td style="padding: 10px; background: ${hexToRgba(
+    externalApi?.primaryColor,
+    0.3,
+  )}; direction: rtl; border-radius: 20px;">
                     <table cellpadding="0" cellspacing="0" border="0" width="100%">
                       <tr>
                         <td style="padding: 0; vertical-align: middle;">
-                          <img src="${vendorProductImage}" alt="${product?.name}"
+                          <img src="${vendorProductImage}" alt="${product?.name
+}"
                             style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                         </td>
                         <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                          <span style="display: block; font-size: 16px; color: #333333;">${product?.name}</span>
+                          <span style="display: block; font-size: 16px; color: #333333;">${product?.name
+}</span>
                           <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
                           <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${quantity} × ₪${price} = ₪${totalProductPrice}</span>
                           <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${orderItem.deliveryMethod === DeliveryMethod.DELIVER
@@ -1608,7 +1743,8 @@ export class OrdersService {
     : 'איסוף עצמי על ידי הלקוח'
 }</span>
                           ${shippingFeeHtml}
-                          <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${address || 'לא ישים'}</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${address || 'לא ישים'
+}</span>
                         </td>
                         <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
                           <span dir="rtl" style="font-size: 16px; color: #333333;">₪${totalWithDelivery}</span>
@@ -1622,16 +1758,20 @@ export class OrdersService {
           })
           .join('');
 
-        const orderShippingFeeHtml = !isPricePerProduct && totalVendorDeliveryFee > 0
-          ? `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 20px;">
+        const orderShippingFeeHtml
+          = !isPricePerProduct && totalVendorDeliveryFee > 0
+            ? `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 20px;">
               <tr>
-                <td style="padding: 15px; background: ${hexToRgba(externalApi?.primaryColor, 0.1)}; direction: rtl; border-radius: 10px;">
+                <td style="padding: 15px; background: ${hexToRgba(
+    externalApi?.primaryColor,
+    0.1,
+  )}; direction: rtl; border-radius: 10px;">
                   <span style="display: block; font-size: 16px; font-weight: bold; color: #333333;">דמי משלוח כוללים</span>
                   <span style="display: block; font-size: 14px; color: #666666; margin-top: 5px;">סה״כ: ₪${totalVendorDeliveryFee}</span>
                 </td>
               </tr>
             </table>`
-          : '';
+            : '';
 
         const buyerAddress = this.extractBuyerAddress(
           vendorOrderProducts,
@@ -1654,7 +1794,8 @@ export class OrdersService {
             ...orderEmailFields,
             WEBSITE_NAME: externalApi?.name,
             BUSINESSNAME: business?.name || '',
-            BUSINESSPHONE: `${business?.countryCode}-${business?.phoneNumber}` || '',
+            BUSINESSPHONE:
+              `${business?.countryCode}-${business?.phoneNumber}` || '',
             BUSINESSEMAIL: business?.busiEmail || '',
             TOTALAMOUNT: vendorTotalAmount || 0,
             BUYERNAME: parentOrder?.firstName || '',
@@ -1717,10 +1858,7 @@ export class OrdersService {
     }
   }
 
-  async updateOrderStatus(
-    id: string,
-    body: any,
-  ): Promise<Order> {
+  async updateOrderStatus(id: string, body: any): Promise<Order> {
     try {
       const orderExists = await findOneById<Order>(this.OrderModel, id);
 
@@ -1733,9 +1871,7 @@ export class OrdersService {
         && body.status
         && body.status !== OrderStatus.COMPLETED
       ) {
-        throw new BadRequestException(
-          'Completed orders cannot be changed',
-        );
+        throw new BadRequestException('Completed orders cannot be changed');
       }
 
       const updateOrder = await updateById<Order>(this.OrderModel, id, body);
@@ -1891,7 +2027,9 @@ export class OrdersService {
     );
     this.logger.info('[EMAIL]: EVENT DETAILS FETCHED', {
       eventDetailsCount: eventDetails?.length,
-      firstEventUserId: eventDetails?.[0]?.userId ? JSON.stringify(eventDetails?.[0]?.userId) : 'NOT_POPULATED',
+      firstEventUserId: eventDetails?.[0]?.userId
+        ? JSON.stringify(eventDetails?.[0]?.userId)
+        : 'NOT_POPULATED',
     });
 
     const { emailFields } = await getCommonEmailFields(
@@ -1901,9 +2039,12 @@ export class OrdersService {
 
     // Format event date and time for display
     const eventDate = eventDetails[0]?.dayDescription?.[0]?.date
-      ? new Date(eventDetails[0].dayDescription[0].date).toLocaleDateString('he-IL')
+      ? new Date(eventDetails[0].dayDescription[0].date).toLocaleDateString(
+        'he-IL',
+      )
       : '';
-    const eventStartTime = eventDetails[0]?.dayDescription?.[0]?.startTime || '';
+    const eventStartTime
+      = eventDetails[0]?.dayDescription?.[0]?.startTime || '';
     const eventEndTime = eventDetails[0]?.dayDescription?.[0]?.endTime || '';
     const cleanString = (str: string) => {
       if (!str) return '';
@@ -1913,17 +2054,24 @@ export class OrdersService {
     };
     const eventLocation = cleanString(eventDetails[0]?.address?.location || '');
     const eventCity = cleanString(eventDetails[0]?.address?.city || '');
-    const eventLocationForBusinessAddress = cleanString(eventDetails[0]?.address?.location || '');
+    const eventLocationForBusinessAddress = cleanString(
+      eventDetails[0]?.address?.location || '',
+    );
 
     // Only show time when the whole order belongs to one event.
-    const EVENT_TIME = (isSingleEventOrder && eventStartTime && eventEndTime)
-      ? `${eventStartTime} - ${eventEndTime}`
-      : '';
+    const EVENT_TIME
+      = isSingleEventOrder && eventStartTime && eventEndTime
+        ? `${eventStartTime} - ${eventEndTime}`
+        : '';
 
     const orderEmailFields = {
       ...emailFields,
       BUTTON_LINK: externalApi?.websiteUrl,
-      BUSINESSNAME: eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr || '',
+      BUSINESSNAME:
+        eventDetails[0]?.nameHe
+        || eventDetails[0]?.name
+        || eventDetails[0]?.nameAr
+        || '',
       EVENT_DATE: eventDate,
       EVENT_START_TIME: eventStartTime || '',
       EVENT_END_TIME: eventEndTime || '',
@@ -2018,11 +2166,16 @@ export class OrdersService {
           for (let qrIdx = 0; qrIdx < quantity; qrIdx++) {
             try {
               const ticketNum = qrIdx + 1;
-              this.logger.info('[EMAIL]: GENERATING QR CODE FOR TICKET', { ticketNum });
+              this.logger.info('[EMAIL]: GENERATING QR CODE FOR TICKET', {
+                ticketNum,
+              });
 
               // Generate QR code URL pointing to verify-ticket page
               const eventDetailsUrl = `${FE}verify-ticket/${eventDetailsForThisTicket?._id}/${orderItem._id}`;
-              this.logger.info('[EMAIL]: QR CODE URL GENERATED', { ticketNum, eventDetailsUrl });
+              this.logger.info('[EMAIL]: QR CODE URL GENERATED', {
+                ticketNum,
+                eventDetailsUrl,
+              });
 
               // Add small delay between QR generations to avoid rate limiting
               if (qrIdx > 0) {
@@ -2030,20 +2183,32 @@ export class OrdersService {
                 await new Promise(resolve => setTimeout(resolve, 100));
               }
 
-              this.logger.info('[EMAIL]: GENERATING QR CODE', { ticketNum, urlLength: eventDetailsUrl?.length });
+              this.logger.info('[EMAIL]: GENERATING QR CODE', {
+                ticketNum,
+                urlLength: eventDetailsUrl?.length,
+              });
 
               // eslint-disable-next-line no-await-in-loop
               const qrCodeUrl = await this.qrCodeService.generateQRCode(
                 eventDetailsUrl,
                 `event-${eventDetailsForThisTicket?._id}-${orderItem._id}-ticket${ticketNum}`,
               );
-              this.logger.info('[EMAIL]: QR CODE GENERATED SUCCESSFULLY', { ticketNum, qrCodeUrl });
+              this.logger.info('[EMAIL]: QR CODE GENERATED SUCCESSFULLY', {
+                ticketNum,
+                qrCodeUrl,
+              });
               successfulCodes.push(qrCodeUrl);
             } catch (ticketQrError) {
-              this.logger.error('[EMAIL]: QR CODE GENERATION FAILED FOR TICKET', {
-                ticketNum: qrIdx + 1,
-                reason: ticketQrError instanceof Error ? ticketQrError.message : String(ticketQrError),
-              });
+              this.logger.error(
+                '[EMAIL]: QR CODE GENERATION FAILED FOR TICKET',
+                {
+                  ticketNum: qrIdx + 1,
+                  reason:
+                    ticketQrError instanceof Error
+                      ? ticketQrError.message
+                      : String(ticketQrError),
+                },
+              );
             }
           }
 
@@ -2096,22 +2261,24 @@ export class OrdersService {
         // Always save QR codes to orderProduct record, even if empty
         // This ensures the orderProduct is marked as processed
         try {
-          const qrUrlString = qrCodeUrls.length > 0 ? qrCodeUrls.join('|') : null;
-          await updateById(
-            this.OrderProductModel,
-            orderItem._id.toString(),
-            { qrCodeUrl: qrUrlString },
-          );
+          const qrUrlString
+            = qrCodeUrls.length > 0 ? qrCodeUrls.join('|') : null;
+          await updateById(this.OrderProductModel, orderItem._id.toString(), {
+            qrCodeUrl: qrUrlString,
+          });
           this.logger.info('[EMAIL]: QR CODE SAVED TO ORDER PRODUCT', {
             orderProductId: orderItem._id,
             qrCodeUrl: qrUrlString,
             qrCount: qrCodeUrls.length,
           });
         } catch (error) {
-          this.logger.error('[EMAIL]: FAILED TO SAVE QR CODE TO ORDER PRODUCT', {
-            orderProductId: orderItem._id,
-            error: error instanceof Error ? error.message : String(error),
-          });
+          this.logger.error(
+            '[EMAIL]: FAILED TO SAVE QR CODE TO ORDER PRODUCT',
+            {
+              orderProductId: orderItem._id,
+              error: error instanceof Error ? error.message : String(error),
+            },
+          );
         }
 
         emailToProductsMap[email].totalAmount += price * quantity + deliveryFee;
@@ -2125,7 +2292,8 @@ export class OrdersService {
 
     // ── Check if event is LUMEN-enabled (has wrapperIds) ────────────────────────
     const eventWrapperIds = eventDetails[0]?.wrapperIds;
-    const eventWrapperId = eventWrapperIds && eventWrapperIds.length > 0 ? eventWrapperIds[0] : null;
+    const eventWrapperId
+      = eventWrapperIds && eventWrapperIds.length > 0 ? eventWrapperIds[0] : null;
     const eventCode = eventDetails[0]?.code || eventDetails[0]?.eventCode;
 
     // ── Send OLD email ONLY if NO session wrapper ──────────────────────────────
@@ -2145,19 +2313,33 @@ export class OrdersService {
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
                       <td style="padding: 0; vertical-align: top; text-align: center; width: 120px; padding-left: 10px;">
-                        <img src="${product?.image || ''}" alt="${product?.name}" style="max-width: 120px; height: 120px; border-radius: 8px; display: block;">
+                        <img src="${product?.image || ''}" alt="${product?.name
+}" style="max-width: 120px; height: 120px; border-radius: 8px; display: block;">
                       </td>
                       <td style="padding: 0; vertical-align: top; padding-left: 10px;">
-                        <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 5px;">${product?.name}</span>
-                        <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity}</span>
-                        <span style="display: block; font-size: 16px; color: #333333;">₪${product?.price}</span>
+                        <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 5px;">${product?.name
+}</span>
+                        <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity
+}</span>
+                        <span style="display: block; font-size: 16px; color: #333333;">₪${product?.price
+}</span>
                       </td>
                       <td style="padding: 0; vertical-align: top; text-align: center; width: 110px; padding-left: 10px;">
-                        ${product?.qrCodeUrl ? `
-                          ${product?.qrCodeUrl.split('|').map((qrUrl, idx) => `
-                            <img src="${qrUrl}" alt="QR Code ${idx + 1}" style="width: 100px; height: 100px; border: 3px solid ${externalApi?.primaryColor}; margin-bottom: 10px;">
-                          `).join('')}
-                        ` : ''}
+                        ${product?.qrCodeUrl
+    ? `
+                          ${product?.qrCodeUrl
+    .split('|')
+    .map(
+      (qrUrl, idx) => `
+                            <img src="${qrUrl}" alt="QR Code ${idx + 1
+}" style="width: 100px; height: 100px; border: 3px solid ${externalApi?.primaryColor
+}; margin-bottom: 10px;">
+                          `,
+    )
+    .join('')}
+                        `
+    : ''
+}
                       </td>
                     </tr>
                   </table>
@@ -2167,15 +2349,29 @@ export class OrdersService {
             <table cellpadding="0" cellspacing="0" border="0" width="100%" class="tcc-card-mobile" style="display: none; margin-bottom: 20px;">
               <tr>
                 <td style="padding: 14px; background: #f9f9f9; direction: rtl; border-radius: 20px; text-align: center;">
-                  <img src="${product?.image || ''}" alt="${product?.name}" style="width: 100%; max-width: 220px; height: auto; border-radius: 8px; display: block; margin: 0 auto 12px;">
-                  <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name}</span>
-                  <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity}</span>
-                  <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 12px;">₪${product?.price}</span>
-                  ${product?.qrCodeUrl ? `
-                    ${product?.qrCodeUrl.split('|').map((qrUrl, idx) => `
-                      <img src="${qrUrl}" alt="QR Code ${idx + 1}" style="width: 160px; max-width: 60%; height: auto; border: 3px solid ${externalApi?.primaryColor}; border-radius: 8px; display: block; margin: 0 auto 10px;">
-                    `).join('')}
-                  ` : ''}
+                  <img src="${product?.image || ''}" alt="${product?.name
+}" style="width: 100%; max-width: 220px; height: auto; border-radius: 8px; display: block; margin: 0 auto 12px;">
+                  <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name
+}</span>
+                  <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity
+}</span>
+                  <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 12px;">₪${product?.price
+}</span>
+                  ${product?.qrCodeUrl
+    ? `
+                    ${product?.qrCodeUrl
+    .split('|')
+    .map(
+      (qrUrl, idx) => `
+                      <img src="${qrUrl}" alt="QR Code ${idx + 1
+}" style="width: 160px; max-width: 60%; height: auto; border: 3px solid ${externalApi?.primaryColor
+}; border-radius: 8px; display: block; margin: 0 auto 10px;">
+                    `,
+    )
+    .join('')}
+                  `
+    : ''
+}
                 </td>
               </tr>
             </table>
@@ -2184,12 +2380,17 @@ export class OrdersService {
               try {
                 await this.mailchimpService.sendTransactionalEmail({
                   to: email,
-                  templatedId: DynamicEmailTemplate.TicketConfirmationForCustomers,
+                  templatedId:
+                    DynamicEmailTemplate.TicketConfirmationForCustomers,
                   from_email: externalApi?.companyDetails?.email,
                   from_name: externalApi?.name,
                   mergeVars: {
                     ...orderEmailFields,
-                    EVENT_NAME: eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr || '',
+                    EVENT_NAME:
+                      eventDetails[0]?.nameHe
+                      || eventDetails[0]?.name
+                      || eventDetails[0]?.nameAr
+                      || '',
                     PRODUCTS_HTML: productHtml,
                     BUYERNAME: group.buyerName || '',
                     TOTALAMOUNT: product.price * product.quantity,
@@ -2198,7 +2399,10 @@ export class OrdersService {
                     GREETING: product.greeting || '',
                   },
                 });
-                this.logger.info('[EMAIL]: TICKET EMAIL SENT', { email, productName: product.name });
+                this.logger.info('[EMAIL]: TICKET EMAIL SENT', {
+                  email,
+                  productName: product.name,
+                });
               } catch (err) {
                 this.logger.error('[EMAIL]: FAILED TO SEND TICKET EMAIL', {
                   email,
@@ -2225,15 +2429,19 @@ export class OrdersService {
         await Promise.all(
           Object.entries(emailToProductsMap).map(async ([email, group]) => {
             try {
-            // Find phone number from any orderProduct with this email
-            // All orderProducts with same email should have same phone number
-              const phoneFromOrder = orderProduct.find(op => op.email === email)?.phone || '';
-              const primaryWrapperId = group.products.find(p => p.wrapperId)?.wrapperId || eventWrapperId;
+              // Find phone number from any orderProduct with this email
+              // All orderProducts with same email should have same phone number
+              const phoneFromOrder
+                = orderProduct.find(op => op.email === email)?.phone || '';
+              const primaryWrapperId
+                = group.products.find(p => p.wrapperId)?.wrapperId
+                || eventWrapperId;
 
               // Send one email per ticket (product)
               await Promise.all(
                 group.products.map(async product => {
-                  const productWrapperId = product?.wrapperId || primaryWrapperId;
+                  const productWrapperId
+                    = product?.wrapperId || primaryWrapperId;
 
                   // Generate UNIQUE code per ticket (single-use)
                   // Format: TICKET-<random8chars>
@@ -2243,18 +2451,23 @@ export class OrdersService {
                     .toUpperCase()}`;
 
                   // Generate encrypted invite token with single-use code
-                  const { token, ttlDays } = this.sessionBookingsService.generateInviteToken({
-                    name: group.buyerName || '',
-                    email,
-                    phone: phoneFromOrder,
-                    wrapperId: productWrapperId || eventWrapperId || '',
-                    code: uniqueCode,
-                    // Pass the last event date so token expiry is capped to 1 day before
-                    // the event rather than a flat 7 days (e.g. bought July 10, event July 22 → expires July 21)
-                    eventLastDate: eventDetails[0]?.dayDescription?.length
-                      ? new Date(eventDetails[0].dayDescription[eventDetails[0].dayDescription.length - 1].date)
-                      : undefined,
-                  });
+                  const { token, ttlDays }
+                    = this.sessionBookingsService.generateInviteToken({
+                      name: group.buyerName || '',
+                      email,
+                      phone: phoneFromOrder,
+                      wrapperId: productWrapperId || eventWrapperId || '',
+                      code: uniqueCode,
+                      // Pass the last event date so token expiry is capped to 1 day before
+                      // the event rather than a flat 7 days (e.g. bought July 10, event July 22 → expires July 21)
+                      eventLastDate: eventDetails[0]?.dayDescription?.length
+                        ? new Date(
+                          eventDetails[0].dayDescription[
+                            eventDetails[0].dayDescription.length - 1
+                          ].date,
+                        )
+                        : undefined,
+                    });
 
                   // Create link to travel website's purchaser-verify page
                   // Travel website will decrypt and redirect to LUMEN
@@ -2279,22 +2492,32 @@ export class OrdersService {
                       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="direction: rtl;">
                         <tr>
                           <td style="padding: 0 0 0 10px; vertical-align: middle; width: 120px; text-align: center;">
-                            <img src="${product?.image || ''}" alt="${product?.name}" style="max-width: 120px; height: 120px; border-radius: 8px; display: block; margin: 0 auto;">
+                            <img src="${product?.image || ''}" alt="${product?.name
+}" style="max-width: 120px; height: 120px; border-radius: 8px; display: block; margin: 0 auto;">
                           </td>
                           <td style="padding: 0 10px; vertical-align: middle; text-align: right;">
-                            <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name}</span>
-                            <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity}</span>
-                            <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 8px;">₪${product?.price}</span>
+                            <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name
+}</span>
+                            <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity
+}</span>
+                            <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 8px;">₪${product?.price
+}</span>
                             <table cellpadding="0" cellspacing="0" border="0" style="margin-top: 4px;">
                               <tr>
-                                <td style="background: ${externalApi?.primaryColor || '#0d9488'}; border-radius: 6px;" align="center">
+                                <td style="background: ${externalApi?.primaryColor || '#0d9488'
+}; border-radius: 6px;" align="center">
                                   <a href="${purchaserVerifyLink}" style="display: inline-block; padding: 10px 18px; font-size: 14px; color: #ffffff; text-decoration: none; font-weight: 500;">בקר והזמן מפגש</a>
                                 </td>
                               </tr>
                             </table>
                           </td>
                           <td style="padding: 0 10px 0 0; vertical-align: middle; width: 120px; text-align: center;">
-                            ${product?.qrCodeUrl ? `<img src="${product?.qrCodeUrl}" alt="Booking QR Code" width="104" height="104" style="width: 104px; height: 104px; border: 3px solid ${externalApi?.primaryColor || '#0d9488'}; border-radius: 8px; display: block; margin: 0 auto;">` : ''}
+                            ${product?.qrCodeUrl
+    ? `<img src="${product?.qrCodeUrl
+    }" alt="Booking QR Code" width="104" height="104" style="width: 104px; height: 104px; border: 3px solid ${externalApi?.primaryColor || '#0d9488'
+    }; border-radius: 8px; display: block; margin: 0 auto;">`
+    : ''
+}
                           </td>
                         </tr>
                       </table>
@@ -2304,18 +2527,28 @@ export class OrdersService {
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" class="lsb-card-mobile" style="display: none; margin-bottom: 20px;">
                   <tr>
                     <td style="padding: 14px; background: #f9f9f9; direction: rtl; border-radius: 20px; text-align: center;">
-                      <img src="${product?.image || ''}" alt="${product?.name}" style="width: 100%; max-width: 220px; height: auto; border-radius: 8px; display: block; margin: 0 auto 12px;">
-                      <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name}</span>
-                      <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity}</span>
-                      <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 8px;">₪${product?.price}</span>
+                      <img src="${product?.image || ''}" alt="${product?.name
+}" style="width: 100%; max-width: 220px; height: auto; border-radius: 8px; display: block; margin: 0 auto 12px;">
+                      <span style="display: block; font-size: 18px; color: #333333; margin-bottom: 8px;">${product?.name
+}</span>
+                      <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity
+}</span>
+                      <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 8px;">₪${product?.price
+}</span>
                       <table cellpadding="0" cellspacing="0" border="0" style="margin: 4px auto 16px;">
                         <tr>
-                          <td style="background: ${externalApi?.primaryColor || '#0d9488'}; border-radius: 6px;" align="center">
+                          <td style="background: ${externalApi?.primaryColor || '#0d9488'
+}; border-radius: 6px;" align="center">
                             <a href="${purchaserVerifyLink}" style="display: inline-block; padding: 10px 18px; font-size: 14px; color: #ffffff; text-decoration: none; font-weight: 500;">בקר והזמן מפגש</a>
                           </td>
                         </tr>
                       </table>
-                      ${product?.qrCodeUrl ? `<img src="${product?.qrCodeUrl}" alt="Booking QR Code" style="width: 160px; max-width: 60%; height: auto; border: 3px solid ${externalApi?.primaryColor || '#0d9488'}; border-radius: 8px; display: block; margin: 0 auto;">` : ''}
+                      ${product?.qrCodeUrl
+    ? `<img src="${product?.qrCodeUrl
+    }" alt="Booking QR Code" style="width: 160px; max-width: 60%; height: auto; border: 3px solid ${externalApi?.primaryColor || '#0d9488'
+    }; border-radius: 8px; display: block; margin: 0 auto;">`
+    : ''
+}
                     </td>
                   </tr>
                 </table>
@@ -2324,7 +2557,8 @@ export class OrdersService {
                   // Send Email #2 (Session booking confirmation) - one per ticket
                   await this.mailchimpService.sendTransactionalEmail({
                     to: email,
-                    templatedId: DynamicEmailTemplate.SessionBookingConfirmation,
+                    templatedId:
+                      DynamicEmailTemplate.SessionBookingConfirmation,
                     from_email: externalApi?.companyDetails?.email,
                     from_name: externalApi?.name,
                     mergeVars: {
@@ -2333,7 +2567,11 @@ export class OrdersService {
                       BUYEREMAIL: email || '',
                       CUSTOMER_NAME: group.buyerName || '',
                       CUSTOMER_EMAIL: email || '',
-                      EVENT_NAME: eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr || '',
+                      EVENT_NAME:
+                        eventDetails[0]?.nameHe
+                        || eventDetails[0]?.name
+                        || eventDetails[0]?.nameAr
+                        || '',
                       BOOKING_LINK: purchaserVerifyLink,
                       PURCHASER_VERIFY_LINK: purchaserVerifyLink,
                       TOKEN_EXPIRY_DAYS: String(ttlDays),
@@ -2346,13 +2584,19 @@ export class OrdersService {
                     },
                   });
 
-                  this.logger.info('[LUMEN]: TICKET EMAIL SENT', { email, productName: product.name });
+                  this.logger.info('[LUMEN]: TICKET EMAIL SENT', {
+                    email,
+                    productName: product.name,
+                  });
                 }),
               );
             } catch (lumenErr) {
               this.logger.error('[LUMEN]: FAILED TO SEND TICKET EMAIL', {
                 email,
-                error: lumenErr instanceof Error ? lumenErr.message : String(lumenErr),
+                error:
+                  lumenErr instanceof Error
+                    ? lumenErr.message
+                    : String(lumenErr),
               });
               // Don't throw - continue with other customers
             }
@@ -2360,7 +2604,10 @@ export class OrdersService {
         );
       } catch (lumenError) {
         this.logger.error('[LUMEN]: SESSION BOOKING EMAIL FLOW FAILED', {
-          error: lumenError instanceof Error ? lumenError.message : String(lumenError),
+          error:
+            lumenError instanceof Error
+              ? lumenError.message
+              : String(lumenError),
         });
         // Don't throw - session booking is optional, continue with rest of flow
       }
@@ -2402,11 +2649,13 @@ export class OrdersService {
                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                   <tr>
                     <td style="padding: 0; vertical-align: middle;">
-                      <img src="${product?.images?.[0]?.image || ''}" alt="${product?.name}"
+                      <img src="${product?.images?.[0]?.image || ''}" alt="${product?.name
+}"
                         style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                     </td>
                     <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                      <span style="display: block; font-size: 16px; color: #333333;">${product?.name}</span>
+                      <span style="display: block; font-size: 16px; color: #333333;">${product?.name
+}</span>
                       <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
                     </td>
                     <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
@@ -2424,7 +2673,11 @@ export class OrdersService {
         try {
           const creatorMergeVars = {
             ...orderEmailFields,
-            EVENT_NAME: eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr || '',
+            EVENT_NAME:
+              eventDetails[0]?.nameHe
+              || eventDetails[0]?.name
+              || eventDetails[0]?.nameAr
+              || '',
             TOTALAMOUNT: eventCreatorTotalAmount,
             BUYERNAME: order?.firstName,
             PRODUCTS_HTML: productsHtmlForEventCreator,
@@ -2441,16 +2694,52 @@ export class OrdersService {
             templatedId: DynamicEmailTemplate.TicketConfirmationForEventCreator,
             from_email: externalApi?.companyDetails?.email,
             from_name: externalApi?.name,
-            subject: `הודעת מכירת כרטיס - ${eventDetails[0]?.nameHe || eventDetails[0]?.name || eventDetails[0]?.nameAr}`,
+            subject: `הודעת מכירת כרטיס - ${eventDetails[0]?.nameHe
+              || eventDetails[0]?.name
+              || eventDetails[0]?.nameAr
+            }`,
             mergeVars: creatorMergeVars,
           });
-          this.logger.info('[EMAIL]: EVENT CREATOR EMAIL SENT', { eventCreatorEmailForCreator });
+          this.logger.info('[EMAIL]: EVENT CREATOR EMAIL SENT', {
+            eventCreatorEmailForCreator,
+          });
         } catch (err) {
           this.logger.error('[EMAIL]: FAILED TO SEND EVENT CREATOR EMAIL', {
             eventCreatorEmailForCreator,
             error: err instanceof Error ? err.message : String(err),
           });
         }
+      }
+    }
+
+    // Send SMS confirmation to buyer if phone number is present
+    if (order?.phone) {
+      const countryCode = order?.countryCode || '972';
+      const siteName = externalApi?.name || 'MetGo';
+      const orderLink = `${(externalApi?.websiteUrl || '').replace(/\/$/, '')}/order-confirmation?orderId=${order?._id}`;
+      console.log('========== GENERATED ORDER LINK (orders.services.ts - Tickets) ==========\n', orderLink, '\n========================================================================');
+      const smsMessage = `שלום ${order?.firstName || ''
+      }\nתודה על רכישתך מאתר ${siteName}\nכדי לצפות בפרטי ההזמנה יש להכנס ללינק הזה: ${orderLink}\nבברכה צוות ${siteName}\nלתמיכה ניתן ליצור איתנו קשר באמצעות המייל הבא: support@metgo.app`;
+
+      try {
+        await this.smsService.sendSms({
+          firstName: order?.firstName || '',
+          lastName: order?.lastName || '',
+          phone: `+${countryCode}${order.phone}`,
+          message: smsMessage,
+          sender: 'TAV8',
+          subject: 'Ticket Confirmation',
+        });
+        this.logger.info('[SMS]: TICKET CONFIRMATION SMS SENT', {
+          orderId: order?._id,
+          phone: order.phone,
+        });
+      } catch (smsError) {
+        this.logger.error('[SMS]: FAILED TO SEND TICKET CONFIRMATION SMS', {
+          orderId: order?._id,
+          error:
+            smsError instanceof Error ? smsError.message : String(smsError),
+        });
       }
     }
   }
@@ -2540,10 +2829,9 @@ export class OrdersService {
     await Promise.all(
       Object.entries(emailToProductsMap).map(async ([email, group]) => {
         const productsHtml = group.products
-          .map(
-            product => {
-              const totalPrice = product.quantity * product.price;
-              return `
+          .map(product => {
+            const totalPrice = product.quantity * product.price;
+            return `
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
                 <tr>
                   <td style="padding: 10px; background: ${externalApi?.secondaryColor
@@ -2560,7 +2848,8 @@ export class OrdersService {
 }</span>
                           <span style="display: block; font-size: 14px; color: #666666;">כמות: ${product?.quantity
 }</span>
-                          <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${product.quantity} × ₪${product.price} = ₪${totalPrice}</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${product.quantity
+} × ₪${product.price} = ₪${totalPrice}</span>
   <span style="display: block; font-size: 14px; color: #666666;">
   דמי משלוח: ₪${product?.deliveryFee}</span>
   <span style="display: block; font-size: 15px; color: #333333;">שם העסק: ${product?.businessName
@@ -2580,8 +2869,7 @@ export class OrdersService {
                 </tr>
               </table>
               `;
-            },
-          )
+          })
           .join('');
 
         await this.mailchimpService.sendTransactionalEmail({
@@ -2718,6 +3006,37 @@ export class OrdersService {
         });
       }),
     );
+
+    // Send SMS confirmation to buyer if phone number is present
+    if (order?.phone) {
+      const countryCode = order?.countryCode || '972';
+      const siteName = externalApi?.name || 'MetGo';
+      const orderLink = `${(externalApi?.websiteUrl || '').replace(/\/$/, '')}/order-confirmation?orderId=${order?._id}`;
+      console.log('========== GENERATED ORDER LINK (orders.services.ts) ==========\n', orderLink, '\n===============================================================');
+      const smsMessage = `שלום ${order?.firstName || ''
+      }\nתודה על רכישתך מאתר ${siteName}\nכדי לצפות בפרטי ההזמנה יש להכנס ללינק הזה: ${orderLink}\nבברכה צוות ${siteName}\nלתמיכה ניתן ליצור איתנו קשר באמצעות המייל הבא: support@metgo.app`;
+
+      try {
+        await this.smsService.sendSms({
+          firstName: order?.firstName || '',
+          lastName: order?.lastName || '',
+          phone: `+${countryCode}${order.phone}`,
+          message: smsMessage,
+          sender: 'TAV8',
+          subject: 'Order Confirmation',
+        });
+        this.logger.info('[SMS]: ORDER CONFIRMATION SMS SENT', {
+          orderId: order?._id,
+          phone: order.phone,
+        });
+      } catch (smsError) {
+        this.logger.error('[SMS]: FAILED TO SEND ORDER CONFIRMATION SMS', {
+          orderId: order?._id,
+          error:
+            smsError instanceof Error ? smsError.message : String(smsError),
+        });
+      }
+    }
   }
 
   async generateQRCodeAndToken(
@@ -2733,7 +3052,10 @@ export class OrdersService {
 
       // Get the business owner's user ID for specific vendor
       try {
-        const vendorOwner = await this.getVendorOwnerForOrder(orderId, vendorId);
+        const vendorOwner = await this.getVendorOwnerForOrder(
+          orderId,
+          vendorId,
+        );
         if (vendorOwner) {
           finalUserId = vendorOwner.userId;
           finalUserEmail = vendorOwner.email || '';
@@ -2772,11 +3094,255 @@ export class OrdersService {
 
       return { qrCodeUrl, token };
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage
+        = error instanceof Error ? error.message : String(error);
       this.logger.error('[ORDER]: FAILED TO GENERATE QR CODE', {
         error: errorMessage,
       });
       throw error;
     }
+  }
+
+  async getOrderConfirmationDetails(orderId: string) {
+    const order: any = await this.findOneById(orderId, 'campId');
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const childOrders = await this.OrderModel.find({ parentOrderId: orderId }).select('_id').lean();
+    const orderIdsToSearch = childOrders.length > 0
+      ? [orderId, ...childOrders.map(c => c._id.toString())]
+      : [orderId];
+
+    const [orderProducts, externalApi] = await Promise.all([
+      this.OrderProductModel.find({ orderId: { $in: orderIdsToSearch } }).lean(),
+      this.externalApiService.findByIdAndPopulateTheme(
+        String(order?.externalApiId),
+      ),
+    ]);
+
+    const productIds = [
+      ...new Set(
+        orderProducts.map(op => op.itemId?.toString()).filter(Boolean),
+      ),
+    ];
+    const isTicket = orderProducts.some(
+      (op: any) => op.itemType === OrderItemType.TICKET,
+    );
+    const websiteUrl = (externalApi?.websiteUrl || '').replace(/\/$/, '');
+
+    let productInfoList: any[] = [];
+    if (productIds.length > 0) {
+      if (isTicket) {
+        productInfoList = await this.queryBus.execute(
+          new GetTicketByIdsQuery(productIds),
+        );
+      } else {
+        productInfoList = await this.productsService.getProductInformationForOrders(
+          productIds.map(id => ({ id })),
+        );
+      }
+    }
+
+    // Detect multi-vendor: more than one distinct businessId in products
+    const distinctBusinessIds = [
+      ...new Set(
+        productInfoList
+          .map((p: any) => p.businessId?.toString())
+          .filter(Boolean),
+      ),
+    ];
+    const isMultiVendor = !isTicket && distinctBusinessIds.length > 1;
+    const isMiniSite = order?.campId?.type === 'MINI_SITE';
+
+    // Determine templateId
+    let templateId = DynamicEmailTemplate.OrderConfirmationForClient;
+    if (isMiniSite) {
+      templateId = DynamicEmailTemplate.OrderConfirmationForClientMiniSite;
+    } else if (isMultiVendor) {
+      templateId = DynamicEmailTemplate.OrderConfirmationForClientMultiVendor;
+    }
+
+    let eventName = '';
+    let eventDate = '';
+    let eventLocation = '';
+    let isSessionBooking = false;
+    let purchaserVerifyLink = '';
+    let tokenExpiryDays = '';
+
+    if (isTicket) {
+      const firstProduct = productInfoList[0] as any;
+      if (firstProduct) {
+        eventName
+          = firstProduct?.nameHe
+          || firstProduct?.name
+          || firstProduct?.nameAr
+          || '';
+        eventDate = firstProduct?.eventDate || firstProduct?.startDate || '';
+        eventLocation
+          = firstProduct?.eventLocation || firstProduct?.location || '';
+        isSessionBooking = !!firstProduct?.wrapperId;
+
+        if (isSessionBooking) {
+          const uniqueCode = `TICKET-${Math.random()
+            .toString(36)
+            .substring(2, 10)
+            .toUpperCase()}`;
+
+          let eventLastDate: Date | undefined;
+          if (firstProduct.eventId) {
+            const eventDetails = await this.queryBus.execute(
+              new GetEventByIdsQuery([firstProduct.eventId]),
+            );
+            if (eventDetails?.[0]?.dayDescription?.length) {
+              eventLastDate = new Date(
+                eventDetails[0].dayDescription[
+                  eventDetails[0].dayDescription.length - 1
+                ].date,
+              );
+            }
+          }
+
+          const { token, ttlDays } = this.sessionBookingsService.generateInviteToken({
+            name: order.firstName || '',
+            email: order.email || '',
+            phone: order.phone || '',
+            wrapperId: firstProduct.wrapperId,
+            code: uniqueCode,
+            eventLastDate,
+          });
+
+          purchaserVerifyLink = `${websiteUrl}/purchaser-verify?code=${token}`;
+          tokenExpiryDays = ttlDays.toString();
+        }
+      }
+      templateId = isSessionBooking
+        ? DynamicEmailTemplate.SessionBookingConfirmation
+        : DynamicEmailTemplate.TicketConfirmationForCustomers;
+    }
+
+    // Common email fields — logo, banners, footer images, social links
+    const { emailFields } = await getCommonEmailFields(
+      externalApi,
+      this.docUploadService,
+    );
+
+    // Build structured products array (used by single-vendor & ticket templates)
+    const products = orderProducts.map(op => {
+      const pInfo = productInfoList.find(
+        p => p._id.toString() === op.itemId.toString(),
+      ) as any;
+      const price = op.amount || pInfo?.price?.sellingPrice || 0;
+      const quantity = op.quantity || 1;
+      return {
+        name: pInfo?.nameHe || pInfo?.name || '',
+        quantity,
+        price,
+        totalPrice: price * quantity,
+        image: pInfo?.images?.[0]?.image || pInfo?.image || '',
+        qrCodeUrls: op.qrCodeUrl ? op.qrCodeUrl.split('|') : [],
+        greeting: (op as any).greeting || pInfo?.greeting || '',
+        deliveryFee: op.deliveryFee || 0,
+        deliveryMethod: op.deliveryMethod || '',
+        businessId: pInfo?.businessId?.toString() || '',
+      };
+    });
+
+    const totalAmount = products.reduce((acc, p) => acc + p.totalPrice, 0);
+    const totalDeliveryFee = products.reduce(
+      (acc, p) => acc + (p.deliveryFee || 0),
+      0,
+    );
+
+    // Build per-vendor grouped data (used by multi-vendor template)
+    // Frontend uses VENDORS array to render each vendor section with their products + QR
+    let vendors: any[] = [];
+    if (isMultiVendor) {
+      const businessIds = distinctBusinessIds;
+      const businessDetails = await this.businessService.findBusinessEmailByIds(
+        businessIds as any[],
+      );
+
+      vendors = businessDetails.map((business: any) => {
+        const vendorProducts = products.filter(
+          p => p.businessId === business._id?.toString(),
+        );
+        const vendorSubtotal = vendorProducts.reduce(
+          (acc, p) => acc + p.totalPrice,
+          0,
+        );
+        const vendorDeliveryFee = vendorProducts.reduce(
+          (acc, p) => acc + (p.deliveryFee || 0),
+          0,
+        );
+        // QR code for this vendor is stored on the order product
+        const vendorQrCodeUrl
+          = orderProducts.find(op => productInfoList.find(
+            (pi: any) => pi._id.toString() === op.itemId.toString()
+              && pi.businessId?.toString() === business._id?.toString(),
+          ))?.qrCodeUrl || '';
+
+        return {
+          vendorName: business.name || '',
+          vendorEmail: business.busiEmail || '',
+          vendorPhone: business.phoneNumber || '',
+          products: vendorProducts,
+          subtotal: vendorSubtotal,
+          deliveryFee: vendorDeliveryFee,
+          total: vendorSubtotal + vendorDeliveryFee,
+          qrCodeUrl: vendorQrCodeUrl,
+        };
+      });
+    }
+
+    return {
+      templateId,
+      mergeVars: {
+        // ── Common (logo, banners, footer images & links, social) ──
+        // Covers: LOGO, COLOR, BG_COLOR, WEBSITE_NAME,
+        //   FOOTER1-5, FOOTER_BADGE, BANNER_IMG, MOBILE_BANNER_IMG,
+        //   FOOTER_BANNER, FOOTER_BANNER_MOBILE, FOOTER_BANNER_MINISITE_BANNER,
+        //   FOOTER_LINK1-4, FACEBOOK_LINK, WHATSAPP_LINK
+        ...emailFields,
+
+        // ── Buyer / Order ──
+        BUYERNAME: order.firstName || '',
+        BUYEREMAIL: order.email || '',
+        TOTALAMOUNT: totalAmount,
+        BUTTON_LINK: websiteUrl,
+        CHANGE_SETTINGS_LINK: websiteUrl,
+        ORDER_HISTORY_LINK: `${websiteUrl}/order-history`,
+
+        // ── QR Code fields (both variants used across templates) ──
+        // order-confirmation-client-side-en uses CUSTOMER_QRCODEURL
+        // create-minisite-orders-for-client uses QRCODEURL
+        CUSTOMER_QRCODEURL: (order as any).qrCodeUrl || '',
+        QRCODEURL: (order as any).qrCodeUrl || '',
+
+        // ── Event / Ticket specific ──
+        EVENT_NAME: eventName,
+        EVENT_DATE: eventDate,
+        EVENT_LOCATION: eventLocation,
+        BUSINESSADDRESS: eventLocation,
+        GREETING: products[0]?.greeting || productInfoList[0]?.greeting || '',
+
+        // ── Session-booking specific ──
+        BOOKING_LINK: purchaserVerifyLink,
+        PURCHASER_VERIFY_LINK: purchaserVerifyLink,
+        TOKEN_EXPIRY_DAYS: tokenExpiryDays,
+        HOLD_EXPIRY_MINUTES: '7',
+        CUSTOMER_NAME: order.firstName || '',
+        CUSTOMER_EMAIL: order.email || '',
+
+        // ── Multi-vendor specific ──
+        // order-confirmation-client-with-multi-vendor-qr uses VENDORS_WITH_QR_HTML & DELIVERY_FEE_SUMMARY
+        // We return structured JSON instead so the frontend can build the HTML itself
+        VENDORS: vendors, // Array of vendor objects with products + QR
+        DELIVERY_FEE_TOTAL: totalDeliveryFee, // Total delivery fee across all vendors
+
+        // ── Products (single-vendor / ticket / mini-site templates) ──
+        PRODUCTS: products,
+      },
+    };
   }
 }

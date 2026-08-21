@@ -1,7 +1,4 @@
-import {
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Logger } from 'winston';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';

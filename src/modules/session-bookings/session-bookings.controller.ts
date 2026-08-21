@@ -46,7 +46,9 @@ export class SessionBookingsController {
   async generateTestToken(@Body() dto: GenerateTestTokenDto) {
     // Only allow in development mode
     if (process.env.NODE_ENV === 'production') {
-      throw new BadRequestException('This endpoint is only available in development mode');
+      throw new BadRequestException(
+        'This endpoint is only available in development mode',
+      );
     }
 
     return this.sessionBookingsService.generateInviteToken({
@@ -72,10 +74,12 @@ export class SessionBookingsController {
    */
   @ApiEndpoint({
     tags: ['Session Bookings - Customer'],
-    operation: 'Decrypt invite token → get pre-fill data (PII never visible in URL)',
+    operation:
+      'Decrypt invite token → get pre-fill data (PII never visible in URL)',
     response: {
       status: HttpStatus.OK,
-      description: 'Token decrypted. Check isConsumed to decide which view to render.',
+      description:
+        'Token decrypted. Check isConsumed to decide which view to render.',
     },
     params: [
       {
@@ -159,9 +163,11 @@ export class SessionBookingsController {
     // Emit availability update after successful hold creation (fire-and-forget)
     result
       .then(() => {
-        this.sessionBookingsGateway.emitAvailabilityUpdate(dto.wrapperId).catch(() => {
-          // Silently ignore emit errors - don't block the response
-        });
+        this.sessionBookingsGateway
+          .emitAvailabilityUpdate(dto.wrapperId)
+          .catch(() => {
+            // Silently ignore emit errors - don't block the response
+          });
       })
       .catch(() => {
         // Service error, don't emit
@@ -194,9 +200,11 @@ export class SessionBookingsController {
 
     // Emit availability update after successful confirmation (fire-and-forget)
     if (result?.data?.wrapperId) {
-      this.sessionBookingsGateway.emitAvailabilityUpdate(result.data.wrapperId).catch(() => {
-        // Silently ignore emit errors - don't block the response
-      });
+      this.sessionBookingsGateway
+        .emitAvailabilityUpdate(result.data.wrapperId)
+        .catch(() => {
+          // Silently ignore emit errors - don't block the response
+        });
     }
 
     return result;

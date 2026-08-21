@@ -35,7 +35,7 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
     private TripModel: Model<Trip>,
     @InjectModel(PointOfInterestsAudit.name)
     private PointOfInterestsAuditModel: Model<PointOfInterestsAudit>,
-  ) { }
+  ) {}
 
   async execute(queries: GetSiteConfigByIdentifierIdQuery) {
     try {

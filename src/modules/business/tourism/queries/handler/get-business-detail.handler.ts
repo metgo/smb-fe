@@ -27,7 +27,7 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
     @InjectModel(EventsAudit.name)
     private EventsAuditModel: Model<EventsAudit>,
     private readonly businessService: BusinessService,
-  ) { }
+  ) {}
 
   async execute(queries: GetBusinessDetailForTourismQuery): Promise<any> {
     try {
@@ -119,11 +119,14 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           ...rest,
           _id: businessId,
           images: sanitizeImages(rest.images),
-          logo: rest.logo != null ? sanitizeImages([rest.logo])[0] ?? null : null,
-          socialMedia: (socialMedia ?? []).map(({ socialMediaId, url }: any) => ({
-            ...(socialMediaId ?? {}),
-            url,
-          })),
+          logo:
+            rest.logo != null ? sanitizeImages([rest.logo])[0] ?? null : null,
+          socialMedia: (socialMedia ?? []).map(
+            ({ socialMediaId, url }: any) => ({
+              ...(socialMediaId ?? {}),
+              url,
+            }),
+          ),
           hasProducts,
           hasTrips,
           hasEvents,
@@ -144,9 +147,13 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           && 'kind' in error
           && error.kind === 'ObjectId'
         ) {
-          const modelName = 'model' in error && error.model && typeof error.model === 'object' && 'modelName' in error.model
-            ? (error.model as any).modelName
-            : '';
+          const modelName
+            = 'model' in error
+            && error.model
+            && typeof error.model === 'object'
+            && 'modelName' in error.model
+              ? (error.model as any).modelName
+              : '';
           throw new BadRequestException(
             `${modelName} ${ServerErrors.INVALID_ID}`,
           );

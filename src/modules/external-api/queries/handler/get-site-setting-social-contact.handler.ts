@@ -65,9 +65,7 @@ implements IQueryHandler<GetSiteSettingSocialContactQuery> {
         .lean();
 
       if (!siteSetting) {
-        throw new NotFoundException(
-          `Site Setting ${ServerErrors.NOT_FOUND}`,
-        );
+        throw new NotFoundException(`Site Setting ${ServerErrors.NOT_FOUND}`);
       }
 
       this.logger.info('[SITE_SETTING]: SOCIAL & CONTACT FETCHED', {
@@ -77,7 +75,9 @@ implements IQueryHandler<GetSiteSettingSocialContactQuery> {
       const suffix = LOCALE_SUFFIX_MAP[query.locale] || 'En';
 
       const {
-        whatsappMessageEn, whatsappMessageHe, whatsappMessageAr,
+        whatsappMessageEn,
+        whatsappMessageHe,
+        whatsappMessageAr,
         ...rest
       } = siteSetting;
 
@@ -87,12 +87,9 @@ implements IQueryHandler<GetSiteSettingSocialContactQuery> {
           siteSetting[`whatsappMessage${suffix}`] || whatsappMessageEn || '',
       };
     } catch (err: any) {
-      this.logger.error(
-        '[SITE_SETTING]: FAILED TO GET SOCIAL & CONTACT',
-        {
-          err: err.message,
-        },
-      );
+      this.logger.error('[SITE_SETTING]: FAILED TO GET SOCIAL & CONTACT', {
+        err: err.message,
+      });
 
       exceptionHandling(err);
     }

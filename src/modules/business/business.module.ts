@@ -32,7 +32,10 @@ import {
   ProductsAuditSchema,
 } from '../products/schema/products-audit.schema';
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
-import { EventsAudit, EventsAuditSchema } from '../events/schema/events-audit.schema';
+import {
+  EventsAudit,
+  EventsAuditSchema,
+} from '../events/schema/events-audit.schema';
 import { BusinessSharedController } from './shared/controllers/business.controller';
 import { Tags, TagsSchema } from 'src/modules/tags/schema/tags.schema';
 import {

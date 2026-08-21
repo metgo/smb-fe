@@ -10,9 +10,12 @@ export class PartnersService {
   constructor(
     @InjectModel(Partner.name)
     private readonly partnerModel: Model<PartnerDocument>,
-  ) { }
+  ) {}
 
-  async getAll(websiteId: string, locale: Locale = Locale.HEBREW): Promise<
+  async getAll(
+    websiteId: string,
+    locale: Locale = Locale.HEBREW,
+  ): Promise<
     {
       name: string;
       description: string;
@@ -22,7 +25,10 @@ export class PartnersService {
     }[]
   > {
     const partners = await this.partnerModel
-      .find({ websites: new mongoose.Types.ObjectId(websiteId), isDeleted: { $ne: true } })
+      .find({
+        websites: new mongoose.Types.ObjectId(websiteId),
+        isDeleted: { $ne: true },
+      })
       .select(
         '_id nameEn nameHe nameAr descriptionEn descriptionHe descriptionAr isActive logo siteUrl websites',
       )

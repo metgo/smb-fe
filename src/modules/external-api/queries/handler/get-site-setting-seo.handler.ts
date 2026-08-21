@@ -66,9 +66,7 @@ implements IQueryHandler<GetSiteSettingSeoQuery> {
         .lean();
 
       if (!siteSetting) {
-        throw new NotFoundException(
-          `Site Setting ${ServerErrors.NOT_FOUND}`,
-        );
+        throw new NotFoundException(`Site Setting ${ServerErrors.NOT_FOUND}`);
       }
 
       this.logger.info('[SITE_SETTING]: SEO DATA FETCHED', {
@@ -78,17 +76,19 @@ implements IQueryHandler<GetSiteSettingSeoQuery> {
       const suffix = LOCALE_SUFFIX_MAP[query.locale] || 'En';
 
       const {
-        websiteNameEn, websiteNameHe, websiteNameAr,
-        sloganEn, sloganHe, sloganAr,
+        websiteNameEn,
+        websiteNameHe,
+        websiteNameAr,
+        sloganEn,
+        sloganHe,
+        sloganAr,
         ...rest
       } = siteSetting;
 
       return {
         ...rest,
-        websiteName:
-          siteSetting[`websiteName${suffix}`] || websiteNameEn || '',
-        slogan:
-          siteSetting[`slogan${suffix}`] || sloganEn || '',
+        websiteName: siteSetting[`websiteName${suffix}`] || websiteNameEn || '',
+        slogan: siteSetting[`slogan${suffix}`] || sloganEn || '',
       };
     } catch (err: any) {
       this.logger.error('[SITE_SETTING]: FAILED TO GET SEO DATA', {

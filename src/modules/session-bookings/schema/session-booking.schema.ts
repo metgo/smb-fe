@@ -99,12 +99,16 @@ export class SessionBooking extends AuditableSchema {
 }
 
 export type SessionBookingDocument = HydratedDocument<SessionBooking>;
-export const SessionBookingSchema = SchemaFactory.createForClass(SessionBooking);
+export const SessionBookingSchema
+  = SchemaFactory.createForClass(SessionBooking);
 
 // Indexes for queries
 SessionBookingSchema.index({ userId: 1, status: 1 });
 SessionBookingSchema.index({
-  wrapperId: 1, sessionId: 1, slotDate: 1, slotTime: 1,
+  wrapperId: 1,
+  sessionId: 1,
+  slotDate: 1,
+  slotTime: 1,
 });
 SessionBookingSchema.index({
   wrapperId: 1,

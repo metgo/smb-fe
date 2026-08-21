@@ -17,4 +17,4 @@ import { DocUploadService } from './doc-upload.service';
   controllers: [],
   exports: [DocUploadService],
 })
-export class DocUploadModule { }
+export class DocUploadModule {}

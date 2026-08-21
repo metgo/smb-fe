@@ -77,7 +77,7 @@ export class VoucherService {
     private cartService: CartService,
     private readonly docUploadService: DocUploadService,
     private queryBus: QueryBus,
-  ) { }
+  ) {}
 
   async getOneByCodeAndProduct(query: GetOneVoucherInterface) {
     try {
@@ -784,7 +784,12 @@ export class VoucherService {
                   remainingAmount: {
                     $min: [
                       '$amount',
-                      { $add: ['$remainingAmount', +voucherDetail.redeemedAmount] },
+                      {
+                        $add: [
+                          '$remainingAmount',
+                          +voucherDetail.redeemedAmount,
+                        ],
+                      },
                     ],
                   },
                 },

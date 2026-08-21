@@ -39,7 +39,7 @@ export class PaymentsService {
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
     private mailchimpService: MailChimpService,
-  ) { }
+  ) {}
 
   async createPayment(insertField: any) {
     try {
@@ -73,7 +73,8 @@ export class PaymentsService {
       = this.configService.cardCom;
 
     const { BE } = this.configService.baseUrl;
-    const isMockPayment = this.configService.get('MOCK_CARDCOM_PAYMENT') === 'true';
+    const isMockPayment
+      = this.configService.get('MOCK_CARDCOM_PAYMENT') === 'true';
 
     try {
       let cardComResponse;
@@ -178,15 +179,20 @@ export class PaymentsService {
 
       // Handle mock payments - if payment doesn't exist, create it as success
       if (!existingPayment) {
-        this.logger.info('[PAYMENT]: Mock payment success - no payment record found');
+        this.logger.info(
+          '[PAYMENT]: Mock payment success - no payment record found',
+        );
         return;
       }
 
       if (existingPayment.status === PaymentStatus.SUCCESS) {
-        this.logger.info('[PAYMENT]: Payment already processed, skipping duplicate', {
-          paymentRequestId,
-          orderId: existingPayment.orderId,
-        });
+        this.logger.info(
+          '[PAYMENT]: Payment already processed, skipping duplicate',
+          {
+            paymentRequestId,
+            orderId: existingPayment.orderId,
+          },
+        );
         return;
       }
 
@@ -257,8 +263,8 @@ export class PaymentsService {
       // }
 
       if (payments?.purpose === PaymentPurpose.ORDER) {
-        let updateOrder; let
-          getProductInformation;
+        let updateOrder;
+        let getProductInformation;
         try {
           const result = await this.ordersService.updateAfterPaymentSuccess(
             payments.orderId,
@@ -267,10 +273,16 @@ export class PaymentsService {
           updateOrder = result.updateOrder;
           getProductInformation = result.getProductInformation;
         } catch (orderError) {
-          this.logger.error('[PAYMENT]: FAILED TO UPDATE ORDER AFTER PAYMENT SUCCESS', {
-            orderId: payments.orderId,
-            error: orderError instanceof Error ? orderError.message : String(orderError),
-          });
+          this.logger.error(
+            '[PAYMENT]: FAILED TO UPDATE ORDER AFTER PAYMENT SUCCESS',
+            {
+              orderId: payments.orderId,
+              error:
+                orderError instanceof Error
+                  ? orderError.message
+                  : String(orderError),
+            },
+          );
           // Don't throw - payment was successful, just log the issue
           return;
         }
@@ -361,9 +373,14 @@ export class PaymentsService {
       }
       // }
     } catch (err) {
-      this.logger.error(`[PAYMENT]: PAYMENT FAILED >> err: ${err instanceof Error ? err.message : String(err)}`, {
-        err: err instanceof Error ? err.message : String(err),
-      });
+      this.logger.error(
+        `[PAYMENT]: PAYMENT FAILED >> err: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+        {
+          err: err instanceof Error ? err.message : String(err),
+        },
+      );
       exceptionHandling(err);
     }
   }
@@ -379,10 +396,13 @@ export class PaymentsService {
       // A late/duplicate failure webhook must not clobber a payment that a
       // success webhook already settled — mirrors the guard in paymentSucess().
       if (existingPayment?.status === PaymentStatus.SUCCESS) {
-        this.logger.info('[PAYMENT]: Ignoring stale failure webhook — payment already succeeded', {
-          paymentRequestId: pageRequestUid,
-          orderId: existingPayment.orderId,
-        });
+        this.logger.info(
+          '[PAYMENT]: Ignoring stale failure webhook — payment already succeeded',
+          {
+            paymentRequestId: pageRequestUid,
+            orderId: existingPayment.orderId,
+          },
+        );
         return;
       }
 

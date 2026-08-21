@@ -243,7 +243,11 @@ implements IQueryHandler<GetCombinedSearchQuery> {
 
       const filteredProducts = productResults.filter(p => {
         const business = p.businessId as any;
-        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+        return (
+          business
+          && business.status === CommonStatus.APPROVED
+          && !business.isDeleted
+        );
       });
 
       return {

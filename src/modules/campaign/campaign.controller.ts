@@ -118,17 +118,13 @@ export class CampaignController {
       })()
       : Promise.resolve([{ totalData: 0 }, { totalData: 0 }]);
 
-    const [
-      [businessResult, poiResult],
-      eventResult,
-      tripResult,
-      fundayResult,
-    ] = await Promise.all([
-      businessPoiPromise,
-      this.queryBus.execute(new GetAllEventsQuery(requestEvent)),
-      this.queryBus.execute(new GetAllTripsQuery(requestTrip)),
-      this.queryBus.execute(new GetAllTripsQuery(requestFunday)),
-    ]);
+    const [[businessResult, poiResult], eventResult, tripResult, fundayResult]
+      = await Promise.all([
+        businessPoiPromise,
+        this.queryBus.execute(new GetAllEventsQuery(requestEvent)),
+        this.queryBus.execute(new GetAllTripsQuery(requestTrip)),
+        this.queryBus.execute(new GetAllTripsQuery(requestFunday)),
+      ]);
 
     return {
       business: (businessResult.totalData ?? 0) > 0,

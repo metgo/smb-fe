@@ -44,7 +44,8 @@ export class QuestionAnswer {
   @Prop({ required: true })
     answer: string;
 }
-export const QuestionAnswerSchema = SchemaFactory.createForClass(QuestionAnswer);
+export const QuestionAnswerSchema
+  = SchemaFactory.createForClass(QuestionAnswer);
 
 @Schema()
 export class EventTicketAnswer extends AuditableSchema {
@@ -67,7 +68,8 @@ export class EventTicketAnswer extends AuditableSchema {
 }
 
 export type EventTicketAnswerDocument = HydratedDocument<EventTicketAnswer>;
-export const EventTicketAnswerSchema = SchemaFactory.createForClass(EventTicketAnswer);
+export const EventTicketAnswerSchema
+  = SchemaFactory.createForClass(EventTicketAnswer);
 
 EventTicketAnswerSchema.index({ 'eventInfo.eventId': 1 });
 EventTicketAnswerSchema.index({ 'purchaserInfo.email': 1 });

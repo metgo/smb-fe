@@ -25,7 +25,8 @@ import { GetFeedMarkersResponse } from '../../response/get-feed-markers.response
 import { ServicesTypes } from '../../dashboard.type';
 
 @QueryHandler(GetFeedMarkersQuery)
-export class GetFeedMarkersHandler implements IQueryHandler<GetFeedMarkersQuery> {
+export class GetFeedMarkersHandler
+implements IQueryHandler<GetFeedMarkersQuery> {
   constructor(
     @InjectModel(BusinessesAudit.name)
     private BusinessesAuditModel: Model<BusinessesAudit>,
@@ -366,7 +367,10 @@ export class GetFeedMarkersHandler implements IQueryHandler<GetFeedMarkersQuery>
         const whitelisted = await queryhandler<PointOfInterestsAudit>(
           this.PointOfInterestsAuditModel,
           {
-            findQuery: { pointOfInterestId: { $in: whitelist }, isActive: true },
+            findQuery: {
+              pointOfInterestId: { $in: whitelist },
+              isActive: true,
+            },
             select,
             sort: 'createdAt',
             sortOrder: SortOrder.DESC,

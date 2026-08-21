@@ -1,5 +1,13 @@
 import {
-  Body, Controller, Get, HttpCode, HttpStatus, Param, ParseArrayPipe, Post, Query,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseArrayPipe,
+  Post,
+  Query,
 } from '@nestjs/common';
 import { IsMongoId } from 'class-validator';
 
@@ -89,6 +97,9 @@ export class EventTicketAnswersController {
       dtos: CreateEventTicketAnswerDto[],
   ) {
     const created = await this.eventTicketAnswersService.createMany(dtos);
-    return { message: 'Event ticket answers saved successfully', data: created };
+    return {
+      message: 'Event ticket answers saved successfully',
+      data: created,
+    };
   }
 }

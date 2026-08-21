@@ -5,7 +5,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { SessionBookingsController } from './session-bookings.controller';
 import { SessionBookingsService } from './session-bookings.service';
 import { SessionBookingsGateway } from './session-bookings.gateway';
-import { SessionBooking, SessionBookingSchema } from './schema/session-booking.schema';
+import {
+  SessionBooking,
+  SessionBookingSchema,
+} from './schema/session-booking.schema';
 import { UsersModule } from 'src/modules/users/users.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';

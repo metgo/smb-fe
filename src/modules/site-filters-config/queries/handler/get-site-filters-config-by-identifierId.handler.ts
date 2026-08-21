@@ -110,11 +110,15 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
           businessId: { $in: allBusinessIds },
           isActive: true,
         })
-          .select('businessId name nameHe nameAr logo slug geoLocation status isDeleted')
+          .select(
+            'businessId name nameHe nameAr logo slug geoLocation status isDeleted',
+          )
           .lean();
         const businessAuditMap = new Map<string, any>(
           businessAudits
-            .filter((b: any) => b.status !== CommonStatus.CLOSED && !b.isDeleted)
+            .filter(
+              (b: any) => b.status !== CommonStatus.CLOSED && !b.isDeleted,
+            )
             .map(a => [a.businessId.toString(), a]),
         );
 
@@ -134,7 +138,9 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
                 productAuditMap,
                 businessAuditMap,
               );
-              return audited ? this.localizeProduct(audited, query.locale) : null;
+              return audited
+                ? this.localizeProduct(audited, query.locale)
+                : null;
             })
             .filter(Boolean);
           return shuffled;
@@ -221,7 +227,9 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
                         productAuditMap,
                         businessAuditMap,
                       );
-                      return audited ? this.localizeProduct(audited, locale) : null;
+                      return audited
+                        ? this.localizeProduct(audited, locale)
+                        : null;
                     })
                     .filter(Boolean);
 

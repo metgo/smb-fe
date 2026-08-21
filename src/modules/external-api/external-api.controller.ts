@@ -19,9 +19,7 @@ import { GetSiteSettingSeoQuery } from './queries/get-site-setting-seo.query';
 
 @Controller('')
 export class ExternalApiController {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) { }
+  constructor(private readonly queryBus: QueryBus) {}
 
   // ── new: SEO only ──────────────────────────────────────────────────────
   @ApiEndpoint({
@@ -36,7 +34,9 @@ export class ExternalApiController {
     @Param('identifierId') identifierId: string,
     @Query('locale') locale: string = 'en',
   ) {
-    return this.queryBus.execute(new GetSiteSettingSeoQuery(identifierId, locale));
+    return this.queryBus.execute(
+      new GetSiteSettingSeoQuery(identifierId, locale),
+    );
   }
 
   // ── new: social and contact only ──────────────────────────────────────────────────────

@@ -20,10 +20,7 @@ interface ExpandedSearchResponse {
   parents: string[];
 }
 
-async function runGemini(
-  search: string,
-  apiKey: string,
-): Promise<string[]> {
+async function runGemini(search: string, apiKey: string): Promise<string[]> {
   const ai = new GoogleGenAI({ apiKey });
 
   const attempt = async (n: number): Promise<string[]> => {

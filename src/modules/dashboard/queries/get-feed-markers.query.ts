@@ -1,6 +1,3 @@
 export class GetFeedMarkersQuery {
-  constructor(
-    readonly identifierId?: string,
-    readonly campCode?: string,
-  ) {}
+  constructor(readonly identifierId?: string, readonly campCode?: string) {}
 }

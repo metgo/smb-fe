@@ -21,11 +21,10 @@ export class GetAllPOIsHandler implements IQueryHandler<GetAllPOIsQuery> {
     private PointOfInterestsAuditModel: Model<PointOfInterestsAudit>,
     @InjectModel(ExternalApi.name)
     private ExternalApiModel: Model<ExternalApi>,
-    // OLD:
-    // @InjectModel(Campaign.name)
-    // private CampaignModel: Model<Campaign>,
-    // private readonly campaignService: CampaignService,
-  ) {}
+  ) {} // OLD:
+  // @InjectModel(Campaign.name)
+  // private CampaignModel: Model<Campaign>,
+  // private readonly campaignService: CampaignService,
 
   async execute({ query }: GetAllPOIsQuery): Promise<any> {
     try {

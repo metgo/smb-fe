@@ -34,7 +34,10 @@ import {
 } from '../buss-categories/schema/buss.category.schema';
 import { Tags, TagsSchema } from '../tags/schema/tags.schema';
 import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
-import { ExternalApi, ExternalApiSchema } from '../external-api/schema/external-api.schema';
+import {
+  ExternalApi,
+  ExternalApiSchema,
+} from '../external-api/schema/external-api.schema';
 import {
   PointOfInterest,
   PointOfInterestSchema,

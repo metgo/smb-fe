@@ -135,7 +135,8 @@ export class VoucherController {
       status: HttpStatus.OK,
       description: ServerSuccess.VOUCHER.LISTED,
     },
-    operation: 'Get voucher detail by anyone using valid code for event tickets',
+    operation:
+      'Get voucher detail by anyone using valid code for event tickets',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,

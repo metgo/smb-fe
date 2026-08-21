@@ -130,7 +130,11 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
 
       const filteredProducts = productsList.data.filter((product: any) => {
         const business = product?.businessId as any;
-        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+        return (
+          business
+          && business.status === CommonStatus.APPROVED
+          && !business.isDeleted
+        );
       });
 
       const productsDeliveryInfo = await Promise.all(

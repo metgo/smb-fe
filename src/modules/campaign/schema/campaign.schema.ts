@@ -104,7 +104,6 @@ export class Campaign extends AuditableSchema {
     businessIds: mongoose.Types.ObjectId[];
 
   @Prop({
-
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: PointOfInterest.name }],
     ref: PointOfInterest.name,
     required: false,

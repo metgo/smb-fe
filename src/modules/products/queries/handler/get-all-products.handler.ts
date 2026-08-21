@@ -30,7 +30,7 @@ implements IQueryHandler<GetAllProductsQuery> {
     @InjectModel(BussCategory.name)
     private CategoryModel: Model<BussCategory>,
     private readonly productsService: ProductsService,
-  ) { }
+  ) {}
 
   async execute(queries: GetAllProductsQuery): Promise<any> {
     try {
@@ -72,7 +72,8 @@ implements IQueryHandler<GetAllProductsQuery> {
         return { totalData: 0, products: [] };
       }
 
-      let select = '_id productId slug name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId';
+      let select
+        = '_id productId slug name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId';
 
       let populate: any = [
         {
@@ -280,10 +281,16 @@ implements IQueryHandler<GetAllProductsQuery> {
             }),
           );
 
-          const filteredByVendorStatus = mappedProducts.filter((product: any) => {
-            const business = product?.businessId as any;
-            return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
-          });
+          const filteredByVendorStatus = mappedProducts.filter(
+            (product: any) => {
+              const business = product?.businessId as any;
+              return (
+                business
+                && business.status === CommonStatus.APPROVED
+                && !business.isDeleted
+              );
+            },
+          );
 
           const localizedProducts = await Promise.all(
             filteredByVendorStatus.map(p => this.productsService.localizeProduct(p, locale)),

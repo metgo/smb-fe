@@ -58,7 +58,9 @@ export class TripController {
     @Param('businessId') businessId: string,
     @Query() query?: GetTripsByBusinessIdRequest,
   ) {
-    return this.queryBus.execute(new GetTripsByBusinessIdQuery(businessId, query));
+    return this.queryBus.execute(
+      new GetTripsByBusinessIdQuery(businessId, query),
+    );
   }
 
   @ApiEndpoint({

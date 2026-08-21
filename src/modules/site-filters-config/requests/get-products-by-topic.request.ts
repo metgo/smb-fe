@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
-  IsArray, IsBoolean, IsNumber, IsOptional, IsString,
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
 } from 'class-validator';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { ToBoolean } from 'src/core/decorators/to-boolean.decorator';
@@ -62,19 +66,28 @@ export class GetProductsByTopicRequest extends LocaleFilterQuery {
   @IsOptional()
     hasDelivery: boolean;
 
-  @ApiProperty({ required: false, description: 'Center latitude for geo-radius filtering' })
+  @ApiProperty({
+    required: false,
+    description: 'Center latitude for geo-radius filtering',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
     lat?: number;
 
-  @ApiProperty({ required: false, description: 'Center longitude for geo-radius filtering' })
+  @ApiProperty({
+    required: false,
+    description: 'Center longitude for geo-radius filtering',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
     lng?: number;
 
-  @ApiProperty({ required: false, description: 'Radius in kilometers for geo-radius filtering' })
+  @ApiProperty({
+    required: false,
+    description: 'Radius in kilometers for geo-radius filtering',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()

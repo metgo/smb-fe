@@ -44,7 +44,9 @@ export class BlogService {
             slug: blog.slug,
             shortDescription: localized.shortDescription,
             image:
-              blog.images.find(img => img?.isPrimary) ?? blog.images[0] ?? null,
+              blog.images.find(img => img?.isPrimary)
+              ?? blog.images[0]
+              ?? null,
             tags: localized.tags,
             readTime: Math.ceil(
               localized.content.trim().split(/\s+/).length / 200,
@@ -115,7 +117,10 @@ export class BlogService {
             blog.metaDescriptionAr
             || blog.metaDescription
             || blog.metaDescriptionHe,
-          tags: (blog.tagsAr?.length && blog.tagsAr) || (blog.tags?.length && blog.tags) || blog.tagsHe,
+          tags:
+            (blog.tagsAr?.length && blog.tagsAr)
+            || (blog.tags?.length && blog.tags)
+            || blog.tagsHe,
         };
       case Locale.ENGLISH:
         return {
@@ -132,7 +137,10 @@ export class BlogService {
             blog.metaDescription
             || blog.metaDescriptionHe
             || blog.metaDescriptionAr,
-          tags: (blog.tags?.length && blog.tags) || (blog.tagsHe?.length && blog.tagsHe) || blog.tagsAr,
+          tags:
+            (blog.tags?.length && blog.tags)
+            || (blog.tagsHe?.length && blog.tagsHe)
+            || blog.tagsAr,
         };
       case Locale.HEBREW:
       default:
@@ -150,7 +158,10 @@ export class BlogService {
             blog.metaDescriptionHe
             || blog.metaDescription
             || blog.metaDescriptionAr,
-          tags: (blog.tagsHe?.length && blog.tagsHe) || (blog.tags?.length && blog.tags) || blog.tagsAr,
+          tags:
+            (blog.tagsHe?.length && blog.tagsHe)
+            || (blog.tags?.length && blog.tags)
+            || blog.tagsAr,
         };
     }
   }

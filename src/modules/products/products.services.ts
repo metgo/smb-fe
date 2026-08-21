@@ -32,7 +32,7 @@ export class ProductsService {
     private ProductModel: Model<Product>,
     @InjectModel(ProductsAudit.name)
     private ProductsAuditModel: Model<ProductsAudit>,
-  ) { }
+  ) {}
 
   async findOne(
     id: string | mongoose.Types.ObjectId,
@@ -73,7 +73,11 @@ export class ProductsService {
 
       const { productId, ...rest } = product;
 
-      const response = { ...rest, _id: productId, images: sanitizeImages(rest.images) };
+      const response = {
+        ...rest,
+        _id: productId,
+        images: sanitizeImages(rest.images),
+      };
 
       const mappedResponse = await this.localizeProduct(response, locale);
 
@@ -356,9 +360,12 @@ export class ProductsService {
         this.ProductsAuditModel.bulkWrite(auditBulkOps),
       ]);
 
-      this.logger.info('[DEDUCT QUANTITY]: Successfully deducted quantity from both collections', {
-        productCount: products.length,
-      });
+      this.logger.info(
+        '[DEDUCT QUANTITY]: Successfully deducted quantity from both collections',
+        {
+          productCount: products.length,
+        },
+      );
     } catch (error) {
       this.logger.error('[DEDUCT QUANTITY]: Failed to deduct quantity', {
         err: error.message,

@@ -20,7 +20,10 @@ import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-pop
 import { GetProductsByCampaignHandler } from './queries/handler/get-products-by-campaign.handler';
 import { MiniSiteController } from './mini-site.controller';
 import { Voucher, VoucherSchema } from '../vouchers/schema/voucher.schema';
-import { ProductsAudit, ProductsAuditSchema } from '../products/schema/products-audit.schema';
+import {
+  ProductsAudit,
+  ProductsAuditSchema,
+} from '../products/schema/products-audit.schema';
 
 @Module({
   imports: [

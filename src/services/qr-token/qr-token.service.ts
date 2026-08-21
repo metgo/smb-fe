@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
@@ -52,7 +56,13 @@ export class QrTokenService {
   async verifyToken(
     token: string,
     ipAddress?: string,
-  ): Promise<{ orderId: string; userId: string; vendorId?: string; email: string; role: string }> {
+  ): Promise<{
+    orderId: string;
+    userId: string;
+    vendorId?: string;
+    email: string;
+    role: string;
+  }> {
     try {
       // Verify JWT signature
       const decoded = this.jwtService.verify(token, {
