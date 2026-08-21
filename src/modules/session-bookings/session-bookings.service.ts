@@ -28,6 +28,7 @@ import { ExternalApiServices } from 'src/modules/external-api/external-api.servi
 import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 import { DocUploadService } from '../doc-upload/doc-upload.service';
+import { SmsService } from 'src/services/sms/sms.service';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const HOLD_TTL_MINUTES = 7;
@@ -50,7 +51,8 @@ export class SessionBookingsService {
     private readonly qrCodeService: QRCodeService,
     private readonly externalApiService: ExternalApiServices,
     private readonly docUploadService: DocUploadService,
-  ) {}
+    private readonly smsService: SmsService,
+  ) { }
 
   // ── Helper Methods ───────────────────────────────────────────────────────────
 
@@ -558,7 +560,7 @@ export class SessionBookingsService {
       if (existingConfirmed) {
         throw new ConflictException(
           `You already have a confirmed booking for this session (Ref: ${existingConfirmed.bookingReference}). `
-            + 'Please contact support if you need to modify your booking.',
+          + 'Please contact support if you need to modify your booking.',
         );
       }
     }
@@ -586,7 +588,7 @@ export class SessionBookingsService {
         return result;
       } catch (err) {
         // eslint-disable-next-line no-await-in-loop
-        await mongoSession.abortTransaction().catch(() => {});
+        await mongoSession.abortTransaction().catch(() => { });
 
         const isTransient
           = (err as any)?.errorLabels?.includes?.('TransientTransactionError')
@@ -1095,6 +1097,9 @@ export class SessionBookingsService {
         confirmedAt,
       });
 
+      let finalMergeVars: any = null;
+      let finalSessionsData: any[] = [];
+
       // ── 7. Send Email #3: SessionBookingConfirmationFinal ──────────────────
       try {
         // Look up externalApi from the order linked to this customer's email
@@ -1131,6 +1136,8 @@ export class SessionBookingsService {
           );
 
           const { FE } = this.configService.baseUrl;
+          const feBase = externalApi?.websiteUrl || '';
+          const feUrl = feBase.endsWith('/') ? feBase.slice(0, -1) : feBase;
 
           // Format dates in Hebrew locale
           const formatDate = (dateStr: string) => {
@@ -1311,11 +1318,15 @@ export class SessionBookingsService {
             SESSIONS_HTML: sessionsHtml,
             TOTAL_SESSIONS: confirmedBookings.length,
             BUTTON_LINK: externalApi?.websiteUrl,
+            ORDER_HISTORY_LINK: `${feUrl}/session-confirmation?bookingId=${holds[0]._id}`,
             BUSINESSADDRESS: '',
             SUPPORT_EMAIL: externalApi?.email || 'support@metgo.app',
             SUPPORT_PHONE: externalApi?.whatsappNumber || '',
             MANAGEMENT_LINK: externalApi?.websiteUrl || '',
           };
+
+          finalMergeVars = mergeVars;
+          finalSessionsData = sessionsData;
 
           await this.mailchimpService.sendTransactionalEmail({
             to: payload.email,
@@ -1333,6 +1344,40 @@ export class SessionBookingsService {
               totalSessions: confirmedBookings.length,
             },
           );
+
+          if (payload.phone) {
+            try {
+              const siteName = externalApi?.name || 'MetGo';
+              const confirmationLink = `${feUrl}/session-confirmation?bookingId=${holds[0]._id}`;
+
+              const smsMessage = `שלום ${payload.name || ''}\nההזמנה שלך למפגשים אושרה בהצלחה! ✅\nלצפייה בפרטי ההזמנה והכרטיסים (QR קוד), לחץ כאן:\n${confirmationLink}\n(הפרטים נשלחו גם לכתובת המייל שלך).\nבברכה צוות ${siteName}\nלתמיכה: ${externalApi?.email || 'support@metgo.app'}`;
+
+              // Ensure phone has proper format, remove leading 0 if present, default country code 972
+              let formattedPhone = payload.phone.replace(/^0+/, '');
+              if (!formattedPhone.startsWith('972')) {
+                formattedPhone = `972${formattedPhone}`;
+              }
+
+              await this.smsService.sendSms({
+                firstName: payload.name || '',
+                lastName: '',
+                phone: `+${formattedPhone}`,
+                message: smsMessage,
+                sender: 'TAV8',
+                subject: 'Session Booking Confirmation',
+              });
+
+              this.logger.info('[SESSION_BOOKINGS]: Combined confirmation SMS sent', {
+                phone: payload.phone,
+                totalSessions: confirmedBookings.length,
+              });
+            } catch (smsError) {
+              this.logger.error('[SESSION_BOOKINGS]: Failed to send confirmation SMS', {
+                error: smsError instanceof Error ? smsError.message : String(smsError),
+                phone: payload.phone,
+              });
+            }
+          }
         }
       } catch (emailErr) {
         // Non-blocking: log error but don't fail the confirmation
@@ -1355,6 +1400,9 @@ export class SessionBookingsService {
           confirmedAt,
           purchaserEmail: payload.email,
         },
+        templateId: finalMergeVars ? DynamicEmailTemplate.SessionBookingConfirmationFinal : undefined,
+        mergeVars: finalMergeVars || undefined,
+        sessions: finalSessionsData.length > 0 ? finalSessionsData : undefined,
       };
     } catch (err) {
       await mongoSession.abortTransaction();
@@ -1365,6 +1413,231 @@ export class SessionBookingsService {
     } finally {
       await mongoSession.endSession();
     }
+  }
+
+  /**
+   * Get confirmation details for a booked session via GET request.
+   */
+  async getConfirmationDetails(bookingId: string) {
+    if (!bookingId) {
+      throw new BadRequestException('Booking ID is required');
+    }
+
+    const initialBooking = await this.sessionBookingModel.findOne({
+      _id: bookingId,
+      status: 'CONFIRMED',
+      isDeleted: { $ne: true },
+    }).lean();
+
+    if (!initialBooking) {
+      throw new NotFoundException('Confirmed booking not found for this ID');
+    }
+
+    const { email, name } = initialBooking.purchaserInfo;
+    const { wrapperId } = initialBooking;
+
+    const confirmedBookings = await this.sessionBookingModel.find({
+      'purchaserInfo.email': email,
+      wrapperId,
+      status: 'CONFIRMED',
+      isDeleted: { $ne: true },
+    }).lean();
+
+    let wrapperForCapacity: any;
+    try {
+      wrapperForCapacity = await this.connection
+        .collection('sessionwrappers')
+        .findOne({
+          _id: new ObjectId(wrapperId),
+          isDeleted: { $ne: true },
+        } as any);
+
+      if (!wrapperForCapacity) {
+        throw new NotFoundException('Session wrapper not found');
+      }
+    } catch (err) {
+      this.logger.error('[SESSION_BOOKINGS]: Failed to fetch wrapper for GET details', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+      throw new NotFoundException('Failed to fetch event details');
+    }
+
+    const blocks = wrapperForCapacity?.blocks || [];
+    const { identifierId } = confirmedBookings[0];
+
+    let externalApi: any = null;
+    const externalApiId = wrapperForCapacity?.externalApiId;
+    if (externalApiId) {
+      externalApi = await this.externalApiService.getById(String(externalApiId));
+    }
+    if (!externalApi) {
+      externalApi = await this.externalApiService.findByIdentifierId(identifierId);
+    }
+
+    let emailFields: any = {};
+    if (externalApi) {
+      const result = await getCommonEmailFields(externalApi, this.docUploadService);
+      emailFields = result.emailFields;
+    }
+
+    const { FE } = this.configService.baseUrl;
+    const feBase = externalApi?.websiteUrl || '';
+    const feUrl = feBase.endsWith('/') ? feBase.slice(0, -1) : feBase;
+
+    const formatDate = (dateStr: string) => {
+      try {
+        return new Date(dateStr).toLocaleDateString('he-IL', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      } catch {
+        return dateStr;
+      }
+    };
+
+    const sessionsWithBlocks = confirmedBookings.map(async (booking: any) => {
+      const sessionData = (wrapperForCapacity.sessions || []).find(
+        (s: any) => s._id.toString() === booking.sessionId,
+      );
+      const sessionGreeting = sessionData?.greeting || '';
+
+      let blockInfo = null;
+      if (blocks.length > 0) {
+        const block = blocks.find(
+          (b: any) => b.isActive && (b.sessionIds || []).includes(booking.sessionId),
+        );
+        if (block) {
+          blockInfo = {
+            name: block.name,
+            description: block.description,
+            bookingLimit: block.bookingLimit,
+          };
+        }
+      }
+
+      const checkInUrl = `${FE}verify-session/${wrapperId}/${booking.bookingId || booking._id}`;
+      let checkInQrUrl = '';
+      try {
+        checkInQrUrl = await this.qrCodeService.generateQRCode(
+          checkInUrl,
+          `checkin-${booking.bookingReference}`,
+        );
+      } catch (qrErr) {
+        // ignore
+      }
+
+      return {
+        sessionId: booking.sessionId,
+        sessionName: sessionData?.name || '',
+        sessionGreeting,
+        slotDate: formatDate(booking.slotDate),
+        slotTime: booking.slotTime,
+        room: booking.room || 'לא צוין',
+        bookingReference: booking.bookingReference,
+        qrCodeUrl: checkInQrUrl || checkInUrl,
+        checkInUrl,
+        blockInfo,
+      };
+    });
+
+    const sessionsData = await Promise.all(sessionsWithBlocks);
+
+    const sessionsByBlock: any = {};
+    if (blocks.length > 0) {
+      blocks.forEach((block: any) => {
+        if (block.isActive) {
+          sessionsByBlock[block.name] = {
+            description: block.description,
+            bookingLimit: block.bookingLimit,
+            sessions: sessionsData.filter((s: any) => s.blockInfo?.name === block.name),
+          };
+        }
+      });
+      const ungroupedSessions = sessionsData.filter((s: any) => !s.blockInfo);
+      if (ungroupedSessions.length > 0) {
+        sessionsByBlock.general = {
+          description: '',
+          bookingLimit: sessionsData.length,
+          sessions: ungroupedSessions,
+        };
+      }
+    } else {
+      sessionsByBlock.general = {
+        description: '',
+        bookingLimit: sessionsData.length,
+        sessions: sessionsData,
+      };
+    }
+
+    let sessionsHtml = '';
+    Object.keys(sessionsByBlock).forEach(blockName => {
+      const block = sessionsByBlock[blockName];
+
+      sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f9f9f9; border-radius: 8px; margin: 20px 0;">';
+      sessionsHtml += '<tr><td style="padding: 15px;">';
+
+      if (blockName !== 'general') {
+        sessionsHtml += `<p style="margin: 0 0 5px 0; font-weight: bold; color: #313131; text-align: right; font-size: 16px;">📦 ${blockName}</p>`;
+        if (block.description) {
+          sessionsHtml += `<p style="margin: 0 0 10px 0; color: #666; text-align: right; font-size: 13px;">${block.description}</p>`;
+        }
+        sessionsHtml += `<p style="margin: 0 0 15px 0; color: #1976d2; text-align: right; font-size: 12px;">נבחרו ${block.sessions.length} מתוך ${block.bookingLimit} מפגשים</p>`;
+      } else {
+        sessionsHtml += '<p style="margin: 0 0 15px 0; font-weight: bold; color: #313131; text-align: right; font-size: 16px;">📋 מפגשים כלליים</p>';
+      }
+
+      block.sessions.forEach((session: any) => {
+        sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 6px; margin: 10px 0; border: 1px solid #e0e0e0;">';
+        sessionsHtml += '<tr><td style="padding: 12px;">';
+        sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0">';
+        sessionsHtml += '<tr>';
+        sessionsHtml += '<td style="padding: 0; width: 70%; vertical-align: top;">';
+        sessionsHtml += `<p style="margin: 0 0 8px 0; font-weight: bold; color: #313131; text-align: right; font-size: 14px;">${session.sessionName}</p>`;
+        if (session.sessionGreeting) {
+          sessionsHtml += `<p style="margin: 0 0 8px 0; color: #666; text-align: right; font-size: 12px; font-style: italic;">${session.sessionGreeting}</p>`;
+        }
+        sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0">';
+        sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>תאריך:</strong> ${session.slotDate}</td></tr>`;
+        sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>שעה:</strong> ${session.slotTime}</td></tr>`;
+        sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>חדר/מטפל:</strong> ${session.room}</td></tr>`;
+        sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>מספר הזמנה:</strong> ${session.bookingReference}</td></tr>`;
+        sessionsHtml += '</table>';
+        sessionsHtml += '</td>';
+        sessionsHtml += '<td style="padding: 0; width: 30%; vertical-align: middle; text-align: center;">';
+        sessionsHtml += `<img src="${session.qrCodeUrl}" alt="QR Code" width="100" height="100" class="qr-code" style="width: 100px; height: 100px; border: 2px solid #4caf50; border-radius: 8px;">`;
+        sessionsHtml += '<p style="margin: 5px 0 0 0; color: #666; text-align: center; font-size: 10px;">סרוק להגעה</p>';
+        sessionsHtml += '</td>';
+        sessionsHtml += '</tr>';
+        sessionsHtml += '</table>';
+        sessionsHtml += '</td></tr>';
+        sessionsHtml += '</table>';
+      });
+
+      sessionsHtml += '</td></tr>';
+      sessionsHtml += '</table>';
+    });
+
+    const mergeVars = {
+      ...emailFields,
+      CUSTOMER_NAME: name,
+      CUSTOMER_EMAIL: email,
+      SESSIONS_HTML: sessionsHtml,
+      TOTAL_SESSIONS: confirmedBookings.length,
+      BUTTON_LINK: externalApi?.websiteUrl,
+      ORDER_HISTORY_LINK: `${feUrl}/session-confirmation?bookingId=${bookingId}`,
+      BUSINESSADDRESS: '',
+      SUPPORT_EMAIL: externalApi?.email || 'support@metgo.app',
+      SUPPORT_PHONE: externalApi?.whatsappNumber || '',
+      MANAGEMENT_LINK: externalApi?.websiteUrl || '',
+    };
+
+    return {
+      templateId: DynamicEmailTemplate.SessionBookingConfirmationFinal,
+      mergeVars,
+      sessions: sessionsData,
+    };
   }
 
   /**

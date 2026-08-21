@@ -3109,7 +3109,7 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
-    const childOrders = await this.OrderModel.find({ parentOrderId: orderId }).select('_id').lean();
+    const childOrders = await this.OrderModel.find({ parentOrderId: orderId }).select('_id vendorId qrCodeUrl').lean();
     const orderIdsToSearch = childOrders.length > 0
       ? [orderId, ...childOrders.map(c => c._id.toString())]
       : [orderId];
@@ -3130,6 +3130,27 @@ export class OrdersService {
       (op: any) => op.itemType === OrderItemType.TICKET,
     );
     const websiteUrl = (externalApi?.websiteUrl || '').replace(/\/$/, '');
+
+    // Generate QR code scan URL with token
+    let qrCodeScanUrl = '';
+    try {
+      const vendorOwner = await this.getVendorOwnerForOrder(orderId);
+      if (vendorOwner) {
+        const token = await this.qrTokenService.generateToken(
+          orderId,
+          vendorOwner.userId,
+          vendorOwner.email || '',
+          'traveller',
+        );
+        const { FE } = this.configService.baseUrl;
+        qrCodeScanUrl = `${FE}orders-management?token=${token}&orderId=${orderId}`;
+      }
+    } catch (error) {
+      this.logger.warn('[ORDER]: FAILED TO GENERATE QR SCAN URL', {
+        orderId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
 
     let productInfoList: any[] = [];
     if (productIds.length > 0) {
@@ -3263,6 +3284,37 @@ export class OrdersService {
         businessIds as any[],
       );
 
+      // Generate vendor-specific QR code scan URLs
+      const vendorQrScanUrls: { [vendorId: string]: string } = {};
+      await Promise.all(
+        childOrders.map(async (childOrder: any) => {
+          if (childOrder.vendorId) {
+            try {
+              const vendorOwner = await this.getVendorOwnerForOrder(
+                childOrder._id.toString(),
+                childOrder.vendorId.toString(),
+              );
+              if (vendorOwner) {
+                const token = await this.qrTokenService.generateToken(
+                  childOrder._id.toString(),
+                  vendorOwner.userId,
+                  vendorOwner.email || '',
+                  'traveller',
+                );
+                const { FE } = this.configService.baseUrl;
+                vendorQrScanUrls[childOrder.vendorId.toString()] = `${FE}orders-management?token=${token}&orderId=${childOrder._id.toString()}`;
+              }
+            } catch (error) {
+              this.logger.warn('[ORDER]: FAILED TO GENERATE VENDOR QR SCAN URL', {
+                vendorOrderId: childOrder._id,
+                vendorId: childOrder.vendorId,
+                error: error instanceof Error ? error.message : String(error),
+              });
+            }
+          }
+        }),
+      );
+
       vendors = businessDetails.map((business: any) => {
         const vendorProducts = products.filter(
           p => p.businessId === business._id?.toString(),
@@ -3275,12 +3327,12 @@ export class OrdersService {
           (acc, p) => acc + (p.deliveryFee || 0),
           0,
         );
-        // QR code for this vendor is stored on the order product
-        const vendorQrCodeUrl
-          = orderProducts.find(op => productInfoList.find(
-            (pi: any) => pi._id.toString() === op.itemId.toString()
-              && pi.businessId?.toString() === business._id?.toString(),
-          ))?.qrCodeUrl || '';
+        // QR code for this vendor is stored on the child order (vendor-specific order)
+        const vendorChildOrder = childOrders.find(
+          co => co.vendorId?.toString() === business._id?.toString(),
+        );
+        const vendorQrCodeUrl = vendorChildOrder?.qrCodeUrl || '';
+        const vendorQrCodeScanUrl = vendorQrScanUrls[business._id?.toString()] || '';
 
         return {
           vendorName: business.name || '',
@@ -3291,6 +3343,7 @@ export class OrdersService {
           deliveryFee: vendorDeliveryFee,
           total: vendorSubtotal + vendorDeliveryFee,
           qrCodeUrl: vendorQrCodeUrl,
+          qrCodeScanUrl: vendorQrCodeScanUrl,
         };
       });
     }
@@ -3318,6 +3371,7 @@ export class OrdersService {
         // create-minisite-orders-for-client uses QRCODEURL
         CUSTOMER_QRCODEURL: (order as any).qrCodeUrl || '',
         QRCODEURL: (order as any).qrCodeUrl || '',
+        QRCODE_SCAN_URL: qrCodeScanUrl,
 
         // ── Event / Ticket specific ──
         EVENT_NAME: eventName,

@@ -17,6 +17,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 import { DocUploadModule } from '../doc-upload/doc-upload.module';
+import { SmsModule } from 'src/services/sms/sms.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { DocUploadModule } from '../doc-upload/doc-upload.module';
     ConfigModule,
     DocUploadModule,
     QRCodeModule,
+    SmsModule,
     forwardRef(() => ExternalApiModule),
     forwardRef(() => UsersModule),
     forwardRef(() => AuthorityModule),
@@ -37,4 +39,4 @@ import { DocUploadModule } from '../doc-upload/doc-upload.module';
   providers: [SessionBookingsService, SessionBookingsGateway],
   exports: [SessionBookingsService, SessionBookingsGateway],
 })
-export class SessionBookingsModule {}
+export class SessionBookingsModule { }

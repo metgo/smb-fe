@@ -9,6 +9,9 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import {
+  ApiOperation, ApiQuery, ApiResponse, ApiTags,
+} from '@nestjs/swagger';
 
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { SessionBookingsService } from './session-bookings.service';
@@ -17,13 +20,14 @@ import { ConfirmSessionHoldDto } from './dto/confirm-session-hold.dto';
 import { CreateSessionHoldDto } from './dto/create-session-hold.dto';
 import { GenerateTestTokenDto } from './dto/generate-test-token.dto';
 import { GetSessionByWrapperIdDto } from './dto/get-session-by-wrapper-id.dto';
+import { GetConfirmationDetailsDto } from './dto/get-confirmation-details.dto';
 
 @Controller('session-bookings')
 export class SessionBookingsController {
   constructor(
     private readonly sessionBookingsService: SessionBookingsService,
     private readonly sessionBookingsGateway: SessionBookingsGateway,
-  ) {}
+  ) { }
 
   /**
    * ⚠️ TESTING ONLY - Generate encrypted token for testing
@@ -95,6 +99,18 @@ export class SessionBookingsController {
   @Get('resolve/:token')
   async resolveInviteToken(@Param('token') token: string) {
     return this.sessionBookingsService.resolveInviteToken(token);
+  }
+
+  @ApiTags('Session Bookings - Public')
+  @ApiOperation({ summary: 'Get confirmation details for a booked session' })
+  @ApiQuery({ name: 'bookingId', required: true, description: 'The booking ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Session confirmation details retrieved successfully' })
+  @HttpCode(HttpStatus.OK)
+  @Get('confirmation-details')
+  async getConfirmationDetails(
+    @Query() dto: GetConfirmationDetailsDto,
+  ) {
+    return this.sessionBookingsService.getConfirmationDetails(dto.bookingId);
   }
 
   /**
@@ -198,6 +214,7 @@ export class SessionBookingsController {
   async confirmSessionHold(@Body() dto: ConfirmSessionHoldDto) {
     const result = await this.sessionBookingsService.confirmSessionHold(dto);
 
+    // Emit availability update after successful confirmation (fire-and-forget)
     // Emit availability update after successful confirmation (fire-and-forget)
     if (result?.data?.wrapperId) {
       this.sessionBookingsGateway
