@@ -8,7 +8,7 @@ import { routes } from "@/lib/routes";
 import { tripTabs } from "@/constants/tabs";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Spinner, TabsSection } from "@/components/shared";
-import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { StatusChangeBtn } from "@/components/btns";
 import { ChatWithCreator } from "@/components/chat-popup";
 import {
   DetailTitleSection,
