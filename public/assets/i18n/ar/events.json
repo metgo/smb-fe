@@ -367,5 +367,8 @@
   "payment_date": "تاريخ الدفع",
   "order_product_id": "معرّف منتج الطلب",
   "resend_email_to_customer": "إعادة إرسال البريد الإلكتروني للعميل",
-  "notify_customer_by": "إشعار العميل عبر"
+  "notify_customer_by": "إشعار العميل عبر",
+  "save_order": "حفظ الترتيب",
+  "order_saved_successfully": "تم حفظ ترتيب التذاكر بنجاح",
+  "reorder_failed": "فشل حفظ ترتيب التذاكر"
 }

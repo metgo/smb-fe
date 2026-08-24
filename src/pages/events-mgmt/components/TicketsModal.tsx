@@ -82,17 +82,24 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
   ]);
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
-  const [updateTicketReorder] = useUpdateTicketReorderMutation();
+  const [updateTicketReorder, { isLoading: isReordering }] =
+    useUpdateTicketReorderMutation();
   const isTicketDisabled = !eventDays?.length || !eventDays[0]?.date;
 
-  // ── Local ordered tickets (optimistic reorder) ───────────────────────────
+  // ── Local ordered tickets ────────────────────────────────────────────────
   const [orderedTickets, setOrderedTickets] = useState<any[]>([]);
 
   useEffect(() => {
     if (tickets) setOrderedTickets(tickets);
   }, [tickets]);
 
-  const handleDragEnd = async (result: DropResult) => {
+  // True when the user has dragged tickets into a different order than the server
+  const isOrderChanged =
+    !!tickets &&
+    orderedTickets.length === tickets.length &&
+    orderedTickets.some((t: any, i: number) => t._id !== tickets[i]._id);
+
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     if (result.destination.index === result.source.index) return;
 
@@ -100,17 +107,21 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
 
-    setOrderedTickets(reordered); // optimistic update
+    setOrderedTickets(reordered);
+  };
 
+  const handleSaveOrder = async () => {
     try {
       await updateTicketReorder({
         body: {
           eventId,
-          ticketIds: reordered.map((t: any) => t._id),
+          ticketIds: orderedTickets.map((t: any) => t._id),
         },
       }).unwrap();
+      toast.success(t("order_saved_successfully"));
+      refetch();
     } catch {
-      setOrderedTickets(tickets ?? []); // revert on error
+      setOrderedTickets(tickets ?? []);
       toast.error(t("reorder_failed"));
     }
   };
@@ -204,27 +215,45 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
             {t("event_tickets")}
           </h2>
 
-          {!hasExternalTicket && (
-            <TooltipWrapper
-              infoText={`🗓 ${t("select_event_day_first")}`}
-              showToolTip={isTicketDisabled}
-            >
-              <span className="inline-block">
-                <button
-                  type="button"
-                  disabled={isTicketDisabled}
-                  onClick={openCreateModal}
-                  className={clsx(
-                    "px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg transition-all bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20",
-                    isTicketDisabled && "opacity-50 cursor-not-allowed",
-                  )}
-                >
-                  <Plus className="w-5 h-5" />
-                  {t("create_ticket")}
-                </button>
-              </span>
-            </TooltipWrapper>
-          )}
+          <div className="flex items-center gap-3">
+            {isOrderChanged && (
+              <button
+                type="button"
+                onClick={handleSaveOrder}
+                disabled={isReordering}
+                className={clsx(
+                  "px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg transition-all text-white",
+                  isReordering
+                    ? "bg-blue-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20",
+                )}
+              >
+                {isReordering ? `${t("saving")}...` : t("save_order")}
+              </button>
+            )}
+
+            {!hasExternalTicket && (
+              <TooltipWrapper
+                infoText={`🗓 ${t("select_event_day_first")}`}
+                showToolTip={isTicketDisabled}
+              >
+                <span className="inline-block">
+                  <button
+                    type="button"
+                    disabled={isTicketDisabled}
+                    onClick={openCreateModal}
+                    className={clsx(
+                      "px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg transition-all bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20",
+                      isTicketDisabled && "opacity-50 cursor-not-allowed",
+                    )}
+                  >
+                    <Plus className="w-5 h-5" />
+                    {t("create_ticket")}
+                  </button>
+                </span>
+              </TooltipWrapper>
+            )}
+          </div>
         </div>
 
         <div>
