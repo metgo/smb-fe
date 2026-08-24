@@ -219,6 +219,11 @@
   "payable": "Payable",
   "delivery_fee": "Delivery Fee",
   "bank_transfer_export_ready": "Bank Transfer Export Ready",
-  "bank_transfer_export_desc": "The bank transfer Excel file has been generated and downloaded automatically.",
-  "close": "Close"
+  "bank_transfer_export_desc": "Review the bank transfer details below, or download the Excel file.",
+  "bank_transfer_export_generating": "Generating bank transfer Excel file...",
+  "bank_transfer_export_preview_error": "Couldn't preview the file. Please download it instead.",
+  "close": "Close",
+  "download": "Download",
+  "bank_details": "Bank Details",
+  "bank_details_incomplete_info": "Add your bank details to receive order payments."
 }

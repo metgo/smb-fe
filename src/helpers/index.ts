@@ -13,6 +13,52 @@ const formatLocalDate = (d: Date) => {
   return `${y}-${m}-${day}`;
 };
 
+const MONTH_FILTER_LOCALE_MAP: Record<Language, string> = {
+  en: "en-US",
+  ar: "ar",
+  he: "he",
+};
+
+export function getMonthFilterLocale(language: Language): string {
+  return MONTH_FILTER_LOCALE_MAP[language] ?? "en-US";
+}
+
+export function getCurrentMonthFilterValue(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = now.getFullYear();
+  return `${month}-${year}`;
+}
+
+// Renders a MonthFilter value ("MM-YYYY") as "M/YYYY - MonthName" in the
+// given locale, e.g. "8/2026 - August".
+export function formatMonthFilterLabel(month: string, locale: string): string {
+  const [m, year] = month.split("-");
+  const date = new Date(Number(year), Number(m) - 1, 1);
+  const monthName = date.toLocaleDateString(locale, { month: "long" });
+  return `${Number(m)}/${year} - ${monthName}`;
+}
+
+// Resolves a MonthFilter value ("MM-YYYY", "all", or "custom") plus its
+// optional custom date range to the {year, month} pair exports send the
+// backend, defaulting to the current calendar month.
+export function getYearMonthFromFilter(
+  month: string,
+  customDateFrom?: string,
+  customDateTo?: string,
+): { year: number; month: number } {
+  if (month === "custom" && (customDateFrom || customDateTo)) {
+    const date = new Date(customDateFrom || customDateTo || "");
+    return { year: date.getFullYear(), month: date.getMonth() + 1 };
+  }
+  if (month && month !== "all" && month !== "custom") {
+    const [m, year] = month.split("-").map(Number);
+    return { year, month: m };
+  }
+  const now = new Date();
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
 // Shared by the orders table and the vendor payment summary cards so both
 // scope to the same calendar month/range for a given MonthFilter value.
 export function buildDateScopeParams(

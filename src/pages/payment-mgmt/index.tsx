@@ -34,6 +34,11 @@ import { useBusinessSearch } from "./hooks/useBusinessSearch";
 import { useOrderStats } from "./hooks/useOrderStats";
 import { useOrderActions } from "./hooks/useOrderActions";
 import { mapOrderProductList, buildOrderColumns } from "./helpers";
+import {
+  formatMonthFilterLabel,
+  getCurrentMonthFilterValue,
+  getMonthFilterLocale,
+} from "@/helpers";
 
 export const PaymentMgmtPage = () => {
   const { t } = useTranslation("reconciliation");
@@ -173,7 +178,6 @@ export const PaymentMgmtPage = () => {
     setShowCloseAllOrdersModal,
     showBulkCompleteConfirm,
     setShowBulkCompleteConfirm,
-    selectedItems,
     reopenFetchingId,
     isDetailsLoading,
     isBulkCompleting,
@@ -248,17 +252,20 @@ export const PaymentMgmtPage = () => {
             >
               {tc("vendor_reconciliation")}
             </h1>
-            {filters.month !== "all" && (
-              <span
-                className={`text-xs font-medium px-2 py-0.5 rounded-full ${bgSecondary} ${textSecondary}`}
-              >
-                {filters.month === "custom"
-                  ? filters.startDate && filters.endDate
-                    ? `${filters.startDate} - ${filters.endDate}`
-                    : t("customRange")
-                  : filters.month.split("-").join("/")}
-              </span>
-            )}
+            <span
+              className={`text-2xl md:text-3xl px-2 py-0.5 rounded-full ${bgSecondary} ${textSecondary}`}
+            >
+              {filters.month === "custom"
+                ? filters.startDate && filters.endDate
+                  ? `${filters.startDate} - ${filters.endDate}`
+                  : t("customRange")
+                : formatMonthFilterLabel(
+                    filters.month === "all"
+                      ? getCurrentMonthFilterValue()
+                      : filters.month,
+                    getMonthFilterLocale(language),
+                  )}
+            </span>
           </div>
           <p className={clsx("text-sm md:text-base", textSecondary)}>
             {t("review_and_approve_orders")}
@@ -266,24 +273,27 @@ export const PaymentMgmtPage = () => {
         </div>
         {adminView ? (
           <button
+            type="button"
             onClick={() => setShowCloseAllOrdersModal(true)}
-            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+            className="px-3 py-1.5 cursor-pointer rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
           >
             {t("close_all_orders")}
           </button>
         ) : (
           <div className="flex flex-col justify-end items-end gap-2">
             <button
+              type="button"
               onClick={handleUpdateVendorBankDetails}
-              className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+              className="px-3 py-1.5 cursor-pointer rounded bg-green-600 hover:bg-green-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
             >
               <Landmark className="w-4 h-4" />
               {t("bank_details")}
             </button>
-            <span className={clsx("text-xs", textSecondary)}>
-              Your bank details is not completed. So please complete your for
-              got your order payments.
-            </span>
+            {!vendorBankDetails?.bankAccount && (
+              <span className={clsx("text-xs font-semibold text-red-500")}>
+                {t("bank_details_incomplete_info")}
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -455,9 +465,9 @@ export const PaymentMgmtPage = () => {
             )}
 
             <ExportOrdersButton
-              orders={orders}
-              selectedOrders={selectedItems}
               t={t}
+              vendorId={activeVendor?.vendor_info._id || ""}
+              vendorName={activeVendor?.vendor_info.name || "-"}
               monthFilter={filters.month}
               customDateFrom={filters.startDate}
               customDateTo={filters.endDate}
@@ -752,6 +762,9 @@ export const PaymentMgmtPage = () => {
       {showCloseAllOrdersModal && (
         <CloseAllOrdersModal
           targetMonthLabel={closeAllOrdersTargetMonthLabel}
+          monthFilter={filters.month}
+          customDateFrom={filters.startDate}
+          customDateTo={filters.endDate}
           sweptMonths={finalizeSweepPreview?.sweptMonths ?? []}
           isLoadingPreview={isFetchingSweepPreview}
           hasPreviewError={isSweepPreviewError}

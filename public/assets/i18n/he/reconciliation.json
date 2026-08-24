@@ -217,6 +217,11 @@
   "payable": "לתשלום",
   "delivery_fee": "דמי משלוח",
   "bank_transfer_export_ready": "ייצוא העברה בנקאית מוכן",
-  "bank_transfer_export_desc": "קובץ האקסל של העברה בנקאית נוצר והורד באופן אוטומטי.",
-  "close": "סגור"
+  "bank_transfer_export_desc": "עיינו בפרטי ההעברה הבנקאית למטה, או הורידו את קובץ האקסל.",
+  "bank_transfer_export_generating": "יוצר קובץ אקסל להעברה בנקאית...",
+  "bank_transfer_export_preview_error": "לא ניתן היה להציג תצוגה מקדימה של הקובץ. אנא הורידו אותו במקום זאת.",
+  "close": "סגור",
+  "download": "הורדה",
+  "bank_details": "פרטי בנק",
+  "bank_details_incomplete_info": "הוסיפו את פרטי הבנק שלכם כדי לקבל תשלומים עבור הזמנות."
 }

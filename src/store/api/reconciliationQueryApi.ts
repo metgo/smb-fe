@@ -299,10 +299,22 @@ export const reconciliationQueryApi = createApi({
 
     exportBankTransferXlsx: builder.mutation<
       Blob,
-      { year: number; month: number }
+      { year: number; month: number; locale?: Language }
     >({
       query: (body) => ({
         url: endpoints.exportBankTransferXlsx,
+        method: "POST",
+        data: body,
+        responseType: "blob",
+      }),
+    }),
+
+    exportVendorwiseXlsx: builder.mutation<
+      Blob,
+      { vendorId: string; year: number; month: number; locale?: Language }
+    >({
+      query: (body) => ({
+        url: endpoints.exportVendorwiseXlsx,
         method: "POST",
         data: body,
         responseType: "blob",
@@ -328,4 +340,5 @@ export const {
   usePreviewFinalizeClosedOrdersQuery,
   useGetVendorPaymentSummaryQuery,
   useExportBankTransferXlsxMutation,
+  useExportVendorwiseXlsxMutation,
 } = reconciliationQueryApi;

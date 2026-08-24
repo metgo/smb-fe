@@ -216,9 +216,11 @@ const VendorBankDetails = ({
               isDark ? "text-white" : "text-gray-900",
             )}
           >
-            {savedBankAccount
-              ? t("edit_bank_account") || "Edit Bank Account"
-              : t("add_bank_account") || "Add Bank Account"}
+            {adminView
+              ? t("vendor_bank_details") || "Vendor Bank Details"
+              : savedBankAccount
+                ? t("edit_bank_account") || "Edit Bank Account"
+                : t("add_bank_account") || "Add Bank Account"}
           </h3>
           <p
             className={clsx(
@@ -226,7 +228,10 @@ const VendorBankDetails = ({
               isDark ? "text-gray-400" : "text-gray-500",
             )}
           >
-            {t("bank_account_subtitle") || "Fill in the details below"}
+            {adminView
+              ? t("vendor_bank_details_subtitle") ||
+                "View the vendor's saved bank account information"
+              : t("bank_account_subtitle") || "Fill in the details below"}
           </p>
         </div>
 
@@ -539,34 +544,6 @@ const VendorBankDetails = ({
                         {savedBankAccount.businessNumberByGovt}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Action Button for Admin */}
-                  <div className="flex justify-end mt-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditing(true);
-                        // Pre-fill the form with existing data
-                        if (savedBankAccount) {
-                          setSelectedBankNumber(savedBankAccount.bankNumber);
-                          setSelectedBranchNumber(
-                            savedBankAccount.branchNumber,
-                          );
-                          setBankAccountData({
-                            bankNumber: savedBankAccount.bankNumber,
-                            branchNumber: savedBankAccount.branchNumber,
-                            accountNumber: savedBankAccount.accountNumber,
-                            bnNumber: savedBankAccount.businessNumberByGovt,
-                            invoiceName: savedBankAccount.invoiceName,
-                          });
-                        }
-                      }}
-                      className="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium transition-colors flex items-center gap-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      {t("edit_bank_account") || "Edit Bank Account"}
-                    </button>
                   </div>
                 </div>
               ) : (

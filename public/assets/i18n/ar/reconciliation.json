@@ -215,6 +215,11 @@
   "payable": "المستحق",
   "delivery_fee": "رسوم التوصيل",
   "bank_transfer_export_ready": "تصدير التحويل البنكي جاهز",
-  "bank_transfer_export_desc": "تم إنشاء ملف Excel للتحويل البنكي وتنزيله تلقائيًا.",
-  "close": "إغلاق"
+  "bank_transfer_export_desc": "راجع تفاصيل التحويل البنكي أدناه، أو قم بتنزيل ملف Excel.",
+  "bank_transfer_export_generating": "جارٍ إنشاء ملف Excel للتحويل البنكي...",
+  "bank_transfer_export_preview_error": "تعذر عرض معاينة الملف. يرجى تنزيله بدلاً من ذلك.",
+  "close": "إغلاق",
+  "download": "تنزيل",
+  "bank_details": "بيانات البنك",
+  "bank_details_incomplete_info": "أضف بيانات البنك لاستلام مدفوعات الطلبات."
 }

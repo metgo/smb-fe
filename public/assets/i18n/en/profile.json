@@ -27,5 +27,7 @@
   "click_add_bank_account": "Click \"Add Bank Account\" to add your banking information",
   "bank_account_subtitle": "Fill in the details below",
   "required": "Required",
-  "vendor_no_bank_details": "This vendor does not have bank account details. Please send them an email or SMS to update their information."
+  "vendor_no_bank_details": "This vendor does not have bank account details. Please send them an email or SMS to update their information.",
+  "vendor_bank_details": "Vendor Bank Details",
+  "vendor_bank_details_subtitle": "View the vendor's saved bank account information"
 }

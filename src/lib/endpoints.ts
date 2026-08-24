@@ -79,6 +79,7 @@ export const endpoints = {
   previewFinaliseApprovedOrders:
     "/admin/monthly-reports/finalize-closed-orders/preview",
   exportBankTransferXlsx: "/monthly-reports/export/bank-transfer-xlsx",
+  exportVendorwiseXlsx: "/vendors/monthly-reports/export/xlsx",
 
   // public
   publicEventTicket: "/public/event-tickets",
