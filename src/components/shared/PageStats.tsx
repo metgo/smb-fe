@@ -23,7 +23,7 @@ export default function PageStats({
   return (
     <div
       className={clsx(
-        "overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden",
+        "overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden ",
         wrapperClassName,
       )}
     >

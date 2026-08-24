@@ -437,7 +437,7 @@ function BusinessDetailsPageInner() {
     <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isLoading} />
 
-      <div className="details-top shrink-0 !mb-2 !p-2" data-tour="business-header">
+      <div className="details-top shrink-0 " data-tour="business-header">
         <DetailTitleSection
           {...business}
           imageSrc={
@@ -559,11 +559,11 @@ function BusinessDetailsPageInner() {
             </>
           }
         />
-        <div data-tour="business-stats">
+        <div data-tour="business-stats" >
          <PageStats
             stats={businessStats}
             isLoading={isDetailStatsLoading}
-            className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
+            className="sm:grid-cols-3 lg:grid-cols-4  xl:grid-cols-7 gap-2 md:gap-3"
             wrapperClassName=" my-2 sm:my-4"
           />
         </div>

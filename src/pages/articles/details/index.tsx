@@ -398,9 +398,7 @@ export default function ArticleDetails() {
       <Spinner isLoading={isDetailLoading} />
 
       {/* Action bar */}
-      <div className="flex items-center justify-between mb-3 shrink-0">
-        <BackToListBtn navPath={routes.articleMgmt} />
-
+      <div className="flex items-center justify-end mb-3 shrink-0">
         <div className="flex items-center gap-3">
           <StatusChangeBtn
             handleStatusChange={onStatusChangeHandler}
@@ -452,22 +450,26 @@ export default function ArticleDetails() {
       {/* Title + meta */}
       <div className="details-top shrink-0">
         <div className="flex items-center gap-3">
-          <ImageWithFallback
-            src={primaryImage}
-            alt={
-              getLngWiseStr(
-                language,
-                blogDetails?.title,
-                blogDetails?.titleHe,
-                blogDetails?.titleAr,
-              ) || "-"
-            }
-            className={clsx(
-              "w-14 h-14 rounded-xl object-cover shrink-0 border",
-              isDark ? "border-gray-600" : "border-gray-200",
-            )}
-          />
-          <div className="flex flex-1 items-center justify-between gap-4 min-w-0">
+          {/* Back button stacked above the image, aligned to its left edge */}
+          <div className="flex flex-col items-center gap-1 shrink-0">
+            <BackToListBtn navPath={routes.articleMgmt} />
+            <ImageWithFallback
+              src={primaryImage}
+              alt={
+                getLngWiseStr(
+                  language,
+                  blogDetails?.title,
+                  blogDetails?.titleHe,
+                  blogDetails?.titleAr,
+                ) || "-"
+              }
+              className={clsx(
+                "w-14 h-14 rounded-xl object-cover border",
+                isDark ? "border-gray-600" : "border-gray-200",
+              )}
+            />
+          </div>
+          <div className="flex flex-1 items-center justify-between gap-4 min-w-0 mt-7">
             <div className="min-w-0">
               <h1
                 className={`text-lg font-semibold leading-tight truncate ${

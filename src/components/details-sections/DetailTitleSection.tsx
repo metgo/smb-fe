@@ -46,33 +46,32 @@ const DetailTitleSection = ({
   );
 
   return (
-    <div className="flex items-center gap-3">
-      {/* Back button stacked above the image, aligned to its left edge */}
-      {backPath ? (
-        <div className="flex flex-col items-center gap-1 shrink-0">
-          <BackToListBtn navPath={backPath} label={backLabel} />
-          <ImageWithFallback
-            src={imageSrc}
-            alt={name || nameHe || nameAr}
-            className={clsx(
-              "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover border",
-              isDark ? "border-gray-600" : "border-gray-200",
-            )}
-          />
-        </div>
-      ) : (
+    <div className="flex items-center gap-3 ">
+      {/* Back button positioned above the image without taking its own line */}
+      <div className="relative shrink-0">
+        <BackToListBtn
+          navPath={backPath || ""}
+          label={backLabel}
+          className={clsx(
+            "absolute -top-2 -left-2 z-10 mr-0 flex h-6 w-6 items-center justify-center rounded-full border p-0 shadow-md",
+            isDark
+              ? "border-gray-700 bg-gray-800 text-gray-200 hover:bg-gray-700 hover:text-teal-400"
+              : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-teal-600",
+          )}
+        />
         <ImageWithFallback
           src={imageSrc}
           alt={name || nameHe || nameAr}
           className={clsx(
-            "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover shrink-0 border",
+            "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover border",
             isDark ? "border-gray-600" : "border-gray-200",
           )}
         />
-      )}
+      </div>
+
 
       {/* Title + metadata + actions */}
-      <div className="flex flex-1 flex-col sm:flex-row sm:items-center mt-7 sm:justify-between gap-2 sm:gap-4 min-w-0">
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 min-w-0">
         <div className="min-w-0">
           <h1
             className={`text-base sm:text-lg font-semibold leading-tight truncate ${
