@@ -366,5 +366,6 @@
   "payment_mode": "طريقة الدفع",
   "payment_date": "تاريخ الدفع",
   "order_product_id": "معرّف منتج الطلب",
-  "resend_email_to_customer": "إعادة إرسال البريد الإلكتروني للعميل"
+  "resend_email_to_customer": "إعادة إرسال البريد الإلكتروني للعميل",
+  "notify_customer_by": "إشعار العميل عبر"
 }
