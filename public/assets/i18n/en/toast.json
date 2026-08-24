@@ -83,5 +83,7 @@
   "trip_create_failed": "Failed to create Trip",
 
   "ticket_email_resend_success": "Ticket email resent successfully",
-  "ticket_email_resend_failed": "Failed to resend ticket email"
+  "ticket_email_resend_failed": "Failed to resend ticket email",
+  "ticket_sms_resend_success": "Ticket SMS resent successfully",
+  "ticket_sms_resend_faild": "Failed to resend ticket SMS"
 }
