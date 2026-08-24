@@ -385,5 +385,8 @@
   "payment_date": "תאריך תשלום",
   "order_product_id": "מזהה מוצר בהזמנה",
   "resend_email_to_customer": "שלח שוב אימייל ללקוח",
-  "notify_customer_by": "הודע ללקוח דרך"
+  "notify_customer_by": "הודע ללקוח דרך",
+  "save_order": "שמור סדר",
+  "order_saved_successfully": "סדר הכרטיסים נשמר בהצלחה",
+  "reorder_failed": "שמירת סדר הכרטיסים נכשלה"
 }
