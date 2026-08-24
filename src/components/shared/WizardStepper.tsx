@@ -125,7 +125,9 @@ export default function WizardStepper({
       {/* Desktop: full stepper with icons, connectors, and labels */}
       <div
         ref={tabsContainerRef}
-        className={clsx("flex gap-2 overflow-x-auto scrollbar-hide pt-4")}
+        className={clsx(
+          "hidden md:flex gap-2 overflow-x-auto scrollbar-hide pt-4",
+        )}
         style={{
           scrollbarWidth: "none", // Firefox
           msOverflowStyle: "none", // IE and Edge

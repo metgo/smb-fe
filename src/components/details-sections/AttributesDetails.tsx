@@ -100,7 +100,7 @@ const AttributeSection: FC<AttributeSectionProps> = ({
   return (
     <div
       className={clsx(
-        "rounded-xl border p-4 md:p-6 transition-all duration-200",
+        "rounded-xl border p-4 md:p-2 transition-all duration-200",
         isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
       )}
     >
@@ -161,7 +161,7 @@ const Badge: FC<{
         isDark ? colors.badgeDark : colors.badge,
       )}
     >
-      <Icon className="w-3.5 h-3.5 shrink-0" />
+      <Icon className="w-3 h-3 shrink-0" />
       <span className="truncate max-w-40 sm:max-w-none">{label}</span>
     </span>
   );
@@ -201,7 +201,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
     `${count} ${count === 1 ? singular : plural}`;
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-6 ">
       {/* Categories */}
       {filteredCategories.length > 0 && (
         <AttributeSection

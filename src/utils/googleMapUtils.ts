@@ -346,3 +346,32 @@ export const centerMapOnMarker = (
     map.setZoom(targetZoom);
   }
 };
+
+/**
+ * Tries to get the user's current position via the Geolocation API.
+ * If permission is granted, calls `withOrigin(lat, lng)` to build the URL and opens it.
+ * Falls back to `fallbackUrl` if geolocation is unavailable or denied.
+ */
+export const openWithUserLocation = (
+  withOrigin: (lat: number, lng: number) => string,
+  fallbackUrl: string,
+): void => {
+  if (!navigator.geolocation) {
+    window.open(fallbackUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const url = withOrigin(
+        position.coords.latitude,
+        position.coords.longitude,
+      );
+      window.open(url, "_blank", "noopener,noreferrer");
+    },
+    () => {
+      window.open(fallbackUrl, "_blank", "noopener,noreferrer");
+    },
+    { timeout: 5000 },
+  );
+};

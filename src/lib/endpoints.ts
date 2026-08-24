@@ -91,6 +91,7 @@ export const endpoints = {
   upcomingEvents: "/upcoming-events",
   contentManagementEvents: "/content-management-events",
   tickets: "/tickets",
+  ticketsReorder: "/tickets/reorder",
   eventTickets: "/event-tickets",
   eventTicketAnswers: "/event-ticket-answers/by-ticket",
   resendTicketEmailToCustomer: "/resend-order-emails",

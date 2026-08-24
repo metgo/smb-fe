@@ -35,14 +35,13 @@ import {
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
-import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
 import {
   AttributesDetails,
   DeliveryPolicyOptionDetails,
   DetailTitleSection,
-  LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
@@ -258,36 +257,43 @@ function BusinessDetailsPageInner() {
 
   const businessStats = [
     {
+      // id: "page-views",
       icon: <Eye className="w-5 h-5 text-green-600" />,
       title: t("page_views"),
       value: data?.pageViews?.toLocaleString() || 0,
     },
     {
+      // id: "unique-visitors",
       icon: <Users className="w-5 h-5 text-green-600" />,
       title: t("unique_visitors"),
       value: data?.uniqueVisitors?.toLocaleString() || 0,
     },
     {
+      // id: "clicks",
       icon: <MousePointer className="w-5 h-5 text-green-600" />,
       title: t("clicks"),
       value: data?.clicks?.toLocaleString() || 0,
     },
     {
+      // id: "bookmarks",
       icon: <Bookmark className="w-5 h-5 text-green-600" />,
       title: t("bookmarks"),
       value: data?.bookmarks?.toLocaleString() || 0,
     },
     {
+      // id: "shares",
       icon: <Share2 className="w-5 h-5 text-green-600" />,
       title: t("shares"),
       value: data?.shares?.toLocaleString() || 0,
     },
     {
+      // id: "avg-time-on-page",
       icon: <Timer className="w-5 h-5 text-green-600" />,
       title: t("avg_time_on_page"),
       value: `${data?.averageEngagementTime}`,
     },
     {
+      // id: "conversion-rate",
       icon: <TrendingUp className="w-5 h-5 text-green-600" />,
       title: t("conversion_rate"),
       value: `${data?.conversionRate || 0}%`,
@@ -403,20 +409,7 @@ function BusinessDetailsPageInner() {
             refetch={businessDataRefetch}
           />
         );
-      case "location":
-        return (
-          <LocationDetails
-            purpose="Business"
-            address={business?.address}
-            lat={
-              business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]
-            }
-            long={
-              business?.geoLocation?.long ??
-              business?.location?.coordinates?.[1]
-            }
-          />
-        );
+
       case "media":
         return <MediaDetails {...mediaProps} />;
       case "social":
@@ -443,122 +436,7 @@ function BusinessDetailsPageInner() {
     <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isLoading} />
 
-      {/* Top Row */}
-      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-        <BackToListBtn navPath={routes.businessMgmt} />
-        <div className="flex items-center gap-2">
-          {/* Status */}
-          <div data-tour="status-btn">
-            <StatusChangeBtn
-              handleStatusChange={onStatusChangeHandler}
-              status={business?.status}
-            />
-          </div>
-
-          {/* Actions dropdown */}
-          <div className="relative" ref={dropdownRef} data-tour="actions-btn">
-            <button
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
-              }`}
-            >
-              <span className="inline text-sm font-medium">{t("actions")}</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {isDropdownOpen && (
-              <div
-                data-tour="actions-dropdown"
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border overflow-hidden ${
-                  isTourOpen ? "z-10001" : "z-50"
-                } ${
-                  isDark
-                    ? "bg-gray-900 border-gray-700"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                {/* Edit */}
-                <button
-                  onClick={() => {
-                    handleMutateData(IOpMode.EDIT);
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                    isDark
-                      ? "text-teal-400 hover:bg-gray-800"
-                      : "text-teal-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <Edit className="w-4 h-4 shrink-0" />
-                  {t("edit")}
-                </button>
-
-                {/* Change Owner */}
-                {!isTraveller && (
-                  <button
-                    onClick={() => {
-                      setIsOwnerChangeModalOpen(true);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                      isDark
-                        ? "text-gray-300 hover:bg-gray-800"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <UserCog className="w-4 h-4 shrink-0" />
-                    {t("change_owner")}
-                  </button>
-                )}
-
-                <div
-                  className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
-                />
-                {onCreateProduct && (
-                  <button
-                    onClick={() => {
-                      onCreateProduct();
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                      isDark
-                        ? "text-indigo-400 hover:bg-gray-800"
-                        : "text-indigo-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Plus className="w-4 h-4 shrink-0" />
-                    {t("create_product")}
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    onViewProduct();
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                    isDark
-                      ? "text-gray-300 hover:bg-gray-800"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <Eye className="w-4 h-4 shrink-0" />
-                  View Product
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Tour trigger */}
-          <TourTrigger />
-        </div>
-      </div>
-
-      <div className="details-top shrink-0" data-tour="business-header">
+      <div className="details-top shrink-0 " data-tour="business-header">
         <DetailTitleSection
           {...business}
           imageSrc={
@@ -566,19 +444,138 @@ function BusinessDetailsPageInner() {
             business?.images?.[0]?.image ||
             business?.logo?.image
           }
+          backPath={routes.businessMgmt}
+          actions={
+            <>
+              {/* Status */}
+              <div data-tour="status-btn">
+                <StatusChangeBtn
+                  handleStatusChange={onStatusChangeHandler}
+                  status={business?.status}
+                />
+              </div>
+
+              {/* Actions dropdown */}
+              <div
+                className="relative"
+                ref={dropdownRef}
+                data-tour="actions-btn"
+              >
+                <button
+                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+                  }`}
+                >
+                  <span className="inline text-sm font-medium">
+                    {t("actions")}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div
+                    data-tour="actions-dropdown"
+                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border overflow-hidden ${
+                      isTourOpen ? "z-10001" : "z-50"
+                    } ${
+                      isDark
+                        ? "bg-gray-900 border-gray-700"
+                        : "bg-white border-gray-200"
+                    }`}
+                  >
+                    {/* Edit */}
+                    <button
+                      onClick={() => {
+                        handleMutateData(IOpMode.EDIT);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-teal-400 hover:bg-gray-800"
+                          : "text-teal-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Edit className="w-4 h-4 shrink-0" />
+                      {t("edit")}
+                    </button>
+
+                    {/* Change Owner */}
+                    {!isTraveller && (
+                      <button
+                        onClick={() => {
+                          setIsOwnerChangeModalOpen(true);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-gray-300 hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <UserCog className="w-4 h-4 shrink-0" />
+                        {t("change_owner")}
+                      </button>
+                    )}
+
+                    <div
+                      className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
+                    />
+                    {onCreateProduct && (
+                      <button
+                        onClick={() => {
+                          onCreateProduct();
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-indigo-400 hover:bg-gray-800"
+                            : "text-indigo-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Plus className="w-4 h-4 shrink-0" />
+                        {t("create_product")}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        onViewProduct();
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-gray-300 hover:bg-gray-800"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Eye className="w-4 h-4 shrink-0" />
+                      View Product
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Tour trigger */}
+              <TourTrigger />
+            </>
+          }
         />
         <div data-tour="business-stats">
           <PageStats
             stats={businessStats}
             isLoading={isDetailStatsLoading}
-            className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
+            className="sm:grid-cols-3 lg:grid-cols-4  xl:grid-cols-7 gap-2 md:gap-3"
             wrapperClassName=" my-2 sm:my-4"
           />
         </div>
       </div>
 
       {/* Content */}
-      <div className="mt-2 sm:mt-4 flex flex-col flex-1 min-h-0">
+      <div className="mt-1 flex flex-col flex-1 min-h-0">
         <div className="shrink-0" data-tour="tabs-section">
           <TabsSection
             tabs={businessTabs}
@@ -587,7 +584,7 @@ function BusinessDetailsPageInner() {
           />
         </div>
         <div
-          className="details-content flex-1 overflow-y-auto min-h-0"
+          className="details-content flex-1 overflow-y-auto min-h-0 !p-2"
           data-tour="tab-content"
         >
           {renderContent()}
@@ -627,7 +624,7 @@ function BusinessDetailsPageInner() {
         <button
           onClick={handleChatWithCreator}
           title={`Message ${businessCreator.name}`}
-          className="fixed bottom-6 right-6 z-40 animate-pulse w-12 h-12 rounded-full bg-[#ff6634] text-white shadow-lg shadow-teal-500/30 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
+          className={`fixed bottom-6 ${isRTL ? "left-6" : "right-6"} z-40 animate-pulse w-12 h-12 rounded-full bg-[#ff6634] text-white shadow-lg shadow-teal-500/30 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95`}
         >
           <MessageCircle className="w-6 h-6 animate-bounce" />
         </button>

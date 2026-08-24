@@ -61,7 +61,7 @@
   "template_starting_soon": "Event Starting Soon",
 
   "english": "English",
-  "heberw": "Heberw",
+  "hebrew": "Hebrew",
   "arebic": "Arabic",
   "active": "Active",
   "disabled": "Disabled",
@@ -356,5 +356,8 @@
   "payment_date": "Payment Date",
   "order_product_id": "Order Product ID",
   "resend_email_to_customer": "Resend Email to Customer",
-  "notify_customer_by": "Notify customer by"
+  "notify_customer_by": "Notify customer by",
+  "save_order": "Save Order",
+  "order_saved_successfully": "Ticket order saved successfully",
+  "reorder_failed": "Failed to save ticket order"
 }

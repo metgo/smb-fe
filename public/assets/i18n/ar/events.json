@@ -351,21 +351,14 @@
 
   "ticket_reg_detail_title": "تفاصيل تسجيل التذكرة",
   "customer_information": "معلومات العميل",
-  "full_name": "الاسم الكامل",
-  "email": "البريد الإلكتروني",
-  "phone": "الهاتف",
-  "registration_date": "تاريخ التسجيل",
-  "ticket_information": "معلومات التذكرة",
-  "ticket_name": "اسم التذكرة",
-  "ticket_id": "معرّف التذكرة",
-  "quantity": "الكمية",
-  "amount": "المبلغ",
-  "status": "الحالة",
+
   "payment_status": "حالة الدفع",
   "payment_information": "معلومات الدفع",
-  "payment_mode": "طريقة الدفع",
   "payment_date": "تاريخ الدفع",
   "order_product_id": "معرّف منتج الطلب",
   "resend_email_to_customer": "إعادة إرسال البريد الإلكتروني للعميل",
-  "notify_customer_by": "إشعار العميل عبر"
+  "notify_customer_by": "إشعار العميل عبر",
+  "save_order": "حفظ الترتيب",
+  "order_saved_successfully": "تم حفظ ترتيب التذاكر بنجاح",
+  "reorder_failed": "فشل حفظ ترتيب التذاكر"
 }

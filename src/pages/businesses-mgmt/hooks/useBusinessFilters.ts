@@ -85,10 +85,9 @@ export function useBusinessFilters() {
       filters.status !== "all" ||
       filters.hasProductFilter !== "all" ||
       filters.dmoFilter !== "all" ||
-      filters.authorityFilter !== "all" ||
-      searchTerm.trim() !== ""
+      filters.authorityFilter !== "all"
     );
-  }, [filters, searchTerm]);
+  }, [filters]);
 
   return {
     filters,

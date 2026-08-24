@@ -28,8 +28,14 @@ export const ChatCreatorBubble: React.FC<ChatCreatorBubbleProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const socket = useSocket();
-  const { isDark, textPrimary, textSecondary, textTertiary, borderColor } =
-    useThemeClasses();
+  const {
+    isDark,
+    isRTL,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+  } = useThemeClasses();
 
   const [collapsed, setCollapsed] = useState(false);
 
@@ -82,7 +88,8 @@ export const ChatCreatorBubble: React.FC<ChatCreatorBubbleProps> = ({
         onClick={() => setCollapsed(false)}
         title={`Message ${sender.name}`}
         className={clsx(
-          "fixed bottom-6 right-6 z-40 w-14 h-14 bg-[#ff6634] rounded-full border animate-pulse shadow-lg flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
+          "fixed bottom-6 z-40 w-14 h-14 bg-[#ff6634] rounded-full border animate-pulse shadow-lg flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95",
+          isRTL ? "left-6" : "right-6",
           borderColor,
         )}
       >
@@ -97,11 +104,17 @@ export const ChatCreatorBubble: React.FC<ChatCreatorBubbleProps> = ({
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex items-end">
+    <div
+      className={clsx(
+        "fixed bottom-6 z-40 flex items-end",
+        isRTL ? "left-6 flex-row-reverse" : "right-6",
+      )}
+    >
       <button
         onClick={handleOpen}
         className={clsx(
-          "group flex items-center gap-2.5 max-w-72 pl-2 pr-3 py-2 rounded-full border shadow-lg cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95",
+          "group flex items-center gap-2.5 max-w-72 py-2 rounded-full border shadow-lg cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-95",
+          isRTL ? "pr-2 pl-3" : "pl-2 pr-3",
           borderColor,
           isDark ? "bg-gray-900" : "bg-white",
           conversation.unreadCount > 0 && "border-teal-500",
@@ -123,7 +136,7 @@ export const ChatCreatorBubble: React.FC<ChatCreatorBubbleProps> = ({
           )}
         </span>
 
-        <span className="min-w-0 text-left">
+        <span className={clsx("min-w-0", isRTL ? "text-right" : "text-left")}>
           <span
             className={clsx(
               "text-xs font-semibold truncate block",
@@ -149,7 +162,8 @@ export const ChatCreatorBubble: React.FC<ChatCreatorBubbleProps> = ({
         }}
         title="Hide"
         className={clsx(
-          "-ml-2 mb-8 p-1 rounded-full border shadow cursor-pointer transition-colors",
+          "mb-8 p-1 rounded-full border shadow cursor-pointer transition-colors",
+          isRTL ? "-mr-2" : "-ml-2",
           borderColor,
           isDark
             ? "bg-gray-800 text-gray-400 hover:bg-gray-700"

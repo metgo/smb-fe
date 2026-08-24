@@ -11,6 +11,7 @@ import {
   X,
   Eye,
   Siren,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -59,6 +60,7 @@ export default function NotificationsMgmtPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
   const [allNotifications, setAllNotifications] = useState<INotification[]>([]);
 
   const [readFilter, setReadFilter] = useState<TNotifStatus>("ALL");
@@ -114,10 +116,8 @@ export default function NotificationsMgmtPage() {
       console.log("New notification", data);
     };
 
-    // Register event
     socket.on("notification", handleNotification);
 
-    // Cleanup function: remove the listener
     return () => {
       socket.off("notification", handleNotification);
     };
@@ -160,10 +160,9 @@ export default function NotificationsMgmtPage() {
     }
   }, [notifications, page]);
 
-  // Fallback: stop loading if we've accumulated too many items or hit an error
   useEffect(() => {
     if (isNotifError) {
-      setPage(1); // Reset to page 1 on error
+      setPage(1);
     }
   }, [isNotifError]);
 
@@ -171,10 +170,22 @@ export default function NotificationsMgmtPage() {
     setPage(1);
   }, [readFilter, typeFilter, itemTypeFilter]);
 
+  // ─── Close the drawer on scroll, same as the businesses page ──────────
+  useEffect(() => {
+    const scrollEl = document.getElementById("scrollableDiv");
+    if (!scrollEl) return;
+    const handleScroll = () => {
+      if (scrollEl.scrollTop > 20) {
+        setShowControlsDrawer(false);
+      }
+    };
+    scrollEl.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollEl.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const fetchNextPage = () => {
     if (!hasMore || isFetching || isNotifError) return;
     setPage((prev) => prev + 1);
-    // RTK Query will automatically refetch when QueryParams (with updated page) changes
   };
 
   const getNotificationIcon = (type: TNotifType) => {
@@ -193,6 +204,50 @@ export default function NotificationsMgmtPage() {
     }
   };
 
+  // ─── Active filter count for the toggle badge ──────────────────────────
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery?.trim()) count += 1;
+    if (readFilter !== "ALL") count += 1;
+    if (typeFilter !== "ALL") count += 1;
+    if (itemTypeFilter !== "ALL") count += 1;
+    return count;
+  }, [searchQuery, readFilter, typeFilter, itemTypeFilter]);
+
+  // ─── Reusable icon-only filter toggle button (mirrors businesses page) ─
+  const filterToggleButton = (
+    <button
+      onClick={() => setShowControlsDrawer((prev) => !prev)}
+      className={clsx(
+        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
+        showControlsDrawer
+          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
+          : isDark
+            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
+      )}
+      title={
+        showControlsDrawer
+          ? (t("close_options") ?? "Close Options")
+          : (t("search_and_filters") ?? "Search & Filters")
+      }
+    >
+      <SlidersHorizontal className="w-4 h-4" />
+      {activeFilterCount > 0 && (
+        <span
+          className={clsx(
+            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+            showControlsDrawer
+              ? "bg-white text-teal-600"
+              : "bg-teal-500 text-white",
+          )}
+        >
+          {activeFilterCount > 9 ? "9+" : activeFilterCount}
+        </span>
+      )}
+    </button>
+  );
+
   if (isFetching && page === 1 && allNotifications.length === 0) {
     return (
       <div
@@ -207,35 +262,65 @@ export default function NotificationsMgmtPage() {
     <div
       className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-white"} transition-colors flex flex-col`}
     >
-      <div className="h-[calc(100vh-64px)] flex flex-col">
-        {/* Fixed Header */}
+      <div className="h-[calc(100vh-64px)] flex flex-col px-4 sm:px-6 pt-4 gap-3">
+        {/* Sticky Top Header Bar (Title + Count + Stats) */}
         <div
-          className={`shrink-0 p-4 sm:p-6 pb-4 border-b ${
-            isDark ? "border-gray-800" : "border-gray-200"
-          }`}
+          className={clsx(
+            "sticky top-0 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
+            isDark
+              ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
+              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900",
+          )}
         >
-          <div className="max-w-400 mx-auto">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl mb-2 bg-linear-to-r from-blue-500 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          {/* Left: Title + Count */}
+          <div className="flex flex-col items-start gap-1 shrink-0">
+            <div className="flex items-center w-full justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-purple-600 to-pink-600 whitespace-nowrap">
                   {t("notifications")}
                 </h1>
-                <p className={textSecondary}>{t("manage_notifications")}</p>
+                {notifications?.meta?.total !== undefined && (
+                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
+                    {notifications.meta.total}
+                  </span>
+                )}
+              </div>
+
+              <div className="block xl:hidden items-center gap-2 shrink-0">
+                {filterToggleButton}
               </div>
             </div>
+            <p className={clsx("text-xs", textSecondary)}>
+              {t("manage_notifications")}
+            </p>
+          </div>
+
+          {/* Right: Stats row (horizontal, same treatment as StatsMarquee) */}
+          <div
+            dir="ltr"
+            className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
+          >
+            {notifStats && <NotificationStatsCards stats={notifStats} />}
+          </div>
+
+          {/* Search & Filters Toggle Button next to stats (desktop) */}
+          <div className="hidden xl:flex items-center gap-2 shrink-0">
+            {filterToggleButton}
           </div>
         </div>
 
-        {/* Stats & Toolbar */}
-        <div className="shrink-0 p-4 sm:p-6 pb-0">
-          <div className="max-w-400 mx-auto">
-            {/* Stats Cards */}
-            {notifStats && <NotificationStatsCards stats={notifStats} />}
-
-            {/* Toolbar */}
-            <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-              {/* Search */}
-              <div className="flex-1 relative">
+        {/* Expandable Search, Filters & Toolbar Panel */}
+        {showControlsDrawer && (
+          <div
+            className={clsx(
+              "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
+              isDark
+                ? "bg-gray-900/90 border-gray-800/90"
+                : "bg-white border-gray-200",
+            )}
+          >
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <div className="flex-1 min-w-0 relative">
                 <SearchInput
                   placeholder={t("search_notifications")}
                   searchTerm={searchQuery}
@@ -244,8 +329,7 @@ export default function NotificationsMgmtPage() {
                 />
               </div>
 
-              {/* Filters Button */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <FilterButton value={showFilters} onChange={setShowFilters} />
               </div>
             </div>
@@ -253,7 +337,7 @@ export default function NotificationsMgmtPage() {
             {/* Filters Panel */}
             {showFilters && (
               <div
-                className={`mb-6 p-4 rounded-xl border ${borderColor} ${bgSecondary}`}
+                className={`p-4 rounded-xl border ${borderColor} ${bgTertiary}`}
               >
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   {/* Read Status */}
@@ -291,7 +375,7 @@ export default function NotificationsMgmtPage() {
                     </select>
                   </div>
 
-                  {/*Item Type */}
+                  {/* Item Type */}
                   <div>
                     <label className={`block text-sm ${textSecondary} mb-2`}>
                       {t("item_type")}
@@ -314,12 +398,46 @@ export default function NotificationsMgmtPage() {
               </div>
             )}
           </div>
-        </div>
+        )}
+
+        {/* Selected-items bulk bar (kept inline above the list, same spot as before) */}
+        {selectedNotifications.size > 0 && (
+          <div
+            className={`flex items-center justify-between px-4 py-3 rounded-xl
+            ${bgTertiary} border ${borderColor}`}
+          >
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
+                <CheckCheck className="w-4 h-4 text-green-600" />
+              </div>
+              <span className={`text-sm font-medium ${textPrimary}`}>
+                {selectedNotifications.size} selected
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                Mark as read
+              </button>
+              <button className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition">
+                Delete
+              </button>
+              <button
+                onClick={() => setSelectedNotifications(new Set())}
+                className={`p-1.5 rounded-lg transition ${
+                  isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"
+                }`}
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Scrollable Notifications List */}
         <div
           id="scrollableDiv"
-          className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6"
+          className="flex-1 overflow-y-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6"
         >
           <div className="max-w-400 mx-auto">
             {allNotifications?.length === 0 ? (
@@ -348,71 +466,6 @@ export default function NotificationsMgmtPage() {
               <div
                 className={`rounded-xl border ${borderColor} ${bgSecondary} overflow-hidden`}
               >
-                {selectedNotifications.size > 0 && (
-                  <div
-                    className={`flex items-center justify-between px-4 py-3 rounded-xl mb-3 
-                  ${bgTertiary} border ${borderColor}`}
-                  >
-                    {/* Left Side */}
-                    <div className="flex items-center gap-2">
-                      {/* Double Check Icon */}
-                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
-                        <svg
-                          className="w-4 h-4 text-green-600"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 13l4 4L23 7"
-                          />
-                        </svg>
-                      </div>
-
-                      <span className={`text-sm font-medium ${textPrimary}`}>
-                        {selectedNotifications.size} selected
-                      </span>
-                    </div>
-
-                    {/* Right Side Buttons */}
-                    <div className="flex items-center gap-2">
-                      {/* Mark as Read */}
-                      <button
-                        // onClick={handleBulkMarkAsRead}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
-                      >
-                        Mark as read
-                      </button>
-
-                      {/* Delete */}
-                      <button
-                        // onClick={handleBulkDelete}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition"
-                      >
-                        Delete
-                      </button>
-
-                      {/* Close / Clear Selection */}
-                      <button
-                        onClick={() => setSelectedNotifications(new Set())}
-                        className={`p-1.5 rounded-lg transition ${
-                          isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"
-                        }`}
-                      >
-                        <X className="h-6 w-6" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 <InfiniteScroll
                   dataLength={allNotifications?.length}
                   next={fetchNextPage}
@@ -488,7 +541,6 @@ export default function NotificationsMgmtPage() {
                         await markNotificationsAsRead(notification._id);
                         refetchNotifStats();
                         refetchNotifList();
-                        // For DISPUTE, use orderProductId as the query parameter
                         const paramName =
                           itemType === "DISPUTE"
                             ? "orderProductId"
@@ -513,7 +565,7 @@ export default function NotificationsMgmtPage() {
                           key={notification?._id}
                           onClick={handleNavigate}
                           className={`
-                          relative flex items-start gap-3 px-4 py-8 cursor-pointer
+                          relative flex items-start gap-3 px-4 py-4 cursor-pointer
                           ${hoverBg}
                           transition-colors
                           ${isRTL ? "border-r-2" : "border-l-2"}
@@ -521,7 +573,6 @@ export default function NotificationsMgmtPage() {
                           ${!notification.isRead ? (isDark ? "bg-blue-900/20" : "bg-blue-50") : ""}
                         `}
                         >
-                          {/* Unread dot indicator */}
                           {!notification.isRead && (
                             <span
                               className={`absolute top-6 ${

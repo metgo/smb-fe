@@ -43,6 +43,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
   const navigate = useNavigate();
   const {
     isDark,
+    isRTL,
     bgPrimary,
     textPrimary,
     textTertiary,
@@ -99,7 +100,11 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
 
   return (
     <div
-      style={{ right: `${16 + rightOffset}px` }}
+      style={
+        isRTL
+          ? { left: `${16 + rightOffset}px` }
+          : { right: `${16 + rightOffset}px` }
+      }
       className={clsx(
         "fixed bottom-10 z-50 w-96 rounded-xl border shadow-2xl flex flex-col overflow-hidden transition-all duration-200",
         minimized ? "h-18" : isRichMode ? "h-125" : "h-105",

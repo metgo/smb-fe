@@ -414,5 +414,16 @@
   "view_business_on": "عرض على",
   "contact_support_label": "أو اتصل بفريق الدعم لدينا",
   "selected_dmo_authority": "منظمة تسويق الوجهة والسلطة المحددة",
-  "no_connected_dmo_authority_websites": "لا توجد منظمة تسويق وجهة أو سلطة أو مواقع مرتبطة"
+  "no_connected_dmo_authority_websites": "لا توجد منظمة تسويق وجهة أو سلطة أو مواقع مرتبطة",
+  "stats": "الإحصائيات",
+  "hide_stats": "إخفاء الإحصائيات",
+  "show_stats": "إظهار الإحصائيات",
+  "stats_hidden": "الإحصائيات مخفية",
+  "key_metrics": "المقاييس الرئيسية",
+  "search_and_filters": "البحث والتصفية",
+  "close_options": "إغلاق الخيارات",
+  "options": "خيارات",
+  "hide_options": "إخفاء الخيارات",
+  "open_in_google_maps": "فتح في خرائط Google",
+  "open_in_waze": "فتح في Waze"
 }

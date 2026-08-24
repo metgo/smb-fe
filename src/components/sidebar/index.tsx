@@ -57,6 +57,22 @@ interface MenuItem {
   subItems?: MenuItem[];
 }
 
+// Detail pages live at their own sibling route (e.g. "/business-details")
+// rather than nested under their list page ("/businesses-management/:id"),
+// so a plain startsWith check against the list route never matches them.
+// This maps each list route to the detail route(s) that should still count
+// as "active" for it.
+const RELATED_ACTIVE_ROUTES: Record<string, string[]> = {
+  [routes.businessMgmt]: [routes.businessDetails],
+  [routes.productsMgmt]: [routes.productDetails],
+  [routes.eventsMgmt]: [routes.eventDetails],
+  [routes.poiMgmt]: [routes.poiDetails],
+  [routes.articleMgmt]: [routes.articleDetails],
+  [routes.tripsMgmt]: [routes.tripDetails],
+  [routes.voucherMgmt]: [routes.voucherDetails],
+  [routes.ordersMgmt]: [routes.orderDetails],
+};
+
 export default function Sidebar() {
   const { t } = useTranslation("common");
   const navigate = useNavigate();
@@ -402,7 +418,13 @@ export default function Sidebar() {
   };
 
   const isItemActive = (path: string) =>
-    location.pathname === path || location.pathname.startsWith(path + "/");
+    location.pathname === path ||
+    location.pathname.startsWith(path + "/") ||
+    (RELATED_ACTIVE_ROUTES[path] ?? []).some(
+      (related) =>
+        location.pathname === related ||
+        location.pathname.startsWith(related + "/"),
+    );
 
   const isExpanded = (path: string) => expandedItems.includes(path);
 
@@ -479,7 +501,7 @@ export default function Sidebar() {
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] lg:hidden"
           onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}
@@ -495,7 +517,7 @@ export default function Sidebar() {
           transition-all duration-300
           flex flex-col
           border-r
-          z-40
+          z-[45]
           ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}
           ${isRTL ? "right-0" : "left-0"}
           ${

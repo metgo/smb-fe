@@ -293,6 +293,11 @@ interface ITicketPayload {
   wrapperId?: string;
 }
 
+interface ITicketReorderPayload {
+  eventId: string;
+  ticketIds: string[];
+}
+
 interface IEventListRes {
   _id: string;
   createdAt: string;
