@@ -425,5 +425,16 @@
   "contact_support_label": "Or contact our support team",
   "selected_dmo_authority": "Selected Dmo Authority",
   "connected_websites": "Connected Websites",
-  "no_connected_dmo_authority_websites": "No connected DMO, Authority, or Websites"
+  "no_connected_dmo_authority_websites": "No connected DMO, Authority, or Websites",
+  "stats": "Stats",
+  "hide_stats": "Hide Stats",
+  "show_stats": "Show Stats",
+  "stats_hidden": "Stats Hidden",
+  "key_metrics": "Key Metrics",
+  "search_and_filters": "Search & Filters",
+  "close_options": "Close Options",
+  "options": "Options",
+  "hide_options": "Hide Options",
+  "open_in_google_maps": "Open in Google Maps",
+  "open_in_waze": "Open in Waze"
 }

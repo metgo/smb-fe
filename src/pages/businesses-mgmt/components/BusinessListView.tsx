@@ -16,6 +16,7 @@ interface BusinessListViewProps {
   t: (key: string) => string;
   selectedBusinesses: Set<string>;
   setSelectedBusinesses: (v: Set<string>) => void;
+  maxHeight?: string;
 }
 
 export default function BusinessListView({
@@ -28,6 +29,7 @@ export default function BusinessListView({
   columnVisibility,
   selectedBusinesses,
   setSelectedBusinesses,
+  maxHeight,
 }: BusinessListViewProps) {
   const { textPrimary, textSecondary, isDark } = useThemeClasses();
 
@@ -187,7 +189,7 @@ export default function BusinessListView({
   }
 
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(100vh-400px)]">
+    <div className="flex flex-col overflow-hidden h-full">
       <div className="sticky">
         <ReordableDataTable
           rowKey="_id"
@@ -201,6 +203,7 @@ export default function BusinessListView({
           hasMore={hasMore}
           next={next}
           t={t}
+          maxHeight={maxHeight ?? "calc(100vh - 180px)"}
         />
       </div>
     </div>

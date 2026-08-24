@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
@@ -12,18 +13,23 @@ import {
   ExportPoiButton,
 } from "./components";
 
-import { CheckCircle, AlertCircle, MapPin, Landmark } from "lucide-react";
+import {
+  CheckCircle,
+  AlertCircle,
+  MapPin,
+  Landmark,
+  SlidersHorizontal,
+} from "lucide-react";
 
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   BulkActionBar,
   ConfirmDialog,
-  PageHeader,
-  PageStats,
   ShowColumns,
   ViewModeToggle,
 } from "@/components/shared";
+import ListHeaderBar from "@/components/shared/ListHeaderBar";
 import { useBulkPoisUpdateMutation } from "@/store/api/poiMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 import EmptyState from "@/components/shared/EmptyState";
@@ -42,7 +48,8 @@ export default function PoiMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("poi");
   const { t: tc } = useTranslation("toast");
-  const { isDark, bgSecondary, borderColor } = useThemeClasses();
+  const { isDark, bgSecondary, borderColor, inputClasses, textTertiary } =
+    useThemeClasses();
 
   // ─── Filter & Search (persisted to localStorage) ─────────────────────
   const {
@@ -73,6 +80,7 @@ export default function PoiMgmtPage() {
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
+  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedPois, setSelectedPois] = useState<Set<string>>(new Set());
   const [columnVisibility, setColumnVisibility] =
@@ -111,6 +119,27 @@ export default function PoiMgmtPage() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [showColumnSettings]);
+
+  // ─── Collapse the controls drawer on scroll ────────────────────────────
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (
+        (target && target.scrollTop && target.scrollTop > 20) ||
+        window.scrollY > 20
+      ) {
+        setShowControlsDrawer(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, {
+      capture: true,
+      passive: true,
+    });
+    return () =>
+      window.removeEventListener("scroll", handleScroll, {
+        capture: true,
+      } as any);
+  }, []);
 
   // ─── Mutations ─────────────────────────────────────────────────────────
   const [bulkPoisUpdate, { isLoading: isDeleting }] =
@@ -178,6 +207,59 @@ export default function PoiMgmtPage() {
     [selectedPois, bulkPoisUpdate, refetchFromPage1, tc],
   );
 
+  // ─── Active filter count (search term + any non-default filter values) ──
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchTerm?.trim()) count += 1;
+    if (filters && typeof filters === "object") {
+      Object.values(filters).forEach((value: any) => {
+        if (
+          value !== undefined &&
+          value !== null &&
+          value !== "" &&
+          value !== "all"
+        ) {
+          count += 1;
+        }
+      });
+    }
+    return count;
+  }, [searchTerm, filters]);
+
+  // ─── Reusable icon-only filter toggle button ──────────────────────────
+  const filterToggleButton = (
+    <button
+      onClick={() => setShowControlsDrawer((prev) => !prev)}
+      className={clsx(
+        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
+        showControlsDrawer
+          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
+          : isDark
+            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
+      )}
+      title={
+        showControlsDrawer
+          ? tc("close_options") ?? "Close Options"
+          : tc("search_and_filters") ?? "Search & Filters"
+      }
+    >
+      <SlidersHorizontal className="w-4 h-4" />
+      {activeFilterCount > 0 && (
+        <span
+          className={clsx(
+            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+            showControlsDrawer
+              ? "bg-white text-teal-600"
+              : "bg-teal-500 text-white"
+          )}
+        >
+          {activeFilterCount > 9 ? "9+" : activeFilterCount}
+        </span>
+      )}
+    </button>
+  );
+
   // ─── Stats Cards ───────────────────────────────────────────────────────
   const poiStats = useMemo(
     () => [
@@ -216,85 +298,130 @@ export default function PoiMgmtPage() {
   // ─── Render ─────────────────────────────────────────────────────────
   return (
     <>
-      <div className="flex flex-col pt-10 md:pt-0">
-        {/* Sticky Header */}
+<div className="flex flex-col pt-4 md:pt-0 gap-3 relative">        {/* Sticky Top Header Bar (Title + Add Button + Stats) */}
         <div
-          className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
-        >
-          <PageHeader
-            title={t("poi_management")}
-            description={t("poi_management_desc")}
-            btnLabel={t("add_poi")}
-            onClick={() => setIsCreateModalOpen(true)}
-            h1Gradient="bg-linear-to-r text-transparent from-teal-500 via-green-500 to-emerald-600"
-            totalCount={totalData ?? 0}
-          />
-
-          <PageStats
-            stats={poiStats}
-            isLoading={isStatsLoading}
-            className="sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4"
-          />
-
-          {/* Search & Actions */}
-          <div className="py-3 flex flex-col gap-2">
-            <div className="flex-1 relative">
-              <SearchInput
-                placeholder={t("search_pois_placeholder")}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-                <ShowColumns
-                  t={t}
-                  viewMode={viewMode}
-                  columnDefinitions={columnDefinitions}
-                  columnVisibility={columnVisibility}
-                  showColumnSettings={showColumnSettings}
-                  setShowColumnSettings={setShowColumnSettings}
-                  setColumnVisibility={setColumnVisibility}
-                  resetToDefault={resetToDefault}
-                />
-                <ExportPoiButton
-                  pois={combinedPois}
-                  selectedPois={selectedPois}
-                  columnVisibility={columnVisibility}
-                  t={t}
-                />
-              </div>
-
-              <ViewModeToggle
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="poiViewMode"
-              />
-            </div>
-          </div>
-
-          {/* Filters Panel */}
-          {(showFilters || hasSavedFilters) && (
-            <PoiFiltersPanel
-              filters={filters}
-              setFilters={setFilters}
-              hasSavedFilters={hasSavedFilters}
-              clearFilter={clearFilter}
-            />
+          className={clsx(
+            "shrink-0 sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
+            isDark
+              ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
+              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900"
           )}
-
-          <BulkActionBar
-            selectedItemCount={selectedPois.size}
-            handleBulkStatusChange={handleBulkStatusChange}
-            handleBulkDelete={promptBulkDelete}
-            hancleClearSelection={() => setSelectedPois(new Set())}
+        >
+          <ListHeaderBar
+            title={t("poi_management")}
+            titleGradient="from-teal-500 via-green-500 to-emerald-600"
+            count={totalData}
+            addLabel={t("add_poi")}
+            onAdd={() => setIsCreateModalOpen(true)}
+            stats={poiStats}
+            isStatsLoading={isStatsLoading}
+            filterToggle={filterToggleButton}
           />
         </div>
 
+        {/* Expandable Search, Filters & Controls Panel */}
+        {showControlsDrawer && (
+          <div
+            className={clsx(
+              "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
+              isDark
+                ? "bg-gray-900/90 border-gray-800/90"
+                : "bg-white border-gray-200"
+            )}
+          >
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <div className="flex-1 min-w-0 relative">
+                <SearchInput
+                  placeholder={t("search_pois_placeholder")}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+                  <ShowColumns
+                    t={t}
+                    viewMode={viewMode}
+                    columnDefinitions={columnDefinitions}
+                    columnVisibility={columnVisibility}
+                    showColumnSettings={showColumnSettings}
+                    setShowColumnSettings={setShowColumnSettings}
+                    setColumnVisibility={setColumnVisibility}
+                    resetToDefault={resetToDefault}
+                  />
+                  <ExportPoiButton
+                    pois={combinedPois}
+                    selectedPois={selectedPois}
+                    columnVisibility={columnVisibility}
+                    t={t}
+                  />
+                </div>
+
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="poiViewMode"
+                />
+              </div>
+            </div>
+
+            {(showFilters || hasSavedFilters) && (
+              <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
+                <PoiFiltersPanel
+                  filters={filters}
+                  setFilters={setFilters}
+                  hasSavedFilters={hasSavedFilters}
+                  clearFilter={clearFilter}
+                />
+              </div>
+            )}
+
+            {/* Active Filters Summary */}
+            {(searchTerm || hasSavedFilters) && (
+              <div className="pt-1 flex items-center gap-2 flex-wrap">
+                <span className={`text-sm ${textTertiary}`}>
+                  {t("active_filters")}:
+                </span>
+
+                {searchTerm && (
+                  <span className="flex items-center gap-1 px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
+                    "{searchTerm}"
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="ml-1 text-teal-500 hover:text-teal-700 font-bold"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+
+                {hasSavedFilters && (
+                  <button
+                    onClick={() => {
+                      clearFilter();
+                      setSearchTerm("");
+                    }}
+                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                  >
+                    {t("clear_all")}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        <BulkActionBar
+          selectedItemCount={selectedPois.size}
+          handleBulkStatusChange={handleBulkStatusChange}
+          handleBulkDelete={promptBulkDelete}
+          hancleClearSelection={() => setSelectedPois(new Set())}
+        />
+
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto mt-2">
+          <div className="flex-1 min-h-0 overflow-y-auto">
           {!isLoading && !isFetching && combinedPois.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
@@ -326,32 +453,32 @@ export default function PoiMgmtPage() {
             />
           )}
         </div>
-
-        {/* Modals */}
-        <ConfirmDialog
-          open={isConfirmOpen}
-          title={t("delete_poi")}
-          message={t("delete_poi_confirm")}
-          confirmText="delete"
-          loading={isDeleting}
-          variant="danger"
-          onCancel={() => {
-            setIsConfirmOpen(false);
-            setIsBulkDelete(false);
-          }}
-          onConfirm={() => {
-            if (isBulkDelete) handleBulkDelete();
-            setIsConfirmOpen(false);
-          }}
-        />
-
-        {isCreateModalOpen && (
-          <CreatePoiWizard
-            onClose={() => setIsCreateModalOpen(false)}
-            refetch={refetchFromPage1}
-          />
-        )}
       </div>
+
+      {/* Modals */}
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={t("delete_poi")}
+        message={t("delete_poi_confirm")}
+        confirmText="delete"
+        loading={isDeleting}
+        variant="danger"
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setIsBulkDelete(false);
+        }}
+        onConfirm={() => {
+          if (isBulkDelete) handleBulkDelete();
+          setIsConfirmOpen(false);
+        }}
+      />
+
+      {isCreateModalOpen && (
+        <CreatePoiWizard
+          onClose={() => setIsCreateModalOpen(false)}
+          refetch={refetchFromPage1}
+        />
+      )}
     </>
   );
 }

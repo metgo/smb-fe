@@ -1,11 +1,11 @@
 import clsx from "clsx";
 import { TrendingUp } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 import { getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
+import BackToListBtn from "@/components/btns/BackToListBtn";
 
 interface DetailTitleSectionProps {
   name: string;
@@ -16,6 +16,11 @@ interface DetailTitleSectionProps {
   updatedAt: string;
   completionPercent: number;
   imageSrc?: string;
+  actions?: React.ReactNode;
+  /** Route path for the back-to-list button. Omit to hide the button. */
+  backPath?: string;
+  /** Optional label override for the back button. */
+  backLabel?: string;
 }
 
 const DetailTitleSection = ({
@@ -27,8 +32,10 @@ const DetailTitleSection = ({
   updatedAt,
   completionPercent,
   imageSrc,
+  actions,
+  backPath,
+  backLabel,
 }: DetailTitleSectionProps) => {
-  const { t } = useTranslation("common");
   const { isDark, textTertiary, language } = useThemeClasses();
 
   const divider = (
@@ -39,17 +46,31 @@ const DetailTitleSection = ({
   );
 
   return (
-    <div className="flex items-center gap-3">
-      <ImageWithFallback
-        src={imageSrc}
-        alt={name || nameHe || nameAr}
-        className={clsx(
-          "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover shrink-0 border",
-          isDark ? "border-gray-600" : "border-gray-200",
-        )}
-      />
+    <div className="flex items-center gap-3 ">
+      {/* Back button positioned above the image without taking its own line */}
+      <div className="relative shrink-0">
+        <BackToListBtn
+          navPath={backPath || ""}
+          label={backLabel}
+ className={clsx(
+            "absolute -top-2 -left-2 z-10 mr-0 flex h-6 items-center justify-center rounded border px-2 py-0 shadow-md",
+            isDark
+              ? "border-green-700 bg-green-800/80 text-white hover:bg-green-700"
+              : "border-gray-200 bg-green-500/50 text-white hover:bg-gray-50 hover:text-teal-600",
+          )}        />
+        <ImageWithFallback
+          src={imageSrc}
+          alt={name || nameHe || nameAr}
+          className={clsx(
+            "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover border",
+            isDark ? "border-gray-600" : "border-gray-200",
+          )}
+        />
+      </div>
 
-      <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 min-w-0">
+
+      {/* Title + metadata + actions */}
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 min-w-0">
         <div className="min-w-0">
           <h1
             className={`text-base sm:text-lg font-semibold leading-tight truncate ${
@@ -124,29 +145,27 @@ const DetailTitleSection = ({
                 </span>
               </>
             )}
+
+            {divider}
+            <div className="flex items-center gap-1.5">
+              <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-teal-500 transition-all duration-300"
+                  style={{ width: `${completionPercent}%` }}
+                />
+              </div>
+              <span className={clsx("text-xs font-medium", textTertiary)}>
+                {completionPercent}%
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="shrink-0 flex flex-col items-start sm:items-end gap-1">
-          <span className={clsx("text-[10px]", textTertiary)}>
-            {t("completion_percentage")}
-          </span>
-          <div className="flex items-center gap-2">
-            <div className="w-20 sm:w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-teal-500 transition-all duration-300"
-                style={{ width: `${completionPercent}%` }}
-              />
-            </div>
-            <span
-              className={`text-xs font-medium ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              {completionPercent}%
-            </span>
+        {actions && (
+          <div className="shrink-0 flex items-center gap-2">
+            {actions}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

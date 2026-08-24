@@ -5,6 +5,7 @@ import DeliveryPolicyOption from "./DeliveryPolicyOption";
 import DeliveryPolicyOptionDetails from "./DeliveryPolicyOptionDetails";
 import DetailTitleSection from "./DetailTitleSection";
 import LocationDetails from "./LocationDetails";
+import LocationDetailsclosed from "./LocationDetailsclosed";
 import MediaDetails from "./MediaDetails";
 import SectionHeader from "./SectionHeader";
 
@@ -13,6 +14,7 @@ export {
   MediaDetails,
   SectionHeader,
   LocationDetails,
+  LocationDetailsclosed,
   AttributesDetails,
   DeliveryPolicyOption,
   DetailTitleSection,

@@ -68,10 +68,10 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
       className={`py-3 px-2 rounded-xl ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-white"}`}
     >
       <div
-        ref={scrollRef}
-        id="business-table-scroll"
-        className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto"
-      >
+  ref={scrollRef}
+  id="business-table-scroll"
+  className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto"
+>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
           {products?.map((product) => (
             <GridCard

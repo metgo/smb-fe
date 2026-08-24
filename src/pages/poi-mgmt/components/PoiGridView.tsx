@@ -55,10 +55,10 @@ export default function PoiGridView({
     <div
       className={`pb-6 pt-2 px-2 ${isDark ? "border-gray-700 bg-gray-900" : "border-gray-300"}`}
     >
-      <div
+      {/* <div
         className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto mb-20"
         ref={scrollRef}
-      >
+      > */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
           {data?.map((poi) => (
             <GridCard
@@ -100,8 +100,7 @@ export default function PoiGridView({
             <Loader className="w-10 h-10 animate-spin text-teal-600" />
           </div>
         )}
-      </div>
-
+÷
       <ConfirmDialog
         open={isConfirmOpen}
         title="delete_poi"
