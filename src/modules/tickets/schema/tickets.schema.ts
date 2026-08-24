@@ -97,6 +97,9 @@ export class Ticket extends AuditableSchema {
   @Prop({ enum: TicketType, default: TicketType.FREE })
     type: TicketType;
 
+  @Prop({ type: Number, default: 0 })
+    order: number;
+
   @Prop({
     type: [
       {
@@ -121,3 +124,4 @@ export const TicketSchema = SchemaFactory.createForClass(Ticket);
 
 TicketSchema.index({ eventId: 1, status: 1 });
 TicketSchema.index({ userId: 1 });
+TicketSchema.index({ eventId: 1, order: 1 });

@@ -54,6 +54,7 @@ export class GetAllTicketsHandler implements IQueryHandler<GetAllTicketsQuery> {
 
       const tickets = await this.TicketModel.aggregate([
         { $match: query },
+        { $sort: { order: 1, createdAt: 1 } },
         {
           $lookup: {
             from: 'sessionwrappers',
