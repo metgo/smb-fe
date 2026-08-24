@@ -1016,51 +1016,58 @@ const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
               : "bg-white border-gray-200",
           )}
         >
-          <div className="flex-1 relative">
-            <SearchInput
-              placeholder={t("search_orders")}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              storageKey="orderSearchTerm"
-            />
-          </div>
-
           <div
             className={clsx(
-              "flex items-center justify-between gap-2 w-full flex-wrap",
-              isRTL && "flex-row-reverse",
+              "flex flex-col lg:flex-row lg:items-center gap-3",
+              isRTL && "lg:flex-row-reverse",
             )}
           >
-            <div className="flex items-center gap-2 flex-wrap">
-              <FilterButton value={showFilters} onChange={setShowFilters} />
-              <ShowColumns
-                t={t}
-                viewMode="list"
-                columnDefinitions={columnDefinitions}
-                columnVisibility={columnVisibility}
-                showColumnSettings={showColumnSettings}
-                setShowColumnSettings={setShowColumnSettings}
-                setColumnVisibility={setColumnVisibility}
-                resetToDefault={() =>
-                  setColumnVisibility(ORDER_COLUMNS.defaultColumns)
-                }
-              />
-              <ExportOrdersButton
-                orders={combinedOrders}
-                selectedOrders={selectedOrders}
-                columnVisibility={columnVisibility}
-                websiteMap={websiteMap}
-                isSummaryMode={false}
-                summaryData={[]}
-                t={t}
-                tc={tc}
-                monthFilter={filters.month}
-                customDateFrom={filters.startDate}
-                customDateTo={filters.endDate}
+            <div className="flex-1 min-w-0 relative">
+              <SearchInput
+                placeholder={t("search_orders")}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                storageKey="orderSearchTerm"
               />
             </div>
 
-            {/* <ViewModeToggle onChange={setViewMode} value={viewMode} /> */}
+            <div
+              className={clsx(
+                "flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap",
+                isRTL && "flex-row-reverse",
+              )}
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
+                <ShowColumns
+                  t={t}
+                  viewMode="list"
+                  columnDefinitions={columnDefinitions}
+                  columnVisibility={columnVisibility}
+                  showColumnSettings={showColumnSettings}
+                  setShowColumnSettings={setShowColumnSettings}
+                  setColumnVisibility={setColumnVisibility}
+                  resetToDefault={() =>
+                    setColumnVisibility(ORDER_COLUMNS.defaultColumns)
+                  }
+                />
+                <ExportOrdersButton
+                  orders={combinedOrders}
+                  selectedOrders={selectedOrders}
+                  columnVisibility={columnVisibility}
+                  websiteMap={websiteMap}
+                  isSummaryMode={false}
+                  summaryData={[]}
+                  t={t}
+                  tc={tc}
+                  monthFilter={filters.month}
+                  customDateFrom={filters.startDate}
+                  customDateTo={filters.endDate}
+                />
+              </div>
+
+              {/* <ViewModeToggle onChange={setViewMode} value={viewMode} /> */}
+            </div>
           </div>
 
           {showFilters && (

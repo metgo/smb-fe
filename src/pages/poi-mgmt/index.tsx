@@ -329,40 +329,42 @@ export default function PoiMgmtPage() {
                 : "bg-white border-gray-200"
             )}
           >
-            <div className="flex-1 relative">
-              <SearchInput
-                placeholder={t("search_pois_placeholder")}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-2 w-full flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-                <ShowColumns
-                  t={t}
-                  viewMode={viewMode}
-                  columnDefinitions={columnDefinitions}
-                  columnVisibility={columnVisibility}
-                  showColumnSettings={showColumnSettings}
-                  setShowColumnSettings={setShowColumnSettings}
-                  setColumnVisibility={setColumnVisibility}
-                  resetToDefault={resetToDefault}
-                />
-                <ExportPoiButton
-                  pois={combinedPois}
-                  selectedPois={selectedPois}
-                  columnVisibility={columnVisibility}
-                  t={t}
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <div className="flex-1 min-w-0 relative">
+                <SearchInput
+                  placeholder={t("search_pois_placeholder")}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
                 />
               </div>
 
-              <ViewModeToggle
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="poiViewMode"
-              />
+              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+                  <ShowColumns
+                    t={t}
+                    viewMode={viewMode}
+                    columnDefinitions={columnDefinitions}
+                    columnVisibility={columnVisibility}
+                    showColumnSettings={showColumnSettings}
+                    setShowColumnSettings={setShowColumnSettings}
+                    setColumnVisibility={setColumnVisibility}
+                    resetToDefault={resetToDefault}
+                  />
+                  <ExportPoiButton
+                    pois={combinedPois}
+                    selectedPois={selectedPois}
+                    columnVisibility={columnVisibility}
+                    t={t}
+                  />
+                </div>
+
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="poiViewMode"
+                />
+              </div>
             </div>
 
             {(showFilters || hasSavedFilters) && (

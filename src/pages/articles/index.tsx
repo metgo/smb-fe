@@ -338,42 +338,44 @@ export default function ArticlesManagement() {
                 : "bg-white border-gray-200"
             )}
           >
-            <div className="flex-1 relative">
-              <SearchInput
-                placeholder={t("search_placeholder")}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                storageKey={SEARCH_STORAGE_KEY}
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-2 w-full flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-                <ShowColumns
-                  t={t}
-                  viewMode={viewMode}
-                  columnDefinitions={columnDefinitions}
-                  columnVisibility={columnVisibility}
-                  showColumnSettings={showColumnSettings}
-                  setShowColumnSettings={setShowColumnSettings}
-                  setColumnVisibility={setColumnVisibility}
-                  resetToDefault={() => setColumnVisibility(defaultColumns)}
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <div className="flex-1 min-w-0 relative">
+                <SearchInput
+                  placeholder={t("search_placeholder")}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  storageKey={SEARCH_STORAGE_KEY}
                 />
-                <button
-                  onClick={handleExport}
-                  className={`px-4 py-1.5 rounded-lg border flex items-center gap-2 ${textPrimary} ${borderColor}`}
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="hidden md:block">{t("export")}</span>
-                </button>
               </div>
 
-              <ViewModeToggle
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="blogViewMode"
-              />
+              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+                  <ShowColumns
+                    t={t}
+                    viewMode={viewMode}
+                    columnDefinitions={columnDefinitions}
+                    columnVisibility={columnVisibility}
+                    showColumnSettings={showColumnSettings}
+                    setShowColumnSettings={setShowColumnSettings}
+                    setColumnVisibility={setColumnVisibility}
+                    resetToDefault={() => setColumnVisibility(defaultColumns)}
+                  />
+                  <button
+                    onClick={handleExport}
+                    className={`px-4 py-1.5 rounded-lg border flex items-center gap-2 ${textPrimary} ${borderColor}`}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden md:block">{t("export")}</span>
+                  </button>
+                </div>
+
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="blogViewMode"
+                />
+              </div>
             </div>
 
             {/* Filters */}

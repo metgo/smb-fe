@@ -629,22 +629,27 @@ export default function OrdersSummaryMgmtPage() {
               : "bg-white border-gray-200",
           )}
         >
-          <div className="flex-1 relative">
-            <SearchInput
-              placeholder={t("search_orders")}
-              searchTerm={searchTermSummary}
-              setSearchTerm={setSearchTermSummary}
-              storageKey="orderSummarySearchTerm"
-            />
-          </div>
-
           <div
             className={clsx(
-              "flex items-center justify-between gap-2 w-full flex-wrap",
-              isRTL && "flex-row-reverse",
+              "flex flex-col lg:flex-row lg:items-center gap-3",
+              isRTL && "lg:flex-row-reverse",
             )}
           >
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex-1 min-w-0 relative">
+              <SearchInput
+                placeholder={t("search_orders")}
+                searchTerm={searchTermSummary}
+                setSearchTerm={setSearchTermSummary}
+                storageKey="orderSummarySearchTerm"
+              />
+            </div>
+
+            <div
+              className={clsx(
+                "flex items-center gap-2 w-full lg:w-auto flex-wrap",
+                isRTL && "flex-row-reverse",
+              )}
+            >
               <FilterButton value={showFilters} onChange={setShowFilters} />
               <ShowColumns
                 t={t}

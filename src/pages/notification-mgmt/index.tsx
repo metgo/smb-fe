@@ -317,16 +317,16 @@ export default function NotificationsMgmtPage() {
                 : "bg-white border-gray-200"
             )}
           >
-            <div className="flex-1 relative">
-              <SearchInput
-                placeholder={t("search_notifications")}
-                searchTerm={searchQuery}
-                setSearchTerm={setSearchQuery}
-                storageKey={SEARCH_STORAGE_KEY}
-              />
-            </div>
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <div className="flex-1 min-w-0 relative">
+                <SearchInput
+                  placeholder={t("search_notifications")}
+                  searchTerm={searchQuery}
+                  setSearchTerm={setSearchQuery}
+                  storageKey={SEARCH_STORAGE_KEY}
+                />
+              </div>
 
-            <div className="flex items-center justify-between gap-2 w-full flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
                 <FilterButton value={showFilters} onChange={setShowFilters} />
               </div>

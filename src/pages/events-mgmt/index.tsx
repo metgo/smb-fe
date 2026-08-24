@@ -268,26 +268,28 @@ export default function EventsMgmtPage() {
                 : "bg-white border-gray-200"
             )}
           >
-            <div className="flex-1 relative">
-              <SearchInput
-                placeholder={t("search_events_placeholder")}
-                searchTerm={searchQuery}
-                setSearchTerm={setSearchQuery}
-                storageKey="eventSearchTerm"
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-2 w-full flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <div className="flex-1 min-w-0 relative">
+                <SearchInput
+                  placeholder={t("search_events_placeholder")}
+                  searchTerm={searchQuery}
+                  setSearchTerm={setSearchQuery}
+                  storageKey="eventSearchTerm"
+                />
               </div>
 
-              <ViewModeToggle
-                showCalendor
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="eventViewMode"
-              />
+              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+                </div>
+
+                <ViewModeToggle
+                  showCalendor
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="eventViewMode"
+                />
+              </div>
             </div>
 
             {(showFilters || hasSavedFilters) && (
