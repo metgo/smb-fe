@@ -95,6 +95,8 @@
   "unit_price": "מחיר יחידה",
   "total": "סה\"כ",
   "total_price": "סה\"כ",
+  "total_vendors": "סך כל הספקים",
+  "payment_completed_orders": "הזמנות שהתשלום עבורן הושלם",
   "platform_fee": "עמלת פלטפורמה",
   "customer_information": "פרטי לקוח",
   "name": "שם",

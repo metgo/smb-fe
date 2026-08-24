@@ -96,6 +96,8 @@
   "total": "Total",
   "total_price": "Total",
   "platform_fee": "Platform Fee",
+  "total_vendors": "Total Vendors",
+  "payment_completed_orders": "Payment Completed Orders",
   "customer_information": "Customer Information",
   "name": "Name",
   "email": "Email",

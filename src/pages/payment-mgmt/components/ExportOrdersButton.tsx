@@ -19,6 +19,7 @@ export default function ExportOrdersButton({
   customDateFrom,
   customDateTo,
 }: ExportOrdersButtonProps) {
+  console.log("🚀 ~ ExportOrdersButton ~ vendorId:", vendorId);
   const { isDark, language } = useThemeClasses();
   const [exportVendorwiseXlsx, { isLoading }] =
     useExportVendorwiseXlsxMutation();

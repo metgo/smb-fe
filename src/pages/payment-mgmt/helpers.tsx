@@ -327,7 +327,7 @@ export function buildOrderColumns({
     {
       key: "purchaseDate",
       sortable: true,
-      label: t("date"),
+      label: t("purchase_date"),
       render: (order: IMonthlyOrder) => (
         <span className={textSecondary}>
           {order.purchaseDate
@@ -349,14 +349,19 @@ export function buildOrderColumns({
       sortable: true,
       label: t("price"),
       render: (order: IMonthlyOrder) => (
-        <div>
-          <div className={`font-medium ${textPrimary}`}>
-            {formatCurrency(order.totalPrice)}
-          </div>
-          <div className={`text-xs ${textTertiary}`}>
-            {t("fee")}: {formatCurrency(order.platformFee)}
-          </div>
-        </div>
+        <span className={`font-medium ${textPrimary}`}>
+          {formatCurrency(order.totalPrice)}
+        </span>
+      ),
+    },
+    {
+      key: "platformFee",
+      sortable: true,
+      label: t("platform_fee"),
+      render: (order: IMonthlyOrder) => (
+        <span className={`text-medium ${textPrimary}`}>
+          {formatCurrency(order.platformFee)}
+        </span>
       ),
     },
     {

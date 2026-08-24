@@ -21,14 +21,13 @@ import {
 import { InputField, ReactSelect } from "@/components/form-fields";
 
 interface VendorBankDetailsOwnerInfo {
-  _id: string;
+  _id: string | undefined;
   name: string;
   email: string | null;
   phone: string | null;
 }
 
 interface VendorBankDetailsProps {
-  userId: string;
   adminView: boolean;
   setIsOpen: (v: boolean) => void;
   savedBankAccount: BankAccount | undefined;
@@ -36,7 +35,6 @@ interface VendorBankDetailsProps {
 }
 
 const VendorBankDetails = ({
-  userId,
   adminView,
   setIsOpen,
   savedBankAccount,
@@ -115,7 +113,7 @@ const VendorBankDetails = ({
   });
 
   const handleSaveBankAccount = async () => {
-    if (!validate() && !userId) return;
+    if (!validate() && !ownerInfo?._id) return;
 
     const payload = {
       bankNumber: bankAccountData.bankNumber,
@@ -125,7 +123,10 @@ const VendorBankDetails = ({
       invoiceName: bankAccountData.invoiceName,
     };
 
-    const res = await updateProfileInfo({ body: payload, userId }).unwrap();
+    const res = await updateProfileInfo({
+      body: payload,
+      userId: ownerInfo?._id || "",
+    }).unwrap();
 
     if (res?.message) {
       toast.success(res.message || "Bank Info updated successfully");
@@ -175,7 +176,7 @@ const VendorBankDetails = ({
     try {
       await sendEmailSms({
         type,
-        userId: ownerInfo?._id,
+        userId: ownerInfo?._id || "",
       });
       // Show success toast
       if (type === "email") {

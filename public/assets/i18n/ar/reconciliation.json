@@ -96,6 +96,8 @@
   "total": "المجموع",
   "total_price": "المجموع",
   "platform_fee": "رسوم المنصة",
+  "total_vendors": "إجمالي الموردين",
+  "payment_completed_orders": "الطلبات التي تم إتمام الدفع لها",
   "customer_information": "معلومات العميل",
   "name": "الاسم",
   "email": "البريد الإلكتروني",

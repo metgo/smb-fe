@@ -15,7 +15,7 @@ import {
   useFinalizeClosedOrdersMutation,
   usePreviewFinalizeClosedOrdersQuery,
 } from "@/store/api/reconciliationQueryApi";
-import { useLazyGetUserInfoQuery } from "@/store/api/userQueryApi";
+import { useGetUserInfoQuery } from "@/store/api/userQueryApi";
 import { mapOrderProductDetails } from "../helpers";
 
 export interface UseOrderActionsParams {
@@ -53,13 +53,16 @@ export function useOrderActions({
   const [reopenFetchingId, setReopenFetchingId] = useState<string | null>(null);
   const [showVendorBankDetailsModal, setShowVendorBankDetailsModal] =
     useState(false);
-  const [vendorBankDetails, setVendorBankDetails] = useState<any>(null);
 
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
     useGetOrderProductDetailsQuery(detailsOrderId as string, {
       skip: !detailsOrderId,
       refetchOnMountOrArgChange: true,
     });
+  const { data: vendorBankDetails } = useGetUserInfoQuery(undefined, {
+    skip: userRole === "superadmin",
+  });
+
   const [cancelOrderProduct] = useCancelOrderProductMutation();
   const [openDispute] = useOpenDisputeMutation();
   const [reopenDispute] = useReopenDisputeMutation();
@@ -69,7 +72,6 @@ export function useOrderActions({
     useBulkMarkOrderAsCompletedMutation();
   const [finalizeClosedOrders, { isLoading: isClosingAllOrders }] =
     useFinalizeClosedOrdersMutation();
-  const [getUserInfo] = useLazyGetUserInfoQuery();
   // only fetched while the confirmation modal is actually open - no point
   // hitting this on every page load
   const {
@@ -383,18 +385,6 @@ export function useOrderActions({
     }
   };
 
-  const handleUpdateVendorBankDetails = async () => {
-    try {
-      const result = await getUserInfo().unwrap();
-      setVendorBankDetails(result);
-      setShowVendorBankDetailsModal(true);
-    } catch (error) {
-      console.error("Failed to fetch user info:", error);
-      toast.error("Failed to fetch vendor bank details");
-      setShowVendorBankDetailsModal(true);
-    }
-  };
-
   return {
     userRole,
     selectedOrder,
@@ -443,6 +433,5 @@ export function useOrderActions({
     vendorBankDetails,
     showVendorBankDetailsModal,
     setShowVendorBankDetailsModal,
-    handleUpdateVendorBankDetails,
   };
 }

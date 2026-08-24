@@ -116,6 +116,13 @@ export interface VendorPaymentSummaryRow {
     shippedCount: number;
     completedCount: number;
     canceledCount: number;
+  };
+  reconciliationSummary: {
+    pendingCount: number;
+    approvedCount: number;
+    cancelledCount: number;
+    rejectedCount: number;
+    closedCount: number;
     disputedCount: number;
   };
   amount: {

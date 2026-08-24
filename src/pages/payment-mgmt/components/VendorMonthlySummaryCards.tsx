@@ -8,10 +8,11 @@ import {
   Loader2,
   XCircle,
   Truck,
-  AlertTriangle,
   Wallet,
   Landmark,
   ListCollapse,
+  Banknote,
+  TriangleAlert,
 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -20,6 +21,7 @@ import VendorBankDetails from "./VendorBankDetails";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import EmptyState from "@/components/reordable-data-table/EmptyState";
 import type { VendorPaymentSummaryRow } from "@/store/api/reconciliationQueryApi";
+import { ImageWithFallback } from "@/components/shared";
 
 const formatCurrency = (amount?: number) => {
   if (amount === null || amount === undefined) return "-";
@@ -80,7 +82,14 @@ export const VendorMonthlySummaryCards = ({
     { key: "shippedCount", label: t("shipped"), icon: Truck },
     { key: "completedCount", label: t("completed"), icon: CheckCircle2 },
     { key: "canceledCount", label: t("canceled"), icon: XCircle },
-    { key: "disputedCount", label: t("disputed"), icon: AlertTriangle },
+  ] as const;
+
+  const reconcillationStats = [
+    { key: "pendingCount", label: t("pending"), icon: Clock },
+    { key: "approvedCount", label: t("approved"), icon: CheckCircle2 },
+    { key: "rejectedCount", label: t("rejected"), icon: Truck },
+    { key: "disputedCount", label: t("disputed"), icon: TriangleAlert },
+    { key: "cancelledCount", label: t("canceled"), icon: XCircle },
   ] as const;
 
   if (isLoading && vendors.length === 0) {
@@ -96,7 +105,7 @@ export const VendorMonthlySummaryCards = ({
   }
 
   return (
-    <div className="relative h-[calc(100vh-430px)] overflow-y-auto pr-2 pb-4">
+    <div className="relative h-[calc(100vh-230px)] overflow-y-auto pr-2 pb-4">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
         {vendors.map((vendor) => {
           const vendorName = vendor.vendor_info.name || "-";
@@ -122,7 +131,7 @@ export const VendorMonthlySummaryCards = ({
                       )}
                     >
                       {vendor.vendor_info.businessLogo?.image ? (
-                        <img
+                        <ImageWithFallback
                           src={vendor.vendor_info.businessLogo.image}
                           alt={
                             vendor.vendor_info.businessLogo.alt || vendorName
@@ -249,6 +258,60 @@ export const VendorMonthlySummaryCards = ({
                 </div>
               </div>
 
+              {/* Reconciliation summary */}
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div
+                    className={clsx(
+                      "flex items-center gap-1.5 text-xs font-medium",
+                      textTertiary,
+                    )}
+                  >
+                    <Banknote className="w-3.5 h-3.5" />
+                    {t("payment_completed_orders")}
+                  </div>
+                  <span className={clsx("text-lg font-bold", textPrimary)}>
+                    {vendor.reconciliationSummary.closedCount}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {reconcillationStats.map(({ key, label, icon: Icon }) => (
+                    <div
+                      key={key}
+                      className={clsx(
+                        "rounded-lg px-2 py-1.5 flex items-center gap-1.5",
+                        bgSecondary,
+                      )}
+                    >
+                      <Icon
+                        className={clsx(
+                          "w-3.5 h-3.5 shrink-0",
+                          isDark ? "text-teal-400" : "text-teal-700",
+                        )}
+                      />
+                      <div className="min-w-0">
+                        <div
+                          className={clsx(
+                            "text-sm font-semibold leading-tight",
+                            textPrimary,
+                          )}
+                        >
+                          {vendor.reconciliationSummary[key]}
+                        </div>
+                        <div
+                          className={clsx(
+                            "text-[10px] leading-tight truncate",
+                            textTertiary,
+                          )}
+                        >
+                          {label}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Amount summary */}
               <div className={clsx("px-4 py-3 mt-auto border-t", borderColor)}>
                 <div className="flex items-center justify-between mb-2">
@@ -316,7 +379,6 @@ export const VendorMonthlySummaryCards = ({
       {isBankModalOpen && bankDetailsVendor && (
         <VendorBankDetails
           adminView={adminView}
-          userId={bankDetailsVendor.owner_info._id}
           ownerInfo={{
             _id: bankDetailsVendor.owner_info._id,
             name: bankDetailsVendor.owner_info.name,
