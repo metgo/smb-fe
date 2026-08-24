@@ -479,7 +479,7 @@ export default function Sidebar() {
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] lg:hidden"
           onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}
@@ -495,7 +495,7 @@ export default function Sidebar() {
           transition-all duration-300
           flex flex-col
           border-r
-          z-40
+          z-[45]
           ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}
           ${isRTL ? "right-0" : "left-0"}
           ${

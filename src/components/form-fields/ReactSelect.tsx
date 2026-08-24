@@ -113,7 +113,7 @@ export default function ReactSelect({
     <div
       ref={containerRef}
       className="relative"
-      style={{ minWidth, zIndex: isOpen ? 99999 : 40 }}
+      style={{ minWidth: `min(${minWidth}px, 100%)`, zIndex: isOpen ? 99999 : 40 }}
     >
       {/* Select Trigger */}
       <div
