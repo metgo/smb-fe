@@ -2,13 +2,20 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Ticket, Trash2, Copy, PenBox, LayoutList } from "lucide-react";
+import { Plus, Ticket, Trash2, Copy, PenBox, LayoutList, GripVertical } from "lucide-react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+} from "@hello-pangea/dnd";
 
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   useDeleteTicketMutation,
   useUpdateEventMutation,
+  useUpdateTicketReorderMutation,
 } from "@/store/api/eventMutationApi";
 import { TicketCardSkeleton } from "@/components/skeletons";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
@@ -75,7 +82,38 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
   ]);
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
+  const [updateTicketReorder] = useUpdateTicketReorderMutation();
   const isTicketDisabled = !eventDays?.length || !eventDays[0]?.date;
+
+  // ── Local ordered tickets (optimistic reorder) ───────────────────────────
+  const [orderedTickets, setOrderedTickets] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (tickets) setOrderedTickets(tickets);
+  }, [tickets]);
+
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    if (result.destination.index === result.source.index) return;
+
+    const reordered = Array.from(orderedTickets);
+    const [moved] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, moved);
+
+    setOrderedTickets(reordered); // optimistic update
+
+    try {
+      await updateTicketReorder({
+        body: {
+          eventId,
+          ticketIds: reordered.map((t: any) => t._id),
+        },
+      }).unwrap();
+    } catch {
+      setOrderedTickets(tickets ?? []); // revert on error
+      toast.error(t("reorder_failed"));
+    }
+  };
 
   const formatPrice = (ticket: any) => {
     if (ticket?.type === "free") return t("free");
@@ -296,246 +334,315 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
 
             {/* ── Ticket list ───────────────────────────────────────────────── */}
             {hasTickets && !isDeleting && (
-              <div className="space-y-4 max-h-[70vh] overflow-y-auto mb-10 md:mb-8">
-                {tickets.map((ticket: any) => (
-                  <div
-                    key={ticket._id}
-                    className={clsx(
-                      "p-3 rounded-xl border hover:shadow-md transition",
-                      isDark
-                        ? "border-gray-700 bg-gray-800/50"
-                        : "border-gray-200 bg-gray-50",
-                    )}
-                  >
-                    {/* Desktop Layout - hidden on mobile */}
-                    <div className="hidden md:flex justify-between items-center gap-6">
-                      <div className="flex-1 flex items-center gap-2 md:gap-4">
-                        <div>
-                          <ImageWithFallback
-                            src={ticket?.images?.[0]?.image}
-                            className="w-20 h-20 rounded object-cover"
-                          />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-3 mb-3">
-                            <h4
-                              className={`text-xl font-semibold ${textPrimary}`}
-                            >
-                              {ticket.name}
-                            </h4>
-                            <span
+              <DragDropContext onDragEnd={handleDragEnd}>
+                <Droppable droppableId="tickets-list">
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className="space-y-4 max-h-[70vh] overflow-y-auto mb-10 md:mb-8"
+                    >
+                      {orderedTickets.map((ticket: any, index: number) => (
+                        <Draggable
+                          key={ticket._id}
+                          draggableId={ticket._id}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
                               className={clsx(
-                                "px-3 py-1 rounded-full text-xs font-semibold uppercase",
-                                TICKET_TYPE_STYLES[ticket.type] ??
-                                  TICKET_TYPE_STYLES.paid,
+                                "p-3 rounded-xl border transition",
+                                snapshot.isDragging
+                                  ? "shadow-lg ring-2 ring-teal-500/40"
+                                  : "hover:shadow-md",
+                                isDark
+                                  ? "border-gray-700 bg-gray-800/50"
+                                  : "border-gray-200 bg-gray-50",
                               )}
                             >
-                              {t(ticket.type)}
-                            </span>
-                          </div>
-                          <div
-                            className={`grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm ${textTertiary}`}
-                          >
-                            <span>
-                              <span className="font-medium">{t("price")}:</span>{" "}
-                              {formatPrice(ticket)}
-                            </span>
-                            <span>
-                              <span className="font-medium">
-                                {t("quantity")}:
-                              </span>{" "}
-                              {ticket.quantity?.initial ?? t("unlimited")}
-                            </span>
-                            <span>
-                              <span className="font-medium">
-                                {t("per_user_limit")}:
-                              </span>{" "}
-                              {ticket.quantity?.perUserLimit || t("no_limit")}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                              {/* Desktop Layout - hidden on mobile */}
+                              <div className="hidden md:flex justify-between items-center gap-6">
+                                {/* Drag handle */}
+                                <div
+                                  {...provided.dragHandleProps}
+                                  className={clsx(
+                                    "flex-shrink-0 cursor-grab active:cursor-grabbing p-1 rounded transition-colors",
+                                    isDark
+                                      ? "text-gray-500 hover:text-gray-300 hover:bg-gray-700"
+                                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-200",
+                                  )}
+                                  title="Drag to reorder"
+                                >
+                                  <GripVertical className="w-5 h-5" />
+                                </div>
 
-                      <div>
-                        <ActionIconButtons
-                          isDark={isDark}
-                          actions={[
-                            {
-                              title: t("edit_ticket"),
-                              icon: PenBox,
-                              color: "gray",
-                              onClick: () => {
-                                setEditingTicket({
-                                  ...ticket,
-                                  imageUrl: ticket.images?.[0]?.image ?? "",
-                                });
-                                setTicketDateTime(ticket.dayDescription ?? []);
-                                setOpMode("UPDATE");
-                                setShowTicketModal(true);
-                              },
-                            },
-                            {
-                              title: t("duplicate_ticket"),
-                              icon: Copy,
-                              color: "blue",
-                              onClick: () => {
-                                setEditingTicket({
-                                  ...ticket,
-                                  name: `${ticket.name} (${t("copy")})`,
-                                  imageUrl: ticket.images?.[0]?.image ?? "",
-                                });
-                                setOpMode("DUPLICATE");
-                                setShowTicketModal(true);
-                              },
-                            },
-                            {
-                              title: t("delete_ticket"),
-                              icon: Trash2,
-                              color: "red",
-                              onClick: () => {
-                                setTicketToDelete(ticket._id);
-                                setIsConfirmOpen(true);
-                              },
-                            },
-                            {
-                              title: "Create Landing Page",
-                              icon: LayoutList,
-                              color: "yellow",
-                              onClick: () => {
-                                if (ticket?.wrapperId)
-                                  window.open(
-                                    `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
-                                    "_blank",
-                                  );
-                                else
-                                  window.open(
-                                    `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
-                                    "_blank",
-                                  );
-                              },
-                            },
-                          ]}
-                        />
-                      </div>
+                                <div className="flex-1 flex items-center gap-2 md:gap-4">
+                                  <div>
+                                    <ImageWithFallback
+                                      src={ticket?.images?.[0]?.image}
+                                      className="w-20 h-20 rounded object-cover"
+                                    />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-3 mb-3">
+                                      <h4
+                                        className={`text-xl font-semibold ${textPrimary}`}
+                                      >
+                                        {ticket.name}
+                                      </h4>
+                                      <span
+                                        className={clsx(
+                                          "px-3 py-1 rounded-full text-xs font-semibold uppercase",
+                                          TICKET_TYPE_STYLES[ticket.type] ??
+                                            TICKET_TYPE_STYLES.paid,
+                                        )}
+                                      >
+                                        {t(ticket.type)}
+                                      </span>
+                                    </div>
+                                    <div
+                                      className={`grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm ${textTertiary}`}
+                                    >
+                                      <span>
+                                        <span className="font-medium">
+                                          {t("price")}:
+                                        </span>{" "}
+                                        {formatPrice(ticket)}
+                                      </span>
+                                      <span>
+                                        <span className="font-medium">
+                                          {t("quantity")}:
+                                        </span>{" "}
+                                        {ticket.quantity?.initial ??
+                                          t("unlimited")}
+                                      </span>
+                                      <span>
+                                        <span className="font-medium">
+                                          {t("per_user_limit")}:
+                                        </span>{" "}
+                                        {ticket.quantity?.perUserLimit ||
+                                          t("no_limit")}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <ActionIconButtons
+                                    isDark={isDark}
+                                    actions={[
+                                      {
+                                        title: t("edit_ticket"),
+                                        icon: PenBox,
+                                        color: "gray",
+                                        onClick: () => {
+                                          setEditingTicket({
+                                            ...ticket,
+                                            imageUrl:
+                                              ticket.images?.[0]?.image ?? "",
+                                          });
+                                          setTicketDateTime(
+                                            ticket.dayDescription ?? [],
+                                          );
+                                          setOpMode("UPDATE");
+                                          setShowTicketModal(true);
+                                        },
+                                      },
+                                      {
+                                        title: t("duplicate_ticket"),
+                                        icon: Copy,
+                                        color: "blue",
+                                        onClick: () => {
+                                          setEditingTicket({
+                                            ...ticket,
+                                            name: `${ticket.name} (${t("copy")})`,
+                                            imageUrl:
+                                              ticket.images?.[0]?.image ?? "",
+                                          });
+                                          setOpMode("DUPLICATE");
+                                          setShowTicketModal(true);
+                                        },
+                                      },
+                                      {
+                                        title: t("delete_ticket"),
+                                        icon: Trash2,
+                                        color: "red",
+                                        onClick: () => {
+                                          setTicketToDelete(ticket._id);
+                                          setIsConfirmOpen(true);
+                                        },
+                                      },
+                                      {
+                                        title: "Create Landing Page",
+                                        icon: LayoutList,
+                                        color: "yellow",
+                                        onClick: () => {
+                                          if (ticket?.wrapperId)
+                                            window.open(
+                                              `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
+                                              "_blank",
+                                            );
+                                          else
+                                            window.open(
+                                              `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
+                                              "_blank",
+                                            );
+                                        },
+                                      },
+                                    ]}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Mobile Layout - shown only on mobile */}
+                              <div className="md:hidden">
+                                {/* Header with drag handle, image and title */}
+                                <div className="flex items-start gap-3 mb-3">
+                                  {/* Drag handle */}
+                                  <div
+                                    {...provided.dragHandleProps}
+                                    className={clsx(
+                                      "flex-shrink-0 mt-1 cursor-grab active:cursor-grabbing p-1 rounded transition-colors",
+                                      isDark
+                                        ? "text-gray-500 hover:text-gray-300 hover:bg-gray-700"
+                                        : "text-gray-400 hover:text-gray-600 hover:bg-gray-200",
+                                    )}
+                                    title="Drag to reorder"
+                                  >
+                                    <GripVertical className="w-4 h-4" />
+                                  </div>
+
+                                  <ImageWithFallback
+                                    src={ticket?.images?.[0]?.image}
+                                    className="w-16 h-16 rounded-lg object-cover shrink-0"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <h4
+                                        className={`text-base font-semibold ${textPrimary} truncate`}
+                                      >
+                                        {ticket.name}
+                                      </h4>
+                                      <span
+                                        className={clsx(
+                                          "px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase whitespace-nowrap",
+                                          TICKET_TYPE_STYLES[ticket.type] ??
+                                            TICKET_TYPE_STYLES.paid,
+                                        )}
+                                      >
+                                        {t(ticket.type)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Ticket details in a grid */}
+                                <div
+                                  className={`grid grid-cols-2 gap-2 mb-3 text-sm ${textTertiary}`}
+                                >
+                                  <div className="flex items-center gap-1">
+                                    <span className="font-medium">
+                                      {t("price")}:
+                                    </span>
+                                    <span className="font-semibold">
+                                      {formatPrice(ticket)}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="font-medium">
+                                      {t("quantity")}:
+                                    </span>
+                                    <span>
+                                      {ticket.quantity?.initial ??
+                                        t("unlimited")}
+                                    </span>
+                                  </div>
+                                  <div className="col-span-2 flex items-center gap-1">
+                                    <span className="font-medium">
+                                      {t("per_user_limit")}:
+                                    </span>
+                                    <span>
+                                      {ticket.quantity?.perUserLimit ||
+                                        t("no_limit")}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <ActionIconButtons
+                                  isDark={isDark}
+                                  actions={[
+                                    {
+                                      title: t("edit_ticket"),
+                                      icon: PenBox,
+                                      color: "gray",
+                                      onClick: () => {
+                                        setEditingTicket({
+                                          ...ticket,
+                                          imageUrl:
+                                            ticket.images?.[0]?.image ?? "",
+                                        });
+                                        setTicketDateTime(
+                                          ticket.dayDescription ?? [],
+                                        );
+                                        setOpMode("UPDATE");
+                                        setShowTicketModal(true);
+                                      },
+                                    },
+                                    {
+                                      title: t("duplicate_ticket"),
+                                      icon: Copy,
+                                      color: "blue",
+                                      onClick: () => {
+                                        setEditingTicket({
+                                          ...ticket,
+                                          name: `${ticket.name} (${t("copy")})`,
+                                          imageUrl:
+                                            ticket.images?.[0]?.image ?? "",
+                                        });
+                                        setOpMode("DUPLICATE");
+                                        setShowTicketModal(true);
+                                      },
+                                    },
+                                    {
+                                      title: t("delete_ticket"),
+                                      icon: Trash2,
+                                      color: "red",
+                                      onClick: () => {
+                                        setTicketToDelete(ticket._id);
+                                        setIsConfirmOpen(true);
+                                      },
+                                    },
+                                    {
+                                      title: "Create Landing Page",
+                                      icon: LayoutList,
+                                      color: "yellow",
+                                      onClick: () => {
+                                        if (ticket?.wrapperId)
+                                          window.open(
+                                            `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
+                                            "_blank",
+                                          );
+                                        else
+                                          window.open(
+                                            `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
+                                            "_blank",
+                                          );
+                                      },
+                                    },
+                                  ]}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
                     </div>
-
-                    {/* Mobile Layout - shown only on mobile */}
-                    <div className="md:hidden">
-                      {/* Header with image and title */}
-                      <div className="flex items-start gap-3 mb-3">
-                        <ImageWithFallback
-                          src={ticket?.images?.[0]?.image}
-                          className="w-16 h-16 rounded-lg object-cover shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <h4
-                              className={`text-base font-semibold ${textPrimary} truncate`}
-                            >
-                              {ticket.name}
-                            </h4>
-                            <span
-                              className={clsx(
-                                "px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase whitespace-nowrap",
-                                TICKET_TYPE_STYLES[ticket.type] ??
-                                  TICKET_TYPE_STYLES.paid,
-                              )}
-                            >
-                              {t(ticket.type)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Ticket details in a grid */}
-                      <div
-                        className={`grid grid-cols-2 gap-2 mb-3 text-sm ${textTertiary}`}
-                      >
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium">{t("price")}:</span>
-                          <span className="font-semibold">
-                            {formatPrice(ticket)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium">{t("quantity")}:</span>
-                          <span>
-                            {ticket.quantity?.initial ?? t("unlimited")}
-                          </span>
-                        </div>
-                        <div className="col-span-2 flex items-center gap-1">
-                          <span className="font-medium">
-                            {t("per_user_limit")}:
-                          </span>
-                          <span>
-                            {ticket.quantity?.perUserLimit || t("no_limit")}
-                          </span>
-                        </div>
-                      </div>
-
-                      <ActionIconButtons
-                        isDark={isDark}
-                        actions={[
-                          {
-                            title: t("edit_ticket"),
-                            icon: PenBox,
-                            color: "gray",
-                            onClick: () => {
-                              setEditingTicket({
-                                ...ticket,
-                                imageUrl: ticket.images?.[0]?.image ?? "",
-                              });
-                              setTicketDateTime(ticket.dayDescription ?? []);
-                              setOpMode("UPDATE");
-                              setShowTicketModal(true);
-                            },
-                          },
-                          {
-                            title: t("duplicate_ticket"),
-                            icon: Copy,
-                            color: "blue",
-                            onClick: () => {
-                              setEditingTicket({
-                                ...ticket,
-                                name: `${ticket.name} (${t("copy")})`,
-                                imageUrl: ticket.images?.[0]?.image ?? "",
-                              });
-                              setOpMode("DUPLICATE");
-                              setShowTicketModal(true);
-                            },
-                          },
-                          {
-                            title: t("delete_ticket"),
-                            icon: Trash2,
-                            color: "red",
-                            onClick: () => {
-                              setTicketToDelete(ticket._id);
-                              setIsConfirmOpen(true);
-                            },
-                          },
-                          {
-                            title: "Create Landing Page",
-                            icon: LayoutList,
-                            color: "yellow",
-                            onClick: () => {
-                              if (ticket?.wrapperId)
-                                window.open(
-                                  `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
-                                  "_blank",
-                                );
-                              else
-                                window.open(
-                                  `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
-                                  "_blank",
-                                );
-                            },
-                          },
-                        ]}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
             )}
 
             {/* ── Ticket wizard modal ───────────────────────────────────────── */}
