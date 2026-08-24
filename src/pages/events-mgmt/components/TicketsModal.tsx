@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
   Plus,
@@ -230,10 +231,10 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                 onClick={handleSaveOrder}
                 disabled={isReordering}
                 className={clsx(
-                  "px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg transition-all text-white",
+                  "px-5 py-3 rounded-xl font-medium flex items-center gap-2 border-2 bg-transparent transition-all",
                   isReordering
-                    ? "bg-blue-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20",
+                    ? "border-blue-300 text-blue-300 cursor-not-allowed"
+                    : "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white cursor-pointer",
                 )}
               >
                 {isReordering ? `${t("saving")}...` : t("save_order")}
@@ -251,7 +252,7 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                     disabled={isTicketDisabled}
                     onClick={openCreateModal}
                     className={clsx(
-                      "px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg transition-all bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20",
+                      "px-5 py-3 rounded-xl cursor-pointer font-medium flex items-center gap-2 shadow-lg transition-all bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20",
                       isTicketDisabled && "opacity-50 cursor-not-allowed",
                     )}
                   >
@@ -385,7 +386,8 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                           draggableId={ticket._id}
                           index={index}
                         >
-                          {(provided, snapshot) => (
+                          {(provided, snapshot) => {
+                            const cardContent = (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
@@ -681,7 +683,11 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                                 </div>
                               </div>
                             </div>
-                          )}
+                            );
+                            return snapshot.isDragging
+                              ? createPortal(cardContent, document.body)
+                              : cardContent;
+                          }}
                         </Draggable>
                       ))}
                       {provided.placeholder}
