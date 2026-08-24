@@ -494,6 +494,27 @@ const VouchersList = ({
     hasInteractedWithAmount,
   ]);
 
+  // Whether any actual FILTER (not just the search box) is set — used to
+  // decide whether the filters panel should stay open on its own, so
+  // typing in search alone doesn't pop it open.
+  const hasSavedFilters = useMemo(
+    () =>
+      statusFilter !== "all" ||
+      campaignFilter !== "all" ||
+      paymentFilter !== "all" ||
+      !!dateFrom ||
+      !!dateTo ||
+      hasInteractedWithAmount,
+    [
+      statusFilter,
+      campaignFilter,
+      paymentFilter,
+      dateFrom,
+      dateTo,
+      hasInteractedWithAmount,
+    ],
+  );
+
   const handleSendVoucherEmails = async (): Promise<void> => {
     try {
       await sendEmail({ voucherIds: Array.from(selectedVouchers) }).unwrap();
@@ -706,7 +727,7 @@ const VouchersList = ({
             </div>
           </div>
 
-          {(showFilters || activeFilterCount > 0) && (
+          {(showFilters || hasSavedFilters) && (
             <div
               className={clsx(
                 "px-4 pb-2 rounded-md",

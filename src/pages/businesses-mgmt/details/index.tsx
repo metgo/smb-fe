@@ -619,7 +619,7 @@ function BusinessDetailsPageInner() {
         <button
           onClick={handleChatWithCreator}
           title={`Message ${businessCreator.name}`}
-          className="fixed bottom-6 right-6 z-40 animate-pulse w-12 h-12 rounded-full bg-[#ff6634] text-white shadow-lg shadow-teal-500/30 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
+          className={`fixed bottom-6 ${isRTL ? "left-6" : "right-6"} z-40 animate-pulse w-12 h-12 rounded-full bg-[#ff6634] text-white shadow-lg shadow-teal-500/30 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95`}
         >
           <MessageCircle className="w-6 h-6 animate-bounce" />
         </button>

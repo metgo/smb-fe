@@ -62,9 +62,12 @@ export function useTripListFilters() {
     }
   }, []);
 
+  // Whether any actual FILTER (not just the search box) is set — used to
+  // decide whether the filters panel should stay open on its own, so
+  // typing in search alone doesn't pop it open.
   const hasSavedFilters = useMemo(
-    () => filters.status !== "all" || searchTerm.trim() !== "",
-    [filters, searchTerm],
+    () => filters.status !== "all",
+    [filters],
   );
 
   return {
