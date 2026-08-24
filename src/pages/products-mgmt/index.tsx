@@ -454,57 +454,59 @@ function ProductsMgmtPageInner() {
                 : "bg-white border-gray-200"
             )}
           >
-            <div className="flex-1 relative" data-tour="search">
-              <SearchInput
-                placeholder={t("search_products")}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-              />
-            </div>
-
-            <div
-              className="flex items-center justify-between gap-2 w-full flex-wrap"
-              data-tour="toolbar"
-            >
-              <div className="flex items-center gap-2 flex-wrap">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-                <ShowColumns
-                  t={t}
-                  viewMode={viewMode}
-                  columnDefinitions={columnDefinitions}
-                  columnVisibility={columnVisibility}
-                  showColumnSettings={showColumnSettings}
-                  setShowColumnSettings={setShowColumnSettings}
-                  setColumnVisibility={setColumnVisibility}
-                  resetToDefault={resetToDefault}
-                />
-                <ExportProductsButton
-                  products={combinedProducts}
-                  selectedProducts={selectedProducts}
-                  columnVisibility={columnVisibility}
-                  t={t}
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <div className="flex-1 min-w-0 relative" data-tour="search">
+                <SearchInput
+                  placeholder={t("search_products")}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => startTour(buildSteps())}
-                  title={tt("start_tour")}
-                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${isDark
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
-                    }`}
-                >
-                  <Compass className="w-4 h-4" />
-                  <span className="hidden sm:inline text-sm font-medium">
-                    {t("tour") ?? tt("start_tour")}
-                  </span>
-                </button>
-                <ViewModeToggle
-                  onChange={setViewMode}
-                  value={viewMode}
-                  tableName="productViewMode"
-                />
+              <div
+                className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap"
+                data-tour="toolbar"
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+                  <ShowColumns
+                    t={t}
+                    viewMode={viewMode}
+                    columnDefinitions={columnDefinitions}
+                    columnVisibility={columnVisibility}
+                    showColumnSettings={showColumnSettings}
+                    setShowColumnSettings={setShowColumnSettings}
+                    setColumnVisibility={setColumnVisibility}
+                    resetToDefault={resetToDefault}
+                  />
+                  <ExportProductsButton
+                    products={combinedProducts}
+                    selectedProducts={selectedProducts}
+                    columnVisibility={columnVisibility}
+                    t={t}
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => startTour(buildSteps())}
+                    title={tt("start_tour")}
+                    className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+                      }`}
+                  >
+                    <Compass className="w-4 h-4" />
+                    <span className="hidden sm:inline text-sm font-medium">
+                      {t("tour") ?? tt("start_tour")}
+                    </span>
+                  </button>
+                  <ViewModeToggle
+                    onChange={setViewMode}
+                    value={viewMode}
+                    tableName="productViewMode"
+                  />
+                </div>
               </div>
             </div>
 
