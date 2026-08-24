@@ -52,13 +52,12 @@ const DetailTitleSection = ({
         <BackToListBtn
           navPath={backPath || ""}
           label={backLabel}
-          className={clsx(
-            "absolute -top-2 -left-2 z-10 mr-0 flex h-6 w-6 items-center justify-center rounded-full border p-0 shadow-md",
+ className={clsx(
+            "absolute -top-2 -left-2 z-10 mr-0 flex h-6 w-6 items-center justify-center rounded  border p-0 shadow-md",
             isDark
-              ? "border-gray-700 bg-gray-800 text-gray-200 hover:bg-gray-700 hover:text-teal-400"
-              : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-teal-600",
-          )}
-        />
+              ? "border-gray-700 bg-green-700 text-white hover:bg-gray-700 hover:text-teal-400"
+              : "border-gray-200 bg-green-500/50 text-white hover:bg-gray-50 hover:text-teal-600",
+          )}        />
         <ImageWithFallback
           src={imageSrc}
           alt={name || nameHe || nameAr}
