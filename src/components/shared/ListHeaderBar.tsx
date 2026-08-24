@@ -51,7 +51,7 @@ export default function ListHeaderBar({
             >
               {title}
             </h1>
-            {count !== undefined && (
+            {!!count && (
               <span
                 className={clsx(
                   "px-2 py-0.5 text-xs font-semibold rounded-full border shrink-0",
@@ -96,18 +96,20 @@ export default function ListHeaderBar({
         )}
       </div>
 
-      <div
-        data-tour={dataTourStats}
-        dir="ltr"
-        className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
-      >
-        <StatsMarquee
+      {(isStatsLoading || stats.length > 0) && (
+        <div
           data-tour={dataTourStats}
-          stats={stats}
-          isLoading={isStatsLoading}
-          className="flex-1 min-w-0"
-        />
-      </div>
+          dir="ltr"
+          className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
+        >
+          <StatsMarquee
+            data-tour={dataTourStats}
+            stats={stats}
+            isLoading={isStatsLoading}
+            className="flex-1 min-w-0"
+          />
+        </div>
+      )}
 
       <div className="hidden xl:flex items-center gap-2 shrink-0">
         {filterToggle}
