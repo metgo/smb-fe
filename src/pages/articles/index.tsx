@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import clsx from "clsx";
-import { Download, Plus, SlidersHorizontal } from "lucide-react";
+import { Download, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -23,6 +23,7 @@ import { useDeleteBlogMutation } from "@/store/api/blogMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
+import ListHeaderBar from "@/components/shared/ListHeaderBar";
 import { FilterByStatus } from "@/components/filter-fields";
 import CreateArticleWizard from "./components/CreateArticleWizard";
 
@@ -316,42 +317,15 @@ export default function ArticlesManagement() {
     : "bg-white border-gray-200/90 shadow-gray-200/40 text-gray-900"
 )}
         >
-          {/* Left: Title + Count (Top), Create Article Button (Below) */}
-          <div className="flex flex-col items-start gap-1 shrink-0">
-            <div className="flex items-center w-full justify-between gap-2">
-              <div className="flex items-center gap-1">
-                <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-violet-500 via-fuchsia-600 to-pink-600 whitespace-nowrap">
-                  {t("page_title")}
-                </h1>
-                {totalData !== undefined && (
-                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 shrink-0">
-                    {totalData}
-                  </span>
-                )}
-              </div>
-
-              <div className="block xl:hidden items-center gap-2 shrink-0">
-                {filterToggleButton}
-              </div>
-            </div>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="px-3.5 py-2 text-xs font-semibold 
-              bg-gradient-to-r from-violet-500 via-fuchsia-600 to-pink-600 
-              hover:opacity-90 active:scale-95 text-white rounded-lg transition-all 
-              flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm whitespace-nowrap "
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{t("create_article")}</span>
-            </button>
-          </div>
-
-        
-
-          {/* Search & Filters Toggle Button Next to description (desktop) */}
-          <div className="hidden xl:flex items-center gap-2 shrink-0">
-            {filterToggleButton}
-          </div>
+          <ListHeaderBar
+            title={t("page_title")}
+            titleGradient="from-violet-500 via-fuchsia-600 to-pink-600"
+            count={totalData}
+            countBadgeClassName="bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20"
+            addLabel={t("create_article")}
+            onAdd={() => setIsCreateModalOpen(true)}
+            filterToggle={filterToggleButton}
+          />
         </div>
 
         {/* Expandable Search, Filters & Controls Panel */}
