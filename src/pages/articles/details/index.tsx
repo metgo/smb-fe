@@ -399,33 +399,23 @@ export default function ArticleDetails() {
 
       {/* Title + meta */}
       <div className="details-top shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="relative shrink-0">
-            <BackToListBtn
-              navPath={routes.articleMgmt}
-              className={clsx(
-                "absolute -top-2 -left-2 z-10 mr-0 flex h-6 items-center justify-center rounded border px-2 py-0 shadow-md",
-                isDark
-                  ? "border-gray-700 bg-green-700 text-white hover:bg-gray-700 hover:text-teal-400"
-                  : "border-gray-200 bg-green-500/50 text-white hover:bg-gray-50 hover:text-teal-600",
-              )}
-            />
-            <ImageWithFallback
-              src={primaryImage}
-              alt={
-                getLngWiseStr(
-                  language,
-                  blogDetails?.title,
-                  blogDetails?.titleHe,
-                  blogDetails?.titleAr,
-                ) || "-"
-              }
-              className={clsx(
-                "w-14 h-14 rounded-xl object-cover border",
-                isDark ? "border-gray-600" : "border-gray-200",
-              )}
-            />
-          </div>
+        <BackToListBtn navPath={routes.articleMgmt} />
+        <div className="flex items-center gap-3 mt-2">
+          <ImageWithFallback
+            src={primaryImage}
+            alt={
+              getLngWiseStr(
+                language,
+                blogDetails?.title,
+                blogDetails?.titleHe,
+                blogDetails?.titleAr,
+              ) || "-"
+            }
+            className={clsx(
+              "w-14 h-14 rounded-xl object-cover border shrink-0",
+              isDark ? "border-gray-600" : "border-gray-200",
+            )}
+          />
           <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 min-w-0">
             <div className="min-w-0">
               <h1
