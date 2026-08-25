@@ -39,6 +39,11 @@
   "urgent": "דחוף",
   "action": "פעולה",
 
+  "approve": "אשר",
+  "approved": "מאושר",
+  "approving": "מאשר...",
+  "view_changes": "צפה בשינויים",
+
   "item_type": "סוג פריט",
   "business": "עסק",
   "product": "מוצר",

@@ -39,6 +39,11 @@
   "urgent": "عاجل",
   "action": "إجراء",
 
+  "approve": "موافقة",
+  "approved": "تمت الموافقة",
+  "approving": "جارٍ الموافقة...",
+  "view_changes": "عرض التغييرات",
+
   "item_type": "نوع العنصر",
   "business": "عمل",
   "product": "منتج",

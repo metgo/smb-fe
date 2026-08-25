@@ -581,17 +581,17 @@ const NotificationsBell = () => {
                             >
                               <Check className="w-3 h-3" />
                               {isApproved
-                                ? "Approved"
+                                ? t("approved")
                                 : isApproving
-                                  ? "Approving..."
-                                  : "Approve"}
+                                  ? t("approving")
+                                  : t("approve")}
                             </button>
                           )}
 
                           {isApproved && isAdmin && (
                             <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-500 text-white">
                               <Check className="w-3 h-3" />
-                              Approved
+                              {t("approved")}
                             </div>
                           )}
 
@@ -614,7 +614,7 @@ const NotificationsBell = () => {
                                 )}
                               >
                                 <Eye className="w-3 h-3" />
-                                View Changes
+                                {t("view_changes")}
                               </button>
                             )}
 
