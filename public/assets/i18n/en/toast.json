@@ -84,6 +84,10 @@
 
   "ticket_email_resend_success": "Ticket email resent successfully",
   "ticket_email_resend_failed": "Failed to resend ticket email",
+  "vendor_email_sent_success": "Email sent to vendor successfully",
+  "vendor_email_sent_failed": "Failed to send email to vendor",
+  "vendor_sms_sent_success": "SMS sent to vendor successfully",
+  "vendor_sms_sent_failed": "Failed to send SMS to vendor",
   "ticket_sms_resend_success": "Ticket SMS resent successfully",
   "ticket_sms_resend_faild": "Failed to resend ticket SMS"
 }

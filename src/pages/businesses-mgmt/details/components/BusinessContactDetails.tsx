@@ -272,35 +272,34 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
 
           <div className="space-y-3">
             <div className="md:flex md:items-center gap-4">
- <div className="flex items-center gap-3">
-              <Mail
-                className={`w-5 h-5 ${
-                  isDark ? "text-gray-400" : "text-gray-600"
-                }`}
-              />
-              <a
-                href={`mailto:${business?.busiEmail}`}
-                className="text-teal-600 hover:text-teal-700 transition-colors"
-              >
-                {business?.busiEmail ? business.busiEmail : "-"}
-              </a>
-            </div>
+              <div className="flex items-center gap-3">
+                <Mail
+                  className={`w-5 h-5 ${
+                    isDark ? "text-gray-400" : "text-gray-600"
+                  }`}
+                />
+                <a
+                  href={`mailto:${business?.busiEmail}`}
+                  className="text-teal-600 hover:text-teal-700 transition-colors"
+                >
+                  {business?.busiEmail ? business.busiEmail : "-"}
+                </a>
+              </div>
 
-            <div className="flex items-center gap-3">
-              <Phone
-                className={`w-5 h-5 ${
-                  isDark ? "text-gray-400" : "text-gray-600"
-                }`}
-              />
-              <a
-                href={`tel:${business?.phoneNumber}`}
-                className="text-teal-600 hover:text-teal-700 transition-colors"
-              >
-                {business?.phoneNumber ? business.phoneNumber : "-"}
-              </a>
+              <div className="flex items-center gap-3">
+                <Phone
+                  className={`w-5 h-5 ${
+                    isDark ? "text-gray-400" : "text-gray-600"
+                  }`}
+                />
+                <a
+                  href={`tel:${business?.phoneNumber}`}
+                  className="text-teal-600 hover:text-teal-700 transition-colors"
+                >
+                  {business?.phoneNumber ? business.phoneNumber : "-"}
+                </a>
+              </div>
             </div>
-            </div>
-           
           </div>
         </div>
 

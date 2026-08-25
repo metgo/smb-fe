@@ -4,38 +4,38 @@ import clsx from "clsx";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 export interface StatItem {
-    id: string | number;
-    title: string;
-    value: number | string | undefined;
-    label?: string;
-    icon: React.ReactNode;
+  id: string | number;
+  title: string;
+  value: number | string | undefined;
+  label?: string;
+  icon: React.ReactNode;
 }
 
 interface StatsMarqueeProps {
-    stats: StatItem[];
-    isLoading?: boolean;
-    loadingCount?: number;
-    speed?: number; // seconds for one full loop
-    pauseOnHover?: boolean;
-    className?: string;
-    cardClassName?: string;
-    "data-tour"?: string;
+  stats: StatItem[];
+  isLoading?: boolean;
+  loadingCount?: number;
+  speed?: number; // seconds for one full loop
+  pauseOnHover?: boolean;
+  className?: string;
+  cardClassName?: string;
+  "data-tour"?: string;
 }
 
 export function StatsMarquee({
-    stats,
-    isLoading = false,
-    loadingCount = 6,
-    speed = 25,
-    pauseOnHover = true,
-    className,
-    cardClassName,
-    ...rest
+  stats,
+  isLoading = false,
+  loadingCount = 6,
+  speed = 25,
+  pauseOnHover = true,
+  className,
+  cardClassName,
+  ...rest
 }: StatsMarqueeProps) {
-    const { isDark } = useThemeClasses();
-    // Unique per-instance animation name so multiple marquees on one page don't collide
-    const animId = useId().replace(/:/g, "");
-    const animName = `marquee-${animId}`;
+  const { isDark } = useThemeClasses();
+  // Unique per-instance animation name so multiple marquees on one page don't collide
+  const animId = useId().replace(/:/g, "");
+  const animName = `marquee-${animId}`;
 
     if (isLoading) {
         return (
@@ -50,15 +50,15 @@ export function StatsMarquee({
         );
     }
 
-    if (!stats?.length) return null;
+  if (!stats?.length) return null;
 
-    return (
-        <div
-            dir="ltr"
-            className={clsx("flex-1 min-w-0 overflow-hidden relative", className)}
-            {...rest}
-        >
-            <style>{`
+  return (
+    <div
+      dir="ltr"
+      className={clsx("flex-1 min-w-0 overflow-hidden relative", className)}
+      {...rest}
+    >
+      <style>{`
         @keyframes ${animName} {
           0%   { transform: translateX(0%); }
           100% { transform: translateX(-50%); }

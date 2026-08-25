@@ -151,19 +151,19 @@ export default function TripsListView({
   }
 
   return (
-      <div className="sticky">
-        <ReordableDataTable
-          rowKey="_id"
-          data={trips}
-          isDataLoading={isLoading}
-          selectedItems={selectedTrips}
-          onSelectionChange={setSelectedTrips}
-          storageKey="tripsTableColumnOrder"
-          columns={columns}
-          hasMore={hasMore}
-          next={next}
-          t={t}
-        />
+    <div className="sticky">
+      <ReordableDataTable
+        rowKey="_id"
+        data={trips}
+        isDataLoading={isLoading}
+        selectedItems={selectedTrips}
+        onSelectionChange={setSelectedTrips}
+        storageKey="tripsTableColumnOrder"
+        columns={columns}
+        hasMore={hasMore}
+        next={next}
+        t={t}
+      />
     </div>
   );
 }

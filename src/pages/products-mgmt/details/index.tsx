@@ -35,7 +35,7 @@ import {
   DetailTitleSection,
   MediaDetails,
 } from "@/components/details-sections";
-import {  StatusChangeBtn } from "@/components/btns";
+import { StatusChangeBtn } from "@/components/btns";
 import { ChatWithCreator } from "@/components/chat-popup";
 
 export default function ProductDetailsPage() {

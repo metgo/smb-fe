@@ -67,7 +67,9 @@ export default function NotificationsMgmtPage() {
   const [typeFilter, setTypeFilter] = useState<TNotifType>("ALL");
   const [itemTypeFilter, setItemTypeFilter] = useState<TItemType>("ALL");
 
-  const [selectedNotifications, setSelectedNotifications] = useState<    Set<string>  >(new Set());
+  const [selectedNotifications, setSelectedNotifications] = useState<
+    Set<string>
+  >(new Set());
 
   const [viewChangesState, setViewChangesState] = useState({
     isOpen: false,
@@ -222,12 +224,12 @@ export default function NotificationsMgmtPage() {
           ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
           : isDark
             ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
       )}
       title={
         showControlsDrawer
-          ? t("close_options") ?? "Close Options"
-          : t("search_and_filters") ?? "Search & Filters"
+          ? (t("close_options") ?? "Close Options")
+          : (t("search_and_filters") ?? "Search & Filters")
       }
     >
       <SlidersHorizontal className="w-4 h-4" />
@@ -237,7 +239,7 @@ export default function NotificationsMgmtPage() {
             "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
             showControlsDrawer
               ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white"
+              : "bg-teal-500 text-white",
           )}
         >
           {activeFilterCount > 9 ? "9+" : activeFilterCount}
@@ -267,7 +269,7 @@ export default function NotificationsMgmtPage() {
             "sticky top-0 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
             isDark
               ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
-              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900"
+              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900",
           )}
         >
           {/* Left: Title + Count */}
@@ -314,7 +316,7 @@ export default function NotificationsMgmtPage() {
               "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
               isDark
                 ? "bg-gray-900/90 border-gray-800/90"
-                : "bg-white border-gray-200"
+                : "bg-white border-gray-200",
             )}
           >
             <div className="flex flex-col lg:flex-row lg:items-center gap-3">
@@ -334,7 +336,9 @@ export default function NotificationsMgmtPage() {
 
             {/* Filters Panel */}
             {showFilters && (
-              <div className={`p-4 rounded-xl border ${borderColor} ${bgTertiary}`}>
+              <div
+                className={`p-4 rounded-xl border ${borderColor} ${bgTertiary}`}
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   {/* Read Status */}
                   <div>
@@ -431,7 +435,10 @@ export default function NotificationsMgmtPage() {
         )}
 
         {/* Scrollable Notifications List */}
-        <div id="scrollableDiv" className="flex-1 overflow-y-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6">
+        <div
+          id="scrollableDiv"
+          className="flex-1 overflow-y-auto pb-6 -mx-4 px-4 sm:-mx-6 sm:px-6"
+        >
           <div className="max-w-400 mx-auto">
             {allNotifications?.length === 0 ? (
               <div

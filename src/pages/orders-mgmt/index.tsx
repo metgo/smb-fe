@@ -1,5 +1,5 @@
-import axios from "axios";
 import clsx from "clsx";
+import axios from "axios";
 import { useTranslation } from "react-i18next";
 import UserStatsCards from "@/components/shared/UserStatsCards";
 import {
@@ -406,22 +406,22 @@ export default function OrdersMgmtPage() {
           ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
           : isDark
             ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
       )}
       title={
         showControlsDrawer
-          ? tc("close_options") ?? "Close Options"
-          : tc("search_and_filters") ?? "Search & Filters"
+          ? (tc("close_options") ?? "Close Options")
+          : (tc("search_and_filters") ?? "Search & Filters")
       }
     >
       <SlidersHorizontal className="w-4 h-4" />
       {activeFilterChips.length > 0 && (
         <span
           className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+            "absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
             showControlsDrawer
               ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white"
+              : "bg-teal-500 text-white",
           )}
         >
           {activeFilterChips.length > 9 ? "9+" : activeFilterChips.length}
@@ -491,17 +491,17 @@ export default function OrdersMgmtPage() {
     return params;
   }, [page, limit, searchTerm, filters, websiteId]);
 
-  // Stats query shouldn't be re-triggered by pagination or carry page/limit —
-// strip those two keys out for the stats call.
-const orderStatsParams = useMemo(() => {
-  const { page: _page, limit: _limit, ...rest } = orderQueryParams;
-  return rest;
-}, [orderQueryParams]);
+  // Create stats params without page and limit
+  const orderStatsQueryParams = useMemo(() => {
+    const { page: _, limit: __, ...statsParams } = orderQueryParams;
+    return statsParams;
+  }, [orderQueryParams]);
 
-const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
-  orderStatsParams,
-  { skip: !canUseAuthenticatedOrderApis },
-);
+  const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
+    orderStatsQueryParams,
+    { skip: !canUseAuthenticatedOrderApis },
+  );
+
   const {
     data: orders,
     isLoading,
@@ -911,8 +911,7 @@ const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
   };
 
   return (
-          <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
-
+    <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
       {/* Sticky Top Header Bar (Title + Count + Camera/Filter Toggle + Stats) */}
       <div
         className={clsx(

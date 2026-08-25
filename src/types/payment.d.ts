@@ -1,4 +1,4 @@
-export interface MonthlyOrder {
+interface IMonthlyOrder {
   _id: string;
   orderId: string;
   productName: string;
