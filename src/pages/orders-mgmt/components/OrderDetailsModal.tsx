@@ -128,7 +128,7 @@ function OrderDetailsModal({
       } else {
         await updateOrderStatus({
           orderId: orderDetails?._id,
-          orderProductId: itemToCancel?._id,
+          orderProductId: itemToCancel?.orderedProductId,
           status: "canceled",
           cancelReason: t(reason),
           additionalInfo,
@@ -239,7 +239,7 @@ function OrderDetailsModal({
           >
             {orderDetails?.products?.map((product, idx) => (
               <div
-                key={product?._id}
+                key={product?.orderedProductId ?? product?._id}
                 className={`p-4 ${idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.status === "canceled" ? "opacity-50" : ""}`}
               >
                 <div className="flex items-start gap-4">

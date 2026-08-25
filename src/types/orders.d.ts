@@ -64,6 +64,7 @@ interface IOrderProduct {
 
 class ProductDto {
   _id: string;
+  orderedProductId: string;
   name: string;
   description: string;
   image: string;

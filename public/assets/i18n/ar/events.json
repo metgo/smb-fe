@@ -360,5 +360,18 @@
   "notify_customer_by": "إشعار العميل عبر",
   "save_order": "حفظ الترتيب",
   "order_saved_successfully": "تم حفظ ترتيب التذاكر بنجاح",
-  "reorder_failed": "فشل حفظ ترتيب التذاكر"
+  "reorder_failed": "فشل حفظ ترتيب التذاكر",
+  "event_ticket_header": "تذكرة الفعالية",
+  "public_ticket_loading": "جارٍ تحميل التذكرة...",
+  "ticket_not_found": "التذكرة غير موجودة",
+  "ticket_invalid_link": "التذكرة غير موجودة أو الرابط غير صالح.",
+  "attendee": "الحاضر",
+  "payment": "الدفع",
+  "method": "طريقة الدفع",
+  "ticket_id_label": "معرّف التذكرة",
+  "ticket_scanned": "تم مسح هذه التذكرة بالفعل",
+  "ticket_expired": "انتهت صلاحية هذه التذكرة",
+  "ticket_canceled": "تم إلغاء هذه التذكرة",
+  "mark_as_completed": "وضع علامة كمكتمل",
+  "completed_checkmark": "مكتمل ✓"
 }
