@@ -6,23 +6,27 @@ import { AlignLeft, FileText } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
-import { ConnectedDmoAuthorityWebsites, LocationDetailsclosed } from "@/components/details-sections";
+import {
+  ConnectedDmoAuthorityWebsites,
+  LocationDetailsclosed,
+} from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface Business {
   slug: string;
-geoLocation : { 
-lat: string | number;
-  long: string | number;
-}
+  geoLocation: {
+    lat: string | number;
+    long: string | number;
+  };
   location?: {
-    coordinates?: [number, number] | number[]; 
+    coordinates?: [number, number] | number[];
   };
   address: {
     location: string;
     city: string;
     country: string;
-  };  shortDescription: string;
+  };
+  shortDescription: string;
   shortDescriptionAr: string;
   shortDescriptionHe: string;
   description: string;
@@ -53,7 +57,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
 
   return (
     <div className="space-y-6">
-     
       {/* Short Description */}
       <DescriptionCard
         title={t("short_description")}
@@ -65,9 +68,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         )}
         icon={
           <FileText
-            className={clsx(
-              isDark ? "text-blue-400" : "text-blue-600",
-            )}
+            className={clsx(isDark ? "text-blue-400" : "text-blue-600")}
           />
         }
         iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
@@ -84,9 +85,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         )}
         icon={
           <AlignLeft
-            className={clsx(
-              isDark ? "text-purple-400" : "text-purple-600",
-            )}
+            className={clsx(isDark ? "text-purple-400" : "text-purple-600")}
           />
         }
         iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
@@ -95,17 +94,14 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       />
 
       {/* Location details */}
- <LocationDetailsclosed
-                  purpose="Business"
-                  address={business?.address}
-                  lat={
-                    business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]
-                  }
-                  long={
-                    business?.geoLocation?.long ??
-                    business?.location?.coordinates?.[1]
-                  }
-                />
+      <LocationDetailsclosed
+        purpose="Business"
+        address={business?.address}
+        lat={business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]}
+        long={
+          business?.geoLocation?.long ?? business?.location?.coordinates?.[1]
+        }
+      />
       <ConnectedDmoAuthorityWebsites
         dmoId={business?.dmoId}
         authorityId={business?.authorityId}
@@ -127,7 +123,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
           </p>
         </div>
       )} */}
-     
+
       {/* Rejection Note */}
       {business?.status === "rejected" && business?.rejectionNote && (
         <div

@@ -73,10 +73,13 @@ export const endpoints = {
   updateOrderStatus: "/update-order-status",
   bulkApprove: "/orders/bulk-approve",
   reconciliationStats: "/orders/reconciliation-stats",
+  paymentSummary: "/payment-summary",
   bulkMarkAsComplete: "/orders/bulk-order-product-status",
   finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
   previewFinaliseApprovedOrders:
     "/admin/monthly-reports/finalize-closed-orders/preview",
+  exportBankTransferXlsx: "/monthly-reports/export/bank-transfer-xlsx",
+  exportVendorwiseXlsx: "/vendors/monthly-reports/export/xlsx",
 
   // public
   publicEventTicket: "/public/event-tickets",
@@ -115,6 +118,7 @@ export const endpoints = {
   userAdmin: "/users/admin",
   createUser: "/users/create",
   resetLoginAttempts: "/users/reset-login-attempts",
+  notifyUserByEmailSms: "vendors/notify-missing-bank-details",
 
   // Media
   mediaSignedUrl: "/media-signed-url",

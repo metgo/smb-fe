@@ -59,48 +59,42 @@ export default function PoiGridView({
         className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto mb-20"
         ref={scrollRef}
       > */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-          {data?.map((poi) => (
-            <GridCard
-              key={poi._id}
-              image={poi.images?.[0]?.image}
-              imageAlt={poi.name}
-              imageHeight="h-36"
-              fallbackIcon={Image}
-              fallbackGradient="from-gray-400 to-teal-400"
-              title={getLngWiseStr(
-                language,
-                poi?.name,
-                poi?.nameHe,
-                poi?.nameAr,
-              )}
-              status={poi?.status?.toLowerCase()}
-              isChecked={selectedItems?.has(poi._id) ?? false}
-              onCheckChange={
-                selectedItems ? () => toggleCheckBox(poi._id) : undefined
-              }
-              onDelete={(e) => {
-                e.stopPropagation();
-                setIsConfirmOpen(true);
-                setPoiToDelete(poi._id);
-              }}
-              onClick={() => onRowClick?.(poi)}
-              meta={[
-                poi?.address && {
-                  icon: MapPin,
-                  label: `${poi.address.country}, ${poi.address.city}`,
-                },
-              ]}
-            />
-          ))}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+        {data?.map((poi) => (
+          <GridCard
+            key={poi._id}
+            image={poi.images?.[0]?.image}
+            imageAlt={poi.name}
+            imageHeight="h-36"
+            fallbackIcon={Image}
+            fallbackGradient="from-gray-400 to-teal-400"
+            title={getLngWiseStr(language, poi?.name, poi?.nameHe, poi?.nameAr)}
+            status={poi?.status?.toLowerCase()}
+            isChecked={selectedItems?.has(poi._id) ?? false}
+            onCheckChange={
+              selectedItems ? () => toggleCheckBox(poi._id) : undefined
+            }
+            onDelete={(e) => {
+              e.stopPropagation();
+              setIsConfirmOpen(true);
+              setPoiToDelete(poi._id);
+            }}
+            onClick={() => onRowClick?.(poi)}
+            meta={[
+              poi?.address && {
+                icon: MapPin,
+                label: `${poi.address.country}, ${poi.address.city}`,
+              },
+            ]}
+          />
+        ))}
+      </div>
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+          <Loader className="w-10 h-10 animate-spin text-teal-600" />
         </div>
-
-        {isLoading && (
-          <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
-            <Loader className="w-10 h-10 animate-spin text-teal-600" />
-          </div>
-        )}
-÷
+      )}
+      ÷
       <ConfirmDialog
         open={isConfirmOpen}
         title="delete_poi"

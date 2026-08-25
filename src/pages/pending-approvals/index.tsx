@@ -410,7 +410,9 @@ export default function PendingApprovalsPage() {
             <div className="flex justify-center items-center py-16">
               <div className="text-center">
                 <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
-                <p className="text-gray-500">Unable to load pending approvals</p>
+                <p className="text-gray-500">
+                  Unable to load pending approvals
+                </p>
                 <p className="text-sm text-gray-400 mt-2">
                   Please ensure you have the correct permissions
                 </p>

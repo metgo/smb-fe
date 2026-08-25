@@ -124,12 +124,12 @@ function ProductsMgmtPageInner() {
           ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
           : isDark
             ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
       )}
       title={
         showControlsDrawer
-          ? t("close_options") ?? "Close Options"
-          : t("search_and_filters") ?? "Search & Filters"
+          ? (t("close_options") ?? "Close Options")
+          : (t("search_and_filters") ?? "Search & Filters")
       }
     >
       <SlidersHorizontal className="w-4 h-4" />
@@ -139,7 +139,7 @@ function ProductsMgmtPageInner() {
             "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
             showControlsDrawer
               ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white"
+              : "bg-teal-500 text-white",
           )}
         >
           {activeFilterCount > 9 ? "9+" : activeFilterCount}
@@ -161,9 +161,14 @@ function ProductsMgmtPageInner() {
         setIsScrolled(false);
       }
     };
-    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    window.addEventListener("scroll", handleScroll, {
+      capture: true,
+      passive: true,
+    });
     return () =>
-      window.removeEventListener("scroll", handleScroll, { capture: true } as any);
+      window.removeEventListener("scroll", handleScroll, {
+        capture: true,
+      } as any);
   }, []);
 
   const [columnVisibility, setColumnVisibility] =
@@ -428,7 +433,7 @@ function ProductsMgmtPageInner() {
             "sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
             isDark
               ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
-              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900"
+              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900",
           )}
         >
           <ListHeaderBar
@@ -451,7 +456,7 @@ function ProductsMgmtPageInner() {
               "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
               isDark
                 ? "bg-gray-900/90 border-gray-800/90"
-                : "bg-white border-gray-200"
+                : "bg-white border-gray-200",
             )}
           >
             <div className="flex flex-col lg:flex-row lg:items-center gap-3">
@@ -491,10 +496,11 @@ function ProductsMgmtPageInner() {
                   <button
                     onClick={() => startTour(buildSteps())}
                     title={tt("start_tour")}
-                    className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
-                      }`}
+                    className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      isDark
+                        ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                        : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+                    }`}
                   >
                     <Compass className="w-4 h-4" />
                     <span className="hidden sm:inline text-sm font-medium">

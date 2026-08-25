@@ -391,7 +391,8 @@ const VouchersList = ({
   const maxVoucherAmount = voucherData?.highestAmount ?? 1000000;
   const [combinedVouchers, setCombinedVouchers] = useState<IVoucherItem[]>([]);
   const hasMore = voucherData?.meta?.hasNextPage;
-  const totalData = voucherData?.datas?.totalData ?? voucherData?.meta?.total ?? 0;
+  const totalData =
+    voucherData?.datas?.totalData ?? voucherData?.meta?.total ?? 0;
 
   useEffect(() => {
     if (!hasInteractedWithAmount) return;
@@ -646,8 +647,8 @@ const VouchersList = ({
       )}
       title={
         showControlsDrawer
-          ? tc("close_options") ?? "Close Options"
-          : tc("search_and_filters") ?? "Search & Filters"
+          ? (tc("close_options") ?? "Close Options")
+          : (tc("search_and_filters") ?? "Search & Filters")
       }
     >
       <SlidersHorizontal className="w-4 h-4" />

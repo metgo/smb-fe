@@ -29,5 +29,8 @@
   "no_bank_account_added": "לא נוספו פרטי חשבון בנק",
   "click_add_bank_account": "לחץ על \"הוסף חשבון בנק\" כדי להוסיף פרטי בנק",
   "bank_account_subtitle": "מלא את הפרטים למטה",
-  "required": "שדה חובה"
+  "required": "שדה חובה",
+  "vendor_no_bank_details": "לספק זה אין פרטי חשבון בנק. אנא שלח לו אימייל או SMS כדי לעדכן את המידע שלו.",
+  "vendor_bank_details": "פרטי חשבון בנק של הספק",
+  "vendor_bank_details_subtitle": "צפייה בפרטי חשבון הבנק השמורים של הספק"
 }

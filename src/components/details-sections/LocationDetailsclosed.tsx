@@ -92,7 +92,9 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
       <div
         className={clsx(
           "rounded-xl border px-4 py-6 text-center",
-          isDark ? "bg-gray-800/60 border-gray-700" : "bg-gray-50 border-gray-200",
+          isDark
+            ? "bg-gray-800/60 border-gray-700"
+            : "bg-gray-50 border-gray-200",
         )}
       >
         <MapPin
@@ -117,9 +119,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
     <div
       className={clsx(
         "rounded-xl border p-3 md:p-4 space-y-3",
-        isDark
-          ? "bg-gray-800/80 border-gray-700"
-          : "bg-white border-gray-200",
+        isDark ? "bg-gray-800/80 border-gray-700" : "bg-white border-gray-200",
       )}
     >
       {/* Address rows */}

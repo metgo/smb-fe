@@ -35,14 +35,13 @@ import {
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
-import {  StatusChangeBtn } from "@/components/btns";
+import { StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
 import {
   AttributesDetails,
   DeliveryPolicyOptionDetails,
   DetailTitleSection,
- 
   MediaDetails,
 } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
@@ -410,7 +409,7 @@ function BusinessDetailsPageInner() {
             refetch={businessDataRefetch}
           />
         );
-      
+
       case "media":
         return <MediaDetails {...mediaProps} />;
       case "social":
@@ -457,7 +456,11 @@ function BusinessDetailsPageInner() {
               </div>
 
               {/* Actions dropdown */}
-              <div className="relative" ref={dropdownRef} data-tour="actions-btn">
+              <div
+                className="relative"
+                ref={dropdownRef}
+                data-tour="actions-btn"
+              >
                 <button
                   onClick={() => setIsDropdownOpen((prev) => !prev)}
                   className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
@@ -466,7 +469,9 @@ function BusinessDetailsPageInner() {
                       : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
                   }`}
                 >
-                  <span className="inline text-sm font-medium">{t("actions")}</span>
+                  <span className="inline text-sm font-medium">
+                    {t("actions")}
+                  </span>
                   <ChevronDown
                     className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
                   />
@@ -559,8 +564,8 @@ function BusinessDetailsPageInner() {
             </>
           }
         />
-        <div data-tour="business-stats" >
-         <PageStats
+        <div data-tour="business-stats">
+          <PageStats
             stats={businessStats}
             isLoading={isDetailStatsLoading}
             className="sm:grid-cols-3 lg:grid-cols-4  xl:grid-cols-7 gap-2 md:gap-3"

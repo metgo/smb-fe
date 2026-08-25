@@ -80,7 +80,6 @@ export function useBusinessFilters() {
     }
   }, []);
 
-
   const hasSavedFilters = useMemo(() => {
     return (
       filters.status !== "all" ||

@@ -7,11 +7,7 @@ import { SlidersHorizontal } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FilterButton } from "@/components/btns";
-import {
-  BulkActionBar,
-  ConfirmDialog,
-  ShowColumns,
-} from "@/components/shared";
+import { BulkActionBar, ConfirmDialog, ShowColumns } from "@/components/shared";
 import SearchInput from "@/components/shared/SearchInput";
 import EmptyState from "@/components/shared/EmptyState";
 import ListHeaderBar from "@/components/shared/ListHeaderBar";
@@ -35,8 +31,7 @@ const { defaultColumns, columnDefinitions, COLUMNS_STORAGE_KEY } = TRIP_COLUMNS;
 const TripsMgmtPage = () => {
   const { t } = useTranslation("trips");
   const { t: tc } = useTranslation("common");
-  const { isDark, bgSecondary, borderColor } =
-    useThemeClasses();
+  const { isDark, bgSecondary, borderColor } = useThemeClasses();
   const [_searchParams, setSearchParams] = useSearchParams();
 
   const {
@@ -224,8 +219,8 @@ const TripsMgmtPage = () => {
       )}
       title={
         showControlsDrawer
-          ? tc("close_options") ?? "Close Options"
-          : tc("search_and_filters") ?? "Search & Filters"
+          ? (tc("close_options") ?? "Close Options")
+          : (tc("search_and_filters") ?? "Search & Filters")
       }
     >
       <SlidersHorizontal className="w-4 h-4" />

@@ -6,7 +6,10 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
-import { ConnectedDmoAuthorityWebsites, LocationDetailsclosed } from "@/components/details-sections";
+import {
+  ConnectedDmoAuthorityWebsites,
+  LocationDetailsclosed,
+} from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface PoiInfoDetailsProps {

@@ -304,7 +304,9 @@ export default function EventDetailsPage() {
 
                     <button
                       onClick={() =>
-                        navigate(`${routes.eventSessionMgmt}?eventId=${eventId}`)
+                        navigate(
+                          `${routes.eventSessionMgmt}?eventId=${eventId}`,
+                        )
                       }
                       className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
                         isDark
