@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Building2,
   Mail,
@@ -35,7 +35,10 @@ interface VendorMonthlySummaryCardsProps {
   hasMore: boolean;
   adminView: boolean;
   fetchNextPage: () => void;
-  onViewVendorOrders: (vendor: VendorPaymentSummaryRow) => void;
+  onViewVendorOrders: (
+    vendor: VendorPaymentSummaryRow,
+    statusFilters?: { status?: string; reconciliationStatus?: string },
+  ) => void;
 }
 
 export const VendorMonthlySummaryCards = ({
@@ -61,38 +64,112 @@ export const VendorMonthlySummaryCards = ({
     useState<VendorPaymentSummaryRow | null>(null);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
 
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  // Keep the latest hasMore/isFetching/fetchNextPage in refs so the observer
+  // callback always sees current values without needing to be torn down and
+  // recreated on every fetch - recreating it mid-intersection was causing the
+  // "sometimes it just stops loading more" behavior.
+  const hasMoreRef = useRef(hasMore);
+  const isFetchingRef = useRef(isFetching);
+  const fetchNextPageRef = useRef(fetchNextPage);
+  hasMoreRef.current = hasMore;
+  isFetchingRef.current = isFetching;
+  fetchNextPageRef.current = fetchNextPage;
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore || isFetching) return;
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  // Callback ref (rather than a plain ref + effect) so the observer attaches
+  // fresh every time the sentinel element mounts - it unmounts/remounts as
+  // `hasMore` toggles, and a one-time effect would miss re-attaching to it.
+  const sentinelCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
+    if (!node) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) fetchNextPage();
+        if (
+          entry.isIntersecting &&
+          hasMoreRef.current &&
+          !isFetchingRef.current
+        ) {
+          fetchNextPageRef.current();
+        }
       },
       { threshold: 0, rootMargin: "100px" },
     );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasMore, isFetching, fetchNextPage]);
+    observer.observe(node);
+    observerRef.current = observer;
+  }, []);
+
+  useEffect(() => {
+    return () => observerRef.current?.disconnect();
+  }, []);
 
   const orderStats = [
-    { key: "pendingCount", label: t("pending"), icon: Clock },
-    { key: "processingCount", label: t("processing"), icon: Loader2 },
-    { key: "shippedCount", label: t("shipped"), icon: Truck },
-    { key: "completedCount", label: t("completed"), icon: CheckCircle2 },
-    { key: "canceledCount", label: t("canceled"), icon: XCircle },
+    {
+      key: "pendingCount",
+      label: t("pending"),
+      icon: Clock,
+      status: "pending",
+    },
+    {
+      key: "processingCount",
+      label: t("processing"),
+      icon: Loader2,
+      status: "processing",
+    },
+    {
+      key: "shippedCount",
+      label: t("shipped"),
+      icon: Truck,
+      status: "shipped",
+    },
+    {
+      key: "completedCount",
+      label: t("completed"),
+      icon: CheckCircle2,
+      status: "completed",
+    },
+    {
+      key: "canceledCount",
+      label: t("canceled"),
+      icon: XCircle,
+      status: "canceled",
+    },
   ] as const;
 
   const reconcillationStats = [
-    { key: "pendingCount", label: t("pending"), icon: Clock },
-    { key: "approvedCount", label: t("approved"), icon: CheckCircle2 },
-    { key: "rejectedCount", label: t("rejected"), icon: Truck },
-    { key: "disputedCount", label: t("disputed"), icon: TriangleAlert },
-    { key: "cancelledCount", label: t("canceled"), icon: XCircle },
+    {
+      key: "pendingCount",
+      label: t("pending"),
+      icon: Clock,
+      status: "pending",
+    },
+    {
+      key: "approvedCount",
+      label: t("approved"),
+      icon: CheckCircle2,
+      status: "approved",
+    },
+    {
+      key: "rejectedCount",
+      label: t("rejected"),
+      icon: Truck,
+      status: "rejected",
+    },
+    {
+      key: "disputedCount",
+      label: t("disputed"),
+      icon: TriangleAlert,
+      status: "disputed",
+    },
+    {
+      key: "cancelledCount",
+      label: t("canceled"),
+      icon: XCircle,
+      status: "cancelled",
+    },
   ] as const;
 
-  if (isLoading && vendors.length === 0) {
+  if ((isLoading || isFetching) && vendors.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
@@ -100,7 +177,7 @@ export const VendorMonthlySummaryCards = ({
     );
   }
 
-  if (!isLoading && vendors.length === 0) {
+  if (!isLoading && !isFetching && vendors.length === 0) {
     return <EmptyState message={t("no_vendors_found")} />;
   }
 
@@ -115,11 +192,11 @@ export const VendorMonthlySummaryCards = ({
               className={clsx(
                 bgPrimary,
                 borderColor,
-                "rounded-xl border shadow-sm hover:shadow-lg hover:border-teal-600/40 transition-all duration-200 overflow-hidden flex flex-col",
+                "rounded-xl border shadow-sm hover:shadow-lg hover:border-teal-600/40 transition-all duration-200 overflow-hidden flex flex-col gap-2",
               )}
             >
               {/* Header */}
-              <div className={clsx("p-4 border-b", borderColor)}>
+              <div className={clsx("p-2 border-b", borderColor)}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
@@ -205,7 +282,7 @@ export const VendorMonthlySummaryCards = ({
               </div>
 
               {/* Order summary */}
-              <div className="px-4 py-3">
+              <div className="px-4">
                 <div className="flex items-center justify-between mb-2">
                   <div
                     className={clsx(
@@ -221,11 +298,14 @@ export const VendorMonthlySummaryCards = ({
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {orderStats.map(({ key, label, icon: Icon }) => (
-                    <div
+                  {orderStats.map(({ key, label, icon: Icon, status }) => (
+                    <button
+                      type="button"
                       key={key}
+                      title={label}
+                      onClick={() => onViewVendorOrders(vendor, { status })}
                       className={clsx(
-                        "rounded-lg px-2 py-1.5 flex items-center gap-1.5",
+                        "rounded-lg px-2 py-1.5 flex items-center gap-1.5 text-start cursor-pointer transition-colors hover:ring-1 hover:ring-teal-600/40",
                         bgSecondary,
                       )}
                     >
@@ -253,13 +333,13 @@ export const VendorMonthlySummaryCards = ({
                           {label}
                         </div>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* Reconciliation summary */}
-              <div className="px-4 py-3">
+              <div className="px-4">
                 <div className="flex items-center justify-between mb-2">
                   <div
                     className={clsx(
@@ -275,45 +355,54 @@ export const VendorMonthlySummaryCards = ({
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {reconcillationStats.map(({ key, label, icon: Icon }) => (
-                    <div
-                      key={key}
-                      className={clsx(
-                        "rounded-lg px-2 py-1.5 flex items-center gap-1.5",
-                        bgSecondary,
-                      )}
-                    >
-                      <Icon
+                  {reconcillationStats.map(
+                    ({ key, label, icon: Icon, status }) => (
+                      <button
+                        type="button"
+                        key={key}
+                        title={label}
+                        onClick={() =>
+                          onViewVendorOrders(vendor, {
+                            reconciliationStatus: status,
+                          })
+                        }
                         className={clsx(
-                          "w-3.5 h-3.5 shrink-0",
-                          isDark ? "text-teal-400" : "text-teal-700",
+                          "rounded-lg px-2 py-1.5 flex items-center gap-1.5 text-start cursor-pointer transition-colors hover:ring-1 hover:ring-teal-600/40",
+                          bgSecondary,
                         )}
-                      />
-                      <div className="min-w-0">
-                        <div
+                      >
+                        <Icon
                           className={clsx(
-                            "text-sm font-semibold leading-tight",
-                            textPrimary,
+                            "w-3.5 h-3.5 shrink-0",
+                            isDark ? "text-teal-400" : "text-teal-700",
                           )}
-                        >
-                          {vendor.reconciliationSummary[key]}
+                        />
+                        <div className="min-w-0">
+                          <div
+                            className={clsx(
+                              "text-sm font-semibold leading-tight",
+                              textPrimary,
+                            )}
+                          >
+                            {vendor.reconciliationSummary[key]}
+                          </div>
+                          <div
+                            className={clsx(
+                              "text-[10px] leading-tight truncate",
+                              textTertiary,
+                            )}
+                          >
+                            {label}
+                          </div>
                         </div>
-                        <div
-                          className={clsx(
-                            "text-[10px] leading-tight truncate",
-                            textTertiary,
-                          )}
-                        >
-                          {label}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                      </button>
+                    ),
+                  )}
                 </div>
               </div>
 
               {/* Amount summary */}
-              <div className={clsx("px-4 py-3 mt-auto border-t", borderColor)}>
+              <div className={clsx("px-4 pt-2 pb-4 border-t", borderColor)}>
                 <div className="flex items-center justify-between mb-2">
                   <div
                     className={clsx(
@@ -322,7 +411,7 @@ export const VendorMonthlySummaryCards = ({
                     )}
                   >
                     <Wallet className="w-3.5 h-3.5" />
-                    {t("amount_summary")}
+                    {t("payable_amount_to_vendor")}
                   </div>
                   <span
                     className={clsx(
@@ -330,16 +419,17 @@ export const VendorMonthlySummaryCards = ({
                       isDark ? "text-teal-400" : "text-teal-700",
                     )}
                   >
-                    {formatCurrency(vendor.amount.total)}
+                    {formatCurrency(vendor.amount.netPayment)}
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
+
+                <div className="grid grid-cols-4 gap-2">
                   <div>
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
-                      {formatCurrency(vendor.amount.netPayment)}
+                      {formatCurrency(vendor.amount.itemsAmount)}
                     </div>
                     <div className={clsx("text-[10px]", textTertiary)}>
-                      {t("payable")}
+                      {t("total_sales")}
                     </div>
                   </div>
                   <div>
@@ -348,6 +438,14 @@ export const VendorMonthlySummaryCards = ({
                     </div>
                     <div className={clsx("text-[10px]", textTertiary)}>
                       {t("delivery_fee")}
+                    </div>
+                  </div>
+                  <div>
+                    <div className={clsx("text-sm font-semibold", textPrimary)}>
+                      {formatCurrency(vendor.amount.total)}
+                    </div>
+                    <div className={clsx("text-[10px]", textTertiary)}>
+                      {t("grand_total")}
                     </div>
                   </div>
                   <div>
@@ -367,7 +465,7 @@ export const VendorMonthlySummaryCards = ({
 
       {hasMore && (
         <div
-          ref={sentinelRef}
+          ref={sentinelCallbackRef}
           className="flex items-center justify-center py-6"
         >
           {isFetching && (

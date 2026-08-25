@@ -38,6 +38,20 @@ function formatMonthLabel(monthYear: string): string {
   });
 }
 
+// "July 2026" -> { year: 2026, month: 7 } - parses closeAllOrdersTargetMonthLabel
+// (a locale long-month-name string) back into numeric parts for filenames/exports
+function getYearMonthFromLabel(
+  label: string,
+): { year: number; month: number } | null {
+  const match = label.match(/^(\S+)\s+(\d{4})$/);
+  if (!match) return null;
+  const [, monthName, yearStr] = match;
+  const year = Number(yearStr);
+  const month = new Date(Date.parse(`${monthName} 1, ${year}`)).getMonth() + 1;
+  if (!year || !month || Number.isNaN(month)) return null;
+  return { year, month };
+}
+
 export default function CloseAllOrdersModal({
   targetMonthLabel,
   monthFilter,
@@ -73,11 +87,11 @@ export default function CloseAllOrdersModal({
     if (hasTriggeredExportRef.current) return;
     hasTriggeredExportRef.current = true;
 
-    const { year, month } = getYearMonthFromFilter(
-      monthFilter,
-      customDateFrom,
-      customDateTo,
-    );
+    const parsedTargetMonth = getYearMonthFromLabel(targetMonthLabel);
+    const { year, month } =
+      parsedTargetMonth ??
+      getYearMonthFromFilter(monthFilter, customDateFrom, customDateTo);
+
     exportBankTransferXlsx({ year, month, locale: language })
       .unwrap()
       .catch((error) => {
@@ -108,18 +122,18 @@ export default function CloseAllOrdersModal({
 
   const handleDownload = () => {
     if (!xlsxData) return;
-    const { year, month } = getYearMonthFromFilter(
-      monthFilter,
-      customDateFrom,
-      customDateTo,
-    );
+    const parsedTargetMonth = getYearMonthFromLabel(targetMonthLabel);
+    const { year, month } =
+      parsedTargetMonth ??
+      getYearMonthFromFilter(monthFilter, customDateFrom, customDateTo);
     const monthName = new Date(year, month - 1, 1).toLocaleString("en-US", {
       month: "long",
     });
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
-    const fileName = `bank-transfer-${monthName}-${year}-${hours}-${minutes}.xlsx`;
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    const fileName = `bank-transfer-${year}-${monthName}-${hours}-${minutes}-${seconds}.xlsx`;
 
     const url = window.URL.createObjectURL(xlsxData);
     const a = document.createElement("a");
@@ -339,6 +353,14 @@ export default function CloseAllOrdersModal({
           {t("go_back")}
         </button>
         <button
+          type="button"
+          onClick={handleDownload}
+          disabled={!xlsxData}
+          className="px-4 py-2 cursor-pointer rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
+        >
+          {t("download")}
+        </button>
+        <button
           onClick={onConfirm}
           type="button"
           disabled={isLoadingPreview || hasPreviewError || isConfirming}
@@ -346,14 +368,6 @@ export default function CloseAllOrdersModal({
         >
           {isConfirming && <Loader2 className="w-4 h-4 animate-spin" />}
           {t("close_all_orders_confirm", { month: targetMonthLabel })}
-        </button>
-        <button
-          type="button"
-          onClick={handleDownload}
-          disabled={!xlsxData}
-          className="px-4 py-2 cursor-pointer rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
-        >
-          {t("download")}
         </button>
       </div>
     </ModalWrapper>

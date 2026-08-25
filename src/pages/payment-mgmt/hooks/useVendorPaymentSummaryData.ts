@@ -64,13 +64,21 @@ export function useVendorPaymentSummaryData(
     authorityId,
   ]);
 
-  const { data, isLoading, isFetching, refetch } =
+  const { data, isLoading, isFetching, refetch, fulfilledTimeStamp } =
     useGetVendorPaymentSummaryQuery(queryParams, {
       refetchOnMountOrArgChange: true,
       skip: !adminView,
     });
 
+  // RTK Query keeps serving `data` from the previous arg set for a render or
+  // two after queryParams changes (e.g. while switching filters), and acting
+  // on that stale data - merging it in, or reading its hasNextPage - skipped
+  // or duplicated pages. Only trust `data` once it's confirmed to belong to
+  // the page we most recently asked for.
+  const isDataCurrent = !isFetching && data?.meta?.page === page;
+
   useEffect(() => {
+    if (!isDataCurrent) return;
     if (!data?.data?.length) {
       if (page === 1) setCombinedVendors([]);
       return;
@@ -83,12 +91,13 @@ export function useVendorPaymentSummaryData(
       );
       return newItems.length ? [...prev, ...newItems] : prev;
     });
-  }, [data, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDataCurrent, fulfilledTimeStamp, page]);
 
   const fetchNextPage = useCallback(() => {
-    if (!data?.meta?.hasNextPage || isFetching) return;
+    if (!isDataCurrent || !data?.meta?.hasNextPage || isFetching) return;
     setPage((prev) => prev + 1);
-  }, [data?.meta?.hasNextPage, isFetching]);
+  }, [isDataCurrent, data?.meta?.hasNextPage, isFetching]);
 
   return {
     vendors: combinedVendors,
@@ -96,7 +105,7 @@ export function useVendorPaymentSummaryData(
     isLoading,
     isFetching,
     refetch,
-    hasMore: !!data?.meta?.hasNextPage,
+    hasMore: isDataCurrent && !!data?.meta?.hasNextPage,
     totalData: data?.totalData,
     fetchNextPage,
   };

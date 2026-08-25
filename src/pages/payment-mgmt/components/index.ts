@@ -7,6 +7,7 @@ import OrderDetailsModal from "./OrderDetailsModal";
 import VendorBankDetails from "./VendorBankDetails";
 import { VendorMonthlySummaryCards } from "./VendorMonthlySummaryCards";
 import ExportOrdersButton from "./ExportOrdersButton";
+import PayoutCalculationInfo from "./PayoutCalculationInfo";
 
 export {
   AdminDisputeResponseModal,
@@ -16,6 +17,7 @@ export {
   ExportOrdersButton,
   DisputeTimeline,
   OrderDetailsModal,
+  PayoutCalculationInfo,
   VendorBankDetails,
   VendorMonthlySummaryCards,
 };

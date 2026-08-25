@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { isPlainObject } from "redux";
 import uiReducer from "@/features/uiSlice";
 import chatPopupReducer from "@/features/chatPopupSlice";
 import authReducer from "@/features/authSlice";
@@ -106,7 +107,25 @@ export const store = configureStore({
   },
 
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
+    getDefaultMiddleware({
+      // several RTK Query endpoints intentionally return raw Blob payloads
+      // (xlsx/csv/pdf export downloads) - those aren't meant to be
+      // serializable, so allow Blob on top of RTK's default isPlain check
+      serializableCheck: {
+        isSerializable: (value: unknown) => {
+          if (value instanceof Blob) return true;
+          const type = typeof value;
+          return (
+            value == null ||
+            type === "string" ||
+            type === "boolean" ||
+            type === "number" ||
+            Array.isArray(value) ||
+            isPlainObject(value)
+          );
+        },
+      },
+    }).concat(
       authApi.middleware,
       analyticsApi.middleware,
       itemStatsApi.middleware,

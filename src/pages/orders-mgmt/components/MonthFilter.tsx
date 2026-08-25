@@ -34,7 +34,7 @@ export default function MonthFilter({
   onDateToChange,
   t,
 }: {
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   dateFrom: string;
@@ -51,11 +51,13 @@ export default function MonthFilter({
 
   return (
     <div>
-      <label
-        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"} ${isRTL ? "text-right" : ""}`}
-      >
-        {label}
-      </label>
+      {label && (
+        <label
+          className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"} ${isRTL ? "text-right" : ""}`}
+        >
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         <select

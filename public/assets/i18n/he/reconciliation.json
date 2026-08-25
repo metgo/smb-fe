@@ -170,6 +170,7 @@
   "clear_filters": "נקה הכל",
   "website": "אתר אינטרנט",
   "export": "ייצוא",
+  "close_all_orders_locked_notice": "לא ניתן עדיין לייצא את {{month}} - לספקים יש עד ה-5 בחודש הבא לסמן הזמנות כהושלמו או לפתוח מחלוקת",
   "net_to_vendor": "נטו לספק",
   "dispute_information": "מידע על התלונה",
   "please_select_resolution_action": "אנא בחר פעולת פתרון",
@@ -225,5 +226,17 @@
   "close": "סגור",
   "download": "הורדה",
   "bank_details": "פרטי בנק",
-  "bank_details_incomplete_info": "הוסיפו את פרטי הבנק שלכם כדי לקבל תשלומים עבור הזמנות."
+  "bank_details_incomplete_info": "הוסיפו את פרטי הבנק שלכם כדי לקבל תשלומים עבור הזמנות.",
+  "payout_calculation_info_title": "כיצד מחושבים התשלומים",
+  "payout_calculation_grand_total_label": "סה\"כ כללי",
+  "payout_calculation_grand_total_desc": "סכום המכירות הכולל + דמי משלוח.",
+  "payout_calculation_platform_fee_label": "עמלת פלטפורמה",
+  "payout_calculation_platform_fee_desc": "סה\"כ כללי × אחוז עמלת הפלטפורמה (בדרך כלל 5%).",
+  "payout_calculation_vendor_payable_label": "סכום לתשלום לספק",
+  "payout_calculation_vendor_payable_desc": "סה\"כ כללי - עמלת פלטפורמה.",
+  "payout_calculation_note": "הערה: רק הזמנות שהסטטוס שלהן הושלם, ושאינן במחלוקת או מבוטלות, נכללות בחישוב זה. שאר ההזמנות יועברו לחודש הבא להסדרה.",
+  "payable_amount_to_vendor": "סכום לתשלום לספק",
+  "total_sales": "סה\"כ מכירות",
+  "grand_total": "סה\"כ כללי",
+  "total_item_orders": "סה\"כ פריטים בהזמנות"
 }

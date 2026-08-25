@@ -15,6 +15,7 @@ import {
   Percent,
   Truck,
   SlidersHorizontal,
+  Package,
 } from "lucide-react";
 import {
   AdminDisputeResponseModal,
@@ -25,6 +26,7 @@ import {
   VendorMonthlySummaryCards,
   ExportOrdersButton,
   VendorBankDetails,
+  PayoutCalculationInfo,
 } from "./components";
 import clsx from "clsx";
 import { useAppSelector } from "@/hooks/hooks";
@@ -67,6 +69,8 @@ export const PaymentMgmtPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showControlsDrawer, setShowControlsDrawer] = useState(false);
+  const [showCloseAllOrdersLockedModal, setShowCloseAllOrdersLockedModal] =
+    useState(false);
 
   const [filters, setFilters] = useState({
     status: "all",
@@ -142,23 +146,42 @@ export const PaymentMgmtPage = () => {
     );
   }, [allWebsites]);
 
-  // const handleClearAllFilters = () => {
-  //   setFilters({
-  //     status: "all",
-  //     reconciliationStatus: "all",
-  //     startDate: "",
-  //     endDate: "",
-  //     month: "all",
-  //     businessId: "",
-  //   });
-  //   resetBusinessSearch();
-  // };
-
-  const handleViewVendorOrders = (vendor: VendorPaymentSummaryRow) => {
+  const handleViewVendorOrders = (
+    vendor: VendorPaymentSummaryRow,
+    statusFilters?: { status?: string; reconciliationStatus?: string },
+  ) => {
     setActiveVendor(vendor);
-    setFilters((prev) => ({ ...prev, businessId: vendor.vendor_info._id }));
+    setFilters((prev) => ({
+      ...prev,
+      businessId: vendor.vendor_info._id,
+      status: statusFilters?.status ?? "all",
+      reconciliationStatus: statusFilters?.reconciliationStatus ?? "all",
+    }));
     setSelectedBusinessName(vendor.vendor_info.name || "-");
     setShowVendorWiseOrderTable(true);
+  };
+
+  const handleOpenCloseAllOrdersModal = () => {
+    // The locked-month warning only applies when the admin has the current
+    // month selected - if they've selected the previous month (or anything
+    // else), skip the warning and go straight to the normal close flow.
+    const isCurrentMonthSelected =
+      filters.month === getCurrentMonthFilterValue();
+    if (!isCurrentMonthSelected) {
+      setShowCloseAllOrdersModal(true);
+      return;
+    }
+
+    const now = new Date();
+    // "Close All Orders" always targets last calendar month; vendors keep
+    // the right to mark orders Completed / open a dispute until the 5th of
+    // the current month.
+    const graceCutoff = new Date(now.getFullYear(), now.getMonth(), 5);
+    if (now < graceCutoff) {
+      setShowCloseAllOrdersLockedModal(true);
+      return;
+    }
+    setShowCloseAllOrdersModal(true);
   };
 
   const handleBackToVendorSummary = () => {
@@ -247,6 +270,12 @@ export const PaymentMgmtPage = () => {
         icon: <ShoppingCart className="w-5 h-5 text-purple-500" />,
       },
       {
+        id: 1,
+        title: t("total_item_orders"),
+        value: stats.totalOrderProductCount,
+        icon: <Package className="w-5 h-5 text-blue-500" />,
+      },
+      {
         id: 2,
         title: t("total_revenue"),
         value: `₪${(stats.totalRevenue || 0).toLocaleString()}`,
@@ -325,6 +354,16 @@ export const PaymentMgmtPage = () => {
   const showVendorSummaryStats = adminView && !showVenderWiseOrderTable;
   const headerStats = showVendorSummaryStats ? vendorSummaryStats : orderStats;
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.status !== "all") count += 1;
+    if (filters.reconciliationStatus !== "all") count += 1;
+    if (filters.businessId) count += 1;
+    if (filters.month !== "all") count += 1;
+    if (filters.startDate || filters.endDate) count += 1;
+    return count;
+  }, [filters]);
+
   const filterToggleButton = (
     <button
       onClick={() => setShowControlsDrawer((prev) => !prev)}
@@ -343,6 +382,17 @@ export const PaymentMgmtPage = () => {
       }
     >
       <SlidersHorizontal className="w-4 h-4" />
+      {activeFilterCount > 0 && (
+        <span
+          className={clsx(
+            "absolute -top-1.5 -inset-e-1.5 min-w-4.5 h-4.5 px-1 rounded-full text-[10px] font-semibold flex items-center justify-center",
+            "bg-red-500 text-white border-2",
+            isDark ? "border-gray-950" : "border-white",
+          )}
+        >
+          {activeFilterCount}
+        </span>
+      )}
     </button>
   );
 
@@ -384,43 +434,52 @@ export const PaymentMgmtPage = () => {
           "flex flex-col md:flex-row md:items-center justify-between gap-2 px-1",
         )}
       >
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-sm font-semibold px-2 py-0.5 rounded-full ${bgSecondary} ${textSecondary}`}
-          >
-            {filters.month === "custom"
-              ? filters.startDate && filters.endDate
-                ? `${filters.startDate} - ${filters.endDate}`
-                : t("customRange")
-              : formatMonthFilterLabel(
-                  filters.month === "all"
-                    ? getCurrentMonthFilterValue()
-                    : filters.month,
-                  getMonthFilterLocale(language),
-                )}
-          </span>
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <div className="w-full md:w-56 shrink-0">
+            <MonthFilter
+              value={filters.month}
+              onChange={(value) =>
+                setFilters((prev) => ({ ...prev, month: value }))
+              }
+              dateFrom={filters.startDate}
+              dateTo={filters.endDate}
+              onDateFromChange={(value) =>
+                setFilters((prev) => ({ ...prev, startDate: value }))
+              }
+              onDateToChange={(value) =>
+                setFilters((prev) => ({ ...prev, endDate: value }))
+              }
+              t={t}
+            />
+          </div>
           <p className={clsx("text-sm", textSecondary)}>
             {t("review_and_approve_orders")}
           </p>
         </div>
         {adminView ? (
-          <button
-            type="button"
-            onClick={() => setShowCloseAllOrdersModal(true)}
-            className="px-3 py-1.5 cursor-pointer rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
-          >
-            {t("close_all_orders")}
-          </button>
-        ) : (
-          <div className="flex flex-col md:items-end gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
-              onClick={() => setShowVendorBankDetailsModal(true)}
-              className="px-3 py-1.5 cursor-pointer rounded bg-green-600 hover:bg-green-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+              onClick={handleOpenCloseAllOrdersModal}
+              className="px-3 py-1.5 cursor-pointer rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
             >
-              <Landmark className="w-4 h-4" />
-              {t("bank_details")}
+              {t("close_all_orders")}
             </button>
+            <PayoutCalculationInfo t={t} />
+          </div>
+        ) : (
+          <div className="flex flex-col md:items-end gap-2">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setShowVendorBankDetailsModal(true)}
+                className="px-3 py-1.5 cursor-pointer rounded bg-green-600 hover:bg-green-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+              >
+                <Landmark className="w-4 h-4" />
+                {t("bank_details")}
+              </button>
+              <PayoutCalculationInfo t={t} />
+            </div>
             {!vendorBankDetails?.bankAccount && (
               <span className={clsx("text-xs font-semibold text-red-500")}>
                 {t("bank_details_incomplete_info")}
@@ -471,9 +530,8 @@ export const PaymentMgmtPage = () => {
 
               <ExportOrdersButton
                 t={t}
-                vendorId={
-                  activeVendor?.vendor_info._id || vendorBankDetails?.id || ""
-                }
+                adminView={adminView}
+                vendorId={activeVendor?.vendor_info._id || ""}
                 vendorName={
                   activeVendor?.vendor_info.name ||
                   vendorBankDetails?.firstName ||
@@ -489,7 +547,7 @@ export const PaymentMgmtPage = () => {
 
           {showFilters && (
             <div
-              className={`pt-4 border-t ${borderColor} grid grid-cols-1 md:grid-cols-4 gap-4`}
+              className={`pt-4 border-t ${borderColor} grid grid-cols-1 md:grid-cols-3 gap-4`}
             >
               <div>
                 <label className={`block text-xs ${textTertiary} mb-1`}>
@@ -591,23 +649,6 @@ export const PaymentMgmtPage = () => {
                   </div>
                 )}
               </div>
-
-              <MonthFilter
-                label={t("month")}
-                value={filters.month}
-                onChange={(value) =>
-                  setFilters((prev) => ({ ...prev, month: value }))
-                }
-                dateFrom={filters.startDate}
-                dateTo={filters.endDate}
-                onDateFromChange={(value) =>
-                  setFilters((prev) => ({ ...prev, startDate: value }))
-                }
-                onDateToChange={(value) =>
-                  setFilters((prev) => ({ ...prev, endDate: value }))
-                }
-                t={t}
-              />
             </div>
           )}
         </div>
@@ -803,6 +844,21 @@ export const PaymentMgmtPage = () => {
         loading={isBulkCompleting}
         onCancel={() => setShowBulkCompleteConfirm(false)}
         onConfirm={handleBulkMarkOrderCompleted}
+      />
+
+      <ConfirmDialog
+        open={showCloseAllOrdersLockedModal}
+        title={t("close_all_orders")}
+        message={t("close_all_orders_locked_notice", {
+          month: formatMonthFilterLabel(
+            getCurrentMonthFilterValue(),
+            getMonthFilterLocale(language),
+          ),
+        })}
+        variant="warning"
+        loading={isBulkCompleting}
+        onCancel={() => setShowCloseAllOrdersLockedModal(false)}
+        onConfirm={() => setShowCloseAllOrdersLockedModal(false)}
       />
 
       {showVendorBankDetailsModal && !adminView && (

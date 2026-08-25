@@ -130,6 +130,7 @@ export interface VendorPaymentSummaryRow {
     netPayment: number;
     deliveryFee: number;
     platformCharge: number;
+    itemsAmount: number;
   };
   platform: Array<{ _id: string; websiteName: string }>;
 }
@@ -318,7 +319,12 @@ export const reconciliationQueryApi = createApi({
 
     exportVendorwiseXlsx: builder.mutation<
       Blob,
-      { vendorId: string; year: number; month: number; locale?: Language }
+      {
+        year: number;
+        month: number;
+        vendorId?: string | null;
+        locale?: Language;
+      }
     >({
       query: (body) => ({
         url: endpoints.exportVendorwiseXlsx,

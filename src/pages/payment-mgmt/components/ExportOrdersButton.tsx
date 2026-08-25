@@ -3,12 +3,13 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useExportVendorwiseXlsxMutation } from "@/store/api/reconciliationQueryApi";
 
 interface ExportOrdersButtonProps {
-  vendorId: string;
+  vendorId: string | null;
   vendorName: string;
   t: (key: string) => string;
   monthFilter?: string;
   customDateFrom?: string;
   customDateTo?: string;
+  adminView: boolean;
 }
 
 export default function ExportOrdersButton({
@@ -18,8 +19,8 @@ export default function ExportOrdersButton({
   monthFilter,
   customDateFrom,
   customDateTo,
+  adminView,
 }: ExportOrdersButtonProps) {
-  console.log("🚀 ~ ExportOrdersButton ~ vendorId:", vendorId);
   const { isDark, language } = useThemeClasses();
   const [exportVendorwiseXlsx, { isLoading }] =
     useExportVendorwiseXlsxMutation();
@@ -50,19 +51,23 @@ export default function ExportOrdersButton({
   };
 
   const handleExport = async () => {
-    if (!vendorId) return;
     const { year, month } = getYearMonth();
     try {
       const blob = await exportVendorwiseXlsx({
-        vendorId,
         year,
         month,
         locale: language,
+        vendorId: vendorId ? vendorId : null,
       }).unwrap();
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${vendorName}_${getDateLabel()}.xlsx`;
+      link.download = `${vendorName}_${getDateLabel()}_${hours}-${minutes}-${seconds}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -81,7 +86,7 @@ export default function ExportOrdersButton({
   return (
     <button
       onClick={handleExport}
-      disabled={!vendorId || isLoading}
+      disabled={!(adminView ? vendorId : true) || isLoading}
       className={btnBase}
     >
       {isLoading ? (

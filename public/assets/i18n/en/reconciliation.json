@@ -172,6 +172,7 @@
   "clear_filters": "Clear All",
   "website": "Website",
   "export": "Export",
+  "close_all_orders_locked_notice": "{{month}} cannot be exported yet - vendors have until the 5th of next month to mark orders Completed or open a dispute",
   "net_to_vendor": "Net to Vendor",
   "dispute_information": "Dispute Information",
   "please_select_resolution_action": "Please select a resolution action",
@@ -227,5 +228,17 @@
   "close": "Close",
   "download": "Download",
   "bank_details": "Bank Details",
-  "bank_details_incomplete_info": "Add your bank details to receive order payments."
+  "bank_details_incomplete_info": "Add your bank details to receive order payments.",
+  "payout_calculation_info_title": "How payouts are calculated",
+  "payout_calculation_grand_total_label": "Grand Total",
+  "payout_calculation_grand_total_desc": "Total sales amount + delivery fee.",
+  "payout_calculation_platform_fee_label": "Platform Fee",
+  "payout_calculation_platform_fee_desc": "Grand Total × Platform Charge (typically 5%).",
+  "payout_calculation_vendor_payable_label": "Vendor Payable Amount",
+  "payout_calculation_vendor_payable_desc": "Grand Total − Platform Fee.",
+  "payout_calculation_note": "Note: Only orders that are Completed, and not under dispute or cancelled, are included in this calculation. All other orders carry forward to next month and are settled then.",
+  "payable_amount_to_vendor": "Payable Amount to Vendor",
+  "total_sales": "Total Sales",
+  "grand_total": "Grand Total",
+  "total_item_orders": "Total Item Orders"
 }
