@@ -89,12 +89,22 @@ export function StatsMarquee({
                             <div className="flex items-baseline gap-1">
                                 <span className="text-xs md:text-sm font-bold leading-none">{item.value ?? 0}</span>
                                 {item.label && (
-                                    <span className="text-[9px] md:text-[11px] text-gray-400 leading-none truncate max-w-16 md:max-w-20">
+                                    <span
+                                        className={clsx(
+                                            "text-[9px] md:text-[11px] leading-none truncate max-w-16 md:max-w-20",
+                                            isDark ? "text-gray-400" : "text-gray-600"
+                                        )}
+                                    >
                                         {item.label}
                                     </span>
                                 )}
                             </div>
-                            <span className="text-[10px] md:text-xs text-gray-400 leading-tight truncate max-w-24 md:max-w-32">
+                            <span
+                                className={clsx(
+                                    "text-[10px] md:text-xs leading-tight truncate max-w-24 md:max-w-32",
+                                    isDark ? "text-gray-400" : "text-gray-600"
+                                )}
+                            >
                                 {item.title}
                             </span>
                         </div>
