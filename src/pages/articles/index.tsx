@@ -281,12 +281,12 @@ export default function ArticlesManagement() {
           ? "bg-fuchsia-600 text-white border-fuchsia-500 shadow-fuchsia-500/20"
           : isDark
             ? "bg-gray-900 border-gray-800 text-fuchsia-400 hover:bg-gray-800 hover:border-fuchsia-500/40"
-            : "bg-gray-100 border-gray-200 text-fuchsia-700 hover:bg-gray-200 hover:border-fuchsia-400"
+            : "bg-gray-100 border-gray-200 text-fuchsia-700 hover:bg-gray-200 hover:border-fuchsia-400",
       )}
       title={
         showControlsDrawer
-          ? tc("close_options") ?? "Close Options"
-          : tc("search_and_filters") ?? "Search & Filters"
+          ? (tc("close_options") ?? "Close Options")
+          : (tc("search_and_filters") ?? "Search & Filters")
       }
     >
       <SlidersHorizontal className="w-4 h-4" />
@@ -296,7 +296,7 @@ export default function ArticlesManagement() {
             "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
             showControlsDrawer
               ? "bg-white text-fuchsia-600"
-              : "bg-fuchsia-500 text-white"
+              : "bg-fuchsia-500 text-white",
           )}
         >
           {activeFilterCount > 9 ? "9+" : activeFilterCount}
@@ -311,11 +311,11 @@ export default function ArticlesManagement() {
         {/* Sticky Top Header Bar (Title + Add Button) */}
         <div
           className={clsx(
-  "shrink-0 sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
-  isDark
-    ? "bg-gray-950 border-gray-800/90 shadow-black/40 text-gray-100"
-    : "bg-white border-gray-200/90 shadow-gray-200/40 text-gray-900"
-)}
+            "shrink-0 sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
+            isDark
+              ? "bg-gray-950 border-gray-800/90 shadow-black/40 text-gray-100"
+              : "bg-white border-gray-200/90 shadow-gray-200/40 text-gray-900",
+          )}
         >
           <ListHeaderBar
             title={t("page_title")}
@@ -335,7 +335,7 @@ export default function ArticlesManagement() {
               "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
               isDark
                 ? "bg-gray-900/90 border-gray-800/90"
-                : "bg-white border-gray-200"
+                : "bg-white border-gray-200",
             )}
           >
             <div className="flex flex-col lg:flex-row lg:items-center gap-3">
@@ -383,7 +383,7 @@ export default function ArticlesManagement() {
               <div
                 className={clsx(
                   "rounded-md px-4 py-3",
-                  isDark ? "bg-gray-900/60" : "bg-gray-50"
+                  isDark ? "bg-gray-900/60" : "bg-gray-50",
                 )}
               >
                 <FilterByStatus filters={filters} setFilters={setFilters} />
@@ -399,7 +399,9 @@ export default function ArticlesManagement() {
             {/* Active Filters Summary */}
             {(searchTerm || filters.status !== "all") && (
               <div className="pt-1 flex items-center gap-2 flex-wrap">
-                <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                <span
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                >
                   {t("active_filters") ?? tc("active_filters")}:
                 </span>
 

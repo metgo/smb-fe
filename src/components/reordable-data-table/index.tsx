@@ -446,9 +446,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                       isDragging && "opacity-40",
                       isOver && (isDark ? "bg-teal-900/30" : "bg-teal-50"),
                       isSortable &&
-                      (isDark
-                        ? "hover:bg-gray-800 hover:text-gray-200"
-                        : "hover:bg-gray-100 hover:text-gray-700"),
+                        (isDark
+                          ? "hover:bg-gray-800 hover:text-gray-200"
+                          : "hover:bg-gray-100 hover:text-gray-700"),
                       getStickyHeaderBgClass(colKey),
                     )}
                   >

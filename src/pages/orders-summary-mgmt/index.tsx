@@ -155,9 +155,8 @@ export default function OrdersSummaryMgmtPage() {
     return rest;
   }, [orderSummaryQueryParams]);
 
-  const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
-    orderStatsParams,
-  );
+  const { data: orderStat, isLoading: isStatsLoading } =
+    useGetOrderStatsQuery(orderStatsParams);
 
   const hasMoreSummary = orderSummaries?.meta?.hasNextPage;
   const totalDataSummary = orderSummaries?.totalData;
@@ -530,12 +529,12 @@ export default function OrdersSummaryMgmtPage() {
           ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
           : isDark
             ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
       )}
       title={
         showControlsDrawer
-          ? tc("close_options") ?? "Close Options"
-          : tc("search_and_filters") ?? "Search & Filters"
+          ? (tc("close_options") ?? "Close Options")
+          : (tc("search_and_filters") ?? "Search & Filters")
       }
     >
       <SlidersHorizontal className="w-4 h-4" />
@@ -545,7 +544,7 @@ export default function OrdersSummaryMgmtPage() {
             "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
             showControlsDrawer
               ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white"
+              : "bg-teal-500 text-white",
           )}
         >
           {activeFilterCount > 9 ? "9+" : activeFilterCount}
@@ -555,8 +554,7 @@ export default function OrdersSummaryMgmtPage() {
   );
 
   return (
-          <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
-
+    <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
       {/* Sticky Top Header Bar (Title + Count + Filter Toggle + Stats) */}
       <div
         className={clsx(
@@ -584,12 +582,9 @@ export default function OrdersSummaryMgmtPage() {
               <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
                 {t("online_orders_summary_management")}
               </h1>
-              
             </div>
 
-            <div className="block xl:hidden shrink-0">
-              {filterToggleButton}
-            </div>
+            <div className="block xl:hidden shrink-0">{filterToggleButton}</div>
           </div>
           <p
             className={clsx(

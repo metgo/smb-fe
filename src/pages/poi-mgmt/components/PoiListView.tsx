@@ -122,21 +122,20 @@ export default function PoiListView({
   }
 
   return (
-      <div className="sticky">
-        <ReordableDataTable
-          rowKey="_id"
-          data={pois}
-          isDataLoading={isLoading}
-          selectedItems={selectedPois}
-          onSelectionChange={setSelectedPois}
-          onRowClick={(poi) => onPoiClick(poi)}
-          storageKey="poisTableColumnOrder"
-          columns={columns}
-          hasMore={hasMore}
-          next={next}
-          t={t}
-        />
-      </div>
-    
+    <div className="sticky">
+      <ReordableDataTable
+        rowKey="_id"
+        data={pois}
+        isDataLoading={isLoading}
+        selectedItems={selectedPois}
+        onSelectionChange={setSelectedPois}
+        onRowClick={(poi) => onPoiClick(poi)}
+        storageKey="poisTableColumnOrder"
+        columns={columns}
+        hasMore={hasMore}
+        next={next}
+        t={t}
+      />
+    </div>
   );
 }

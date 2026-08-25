@@ -28,8 +28,14 @@ export const ChatCreatorBubble: React.FC<ChatCreatorBubbleProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const socket = useSocket();
-  const { isDark, isRTL, textPrimary, textSecondary, textTertiary, borderColor } =
-    useThemeClasses();
+  const {
+    isDark,
+    isRTL,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+  } = useThemeClasses();
 
   const [collapsed, setCollapsed] = useState(false);
 

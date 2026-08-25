@@ -21,7 +21,7 @@ import {
   useGetPoiByIdQuery,
   useGetIndividualPoiStatsQuery,
 } from "@/store/api/poiQueryApi";
-import {  StatusChangeBtn } from "@/components/btns";
+import { StatusChangeBtn } from "@/components/btns";
 import { ChatWithCreator } from "@/components/chat-popup";
 import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
 import { CreatePoiWizard } from "../components";
