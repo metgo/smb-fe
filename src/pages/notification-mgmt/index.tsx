@@ -669,7 +669,7 @@ export default function NotificationsMgmtPage() {
                                         : "bg-green-600 hover:bg-green-700",
                                     )}
                                   >
-                                    {isApproved ? "Approved" : "Approve"}
+                                    {isApproved ? t("approved") : t("approve")}
                                   </button>
 
                                   {(notification.status === "PENDING" ||
@@ -681,7 +681,7 @@ export default function NotificationsMgmtPage() {
                                         className="px-3 py-1.5 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition flex items-center gap-1"
                                       >
                                         <Eye size={14} />
-                                        View Changes
+                                        {t("view_changes")}
                                       </button>
                                     )}
                                 </div>

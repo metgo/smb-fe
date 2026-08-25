@@ -200,6 +200,10 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
       return;
     }
 
+    const isUpdate = !!editData._id && opMode !== IOpMode.DUPLICATE;
+    const initial = editData?.quantity?.initial ?? 0;
+    const sold = isUpdate ? (editData?.quantity?.sold ?? 0) : 0;
+
     const payload: ITicketPayload = {
       eventId,
       name: editData.name.trim(),
@@ -212,9 +216,9 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
         discountAmount: editData.price?.discountAmount ?? 0,
       },
       quantity: {
-        initial: editData.quantity?.initial ?? 0,
-        sold: 0,
-        remaining: editData.quantity?.initial ?? 0,
+        initial,
+        sold,
+        remaining: initial - sold,
         isUnlimited: editData.quantity?.isUnlimited ?? false,
         perUserLimit: editData.quantity?.perUserLimit ?? 0,
       },
@@ -229,13 +233,12 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
     };
 
     try {
-      const res =
-        editData._id && opMode !== IOpMode.DUPLICATE
-          ? await updateTicket({
-              body: payload,
-              ticketId: editData._id,
-            }).unwrap()
-          : await createTicket(payload).unwrap();
+      const res = isUpdate
+        ? await updateTicket({
+            body: payload,
+            ticketId: editData._id || "",
+          }).unwrap()
+        : await createTicket(payload).unwrap();
 
       if (hasExternalTicket) {
         await updateEvent({
