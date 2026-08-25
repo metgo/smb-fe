@@ -629,7 +629,7 @@ const NotificationsBell = () => {
                               )}
                             >
                               <ExternalLink className="w-3 h-3" />
-                              View Details
+                              {t("view_details")}
                             </button>
                           )}
                         </div>
