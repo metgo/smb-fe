@@ -91,6 +91,15 @@ export class SessionBooking extends AuditableSchema {
   @Prop({ required: false, index: true })
     inviteCode?: string;
 
+  // the OrderProduct (ticket) this booking was made for - lets check-in and
+  // any later status check confirm the ticket wasn't cancelled after booking
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    required: false,
+    index: true,
+  })
+    orderProductId?: mongoose.Types.ObjectId;
+
   @Prop({ required: false })
     consumedAt?: Date; // Single-use lock: set when token is consumed
 

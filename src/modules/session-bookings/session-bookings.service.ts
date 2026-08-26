@@ -21,6 +21,7 @@ import {
 } from 'src/common/utils/invite-token.util';
 import { ConfirmSessionHoldDto } from './dto/confirm-session-hold.dto';
 import { SessionBooking } from './schema/session-booking.schema';
+import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { ConfigService } from 'src/services/config/config.service';
 import { QRCodeService } from 'src/services/qr-code/qr-code.service';
@@ -42,6 +43,9 @@ export class SessionBookingsService {
 
     @InjectModel(SessionBooking.name)
     private readonly sessionBookingModel: Model<SessionBooking>,
+
+    @InjectModel(OrderProduct.name)
+    private readonly orderProductModel: Model<OrderProduct>,
 
     @InjectConnection()
     private readonly connection: Connection,
@@ -92,6 +96,37 @@ export class SessionBookingsService {
     return this.configService.externalApiIdentifier.IDENTIFIER_ID;
   }
 
+  /**
+   * Blocks session booking for a ticket that's been cancelled on the vendor
+   * side. `orderProductId` is optional - tokens/bookings issued before this
+   * field existed have nothing to check against, so they pass through as-is
+   * rather than being blocked on missing data.
+   */
+  private async assertTicketNotCancelled(
+    orderProductId?: string | ObjectId,
+  ): Promise<void> {
+    if (!orderProductId) return;
+
+    const orderProduct = await this.orderProductModel
+      .findById(orderProductId)
+      .select('status cancelled')
+      .lean();
+
+    if (orderProduct?.status === 'canceled') {
+      // "TICKET_CANCELLED:" prefix is a stable machine-readable marker the
+      // frontend checks for. Everything after it is a JSON-encoded object
+      // ({canceled_reason, additional_information, date}) - some call paths
+      // re-throw via exceptionHandling(), which only forwards err.message as
+      // a plain string, so this can't be a structured exception body.
+      const details = {
+        canceled_reason: orderProduct.cancelled?.canceled_reason || 'Cancelled by vendor',
+        additional_information: orderProduct.cancelled?.additional_information || null,
+        date: orderProduct.cancelled?.date || null,
+      };
+      throw new BadRequestException(`TICKET_CANCELLED: ${JSON.stringify(details)}`);
+    }
+  }
+
   // ── Invite token ─────────────────────────────────────────────────────────────
 
   /**
@@ -127,6 +162,8 @@ export class SessionBookingsService {
      * Example: event on July 14, purchased July 10 → token expires July 13 (3 days)
      */
     eventLastDate?: Date;
+    /** The OrderProduct (ticket) this invite is for - lets the booking flow check the ticket hasn't been cancelled. */
+    orderProductId?: string;
   }): { token: string; bookingLink: string; ttlDays: number } {
     const nowSec = Math.floor(Date.now() / 1000);
     const maxTtlSec = INVITE_TTL_DAYS * 24 * 60 * 60;
@@ -157,6 +194,7 @@ export class SessionBookingsService {
       wrapperId: params.wrapperId,
       code: params.code,
       exp,
+      orderProductId: params.orderProductId,
     };
 
     const token = encryptInviteToken(payload);
@@ -227,6 +265,8 @@ export class SessionBookingsService {
         'Invalid invite link. Please check the link in your email.',
       );
     }
+
+    await this.assertTicketNotCancelled(payload.orderProductId);
 
     // Single-use lock check (LUMEN spec §4.2):
     // Preview links (with code) allow multiple bookings for testing
@@ -452,6 +492,9 @@ export class SessionBookingsService {
       // If invite code is provided, fetch existing bookings for pre-selection
       let existingBookings: any[] = [];
       let existingBooking: any = null;
+      let cancelled:
+        | { canceled_reason: string; additional_information: string; date: Date }
+        | undefined;
       if (dto?.code) {
         const confirmedBookings = await this.connection
           .collection('sessionbookings')
@@ -478,6 +521,29 @@ export class SessionBookingsService {
         if (existingBookings.length > 0) {
           [existingBooking] = existingBookings;
         }
+
+        // Best-effort: only possible when a prior hold/booking already
+        // exists for this code (that's the only place orderProductId gets
+        // stored - a brand-new code with no booking yet has nothing to
+        // look up).
+        const orderProductId = confirmedBookings.find(
+          (b: any) => b.orderProductId,
+        )?.orderProductId;
+        if (orderProductId) {
+          const orderProduct = await this.orderProductModel
+            .findById(orderProductId)
+            .select('status cancelled')
+            .lean();
+          if (orderProduct?.status === 'canceled') {
+            cancelled = {
+              canceled_reason:
+                orderProduct.cancelled?.canceled_reason || 'Cancelled by vendor',
+              additional_information:
+                orderProduct.cancelled?.additional_information,
+              date: orderProduct.cancelled?.date,
+            };
+          }
+        }
       }
 
       return {
@@ -494,6 +560,7 @@ export class SessionBookingsService {
           events: sessionsWithAvailability,
           ...(existingBooking && { existingBooking }),
           ...(existingBookings.length > 0 && { existingBookings }),
+          ...(cancelled && { cancelled }),
         },
       };
     } catch (err) {
@@ -542,6 +609,8 @@ export class SessionBookingsService {
     if (!payload.name || !payload.email) {
       throw new BadRequestException('Token must contain name and email');
     }
+
+    await this.assertTicketNotCancelled(payload.orderProductId);
 
     // ── Single-use validation: Check for existing CONFIRMED booking ──────────
     // Only enforce for real links (no code parameter)
@@ -769,6 +838,9 @@ export class SessionBookingsService {
       room: sessionData.room,
       purchaserInfo,
       inviteCode: payload.code || null,
+      orderProductId: payload.orderProductId
+        ? new ObjectId(payload.orderProductId)
+        : null,
       holdExpiresAt,
       status: 'ACTIVE',
       createdAt: new Date(),
@@ -845,6 +917,13 @@ export class SessionBookingsService {
           );
         }
         throw new BadRequestException('Invalid invite token');
+      }
+
+      try {
+        await this.assertTicketNotCancelled(payload.orderProductId);
+      } catch (err) {
+        await mongoSession.abortTransaction();
+        throw err;
       }
 
       // ── 2. Fetch all holds ─────────────────────────────────────────────────
@@ -1001,6 +1080,7 @@ export class SessionBookingsService {
             wrapperId: hold.wrapperId,
             code: payload.code,
             exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+            orderProductId: hold.orderProductId?.toString(),
           };
           const qrToken = encryptInviteToken(checkInPayload);
           const bookingReference = `LUMEN-${Date.now()}-${Math.random()
@@ -1433,6 +1513,8 @@ export class SessionBookingsService {
       throw new NotFoundException('Confirmed booking not found for this ID');
     }
 
+    await this.assertTicketNotCancelled(initialBooking.orderProductId);
+
     const { email, name } = initialBooking.purchaserInfo;
     const { wrapperId } = initialBooking;
 
@@ -1667,6 +1749,11 @@ export class SessionBookingsService {
           'No confirmed booking found for this check-in token',
         );
       }
+
+      // Ticket may have been cancelled by the vendor after this session was
+      // booked/confirmed - block check-in even though the booking itself
+      // is still CONFIRMED.
+      await this.assertTicketNotCancelled(booking.orderProductId);
 
       // Check if already attended (single-use lock)
       if (booking.status === 'ATTENDED') {

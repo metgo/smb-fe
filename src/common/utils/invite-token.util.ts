@@ -42,6 +42,13 @@ export interface InvitePayload {
   code?: string;
   /** Unix timestamp — token hard-expires at this time */
   exp: number;
+  /**
+   * The OrderProduct (ticket) this invite was issued for. Optional for
+   * backward compatibility with tokens issued before this field existed —
+   * those are checked as-is, with no cancellation gate, since there's
+   * nothing to check against.
+   */
+  orderProductId?: string;
 }
 
 const ALGORITHM = 'aes-256-gcm';

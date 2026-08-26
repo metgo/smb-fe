@@ -61,6 +61,7 @@ export class SessionBookingsController {
       phone: dto.phone,
       wrapperId: dto.wrapperId,
       code: dto.code,
+      orderProductId: dto.orderProductId,
     });
   }
 

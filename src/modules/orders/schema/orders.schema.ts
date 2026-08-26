@@ -164,6 +164,7 @@ export class Order extends AuditableSchema {
       by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
       date: { type: Date },
       canceled_reason: { type: String },
+      additional_information: { type: String },
       isAutomatic: { type: Boolean, default: false },
     },
   })
@@ -171,6 +172,7 @@ export class Order extends AuditableSchema {
     by: mongoose.Types.ObjectId;
     date: Date;
     canceled_reason: string;
+    additional_information: string;
     isAutomatic: boolean;
   };
 

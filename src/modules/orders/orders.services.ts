@@ -2093,6 +2093,7 @@ export class OrdersService {
         qrCodeUrl?: string;
         greeting?: string;
         wrapperId?: string;
+        orderProductId?: string;
       }[];
       totalAmount: number;
     };
@@ -2241,6 +2242,7 @@ export class OrdersService {
             qrCodeUrl: qrUrl,
             greeting: product?.greeting,
             wrapperId: product?.wrapperId || '',
+            orderProductId: orderItem._id?.toString(),
           });
 
           this.logger.info('[EMAIL]: TICKET PRODUCT ADDED', {
@@ -2458,6 +2460,7 @@ export class OrdersService {
                       phone: phoneFromOrder,
                       wrapperId: productWrapperId || eventWrapperId || '',
                       code: uniqueCode,
+                      orderProductId: product.orderProductId,
                       // Pass the last event date so token expiry is capped to 1 day before
                       // the event rather than a flat 7 days (e.g. bought July 10, event July 22 → expires July 21)
                       eventLastDate: eventDetails[0]?.dayDescription?.length
@@ -3224,6 +3227,10 @@ export class OrdersService {
             }
           }
 
+          const matchingOrderProduct = orderProducts.find(
+            op => op.itemId?.toString() === firstProduct._id?.toString(),
+          );
+
           const { token, ttlDays } = this.sessionBookingsService.generateInviteToken({
             name: order.firstName || '',
             email: order.email || '',
@@ -3231,6 +3238,7 @@ export class OrdersService {
             wrapperId: firstProduct.wrapperId,
             code: uniqueCode,
             eventLastDate,
+            orderProductId: matchingOrderProduct?._id?.toString(),
           });
 
           purchaserVerifyLink = `${websiteUrl}/purchaser-verify?code=${token}`;

@@ -9,6 +9,10 @@ import {
   SessionBooking,
   SessionBookingSchema,
 } from './schema/session-booking.schema';
+import {
+  OrderProduct,
+  OrderProductSchema,
+} from 'src/modules/order-product/schema/order-product.schema';
 import { UsersModule } from 'src/modules/users/users.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
@@ -23,6 +27,7 @@ import { SmsModule } from 'src/services/sms/sms.module';
   imports: [
     MongooseModule.forFeature([
       { name: SessionBooking.name, schema: SessionBookingSchema },
+      { name: OrderProduct.name, schema: OrderProductSchema },
     ]),
     JwtModule,
     MailChimpModule,

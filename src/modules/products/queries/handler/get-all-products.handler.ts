@@ -318,10 +318,39 @@ implements IQueryHandler<GetAllProductsQuery> {
       }
 
       // Default path: no search, or Atlas Search fallback
+      // Drop the isActive filter here and instead pick, per productId, whichever
+      // audit document is most recently created — this way a productId with no
+      // isActive:true doc still shows (via its latest doc), and an isActive:true
+      // doc that isn't the latest one no longer wins just because it's active.
+      const { isActive: _isActive, ...dedupeMatchQuery } = findQuery;
+
+      // Use find() (not aggregate()) here so Mongoose applies its normal
+      // schema-based casting to query-string ids like businessId/categoriesId.
+      const candidateDocs = await this.ProductsAuditModel.find(dedupeMatchQuery)
+        .select('_id productId createdAt')
+        .lean();
+
+      if (!candidateDocs.length) {
+        return { totalData: 0, products: [] };
+      }
+
+      const latestByProductId = (candidateDocs as any[]).reduce<
+        Map<string, { _id: any; createdAt: Date }>
+      >((acc, doc) => {
+        const key = doc.productId.toString();
+        const existing = acc.get(key);
+        if (!existing || doc.createdAt > existing.createdAt) {
+          acc.set(key, doc);
+        }
+        return acc;
+      }, new Map());
+
+      const latestIds = Array.from(latestByProductId.values()).map(d => d._id);
+
       const productsList = await queryhandler<ProductsAudit>(
         this.ProductsAuditModel,
         {
-          findQuery,
+          findQuery: { _id: { $in: latestIds } },
           select,
           page: Number(page),
           limit: Number(limit),

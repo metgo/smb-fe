@@ -78,4 +78,13 @@ export class GenerateTestTokenDto {
   @IsArray()
   @IsOptional()
     scope?: string[];
+
+  @ApiProperty({
+    required: false,
+    example: '6a434e6bab835dff0ef1fe46',
+    description: 'OrderProduct (ticket) ID - for testing the cancellation gate',
+  })
+  @IsString()
+  @IsOptional()
+    orderProductId?: string;
 }
