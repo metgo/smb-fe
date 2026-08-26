@@ -338,6 +338,8 @@
   "ticket_scanned": "הכרטיס כבר נסרק",
   "ticket_expired": "הכרטיס פג תוקף",
   "ticket_canceled": "הכרטיס בוטל",
+  "cancelled_reason_label": "סיבת ביטול",
+  "additional_information_label": "מידע נוסף",
   "mark_as_completed": "סמן כהושלם",
   "completed_checkmark": "הושלם ✓",
   "payment_successful": "ההזמנה הצליחה",

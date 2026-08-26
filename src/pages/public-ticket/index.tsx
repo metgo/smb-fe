@@ -48,6 +48,11 @@ interface IPublicTicket {
   status: string;
   quantity: number;
   amount: number;
+  cancelled?: {
+    canceled_reason: string;
+    additional_information: string;
+    date: string;
+  };
   eventId: string;
   eventName: string;
   eventImages: { image: string; isPrimary: boolean }[];
@@ -278,6 +283,28 @@ export default function PublicTicketPage() {
               {t(orderStatus.labelKey, { defaultValue: orderStatus.labelKey })}
             </span>
           </div>
+
+          {/* Cancellation details */}
+          {isCanceled && ticket.cancelled && (
+            <div className="px-5 py-3 bg-red-50 border-b border-red-100 space-y-1.5">
+              {ticket.cancelled.canceled_reason && (
+                <p className="text-sm text-red-700">
+                  <span className="font-semibold">
+                    {t("cancelled_reason_label")}:
+                  </span>{" "}
+                  {ticket.cancelled.canceled_reason}
+                </p>
+              )}
+              {ticket.cancelled.additional_information && (
+                <p className="text-sm text-red-700">
+                  <span className="font-semibold">
+                    {t("additional_information_label")}:
+                  </span>{" "}
+                  {ticket.cancelled.additional_information}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Ticket perforated divider */}
           <div className="relative flex items-center px-4 py-2">

@@ -372,6 +372,8 @@
   "ticket_scanned": "تم مسح هذه التذكرة بالفعل",
   "ticket_expired": "انتهت صلاحية هذه التذكرة",
   "ticket_canceled": "تم إلغاء هذه التذكرة",
+  "cancelled_reason_label": "سبب الإلغاء",
+  "additional_information_label": "معلومات إضافية",
   "mark_as_completed": "وضع علامة كمكتمل",
   "completed_checkmark": "مكتمل ✓"
 }
