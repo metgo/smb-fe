@@ -83,25 +83,24 @@ const MarkerMap = ({
     googleMap.panTo({ lat, lng });
   };
 
-  const fetchAddress = (lat: number, lng: number): void => {
-    const geocoder = new window.google.maps.Geocoder();
-
-    geocoder.geocode(
-      { location: { lat, lng } },
-      (results: any, status: string) => {
-        if (status === "OK" && results?.[0]) {
-          setAddress(results[0].formatted_address);
-          setInputValue(results[0].formatted_address);
-          const components = (results[0].address_components ?? []).map(
-            (c: any) => ({ text: c.long_name, types: c.types }),
-          );
-          const plusCode = getPlusCodeLocalCode(
-            results[0].plus_code?.compound_code,
-          );
-          onAddressParts?.(extractAddressParts(components, plusCode));
-        }
-      },
+  // Uses the REST Geocoding API (not the Maps JS Geocoder) so the address language can be
+  // forced to Hebrew regardless of the map/UI's display language.
+  const fetchAddress = async (lat: number, lng: number): Promise<void> => {
+    const response = await fetch(
+      `${endpoints.googleGeocode}?latlng=${lat},${lng}&language=he&key=${envKeys.googleMapApiKey}`,
     );
+    const data = await response.json();
+    const result = data.results?.[0];
+    if (data.status === "OK" && result) {
+      setAddress(result.formatted_address);
+      setInputValue(result.formatted_address);
+      const components = (result.address_components ?? []).map((c: any) => ({
+        text: c.long_name,
+        types: c.types,
+      }));
+      const plusCode = getPlusCodeLocalCode(result.plus_code?.compound_code);
+      onAddressParts?.(extractAddressParts(components, plusCode));
+    }
   };
 
   /* ---------------- Effects ---------------- */
@@ -213,7 +212,7 @@ const MarkerMap = ({
 
   const handleSuggestionSelect = async (placeId: string) => {
     const response = await fetch(
-      `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress,addressComponents,plusCode`,
+      `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress,addressComponents,plusCode&languageCode=he`,
       {
         headers: {
           "X-Goog-Api-Key": envKeys.googleMapApiKey,
