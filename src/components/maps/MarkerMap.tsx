@@ -5,7 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
 import { googlePointOfInterest } from "@/lib/utils";
-import { extractAddressParts, type ParsedAddressParts } from "@/helpers";
+import {
+  extractAddressParts,
+  getPlusCodeLocalCode,
+  type ParsedAddressParts,
+} from "@/helpers";
 
 interface MarkerMapProps {
   setGeo: (v: Geo) => void;
@@ -91,7 +95,10 @@ const MarkerMap = ({
           const components = (results[0].address_components ?? []).map(
             (c: any) => ({ text: c.long_name, types: c.types }),
           );
-          onAddressParts?.(extractAddressParts(components));
+          const plusCode = getPlusCodeLocalCode(
+            results[0].plus_code?.compound_code,
+          );
+          onAddressParts?.(extractAddressParts(components, plusCode));
         }
       },
     );
@@ -206,7 +213,7 @@ const MarkerMap = ({
 
   const handleSuggestionSelect = async (placeId: string) => {
     const response = await fetch(
-      `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress,addressComponents`,
+      `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress,addressComponents,plusCode`,
       {
         headers: {
           "X-Goog-Api-Key": envKeys.googleMapApiKey,
@@ -227,7 +234,8 @@ const MarkerMap = ({
       text: c.longText,
       types: c.types,
     }));
-    onAddressParts?.(extractAddressParts(components));
+    const plusCode = getPlusCodeLocalCode(data.plusCode?.compoundCode);
+    onAddressParts?.(extractAddressParts(components, plusCode));
 
     if (map) {
       placeMarker(lat, lng, map);
