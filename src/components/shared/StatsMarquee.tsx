@@ -37,18 +37,21 @@ export function StatsMarquee({
   const animId = useId().replace(/:/g, "");
   const animName = `marquee-${animId}`;
 
-    if (isLoading) {
-        return (
-            <div className={clsx("flex flex-row items-center gap-2 py-0.5", className)} {...rest}>
-                {Array.from({ length: loadingCount }).map((_, i) => (
-                    <div
-                        key={i}
-                        className="shrink-0 w-36 h-10 md:w-44 md:h-12 rounded-xl bg-gray-800/40 animate-pulse border border-gray-800"
-                    />
-                ))}
-            </div>
-        );
-    }
+  if (isLoading) {
+    return (
+      <div
+        className={clsx("flex flex-row items-center gap-2 py-0.5", className)}
+        {...rest}
+      >
+        {Array.from({ length: loadingCount }).map((_, i) => (
+          <div
+            key={i}
+            className="shrink-0 w-36 h-10 md:w-44 md:h-12 rounded-xl bg-gray-800/40 animate-pulse border border-gray-800"
+          />
+        ))}
+      </div>
+    );
+  }
 
   if (!stats?.length) return null;
 
@@ -69,50 +72,52 @@ export function StatsMarquee({
         ${pauseOnHover ? `.${animName}-track:hover { animation-play-state: paused; }` : ""}
       `}</style>
 
-            <div className={clsx("flex w-max py-0.5", `${animName}-track`)}>
-                {/* Duplicate the list for a seamless loop */}
-                {[...stats, ...stats].map((item, idx) => (
-                    <div
-                        key={`${item.id}-${idx}`}
-                        className={clsx(
-                            "shrink-0 flex items-center gap-2.5 px-3 py-1.5 mr-2 md:gap-3 md:px-4 md:py-2.5 md:mr-3 rounded-xl border transition-all shadow-2xs hover:border-teal-500/40 cursor-default",
-                            isDark
-                                ? "bg-gray-900/90 border-gray-800/90 text-gray-200"
-                                : "bg-gray-50 border-gray-200 text-gray-800",
-                            cardClassName
-                        )}
-                    >
-                        <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg bg-teal-500/10 flex items-center justify-center shrink-0">
-                            {item.icon}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-xs md:text-sm font-bold leading-none">{item.value ?? 0}</span>
-                                {item.label && (
-                                    <span
-                                        className={clsx(
-                                            "text-[9px] md:text-[11px] leading-none truncate max-w-16 md:max-w-20",
-                                            isDark ? "text-gray-400" : "text-gray-600"
-                                        )}
-                                    >
-                                        {item.label}
-                                    </span>
-                                )}
-                            </div>
-                            <span
-                                className={clsx(
-                                    "text-[10px] md:text-xs leading-tight truncate max-w-24 md:max-w-32",
-                                    isDark ? "text-gray-400" : "text-gray-600"
-                                )}
-                            >
-                                {item.title}
-                            </span>
-                        </div>
-                    </div>
-                ))}
+      <div className={clsx("flex w-max py-0.5", `${animName}-track`)}>
+        {/* Duplicate the list for a seamless loop */}
+        {[...stats, ...stats].map((item, idx) => (
+          <div
+            key={`${item.id}-${idx}`}
+            className={clsx(
+              "shrink-0 flex items-center gap-2.5 px-3 py-1.5 mr-2 md:gap-3 md:px-4 md:py-2.5 md:mr-3 rounded-xl border transition-all shadow-2xs hover:border-teal-500/40 cursor-default",
+              isDark
+                ? "bg-gray-900/90 border-gray-800/90 text-gray-200"
+                : "bg-gray-50 border-gray-200 text-gray-800",
+              cardClassName,
+            )}
+          >
+            <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg bg-teal-500/10 flex items-center justify-center shrink-0">
+              {item.icon}
             </div>
-        </div>
-    );
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs md:text-sm font-bold leading-none">
+                  {item.value ?? 0}
+                </span>
+                {item.label && (
+                  <span
+                    className={clsx(
+                      "text-[9px] md:text-[11px] leading-none truncate max-w-16 md:max-w-20",
+                      isDark ? "text-gray-400" : "text-gray-600",
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                )}
+              </div>
+              <span
+                className={clsx(
+                  "text-[10px] md:text-xs leading-tight truncate max-w-24 md:max-w-32",
+                  isDark ? "text-gray-400" : "text-gray-600",
+                )}
+              >
+                {item.title}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default StatsMarquee;

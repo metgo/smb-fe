@@ -152,9 +152,7 @@ const DetailTitleSection = ({
           </div>
 
           {actions && (
-            <div className="shrink-0 flex items-center gap-2">
-              {actions}
-            </div>
+            <div className="shrink-0 flex items-center gap-2">{actions}</div>
           )}
         </div>
       </div>
