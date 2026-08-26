@@ -18,7 +18,7 @@ import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import { detectLanguage } from "@/helpers";
+import { detectLanguage, type ParsedAddressParts } from "@/helpers";
 
 interface UseEventWizardStateProps {
   isOpen: boolean;
@@ -117,6 +117,11 @@ export function useEventWizardState({
     "physical" | "online" | "hybrid"
   >("physical");
   const [address, setAddress] = useState("");
+  const [addressParts, setAddressParts] = useState<ParsedAddressParts>({
+    location: "",
+    city: "",
+    country: "",
+  });
   const [onlineLink, setOnlineLink] = useState("");
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [isRecurring, setIsRecurring] = useState(false);
@@ -309,9 +314,9 @@ export function useEventWizardState({
       },
       eventType: eventFormat?.toUpperCase(),
       address: {
-        country: "",
-        city: "",
-        location: address,
+        country: addressParts.country,
+        city: addressParts.city,
+        location: addressParts.location,
         additional_information: "",
       },
       onlineLink,
@@ -332,7 +337,7 @@ export function useEventWizardState({
       recurrenceEndCount,
       recurrenceEndDate,
       eventFormat,
-      address,
+      addressParts,
       onlineLink,
     ],
   );
@@ -471,6 +476,7 @@ export function useEventWizardState({
     ]);
     setEventFormat("physical");
     setAddress("");
+    setAddressParts({ location: "", city: "", country: "" });
     setOnlineLink("");
     setGeo({ lat: "", long: "" });
     setIsRecurring(false);
@@ -535,7 +541,20 @@ export function useEventWizardState({
     );
     setRecurrenceEndDate(editData.recurringEventRuleId?.endDate ?? "");
     setRecurrenceEndCount(editData.recurringEventRuleId?.occurrenceLimit ?? 10);
-    setAddress(editData.address?.location ?? "");
+    setAddress(
+      [
+        editData.address?.location,
+        editData.address?.city,
+        editData.address?.country,
+      ]
+        .filter(Boolean)
+        .join(", "),
+    );
+    setAddressParts({
+      location: editData.address?.location || "",
+      city: editData.address?.city || "",
+      country: editData.address?.country || "",
+    });
     setOnlineLink(editData.onlineLink ?? "");
 
     setRegistrationRequired(editData.registration?.isRegistration ?? true);
@@ -941,6 +960,8 @@ export function useEventWizardState({
     setEventFormat,
     address,
     setAddress,
+    addressParts,
+    setAddressParts,
     onlineLink,
     setOnlineLink,
     geo,
