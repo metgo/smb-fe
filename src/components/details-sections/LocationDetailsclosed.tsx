@@ -94,27 +94,32 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
   };
 
   const header = (
-    <div className="flex items-start gap-3">
+    <div
+      className={clsx(
+        "flex items-center gap-2 md:gap-3 pb-3 border-b",
+      )}
+    >
       <div
         className={clsx(
-          "p-0.5 rounded-lg shrink-0",
+          "p-1.5 md:p-2 rounded-lg shrink-0",
           isDark ? "bg-blue-500/20" : "bg-blue-100",
         )}
       >
         <Map
-          className={clsx("w-4 h-4", isDark ? "text-blue-400" : "text-blue-600")}
+          className={clsx(
+            "w-4 h-4 md:w-5 md:h-5",
+            isDark ? "text-blue-400" : "text-blue-600",
+          )}
         />
       </div>
-      <div className="flex-1 min-w-0">
-        <h3
-          className={clsx(
-            "text-sm md:text-md font-semibold tracking-wide",
-            isDark ? "text-gray-300" : "text-gray-900",
-          )}
-        >
-          {t("location")}
-        </h3>
-      </div>
+      <h3
+        className={clsx(
+          "text-sm md:text-base font-semibold",
+          isDark ? "text-gray-100" : "text-gray-900",
+        )}
+      >
+        {t("location")}
+      </h3>
     </div>
   );
 
