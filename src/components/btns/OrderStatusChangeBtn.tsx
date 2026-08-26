@@ -152,7 +152,7 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
         <div
           className={clsx(
             "absolute top-full mt-2 w-48 rounded-lg shadow-lg border z-60",
-            isRTL ? "left-0" : "-right-4",
+            isRTL ? "left-0" : "right-0",
             isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-300",
           )}
         >
@@ -192,7 +192,6 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
                   disabled={isDisabled}
                   className={clsx(
                     "w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors duration-150",
-                    isRTL ? "text-right" : "text-left",
                     isDisabled
                       ? "cursor-not-allowed opacity-60 text-gray-500"
                       : isDark

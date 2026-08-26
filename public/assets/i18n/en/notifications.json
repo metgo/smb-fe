@@ -39,6 +39,12 @@
   "urgent": "Urgent",
   "action": "action",
 
+  "approve": "Approve",
+  "approved": "Approved",
+  "approving": "Approving...",
+  "view_changes": "View Changes",
+  "view_details": "View Details",
+
   "item_type": "Item Type",
   "business": "Business",
   "product": "Product",

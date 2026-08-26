@@ -1,4 +1,4 @@
-import { Activity, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Mail,
@@ -49,7 +49,6 @@ export default function ProfilePage() {
     navigate(routes.auth, { replace: true });
     localStorage.clear();
     window.dispatchEvent(new Event("session:updated"));
-    // window.location.reload();
   };
 
   const bank = banks?.find(
@@ -292,7 +291,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <Activity mode={showBankModal ? "visible" : "hidden"}>
+      {showBankModal && (
         <AssignBankAccountModal
           isDark={isDark}
           banks={banks}
@@ -301,7 +300,7 @@ export default function ProfilePage() {
           setIsOpen={setShowBankModal}
           savedBankAccount={userInfo?.bankAccount}
         />
-      </Activity>
+      )}
     </>
   );
 }

@@ -1,6 +1,14 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import {
+  formatMonthFilterLabel,
+  getCurrentMonthFilterValue,
+  getMonthFilterLocale,
+} from "@/helpers";
 
-function getLastNMonths(n: number): { value: string; label: string }[] {
+function getLastNMonths(
+  n: number,
+  locale: string,
+): { value: string; label: string }[] {
   const months = [];
   const now = new Date();
 
@@ -9,7 +17,7 @@ function getLastNMonths(n: number): { value: string; label: string }[] {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     const value = `${month}-${year}`;
-    const label = `${month}/${year}`;
+    const label = formatMonthFilterLabel(value, locale);
     months.push({ value, label });
   }
 
@@ -26,7 +34,7 @@ export default function MonthFilter({
   onDateToChange,
   t,
 }: {
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   dateFrom: string;
@@ -35,20 +43,25 @@ export default function MonthFilter({
   onDateToChange: (value: string) => void;
   t: any;
 }) {
-  const { isDark, isRTL } = useThemeClasses();
-  const last12Months = getLastNMonths(12);
+  const { isDark, isRTL, language } = useThemeClasses();
+  const locale = getMonthFilterLocale(language);
+  const last12Months = getLastNMonths(12, locale);
+  const currentMonthValue = getCurrentMonthFilterValue();
+  const selectValue = value === "all" ? currentMonthValue : value;
 
   return (
     <div>
-      <label
-        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"} ${isRTL ? "text-right" : ""}`}
-      >
-        {label}
-      </label>
+      {label && (
+        <label
+          className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"} ${isRTL ? "text-right" : ""}`}
+        >
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         <select
-          value={value}
+          value={selectValue}
           onChange={(e) => {
             onChange(e.target.value);
             if (e.target.value !== "custom") {
@@ -62,7 +75,6 @@ export default function MonthFilter({
               : "bg-white border-gray-300 text-gray-900"
           }`}
         >
-          <option value="all">{t("all")}</option>
           {last12Months.map((month) => (
             <option key={month.value} value={month.value}>
               {month.label}

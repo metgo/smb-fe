@@ -2,7 +2,6 @@ import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import {
   useRespondDisputeMutation,
@@ -12,7 +11,7 @@ import ModalWrapper from "@/components/wrapper/ModalWrapper";
 import DisputeTimeline from "./DisputeTimeline";
 
 interface AdminDisputeResponseModalProps {
-  order: MonthlyOrder;
+  order: IMonthlyOrder;
   onClose: () => void;
   onResolve: () => void;
   disputeId?: string;
@@ -114,7 +113,6 @@ export const AdminDisputeResponseModal = ({
         className={`${bgPrimary} rounded-lg w-full max-h-[90vh] flex flex-col overflow-hidden`}
       >
         {/* Header */}
-
         <div className="flex items-center gap-3 shrink-0 px-4 pt-4">
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -294,38 +292,6 @@ export const AdminDisputeResponseModal = ({
                   </div>
                 ) : (
                   <>
-                    {/* Response to Vendor */}
-                    <div className="mb-6">
-                      <label
-                        className={`block text-sm font-medium ${textPrimary} mb-2`}
-                      >
-                        {t("custom_response")}
-                        {resolutionAction === "reject" && (
-                          <span className="text-red-500">*</span>
-                        )}
-                      </label>
-                      <textarea
-                        value={responseToVendor}
-                        onChange={(e) => {
-                          setResponseToVendor(e.target.value);
-                          if (errors.response) {
-                            setErrors({ ...errors, response: undefined });
-                          }
-                        }}
-                        placeholder={t("custom_response_placeholder")}
-                        rows={3}
-                        className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${errors.response ? "border-red-500" : ""}`}
-                      />
-                      {errors.response && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.response}
-                        </p>
-                      )}
-                      <p className={`text-xs ${textTertiary} mt-1`}>
-                        {t("custom_response_helper")}
-                      </p>
-                    </div>
-
                     {/* Resolution Action */}
                     <div className="mb-4">
                       <label
@@ -412,6 +378,38 @@ export const AdminDisputeResponseModal = ({
                         </p>
                       )}
                     </div>
+
+                    {/* Response to Vendor */}
+                    {resolutionAction === "reject" && (
+                      <div className="mb-6">
+                        <label
+                          className={`block text-sm font-medium ${textPrimary} mb-2`}
+                        >
+                          {t("custom_response")}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                          value={responseToVendor}
+                          onChange={(e) => {
+                            setResponseToVendor(e.target.value);
+                            if (errors.response) {
+                              setErrors({ ...errors, response: undefined });
+                            }
+                          }}
+                          placeholder={t("custom_response_placeholder")}
+                          rows={3}
+                          className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${errors.response ? "border-red-500" : ""}`}
+                        />
+                        {errors.response && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors.response}
+                          </p>
+                        )}
+                        <p className={`text-xs ${textTertiary} mt-1`}>
+                          {t("custom_response_helper")}
+                        </p>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

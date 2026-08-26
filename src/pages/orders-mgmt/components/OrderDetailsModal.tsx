@@ -152,12 +152,7 @@ function OrderDetailsModal({
 
   return (
     <ModalWrapper onClose={onClose} showSpinner={isLoading || isFetching}>
-      <div
-        className={`flex items-center justify-between 
-              ${isRTL ? "flex-row-reverse" : ""} 
-              p-4 md:p-6 
-              mb-4`}
-      >
+      <div className={`flex items-center justify-between p-4 md:p-6 mb-4`}>
         <div>
           <h2 className={`text-2xl font-semibold ${textPrimary}`}>
             {t("order_details")}
@@ -315,7 +310,9 @@ function OrderDetailsModal({
                       )}
 
                     {product?.status === "canceled" && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${isDark ? "bg-red-900/30 text-red-400" : "bg-red-100 text-red-800"}`}
+                      >
                         {t("cancelled")}
                       </span>
                     )}
