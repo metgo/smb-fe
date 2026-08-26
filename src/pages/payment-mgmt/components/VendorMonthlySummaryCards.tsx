@@ -286,11 +286,11 @@ export const VendorMonthlySummaryCards = ({
                 <div className="flex items-center justify-between mb-2">
                   <div
                     className={clsx(
-                      "flex items-center gap-1.5 text-xs font-medium",
+                      "flex items-center gap-1.5 text-sm font-semibold",
                       textTertiary,
                     )}
                   >
-                    <Package className="w-3.5 h-3.5" />
+                    <Package className="w-4 h-4" />
                     {t("total_orders")}
                   </div>
                   <span className={clsx("text-lg font-bold", textPrimary)}>
@@ -298,43 +298,45 @@ export const VendorMonthlySummaryCards = ({
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {orderStats.map(({ key, label, icon: Icon, status }) => (
-                    <button
-                      type="button"
-                      key={key}
-                      title={label}
-                      onClick={() => onViewVendorOrders(vendor, { status })}
-                      className={clsx(
-                        "rounded-lg px-2 py-1.5 flex items-center gap-1.5 text-start cursor-pointer transition-colors hover:ring-1 hover:ring-teal-600/40",
-                        bgSecondary,
-                      )}
-                    >
-                      <Icon
+                  {orderStats
+                    .filter(({ key }) => vendor.orderSummary[key] > 0)
+                    .map(({ key, label, icon: Icon, status }) => (
+                      <button
+                        type="button"
+                        key={key}
+                        title={label}
+                        onClick={() => onViewVendorOrders(vendor, { status })}
                         className={clsx(
-                          "w-3.5 h-3.5 shrink-0",
-                          isDark ? "text-teal-400" : "text-teal-700",
+                          "rounded-lg px-2 py-1.5 flex items-center gap-1.5 text-start cursor-pointer transition-colors hover:ring-1 hover:ring-teal-600/40",
+                          bgSecondary,
                         )}
-                      />
-                      <div className="min-w-0">
-                        <div
+                      >
+                        <Icon
                           className={clsx(
-                            "text-sm font-semibold leading-tight",
-                            textPrimary,
+                            "w-3.5 h-3.5 shrink-0",
+                            isDark ? "text-teal-400" : "text-teal-700",
                           )}
-                        >
-                          {vendor.orderSummary[key]}
+                        />
+                        <div className="min-w-0 space-x-0.5">
+                          <span
+                            className={clsx(
+                              "text-sm font-bold leading-tight",
+                              textPrimary,
+                            )}
+                          >
+                            {vendor.orderSummary[key]}
+                          </span>
+                          <span
+                            className={clsx(
+                              "text-[11px] font-semibold leading-tight truncate",
+                              textTertiary,
+                            )}
+                          >
+                            {label}
+                          </span>
                         </div>
-                        <div
-                          className={clsx(
-                            "text-[10px] leading-tight truncate",
-                            textTertiary,
-                          )}
-                        >
-                          {label}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    ))}
                 </div>
               </div>
 
@@ -343,11 +345,11 @@ export const VendorMonthlySummaryCards = ({
                 <div className="flex items-center justify-between mb-2">
                   <div
                     className={clsx(
-                      "flex items-center gap-1.5 text-xs font-medium",
+                      "flex items-center gap-1.5 text-sm font-semibold",
                       textTertiary,
                     )}
                   >
-                    <Banknote className="w-3.5 h-3.5" />
+                    <Banknote className="w-4 h-4" />
                     {t("payment_completed_orders")}
                   </div>
                   <span className={clsx("text-lg font-bold", textPrimary)}>
@@ -355,8 +357,9 @@ export const VendorMonthlySummaryCards = ({
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {reconcillationStats.map(
-                    ({ key, label, icon: Icon, status }) => (
+                  {reconcillationStats
+                    .filter(({ key }) => vendor.reconciliationSummary[key] > 0)
+                    .map(({ key, label, icon: Icon, status }) => (
                       <button
                         type="button"
                         key={key}
@@ -377,40 +380,39 @@ export const VendorMonthlySummaryCards = ({
                             isDark ? "text-teal-400" : "text-teal-700",
                           )}
                         />
-                        <div className="min-w-0">
-                          <div
+                        <div className="min-w-0 space-x-0.5">
+                          <span
                             className={clsx(
-                              "text-sm font-semibold leading-tight",
+                              "text-sm font-bold leading-tight",
                               textPrimary,
                             )}
                           >
                             {vendor.reconciliationSummary[key]}
-                          </div>
-                          <div
+                          </span>
+                          <span
                             className={clsx(
-                              "text-[10px] leading-tight truncate",
+                              "text-[11px] font-semibold leading-tight truncate",
                               textTertiary,
                             )}
                           >
                             {label}
-                          </div>
+                          </span>
                         </div>
                       </button>
-                    ),
-                  )}
+                    ))}
                 </div>
               </div>
 
               {/* Amount summary */}
               <div className={clsx("px-4 pt-2 pb-4 border-t", borderColor)}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-4">
                   <div
                     className={clsx(
-                      "flex items-center gap-1.5 text-xs font-medium",
+                      "flex items-center gap-1.5 text-sm font-semibold",
                       textTertiary,
                     )}
                   >
-                    <Wallet className="w-3.5 h-3.5" />
+                    <Wallet className="w-4 h-4" />
                     {t("payable_amount_to_vendor")}
                   </div>
                   <span
@@ -423,12 +425,14 @@ export const VendorMonthlySummaryCards = ({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex items-center justify-between">
                   <div>
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
                       {formatCurrency(vendor.amount.itemsAmount)}
                     </div>
-                    <div className={clsx("text-[10px]", textTertiary)}>
+                    <div
+                      className={clsx("text-[11px] font-bold", textTertiary)}
+                    >
                       {t("total_sales")}
                     </div>
                   </div>
@@ -436,7 +440,9 @@ export const VendorMonthlySummaryCards = ({
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
                       {formatCurrency(vendor.amount.deliveryFee)}
                     </div>
-                    <div className={clsx("text-[10px]", textTertiary)}>
+                    <div
+                      className={clsx("text-[11px] font-bold", textTertiary)}
+                    >
                       {t("delivery_fee")}
                     </div>
                   </div>
@@ -444,7 +450,9 @@ export const VendorMonthlySummaryCards = ({
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
                       {formatCurrency(vendor.amount.total)}
                     </div>
-                    <div className={clsx("text-[10px]", textTertiary)}>
+                    <div
+                      className={clsx("text-[11px] font-bold", textTertiary)}
+                    >
                       {t("grand_total")}
                     </div>
                   </div>
@@ -452,7 +460,9 @@ export const VendorMonthlySummaryCards = ({
                     <div className={clsx("text-sm font-semibold", textPrimary)}>
                       {formatCurrency(vendor.amount.platformCharge)}
                     </div>
-                    <div className={clsx("text-[10px]", textTertiary)}>
+                    <div
+                      className={clsx("text-[11px] font-bold", textTertiary)}
+                    >
                       {t("platform_fee")}
                     </div>
                   </div>

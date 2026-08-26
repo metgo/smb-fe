@@ -131,7 +131,7 @@ function BusinessesMgmtPageInner() {
       {activeFilterCount > 0 && (
         <span
           className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+            "absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
             showControlsDrawer
               ? "bg-white text-teal-600"
               : "bg-teal-500 text-white",

@@ -45,7 +45,7 @@ export default function ListHeaderBar({
           <div className="flex items-center gap-1">
             <h1
               className={clsx(
-                "text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent whitespace-nowrap",
+                "text-base md:text-lg font-bold bg-clip-text bg-linear-to-r text-transparent whitespace-nowrap",
                 titleGradient,
               )}
             >
@@ -70,7 +70,7 @@ export default function ListHeaderBar({
                 onClick={onAdd}
                 title={addLabel}
                 className={clsx(
-                  "p-2 rounded-xl text-white shadow-sm transition-all cursor-pointer active:scale-95 hover:opacity-90 shrink-0 bg-gradient-to-r",
+                  "p-2 rounded-xl text-white shadow-sm transition-all cursor-pointer active:scale-95 hover:opacity-90 shrink-0 bg-linear-to-r",
                   titleGradient,
                 )}
               >
@@ -86,7 +86,7 @@ export default function ListHeaderBar({
           <button
             onClick={onAdd}
             className={clsx(
-              "hidden xl:flex px-3.5 py-2 text-xs font-semibold text-white rounded-lg transition-all items-center gap-1.5 cursor-pointer shrink-0 shadow-sm whitespace-nowrap hover:opacity-90 active:scale-95 bg-gradient-to-r",
+              "hidden xl:flex px-3.5 py-2 text-xs font-semibold text-white rounded-lg transition-all items-center gap-1.5 cursor-pointer shrink-0 shadow-sm whitespace-nowrap hover:opacity-90 active:scale-95 bg-linear-to-r",
               titleGradient,
             )}
           >

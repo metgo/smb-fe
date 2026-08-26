@@ -303,38 +303,6 @@ export default function OrdersMgmtPage() {
     }
   }, [authorityId]);
 
-  // const dmoOptions = useMemo(() => {
-  //   const options = [{ value: "all", label: t("all") }];
-  //   if (dmosAuthorities) {
-  //     dmosAuthorities.forEach((d) => {
-  //       options.push({ value: d._id, label: d.name });
-  //     });
-  //   }
-  //   return options;
-  // }, [dmosAuthorities, t]);
-
-  // const selectedLocalDmo = useMemo(() => {
-  //   const currentDmoId = orderSummaryClick ? summaryFilters.dmoId : filters.dmoId;
-  //   return dmosAuthorities?.find((d) => d._id === currentDmoId);
-  // }, [dmosAuthorities, orderSummaryClick, summaryFilters.dmoId, filters.dmoId]);
-
-  // const authorityOptions = useMemo(() => {
-  //   const options = [{ value: "all", label: t("all") }];
-  //   if (selectedLocalDmo) {
-  //     selectedLocalDmo.authorities?.forEach((a: any) => {
-  //       options.push({ value: a._id, label: a.name });
-  //     });
-  //   } else {
-  //     dmosAuthorities?.forEach((d) => {
-  //       d.authorities?.forEach((a: any) => {
-  //         options.push({ value: a._id, label: `${a.name} (${d.name})` });
-  //       });
-  //     });
-  //   }
-  //   return options;
-  // }, [selectedLocalDmo, dmosAuthorities, t]);
-
-  //active filter chips
   const activeFilterChips = useMemo(() => {
     const chips: { key: string; value: string }[] = [];
 
@@ -800,33 +768,33 @@ export default function OrdersMgmtPage() {
     const badges: Record<string, { bg: string; text: string; label: string }> =
       {
         PENDING: {
-          bg: "bg-orange-100 dark:bg-orange-900/30",
-          text: "text-orange-800 dark:text-orange-400",
+          bg: isDark ? "bg-orange-900/30" : "bg-orange-100",
+          text: isDark ? "text-orange-400" : "text-orange-800",
           label: t("pending"),
         },
         SUCCESS: {
-          bg: "bg-emerald-100 dark:bg-emerald-900/30",
-          text: "text-emerald-800 dark:text-emerald-400",
+          bg: isDark ? "bg-emerald-900/30" : "bg-emerald-100",
+          text: isDark ? "text-emerald-400" : "text-emerald-800",
           label: t("success"),
         },
         FAILURE: {
-          bg: "bg-red-100 dark:bg-red-900/30",
-          text: "text-red-800 dark:text-red-400",
+          bg: isDark ? "bg-red-900/30" : "bg-red-100",
+          text: isDark ? "text-red-400" : "text-red-800",
           label: t("failed"),
         },
         FAILED: {
-          bg: "bg-red-100 dark:bg-red-900/30",
-          text: "text-red-800 dark:text-red-400",
+          bg: isDark ? "bg-red-900/30" : "bg-red-100",
+          text: isDark ? "text-red-400" : "text-red-800",
           label: t("failed"),
         },
         REFUNDED: {
-          bg: "bg-blue-100 dark:bg-blue-900/30",
-          text: "text-blue-800 dark:text-blue-400",
+          bg: isDark ? "bg-blue-900/30" : "bg-blue-100",
+          text: isDark ? "text-blue-400" : "text-blue-800",
           label: t("refunded"),
         },
         PARTIALLY_REFUNDED: {
-          bg: "bg-orange-100 dark:bg-orange-900/30",
-          text: "text-orange-800 dark:text-orange-400",
+          bg: isDark ? "bg-orange-900/30" : "bg-orange-100",
+          text: isDark ? "text-orange-400" : "text-orange-800",
           label: t("partially_refunded"),
         },
       };
@@ -845,58 +813,58 @@ export default function OrdersMgmtPage() {
   const getOrderStatusBadge = (status: IOrder["status"]) => {
     const badges = {
       pending: {
-        bg: "bg-orange-100 dark:bg-orange-900/30",
-        text: "text-orange-800 dark:text-orange-400",
+        bg: isDark ? "bg-orange-900/30" : "bg-orange-100",
+        text: isDark ? "text-orange-400" : "text-orange-800",
         label: t("pending"),
       },
       processing: {
-        bg: "bg-blue-100 dark:bg-blue-900/30",
-        text: "text-blue-800 dark:text-blue-400",
+        bg: isDark ? "bg-blue-900/30" : "bg-blue-100",
+        text: isDark ? "text-blue-400" : "text-blue-800",
         label: t("processing"),
       },
       completed: {
-        bg: "bg-emerald-100 dark:bg-emerald-900/30",
-        text: "text-emerald-800 dark:text-emerald-400",
+        bg: isDark ? "bg-emerald-900/30" : "bg-emerald-100",
+        text: isDark ? "text-emerald-400" : "text-emerald-800",
         label: t("completed"),
       },
       shipped: {
-        bg: "bg-emerald-100 dark:bg-emerald-900/30",
-        text: "text-emerald-800 dark:text-emerald-400",
+        bg: isDark ? "bg-emerald-900/30" : "bg-emerald-100",
+        text: isDark ? "text-emerald-400" : "text-emerald-800",
         label: t("shipped"),
       },
       canceled: {
-        bg: "bg-red-100 dark:bg-red-900/30",
-        text: "text-red-800 dark:text-red-400",
+        bg: isDark ? "bg-red-900/30" : "bg-red-100",
+        text: isDark ? "text-red-400" : "text-red-800",
         label: t("cancelled"),
       },
       draft: {
-        bg: "bg-gray-100 dark:bg-gray-800",
-        text: "text-gray-800 dark:text-gray-300",
+        bg: isDark ? "bg-gray-800" : "bg-gray-100",
+        text: isDark ? "text-gray-300" : "text-gray-800",
         label: t("draft"),
       },
       paid: {
-        bg: "bg-green-100 dark:bg-green-900/30",
-        text: "text-green-800 dark:text-green-400",
+        bg: isDark ? "bg-green-900/30" : "bg-green-100",
+        text: isDark ? "text-green-400" : "text-green-800",
         label: t("paid"),
       },
       confirmed: {
-        bg: "bg-teal-100 dark:bg-teal-900/30",
-        text: "text-teal-800 dark:text-teal-400",
+        bg: isDark ? "bg-teal-900/30" : "bg-teal-100",
+        text: isDark ? "text-teal-400" : "text-teal-800",
         label: t("confirmed"),
       },
       delivered: {
-        bg: "bg-purple-100 dark:bg-purple-900/30",
-        text: "text-purple-800 dark:text-purple-400",
+        bg: isDark ? "bg-purple-900/30" : "bg-purple-100",
+        text: isDark ? "text-purple-400" : "text-purple-800",
         label: t("delivered"),
       },
       partially_cancelled: {
-        bg: "bg-orange-100 dark:bg-orange-900/30",
-        text: "text-orange-800 dark:text-orange-400",
+        bg: isDark ? "bg-orange-900/30" : "bg-orange-100",
+        text: isDark ? "text-orange-400" : "text-orange-800",
         label: t("partiallyCancelled"),
       },
       failed: {
-        bg: "bg-red-100 dark:bg-red-900/30",
-        text: "text-red-800 dark:text-red-400",
+        bg: isDark ? "bg-red-900/30" : "bg-red-100",
+        text: isDark ? "text-red-400" : "text-red-800",
         label: t("failed"),
       },
     };
@@ -936,7 +904,7 @@ export default function OrdersMgmtPage() {
                 isRTL && "flex-row-reverse",
               )}
             >
-              <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
+              <h1 className="text-base md:text-lg font-bold bg-clip-text bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
                 {t("online_orders_management")}
               </h1>
               {totalData !== undefined && (
@@ -1064,13 +1032,13 @@ export default function OrdersMgmtPage() {
                   customDateTo={filters.endDate}
                 />
               </div>
-
-              {/* <ViewModeToggle onChange={setViewMode} value={viewMode} /> */}
             </div>
           </div>
 
           {showFilters && (
-            <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div
+              className={`flex flex-wrap items-start gap-4 pt-4 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
+            >
               <div className="min-w-45">
                 <FilterSelect
                   label={t("status")}
