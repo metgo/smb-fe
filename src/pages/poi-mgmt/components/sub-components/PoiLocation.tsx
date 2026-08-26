@@ -1,6 +1,7 @@
 import { type FC } from "react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { MarkerMap } from "@/components/maps";
+import { type ParsedAddressParts } from "@/helpers";
 
 interface PoiLocationProps {
   t: (key: string) => string;
@@ -8,6 +9,7 @@ interface PoiLocationProps {
   setGeo: (v: Geo) => void;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
+  onAddressParts?: (parts: ParsedAddressParts) => void;
 }
 
 const PoiLocation: FC<PoiLocationProps> = ({
@@ -16,6 +18,7 @@ const PoiLocation: FC<PoiLocationProps> = ({
   setGeo,
   address,
   setAddress,
+  onAddressParts,
 }) => {
   const { textSecondary } = useThemeClasses();
 
@@ -30,6 +33,7 @@ const PoiLocation: FC<PoiLocationProps> = ({
           setGeo={setGeo}
           address={address}
           setAddress={setAddress}
+          onAddressParts={onAddressParts}
         />
       </div>
     </div>

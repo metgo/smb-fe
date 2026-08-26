@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
 import { googlePointOfInterest } from "@/lib/utils";
+import { extractAddressParts, type ParsedAddressParts } from "@/helpers";
 
 interface MarkerMapProps {
   setGeo: (v: Geo) => void;
@@ -12,6 +13,7 @@ interface MarkerMapProps {
   address: string;
   geo: Geo;
   drag?: boolean;
+  onAddressParts?: (parts: ParsedAddressParts) => void;
 }
 
 interface PlaceSuggestion {
@@ -30,6 +32,7 @@ const MarkerMap = ({
   address,
   geo,
   drag,
+  onAddressParts,
 }: MarkerMapProps) => {
   const { t, i18n } = useTranslation("common");
   const locale = i18n.language;
@@ -85,6 +88,10 @@ const MarkerMap = ({
         if (status === "OK" && results?.[0]) {
           setAddress(results[0].formatted_address);
           setInputValue(results[0].formatted_address);
+          const components = (results[0].address_components ?? []).map(
+            (c: any) => ({ text: c.long_name, types: c.types }),
+          );
+          onAddressParts?.(extractAddressParts(components));
         }
       },
     );
@@ -199,7 +206,7 @@ const MarkerMap = ({
 
   const handleSuggestionSelect = async (placeId: string) => {
     const response = await fetch(
-      `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress`,
+      `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress,addressComponents`,
       {
         headers: {
           "X-Goog-Api-Key": envKeys.googleMapApiKey,
@@ -215,6 +222,12 @@ const MarkerMap = ({
     setAddress(data.formattedAddress);
     setInputValue(data.formattedAddress);
     setSuggestions([]);
+
+    const components = (data.addressComponents ?? []).map((c: any) => ({
+      text: c.longText,
+      types: c.types,
+    }));
+    onAddressParts?.(extractAddressParts(components));
 
     if (map) {
       placeMarker(lat, lng, map);

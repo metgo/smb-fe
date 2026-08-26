@@ -46,8 +46,8 @@ import {
   detectLanguage,
   getLngWiseStr,
   modelTitle,
-  parseAddress,
   removeNulls,
+  type ParsedAddressParts,
 } from "@/helpers";
 import PublishButton from "@/components/btns/PublishButton";
 import {
@@ -180,6 +180,11 @@ function CreateBusinessWizardInner({
   );
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
+  const [addressParts, setAddressParts] = useState<ParsedAddressParts>({
+    location: "",
+    city: "",
+    country: "",
+  });
 
   // Business Media States
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
@@ -414,7 +419,7 @@ function CreateBusinessWizardInner({
     setDeleteTargetLogo(null);
   };
 
-  const addr = parseAddress(address);
+  const addr = addressParts;
 
   const totalSteps = 9;
 
@@ -604,6 +609,11 @@ function CreateBusinessWizardInner({
           .join(", ");
 
         setAddress(formatted);
+        setAddressParts({
+          location: editData.address.location || "",
+          city: editData.address.city || "",
+          country: editData.address.country || "",
+        });
       }
 
       if (editData?.geoLocation) {
@@ -988,6 +998,7 @@ function CreateBusinessWizardInner({
             setGeo={setGeo}
             address={address}
             setAddress={setAddress}
+            onAddressParts={setAddressParts}
           />
         );
 

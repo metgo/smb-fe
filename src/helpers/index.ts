@@ -198,13 +198,42 @@ export function extractEventDates(
   return formatDateRange(startStr, endStr, true);
 }
 
-export const parseAddress = (address: any) => {
-  const parts = address.split(",");
+export interface GoogleAddressComponent {
+  text: string;
+  types: string[];
+}
+
+export interface ParsedAddressParts {
+  location: string;
+  city: string;
+  country: string;
+}
+
+const pickAddressComponent = (
+  components: GoogleAddressComponent[],
+  types: string[],
+): string => {
+  for (const type of types) {
+    const match = components.find((c) => c.types.includes(type));
+    if (match) return match.text;
+  }
+  return "";
+};
+
+// Maps Google's typed address_components/addressComponents to city/country
+// independently, so a component that's missing for a given address (e.g. no
+// locality) is left blank instead of being backfilled from an unrelated field.
+export const extractAddressParts = (
+  components: GoogleAddressComponent[],
+): ParsedAddressParts => {
+  const streetNumber = pickAddressComponent(components, ["street_number"]);
+  const route = pickAddressComponent(components, ["route"]);
 
   return {
-    location: parts[0]?.trim(), // David HaMelech St 35
-    city: parts[1]?.trim(), // Be'er Sheva
-    country: parts[2]?.trim(), // Israel
+    location: [route, streetNumber].filter(Boolean).join(" ").trim(),
+    // "postal_town" is Google's equivalent of "locality" for regions (e.g. UK) that don't use locality
+    city: pickAddressComponent(components, ["locality", "postal_town"]),
+    country: pickAddressComponent(components, ["country"]),
   };
 };
 
