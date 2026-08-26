@@ -1,4 +1,11 @@
-import { MapPin, Globe2, Navigation, Compass } from "lucide-react";
+import {
+  MapPin,
+  Globe2,
+  Navigation,
+  Compass,
+  Building2,
+  Map,
+} from "lucide-react";
 import { type FC } from "react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -61,7 +68,6 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
   lat,
   long,
   address,
-  purpose,
 }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
@@ -87,32 +93,33 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
     );
   };
 
-  if (!hasLocation && !hasCoordinates) {
-    return (
+  const header = (
+    <div className="flex items-start gap-3">
       <div
         className={clsx(
-          "rounded-xl border px-4 py-6 text-center",
-          isDark
-            ? "bg-gray-800/60 border-gray-700"
-            : "bg-gray-50 border-gray-200",
+          "p-0.5 rounded-lg shrink-0",
+          isDark ? "bg-blue-500/20" : "bg-blue-100",
         )}
       >
-        <MapPin
-          className={clsx(
-            "w-7 h-7 mx-auto mb-2",
-            isDark ? "text-gray-600" : "text-gray-300",
-          )}
+        <Map
+          className={clsx("w-4 h-4", isDark ? "text-blue-400" : "text-blue-600")}
         />
-        <p
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3
           className={clsx(
-            "text-sm",
-            isDark ? "text-gray-400" : "text-gray-500",
+            "text-sm md:text-md font-semibold tracking-wide",
+            isDark ? "text-gray-300" : "text-gray-900",
           )}
         >
-          No location information for this {purpose}
-        </p>
+          {t("location")}
+        </h3>
       </div>
-    );
+    </div>
+  );
+
+  if (!hasLocation && !hasCoordinates) {
+    return null;
   }
 
   return (
@@ -122,9 +129,11 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
         isDark ? "bg-gray-800/80 border-gray-700" : "bg-white border-gray-200",
       )}
     >
-      {/* Address rows */}
+      {header}
+
+      {/* Address row – location, city, country side by side */}
       {hasLocation && (
-        <div className="space-y-2">
+        <div className="flex items-center gap-4 flex-wrap ">
           {address?.location && (
             <div className="flex items-center gap-2 min-w-0">
               <MapPin
@@ -144,7 +153,26 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
             </div>
           )}
 
-          {(address?.city || address?.country) && (
+          {address?.city && (
+            <div className="flex items-center gap-2 min-w-0">
+              <Building2
+                className={clsx(
+                  "w-4 h-4 shrink-0",
+                  isDark ? "text-gray-400" : "text-gray-500",
+                )}
+              />
+              <span
+                className={clsx(
+                  "text-sm truncate",
+                  isDark ? "text-gray-300" : "text-gray-700",
+                )}
+              >
+                {address.city}
+              </span>
+            </div>
+          )}
+
+          {address?.country && (
             <div className="flex items-center gap-2 min-w-0">
               <Globe2
                 className={clsx(
@@ -158,7 +186,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
                   isDark ? "text-gray-300" : "text-gray-700",
                 )}
               >
-                {[address.city, address.country].filter(Boolean).join(", ")}
+                {address.country}
               </span>
             </div>
           )}
