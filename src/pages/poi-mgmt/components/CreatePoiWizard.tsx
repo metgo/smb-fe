@@ -386,7 +386,7 @@ export default function CreatePoiWizard({
         break;
 
       case 5:
-        if (!addr.location) newErrors.address = t("required_field");
+        if (!address?.trim()) newErrors.address = t("required_field");
         break;
     }
     setErrors(newErrors);
