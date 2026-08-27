@@ -107,6 +107,7 @@
   "success": "Success",
   "refunded": "Refunded",
   "partially_refunded": "Partially Refunded",
+  "unpaid": "Unpaid",
   "pickup": "Pickup",
   "delivery": "Delivery",
   "digital": "Digital",

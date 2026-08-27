@@ -198,13 +198,51 @@ export function extractEventDates(
   return formatDateRange(startStr, endStr, true);
 }
 
-export const parseAddress = (address: any) => {
-  const parts = address.split(",");
+export interface GoogleAddressComponent {
+  text: string;
+  types: string[];
+}
+
+export interface ParsedAddressParts {
+  location: string;
+  city: string;
+  country: string;
+}
+
+const pickAddressComponent = (
+  components: GoogleAddressComponent[],
+  types: string[],
+): string => {
+  for (const type of types) {
+    const match = components.find((c) => c.types.includes(type));
+    if (match) return match.text;
+  }
+  return "";
+};
+
+// Google's plus_code/plusCode compound code is formatted as "<local code> <locality>, <region>"
+// (e.g. "6FV4+W2 Ohad, Israel") - the local code is the first whitespace-separated token.
+export const getPlusCodeLocalCode = (compoundCode?: string): string =>
+  compoundCode?.split(" ")[0] ?? "";
+
+// Maps Google's typed address_components/addressComponents to city/country
+// independently, so a component that's missing for a given address (e.g. no
+// locality) is left blank instead of being backfilled from an unrelated field.
+// `plusCode` is used as the location fallback for addresses with no route/street_number
+// (e.g. rural areas), where Google identifies the place by Plus Code instead.
+export const extractAddressParts = (
+  components: GoogleAddressComponent[],
+  plusCode?: string,
+): ParsedAddressParts => {
+  const streetNumber = pickAddressComponent(components, ["street_number"]);
+  const route = pickAddressComponent(components, ["route"]);
+  const streetLocation = [route, streetNumber].filter(Boolean).join(" ").trim();
 
   return {
-    location: parts[0]?.trim(), // David HaMelech St 35
-    city: parts[1]?.trim(), // Be'er Sheva
-    country: parts[2]?.trim(), // Israel
+    location: streetLocation || plusCode || "",
+    // "postal_town" is Google's equivalent of "locality" for regions (e.g. UK) that don't use locality
+    city: pickAddressComponent(components, ["locality", "postal_town"]),
+    country: pickAddressComponent(components, ["country"]),
   };
 };
 
