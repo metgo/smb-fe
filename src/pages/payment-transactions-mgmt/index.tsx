@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { FileText } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -11,6 +12,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { FilterButton } from "@/components/btns";
 import FilterSelect from "@/pages/orders-mgmt/components/FilterSelect";
 import { formatDateTime } from "@/helpers/formatter";
+import InvoicePdfModal from "./components/InvoicePdfModal";
 
 const LIMIT = 20;
 
@@ -46,6 +48,7 @@ const PaymentTransactionsPage = () => {
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
   const [allTransactions, setAllTransactions] = useState<PaymentTransaction[]>(
     [],
   );
@@ -216,10 +219,29 @@ const PaymentTransactionsPage = () => {
     },
     {
       key: "method",
-      label: t("method"),
+      label: t("payment_method"),
       render: (row: PaymentTransaction) => (
         <span className="text-sm capitalize">{row.method || "-"}</span>
       ),
+    },
+    {
+      key: "invoiceURL",
+      label: t("invoice"),
+      render: (row: PaymentTransaction) =>
+        row.invoiceURL ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setInvoiceUrl(row.invoiceURL as string);
+            }}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-500 hover:text-teal-400 hover:underline"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            {t("view_invoice")}
+          </button>
+        ) : (
+          <span className="text-xs text-gray-500">-</span>
+        ),
     },
     {
       key: "paymentStatus",
@@ -359,6 +381,14 @@ const PaymentTransactionsPage = () => {
           </p>
         )}
       </div>
+
+      {invoiceUrl && (
+        <InvoicePdfModal
+          url={invoiceUrl}
+          title={t("invoice")}
+          onClose={() => setInvoiceUrl(null)}
+        />
+      )}
     </div>
   );
 };

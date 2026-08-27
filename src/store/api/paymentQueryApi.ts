@@ -30,6 +30,7 @@ export interface PaymentTransaction {
   paymentStatus: PaymentTransactionStatus | string;
   orderStatus: string;
   orderProductId: string;
+  invoiceURL?: string | null;
   userInfo: PaymentTransactionUserInfo;
 }
 
