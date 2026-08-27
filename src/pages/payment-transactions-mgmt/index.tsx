@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { FileText } from "lucide-react";
 
-import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetPaymentTransactionsQuery } from "@/store/api/paymentQueryApi";
 import type { PaymentTransaction } from "@/store/api/paymentQueryApi";
@@ -11,6 +9,7 @@ import { PageHeader, SearchInput, ReordableDataTable } from "@/components/shared
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterButton } from "@/components/btns";
 import FilterSelect from "@/pages/orders-mgmt/components/FilterSelect";
+import { OrderDetailsModal } from "@/pages/orders-mgmt/components";
 import { formatDateTime } from "@/helpers/formatter";
 import InvoicePdfModal from "./components/InvoicePdfModal";
 
@@ -41,7 +40,7 @@ const DEFAULT_FILTERS = {
 
 const PaymentTransactionsPage = () => {
   const { t } = useTranslation("payments");
-  const navigate = useNavigate();
+  const { t: tOrders } = useTranslation("orders");
   const { isDark, language, bgPrimary, textTertiary } = useThemeClasses();
 
   const [page, setPage] = useState(1);
@@ -49,6 +48,7 @@ const PaymentTransactionsPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [allTransactions, setAllTransactions] = useState<PaymentTransaction[]>(
     [],
   );
@@ -190,7 +190,7 @@ const PaymentTransactionsPage = () => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`${routes.ordersMgmt}?orderId=${row.orderId}`);
+              setSelectedOrderId(row.orderId);
             }}
             className="cursor-pointer text-xs font-mono text-teal-500 hover:text-teal-400 hover:underline truncate max-w-[180px]"
             title={row.orderId}
@@ -372,6 +372,10 @@ const PaymentTransactionsPage = () => {
             isDataLoading={isInitialLoad}
             hasMore={hasMore}
             next={fetchNextPage}
+            onRowClick={(row) => {
+              if (!row.orderId) return;
+              setSelectedOrderId(row.orderId);
+            }}
           />
         )}
 
@@ -387,6 +391,14 @@ const PaymentTransactionsPage = () => {
           url={invoiceUrl}
           title={t("invoice")}
           onClose={() => setInvoiceUrl(null)}
+        />
+      )}
+
+      {selectedOrderId && (
+        <OrderDetailsModal
+          t={tOrders}
+          orderId={selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
         />
       )}
     </div>
