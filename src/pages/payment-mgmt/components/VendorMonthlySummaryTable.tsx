@@ -72,6 +72,7 @@ const VendorMonthlySummaryTable = ({
   onViewVendorOrders,
 }: VendorMonthlySummaryTableProps) => {
   const { t } = useTranslation("reconciliation");
+  const { t: tc } = useTranslation("common");
   const {
     bgPrimary,
     bgSecondary,
@@ -456,16 +457,23 @@ const VendorMonthlySummaryTable = ({
         })}
       </section>
 
-      {hasMore && (
-        <div
-          ref={sentinelCallbackRef}
-          className="flex items-center justify-center py-6"
-        >
-          {isFetching && (
-            <Loader2 className="w-5 h-5 animate-spin text-teal-600" />
-          )}
-        </div>
-      )}
+      <div
+        ref={sentinelCallbackRef}
+        className="flex flex-col items-center justify-center gap-2 py-6"
+      >
+        {isFetching ? (
+          <>
+            <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
+            <span className={clsx("text-sm font-medium", textTertiary)}>
+              {tc("loading_text")}
+            </span>
+          </>
+        ) : !hasMore && vendors.length > 0 ? (
+          <span className={clsx("text-sm font-medium", textTertiary)}>
+            {tc("loading_end_text")}
+          </span>
+        ) : null}
+      </div>
 
       {isBankModalOpen && bankDetailsVendor && (
         <VendorBankDetails

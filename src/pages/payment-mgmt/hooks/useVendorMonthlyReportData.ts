@@ -20,6 +20,7 @@ export interface VendorMonthlyReportFilters {
 export function useVendorMonthlyReportData(
   filters: VendorMonthlyReportFilters,
   searchTerm: string,
+  adminView: boolean,
 ) {
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
@@ -69,6 +70,7 @@ export function useVendorMonthlyReportData(
     refetch,
   } = useGetOrderProductsQuery(queryParams, {
     refetchOnMountOrArgChange: true,
+    skip: adminView,
   });
 
   const {

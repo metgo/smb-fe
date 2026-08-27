@@ -97,7 +97,7 @@ export const PaymentMgmtPage = () => {
     fetchNextPage,
     showVenderWiseOrderTable,
     setShowVendorWiseOrderTable,
-  } = useVendorMonthlyReportData(filters, searchTerm);
+  } = useVendorMonthlyReportData(filters, searchTerm, adminView);
 
   const {
     vendors: vendorSummaries,

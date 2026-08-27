@@ -5,6 +5,7 @@ import { shekel } from "../helpers";
 import type { OrderStats } from "../hooks/useOrderStats";
 import { ViewModeToggle } from "@/components/shared";
 import PayoutCalculationInfo from "./PayoutCalculationInfo";
+import PayableOrdersInfo from "./PayableOrdersInfo";
 import { Landmark } from "lucide-react";
 import clsx from "clsx";
 
@@ -13,31 +14,46 @@ function Kpi({
   value,
   sub,
   accent,
+  labelHelp,
 }: {
   label: string;
   value: string;
   sub?: React.ReactNode;
   accent?: boolean;
+  labelHelp?: React.ReactNode;
 }) {
   const { isDark } = useThemeClasses();
   return (
-    <div className={isDark ? "bg-gray-900 px-5 py-4" : "bg-white px-5 py-4"}>
+    <div
+      className={
+        isDark
+          ? "bg-gray-900 px-3 py-3 sm:px-5 sm:py-4"
+          : "bg-white px-3 py-3 sm:px-5 sm:py-4"
+      }
+    >
       <div
-        className={`font-semibold text-[11px] uppercase tracking-wider ${
+        className={`flex items-center gap-1 font-semibold text-[10px] sm:text-[11px] uppercase tracking-wider ${
           isDark ? "text-gray-500" : "text-gray-400"
         }`}
       >
         {label}
+        {labelHelp && (
+          <span className="font-normal normal-case tracking-normal">
+            {labelHelp}
+          </span>
+        )}
       </div>
       <div
-        className={`mt-1.5 font-semibold text-2xl tracking-tight ${
+        className={`mt-1 sm:mt-1.5 font-semibold text-lg sm:text-xl md:text-2xl tracking-tight ${
           accent ? "text-teal-500" : isDark ? "text-gray-100" : "text-gray-900"
         }`}
       >
         {value}
       </div>
       <div
-        className={`mt-1.5 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+        className={`mt-1 sm:mt-1.5 text-[11px] sm:text-xs ${
+          isDark ? "text-gray-400" : "text-gray-500"
+        }`}
       >
         {sub}
       </div>
@@ -62,20 +78,26 @@ function RatioKpi({
   const pct = denom ? Math.min(100, Math.max(0, (actual / denom) * 100)) : 0;
 
   return (
-    <div className={isDark ? "bg-gray-900 px-5 py-4" : "bg-white px-5 py-4"}>
+    <div
+      className={
+        isDark
+          ? "bg-gray-900 px-3 py-3 sm:px-5 sm:py-4"
+          : "bg-white px-3 py-3 sm:px-5 sm:py-4"
+      }
+    >
       <div
-        className={`font-semibold text-[11px] uppercase tracking-wider ${
+        className={`font-semibold text-[10px] sm:text-[11px] uppercase tracking-wider ${
           isDark ? "text-gray-500" : "text-gray-400"
         }`}
       >
         {label}
       </div>
-      <div className="mt-1.5 flex items-baseline gap-1.5">
-        <span className="font-semibold text-2xl tracking-tight text-teal-500">
+      <div className="mt-1 sm:mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+        <span className="font-semibold text-base sm:text-lg tracking-tight text-teal-500">
           {shekel(actual)}
         </span>
         <span
-          className={`font-semibold text-lg ${
+          className={`font-semibold text-base sm:text-lg ${
             isDark ? "text-gray-500" : "text-gray-400"
           }`}
         >
@@ -93,7 +115,9 @@ function RatioKpi({
         />
       </div>
       <div
-        className={`mt-1.5 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+        className={`mt-1 sm:mt-1.5 text-[11px] sm:text-xs ${
+          isDark ? "text-gray-400" : "text-gray-500"
+        }`}
       >
         {t("realized")} · {t("potential")}
       </div>
@@ -222,17 +246,19 @@ const HeaderStats = ({
 
   return (
     <div>
-      <header className="mb-3 flex items-center justify-between">
+      <header className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1
-            className={`mt-2 text-2xl font-semibold tracking-tight md:text-3xl ${
+            className={`mt-1 sm:mt-2 text-xl sm:text-2xl font-semibold tracking-tight md:text-3xl ${
               isDark ? "text-gray-100" : "text-gray-900"
             }`}
           >
             {t("orders_overview")}
           </h1>
           <p
-            className={`mt-1 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            className={`mt-1 text-xs sm:text-sm ${
+              isDark ? "text-gray-400" : "text-gray-500"
+            }`}
           >
             {stats.totalOrders} {t("orders")} · {stats.totalOrderProductCount}{" "}
             {t("total_item_orders")}
@@ -245,11 +271,11 @@ const HeaderStats = ({
             )}
           >
             {adminView ? (
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex flex-wrap items-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={onOpenCloseAllOrdersModal}
-                  className="px-3 py-1.5 cursor-pointer rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+                  className="px-3 py-1.5 cursor-pointer rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
                 >
                   {t("close_all_orders")}
                 </button>
@@ -264,11 +290,11 @@ const HeaderStats = ({
               </div>
             ) : (
               <div className="flex flex-col md:items-end gap-2">
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
                     onClick={onOpenVendorBankDetails}
-                    className="px-3 py-1.5 cursor-pointer rounded bg-green-600 hover:bg-green-700 text-white text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+                    className="px-3 py-1.5 cursor-pointer rounded bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
                   >
                     <Landmark className="w-4 h-4" />
                     {t("bank_details")}
@@ -288,7 +314,7 @@ const HeaderStats = ({
 
       {/* Summary band */}
       <section
-        className={`mb-2 grid grid-cols-2 gap-px overflow-hidden rounded-xl border md:grid-cols-5 ${
+        className={`mb-2 grid grid-cols-1 gap-px overflow-hidden rounded-xl border sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 ${
           isDark ? "border-gray-800 bg-gray-800" : "border-gray-200 bg-gray-200"
         }`}
       >
@@ -319,6 +345,7 @@ const HeaderStats = ({
         />
         <Kpi
           label={t("payable_orders")}
+          labelHelp={<PayableOrdersInfo t={t} />}
           value={String(stats.pending + stats.approved)}
           sub={
             <StatusBreakdown
