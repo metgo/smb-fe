@@ -50,6 +50,7 @@ const TicketRegDetailModal = ({
       ticketId: ticketDetails?.ticketId as string,
       email: ticketDetails?.email,
       phone: ticketDetails?.phone,
+      orderId: ticketDetails?._id,
     },
     { skip: !ticketDetails?.ticketId },
   );
