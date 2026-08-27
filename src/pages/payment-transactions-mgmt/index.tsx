@@ -225,14 +225,14 @@ const PaymentTransactionsPage = () => {
       ),
     },
     {
-      key: "invoiceURL",
+      key: "invoiceUrl",
       label: t("invoice"),
       render: (row: PaymentTransaction) =>
-        row.invoiceURL ? (
+        row.invoiceUrl ? (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setInvoiceUrl(row.invoiceURL as string);
+              setInvoiceUrl(row.invoiceUrl as string);
             }}
             className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-500 hover:text-teal-400 hover:underline"
           >
