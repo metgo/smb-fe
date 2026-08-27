@@ -7,7 +7,11 @@ import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetPaymentTransactionsQuery } from "@/store/api/paymentQueryApi";
 import type { PaymentTransaction } from "@/store/api/paymentQueryApi";
-import { PageHeader, SearchInput, ReordableDataTable } from "@/components/shared";
+import {
+  PageHeader,
+  SearchInput,
+  ReordableDataTable,
+} from "@/components/shared";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterButton } from "@/components/btns";
 import FilterSelect from "@/pages/orders-mgmt/components/FilterSelect";
@@ -170,9 +174,7 @@ const PaymentTransactionsPage = () => {
         return (
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-medium">{name || t("guest")}</span>
-            {email && (
-              <span className="text-xs text-gray-500">{email}</span>
-            )}
+            {email && <span className="text-xs text-gray-500">{email}</span>}
             {phoneText && (
               <span className="text-xs text-gray-500" dir="ltr">
                 {phoneText}
@@ -267,8 +269,7 @@ const PaymentTransactionsPage = () => {
 
   const isInitialLoad =
     (isLoading || isFetching) && page === 1 && allTransactions.length === 0;
-  const isRefreshing =
-    isFetching && page === 1 && allTransactions.length > 0;
+  const isRefreshing = isFetching && page === 1 && allTransactions.length > 0;
 
   return (
     <div
