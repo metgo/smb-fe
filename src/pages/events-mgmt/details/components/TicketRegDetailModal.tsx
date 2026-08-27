@@ -261,7 +261,7 @@ const TicketRegDetailModal = ({
                   label={t("ticket_id")}
                   value={
                     <span className="font-mono text-xs">
-                      {ticketDetails._id}
+                      {ticketDetails.ticketId}
                     </span>
                   }
                 />
@@ -328,7 +328,7 @@ const TicketRegDetailModal = ({
                     label={t("order_product_id")}
                     value={
                       <span className="font-mono text-xs">
-                        {ticketDetails.orderProductId}
+                        {ticketDetails._id}
                       </span>
                     }
                   />
