@@ -81,6 +81,9 @@ export const endpoints = {
   exportBankTransferXlsx: "/monthly-reports/export/bank-transfer-xlsx",
   exportVendorwiseXlsx: "/vendors/monthly-reports/export/xlsx",
 
+  // payments
+  paymentTransactions: "/payment/transactions",
+
   // public
   publicEventTicket: "/public/event-tickets",
   publicSessionTicket: "/public/session-tickets",
