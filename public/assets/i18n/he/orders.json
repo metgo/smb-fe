@@ -101,6 +101,7 @@
   "success": "הצליח",
   "refunded": "הוחזר",
   "partially_refunded": "הוחזר חלקית",
+  "unpaid": "לא שולם",
   "pickup": "איסוף עצמי",
   "delivery": "משלוח",
   "digital": "דיגיטלי",
