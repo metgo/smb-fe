@@ -9,15 +9,16 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
+import CancelledInfo from "./sub-components/CancelledInfo";
 import {
   useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
+import { envKeys } from "@/lib/envKeys";
+import { getPlainTextFromRichText } from "@/helpers";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
-import { envKeys } from "@/lib/envKeys";
 import { useGetOrderByIdQuery } from "@/store/api/orderQueryApi";
-import { getPlainTextFromRichText } from "@/helpers";
 
 interface OrderDetailsModalProps {
   orderId: string;
@@ -42,7 +43,7 @@ function OrderDetailsModal({
     isLoading,
     isFetching,
   } = useGetOrderByIdQuery({ orderId: orderId ?? null }, { skip: !orderId });
-  const [selectedProduct, setSelectedProduct] = useState<ProductDto | null>(
+  const [selectedProduct, setSelectedProduct] = useState<IProductDto | null>(
     null,
   );
 
@@ -58,7 +59,7 @@ function OrderDetailsModal({
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
-  const [itemToCancel, setItemToCancel] = useState<ProductDto | null>(null);
+  const [itemToCancel, setItemToCancel] = useState<IProductDto | null>(null);
 
   const handleResendNotification = async (recipient: "VENDOR" | "CUSTOMER") => {
     setSendingTarget(recipient);
@@ -110,6 +111,16 @@ function OrderDetailsModal({
   };
 
   async function handleCancleConfirm(reason: string, additionalInfo: string) {
+    if (
+      cancelType === "item" &&
+      (itemToCancel?.cancelled || itemToCancel?.status === "canceled")
+    ) {
+      toast.error(t("item_already_cancelled"));
+      setShowCancelDialog(false);
+      setItemToCancel(null);
+      return;
+    }
+
     setIsCancelling(true);
 
     try {
@@ -293,8 +304,11 @@ function OrderDetailsModal({
 
                     {orderDetails?.products?.length > 1 &&
                       orderDetails?.status !== "canceled" &&
-                      orderDetails?.status !== "completed" &&
-                      orderDetails?.status !== "shipped" && (
+                      product?.status !== "canceled" &&
+                      !product?.cancelled &&
+                      (product?.itemType === "TICKET" ||
+                        (orderDetails?.status !== "completed" &&
+                          orderDetails?.status !== "shipped")) && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -309,7 +323,7 @@ function OrderDetailsModal({
                         </button>
                       )}
 
-                    {product?.status === "canceled" && (
+                    {(product?.status === "canceled" || product?.cancelled) && (
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${isDark ? "bg-red-900/30 text-red-400" : "bg-red-100 text-red-800"}`}
                       >
@@ -318,6 +332,10 @@ function OrderDetailsModal({
                     )}
                   </div>
                 </div>
+
+                {product?.cancelled && (
+                  <CancelledInfo cancelled={product.cancelled} />
+                )}
               </div>
             ))}
           </div>

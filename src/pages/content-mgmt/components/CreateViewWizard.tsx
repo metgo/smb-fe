@@ -182,14 +182,10 @@ export default function CreateViewWizard({
             searchKeywordsAr: cat.searchKeywordsAr,
             // Preserve existing assignments in edit mode, otherwise empty
             businessIds: (originalCat as any)?.businessIds ?? [],
-            // Products disabled for TRAVELLER purpose
+            // Products only available for MARKETPLACE purpose
             productIds: isMarketplace
               ? ((originalCat as any)?.productIds ?? [])
               : [],
-            // eventIds: (originalCat as any)?.eventIds ?? [], // Events disabled for TRAVELLER purpose
-            poiIds: (originalCat as any)?.poiIds ?? [],
-            tripIds: (originalCat as any)?.tripIds ?? [],
-            fundayIds: (originalCat as any)?.fundayIds ?? [],
             isPrimary: false,
             isArchived: false,
           };
@@ -253,10 +249,6 @@ export default function CreateViewWizard({
                   // Preserve existing assignments
                   businessIds: (originalCat as any)?.businessIds ?? [],
                   productIds: (originalCat as any)?.productIds ?? [],
-                  eventIds: (originalCat as any)?.eventIds ?? [],
-                  poiIds: (originalCat as any)?.poiIds ?? [],
-                  tripIds: (originalCat as any)?.tripIds ?? [],
-                  fundayIds: (originalCat as any)?.fundayIds ?? [],
                   isPrimary: (originalCat as any)?.isPrimary ?? false,
                   isArchived: (originalCat as any)?.isArchived ?? false,
                   icon: (originalCat as any)?.icon,

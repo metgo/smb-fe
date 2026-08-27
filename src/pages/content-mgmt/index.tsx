@@ -196,8 +196,8 @@ export default function ContentMgmtPage() {
   };
 
   const marketplaceHiddenTabs = isMarketplace
-    ? ["Businesses", "POI", "Events"] // MARKETPLACE: show only Products
-    : ["Events", "Products"]; // TRAVELLER: show Businesses, POIs (hide Events, Products)
+    ? ["Businesses"] // MARKETPLACE: show only Products
+    : ["Products"]; // TRAVELLER: show only Businesses
 
   // When switching to a marketplace site, jump off any now-hidden tab
   // When switching to a TRAVELLER site, jump off Products tab
