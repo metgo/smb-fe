@@ -48,6 +48,11 @@ interface IPublicTicket {
   status: string;
   quantity: number;
   amount: number;
+  cancelled?: {
+    canceled_reason: string;
+    additional_information: string;
+    date: string;
+  };
   eventId: string;
   eventName: string;
   eventImages: { image: string; isPrimary: boolean }[];
@@ -173,6 +178,7 @@ export default function PublicTicketPage() {
   const fullName = `${ticket.firstName} ${ticket.lastName ?? ""}`.trim();
 
   const isCompleted = ticket.status?.toLowerCase() === "completed";
+  const isCanceled = ticket.status?.toLowerCase() === "canceled";
 
   const isExpired = (() => {
     const days = ticket.ticketDayDescription?.length
@@ -206,15 +212,22 @@ export default function PublicTicketPage() {
 
         {/* Ticket card */}
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          {/* Canceled banner */}
+          {isCanceled && (
+            <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
+              {t("ticket_canceled")}
+            </div>
+          )}
+
           {/* Scanned banner */}
-          {isCompleted && (
+          {isCompleted && !isCanceled && (
             <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
               {t("ticket_scanned")}
             </div>
           )}
 
           {/* Expired banner */}
-          {isExpired && !isCompleted && (
+          {isExpired && !isCompleted && !isCanceled && (
             <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
               {t("ticket_expired")}
             </div>
@@ -270,6 +283,28 @@ export default function PublicTicketPage() {
               {t(orderStatus.labelKey, { defaultValue: orderStatus.labelKey })}
             </span>
           </div>
+
+          {/* Cancellation details */}
+          {isCanceled && ticket.cancelled && (
+            <div className="px-5 py-3 bg-red-50 border-b border-red-100 space-y-1.5">
+              {ticket.cancelled.canceled_reason && (
+                <p className="text-sm text-red-700">
+                  <span className="font-semibold">
+                    {t("cancelled_reason_label")}:
+                  </span>{" "}
+                  {ticket.cancelled.canceled_reason}
+                </p>
+              )}
+              {ticket.cancelled.additional_information && (
+                <p className="text-sm text-red-700">
+                  <span className="font-semibold">
+                    {t("additional_information_label")}:
+                  </span>{" "}
+                  {ticket.cancelled.additional_information}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Ticket perforated divider */}
           <div className="relative flex items-center px-4 py-2">
@@ -424,16 +459,16 @@ export default function PublicTicketPage() {
             {/* Mark as Completed */}
             <button
               onClick={handleMarkCompleted}
-              disabled={
-                ticket.status?.toLowerCase() === "completed" || isUpdating
-              }
+              disabled={isCompleted || isCanceled || isUpdating}
               className="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-teal-600 hover:bg-teal-700 text-white"
             >
               {isUpdating
                 ? t("updating")
-                : ticket.status?.toLowerCase() === "completed"
-                  ? t("completed_checkmark")
-                  : t("mark_as_completed")}
+                : isCanceled
+                  ? t("ticket_canceled")
+                  : isCompleted
+                    ? t("completed_checkmark")
+                    : t("mark_as_completed")}
             </button>
           </div>
         </div>

@@ -81,6 +81,7 @@ export default function OrdersSummaryMgmtPage() {
     limit: number;
     businessId?: string;
     detailedView: boolean;
+    [key: string]: any;
   } | null>(null);
 
   const orderSummaryQueryParams = useMemo(() => {
@@ -360,6 +361,7 @@ export default function OrdersSummaryMgmtPage() {
               e.stopPropagation();
 
               setBusinessOrderParams({
+                ...orderSummaryQueryParams,
                 page: 1,
                 limit: 10,
                 businessId: row._id,
@@ -390,6 +392,7 @@ export default function OrdersSummaryMgmtPage() {
               e.stopPropagation();
 
               setBusinessOrderParams({
+                ...orderSummaryQueryParams,
                 page: 1,
                 limit: 10,
                 businessId: row._id,
