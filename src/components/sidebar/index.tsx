@@ -366,6 +366,13 @@ export default function Sidebar() {
         ...(isSuperadmin
           ? [
               {
+                id: "payment-transactions",
+                path: routes.paymentTransactions,
+                label: t("payment_transactions") || "Payment Transactions",
+                icon: Wallet,
+                isEnabled: true,
+              },
+              {
                 id: "website-crashes",
                 path: routes.websiteCrashes,
                 label: "Website Crashes",

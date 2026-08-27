@@ -2,6 +2,15 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
+export type PaymentTransactionStatus =
+  | "SUCCESS"
+  | "FAILURE"
+  | "PENDING"
+  | "CANCELING"
+  | "REFUND_IN_PROCESS"
+  | "REFUND_SUCCESS"
+  | "UNPAID";
+
 export interface PaymentTransactionUserInfo {
   firstName: string | null;
   lastName: string | null;
@@ -18,7 +27,7 @@ export interface PaymentTransaction {
   paymentRequestId: string;
   orderId: string;
   paymentDate: string;
-  paymentStatus: string;
+  paymentStatus: PaymentTransactionStatus | string;
   orderStatus: string;
   orderProductId: string;
   userInfo: PaymentTransactionUserInfo;

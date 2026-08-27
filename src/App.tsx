@@ -51,6 +51,7 @@ import {
   TripDetailsPage,
   StatsSummaryPage,
   PaymentMgmtPage,
+  PaymentTransactionsPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -559,6 +560,10 @@ function App() {
             {
               path: routes.vendorReconciliationMgmt,
               element: <PaymentMgmtPage />,
+            },
+            {
+              path: routes.paymentTransactions,
+              element: <PaymentTransactionsPage />,
             },
             { path: routes.articleMgmt, element: <ArticlesManagement /> },
             { path: routes.articleDetails, element: <ArticleDetails /> },
