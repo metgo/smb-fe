@@ -356,6 +356,7 @@
   "payment_information": "معلومات الدفع",
   "payment_date": "تاريخ الدفع",
   "order_product_id": "معرّف منتج الطلب",
+  "order_id": "معرّف الطلب",
   "resend_email_to_customer": "إعادة إرسال البريد الإلكتروني للعميل",
   "notify_customer_by": "إشعار العميل عبر",
   "save_order": "حفظ الترتيب",

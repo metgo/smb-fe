@@ -325,7 +325,7 @@ const TicketRegDetailModal = ({
                 {ticketDetails.orderProductId && (
                   <Field
                     icon={Hash}
-                    label={t("order_product_id")}
+                    label={t("order_id")}
                     value={
                       <span className="font-mono text-xs">
                         {ticketDetails._id}
