@@ -358,6 +358,7 @@
   "payment_mode": "Payment Mode",
   "payment_date": "Payment Date",
   "order_product_id": "Order Product ID",
+  "order_id": "Order ID",
   "resend_email_to_customer": "Resend Email to Customer",
   "notify_customer_by": "Notify customer by",
   "save_order": "Save Order",

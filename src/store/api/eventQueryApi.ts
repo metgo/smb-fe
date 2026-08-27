@@ -111,12 +111,12 @@ export const eventQueryApi = createApi({
 
     getEventTicketAnswers: builder.query<
       IEventTicketAnswersResponse,
-      { ticketId: string; email?: string; phone?: string }
+      { ticketId: string; email?: string; phone?: string; orderId?: string }
     >({
-      query: ({ ticketId, email, phone }) => ({
+      query: ({ ticketId, email, phone, orderId }) => ({
         url: `${endpoints.eventTicketAnswers}/${ticketId}`,
         method: "GET",
-        params: { email, phone },
+        params: { email, phone, orderId },
       }),
     }),
 

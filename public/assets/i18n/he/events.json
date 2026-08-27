@@ -387,6 +387,7 @@
   "payment_mode": "אמצעי תשלום",
   "payment_date": "תאריך תשלום",
   "order_product_id": "מזהה מוצר בהזמנה",
+  "order_id": "מזהה הזמנה",
   "resend_email_to_customer": "שלח שוב אימייל ללקוח",
   "notify_customer_by": "הודע ללקוח דרך",
   "save_order": "שמור סדר",
