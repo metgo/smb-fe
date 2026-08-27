@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
+import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetPaymentTransactionsQuery } from "@/store/api/paymentQueryApi";
 import type { PaymentTransaction } from "@/store/api/paymentQueryApi";
 import { PageHeader, SearchInput, ReordableDataTable } from "@/components/shared";
 import EmptyState from "@/components/shared/EmptyState";
-import { CopyableId } from "@/components/shared/CopyableId";
 import { FilterButton } from "@/components/btns";
 import FilterSelect from "@/pages/orders-mgmt/components/FilterSelect";
 import { formatDateTime } from "@/helpers/formatter";
@@ -38,6 +39,7 @@ const DEFAULT_FILTERS = {
 
 const PaymentTransactionsPage = () => {
   const { t } = useTranslation("payments");
+  const navigate = useNavigate();
   const { isDark, language, bgPrimary, textTertiary } = useThemeClasses();
 
   const [page, setPage] = useState(1);
@@ -156,33 +158,24 @@ const PaymentTransactionsPage = () => {
       key: "customer",
       label: t("customer"),
       render: (row: PaymentTransaction) => {
-        const name = [row.userInfo?.firstName, row.userInfo?.lastName]
-          .filter(Boolean)
-          .join(" ")
-          .trim();
+        const { firstName, lastName, email, countryCode, phone } =
+          row.userInfo ?? {};
+        const name = [firstName, lastName].filter(Boolean).join(" ").trim();
+        const phoneText = phone
+          ? `${countryCode ? `+${countryCode} ` : ""}${phone}`
+          : "";
         return (
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-0.5">
             <span className="text-sm font-medium">{name || t("guest")}</span>
-            {row.userInfo?.email && (
-              <span className="text-xs text-gray-500">
-                {row.userInfo.email}
+            {email && (
+              <span className="text-xs text-gray-500">{email}</span>
+            )}
+            {phoneText && (
+              <span className="text-xs text-gray-500" dir="ltr">
+                {phoneText}
               </span>
             )}
           </div>
-        );
-      },
-    },
-    {
-      key: "phone",
-      label: t("phone"),
-      render: (row: PaymentTransaction) => {
-        const { countryCode, phone } = row.userInfo ?? {};
-        if (!phone) return <span className="text-xs text-gray-500">-</span>;
-        return (
-          <span className="text-sm" dir="ltr">
-            {countryCode ? `+${countryCode} ` : ""}
-            {phone}
-          </span>
         );
       },
     },
@@ -191,17 +184,16 @@ const PaymentTransactionsPage = () => {
       label: t("order_id"),
       render: (row: PaymentTransaction) =>
         row.orderId ? (
-          <CopyableId id={row.orderId} />
-        ) : (
-          <span className="text-xs text-gray-500">-</span>
-        ),
-    },
-    {
-      key: "paymentRequestId",
-      label: t("payment_request_id"),
-      render: (row: PaymentTransaction) =>
-        row.paymentRequestId ? (
-          <CopyableId id={row.paymentRequestId} />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`${routes.ordersMgmt}?orderId=${row.orderId}`);
+            }}
+            className="text-xs font-mono text-teal-500 hover:text-teal-400 hover:underline truncate max-w-[180px]"
+            title={row.orderId}
+          >
+            {row.orderId}
+          </button>
         ) : (
           <span className="text-xs text-gray-500">-</span>
         ),
