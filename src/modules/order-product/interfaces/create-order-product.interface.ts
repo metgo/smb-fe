@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
-import { DeliveryMethod, OrderItemType } from 'src/modules/orders/orders.type';
+import {
+  DeliveryMethod,
+  OrderItemType,
+  OrderStatus,
+} from 'src/modules/orders/orders.type';
 
 export interface CreateOrderProductCommand {
   itemId: mongoose.Types.ObjectId;
@@ -23,4 +27,9 @@ export interface CreateOrderProductCommand {
   loggedInUserId?: mongoose.Types.ObjectId | string;
   orderId: string;
   itemType: OrderItemType;
+  status?: OrderStatus;
+  completed?: {
+    date: Date;
+    isAutomatic?: boolean;
+  };
 }

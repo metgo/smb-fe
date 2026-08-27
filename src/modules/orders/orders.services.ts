@@ -644,8 +644,9 @@ export class OrdersService {
           return { product, cartItem };
         })
         .filter(({ cartItem }) => cartItem)
-        .map(
-          async ({ cartItem }) => await this.orderProductService.create({
+        .map(({ cartItem }) => {
+          const isTicket = cartItem.itemType === OrderItemType.TICKET;
+          return this.orderProductService.create({
             itemId: cartItem.id,
             quantity: cartItem.quantity,
             email: cartItem.email,
@@ -667,8 +668,14 @@ export class OrdersService {
             orderId: order.id,
             loggedInUserId: loggedInUser?.id,
             itemType: cartItem.itemType,
-          }),
-        ),
+            // tickets have no shipping step - fulfilled instantly on
+            // purchase, so skip PROCESSING (products keep the default)
+            ...(isTicket && {
+              status: OrderStatus.COMPLETED,
+              completed: { date: new Date(), isAutomatic: true },
+            }),
+          });
+        }),
     );
 
     if (cartItemsProduct?.length) {
@@ -677,6 +684,15 @@ export class OrdersService {
 
     if (cartItemsTicket?.length) {
       await this.ticketsService.deductQuantity(cartItemsTicket);
+    }
+
+    // Ticket-only voucher order is done instantly - nothing else rolls
+    // Order.status up from its order-products, so set it here.
+    if (cartItemsTicket?.length && !cartItemsProduct?.length) {
+      await updateById<Order>(this.OrderModel, order._id, {
+        status: OrderStatus.COMPLETED,
+      });
+      order.status = OrderStatus.COMPLETED;
     }
 
     await this.cartService.updateCartPostCheckout(
@@ -1041,6 +1057,11 @@ export class OrdersService {
                   loggedInUserId: updateOrder.userId,
                   orderId: updateOrder.id,
                   itemType: cartItem.itemType,
+                  // this whole handler only runs after payment success, and
+                  // tickets have no shipping step - fulfilled the instant
+                  // they're purchased, so skip PROCESSING entirely
+                  status: OrderStatus.COMPLETED,
+                  completed: { date: new Date(), isAutomatic: true },
                 }),
               );
               return Promise.all(orderProductPromises);
@@ -1055,6 +1076,15 @@ export class OrdersService {
           externalApi,
           languagePreference,
         );
+
+        // Ticket-only order is done instantly - nothing else rolls
+        // Order.status up from its order-products, so set it here.
+        if (!findCartProducts?.length) {
+          await updateById<Order>(this.OrderModel, updateOrder._id, {
+            status: OrderStatus.COMPLETED,
+          });
+          updateOrder.status = OrderStatus.COMPLETED;
+        }
       }
 
       return {
@@ -1169,7 +1199,7 @@ export class OrdersService {
           (sum, prod) => sum + prod.quantity,
           0,
         );
-        return Promise.all(
+        const created = await Promise.all(
           vendor.products.map(p => {
             const productDeliveryFee
               = totalQty > 0
@@ -1177,6 +1207,7 @@ export class OrdersService {
                 : 0;
             const productInfo = productInfoMap[p._id.toString()];
             const amount = productInfo?.price?.sellingPrice || 0;
+            const isTicket = p.itemType === OrderItemType.TICKET;
             return this.orderProductService.create({
               itemId: new mongoose.Types.ObjectId(p._id.toString()),
               quantity: p.quantity,
@@ -1199,9 +1230,26 @@ export class OrdersService {
               orderId: vendorOrder.id,
               loggedInUserId: parentOrder.userId?.toString(),
               itemType: p.itemType,
+              // tickets have no shipping step - fulfilled instantly on
+              // purchase, so skip PROCESSING (products keep the default)
+              ...(isTicket && {
+                status: OrderStatus.COMPLETED,
+                completed: { date: new Date(), isAutomatic: true },
+              }),
             });
           }),
         );
+
+        // Tickets are COMPLETED but nothing rolls vendorOrder.status up
+        // automatically - sync it here or it stays stuck at PROCESSING.
+        if (vendor.products.every(p => p.itemType === OrderItemType.TICKET)) {
+          await updateById<Order>(this.OrderModel, vendorOrder._id, {
+            status: OrderStatus.COMPLETED,
+          });
+          Object.assign(vendorOrder, { status: OrderStatus.COMPLETED });
+        }
+
+        return created;
       }),
     );
 
@@ -1346,7 +1394,7 @@ export class OrdersService {
           (sum, prod) => sum + prod.quantity,
           0,
         );
-        return Promise.all(
+        const created = await Promise.all(
           vendor.products.map(p => {
             // Divide delivery fee proportionally by quantity for all models
             const productDeliveryFee
@@ -1355,6 +1403,7 @@ export class OrdersService {
                 : 0;
             const productInfo = productInfoMap[p._id.toString()];
             const amount = productInfo?.price?.sellingPrice || 0;
+            const isTicket = p.itemType === OrderItemType.TICKET;
             return this.orderProductService.create({
               itemId: new mongoose.Types.ObjectId(p._id.toString()),
               quantity: p.quantity,
@@ -1377,9 +1426,26 @@ export class OrdersService {
               orderId: vendorOrder.id,
               loggedInUserId: parentOrder.userId?.toString(),
               itemType: p.itemType,
+              // tickets have no shipping step - fulfilled instantly on
+              // purchase, so skip PROCESSING (products keep the default)
+              ...(isTicket && {
+                status: OrderStatus.COMPLETED,
+                completed: { date: new Date(), isAutomatic: true },
+              }),
             });
           }),
         );
+
+        // Tickets are COMPLETED but nothing rolls vendorOrder.status up
+        // automatically - sync it here or it stays stuck at PROCESSING.
+        if (vendor.products.every(p => p.itemType === OrderItemType.TICKET)) {
+          await updateById<Order>(this.OrderModel, vendorOrder._id, {
+            status: OrderStatus.COMPLETED,
+          });
+          Object.assign(vendorOrder, { status: OrderStatus.COMPLETED });
+        }
+
+        return created;
       }),
     );
 
