@@ -17,6 +17,10 @@ import {
   OrderProduct,
   OrderProductSchema,
 } from 'src/modules/order-product/schema/order-product.schema';
+import {
+  EventTicketAnswer,
+  EventTicketAnswerSchema,
+} from 'src/modules/event-ticket-answers/schema/event-ticket-answer.schema';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { ExpireOrderService } from 'src/modules/orders/expire-orders.services';
 import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
@@ -43,6 +47,7 @@ import { DocUploadModule } from '../doc-upload/doc-upload.module';
       { name: Order.name, schema: OrderSchema },
       { name: QrVerificationToken.name, schema: QrVerificationTokenSchema },
       { name: OrderProduct.name, schema: OrderProductSchema },
+      { name: EventTicketAnswer.name, schema: EventTicketAnswerSchema },
     ]),
     forwardRef(() => AuthorityModule),
     BusinessModule,

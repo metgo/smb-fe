@@ -63,6 +63,19 @@ export class EventTicketAnswer extends AuditableSchema {
   @Prop({ type: PurchaserInfoSchema, required: true })
     purchaserInfo: PurchaserInfo;
 
+  /**
+   * Backfilled by OrdersService#createOrder once the order exists (answers
+   * are submitted before that). Lets repeat purchases of the same ticket be
+   * told apart instead of only matching by email/phone.
+   */
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Order',
+    required: false,
+    index: true,
+  })
+    orderId: mongoose.Types.ObjectId;
+
   @Prop({ type: [QuestionAnswerSchema], default: [] })
     questionAnswer: QuestionAnswer[];
 }

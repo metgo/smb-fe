@@ -27,6 +27,7 @@ import { CartService } from 'src/modules/cart/cart.service';
 import { Cart } from 'src/modules/cart/cart.schema';
 import { CartProductResponse, CartStatus } from 'src/modules/cart/cart.types';
 import { Order } from 'src/modules/orders/schema/orders.schema';
+import { EventTicketAnswer } from 'src/modules/event-ticket-answers/schema/event-ticket-answer.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
@@ -92,6 +93,8 @@ export class OrdersService {
     private OrderModel: Model<Order>,
     @InjectModel(OrderProduct.name)
     private OrderProductModel: Model<OrderProduct>,
+    @InjectModel(EventTicketAnswer.name)
+    private readonly eventTicketAnswerModel: Model<EventTicketAnswer>,
     private readonly businessService: BusinessService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
@@ -492,6 +495,32 @@ export class OrdersService {
         // For event ticket purchases, set vendorId to eventId
         vendorId: ticketDetails?.[0]?.eventId ?? null,
       };
+
+      // Backfill orderId onto any matching answer doc submitted earlier in
+      // this checkout (see EventTicketAnswer#orderId). Best-effort only -
+      // never let it block order creation.
+      try {
+        const ticketObjectIds = (products || [])
+          .map(product => (mongoose.Types.ObjectId.isValid(product.id) ? new mongoose.Types.ObjectId(product.id) : null))
+          .filter((id): id is mongoose.Types.ObjectId => id !== null);
+
+        if (ticketObjectIds.length && body.email) {
+          await this.eventTicketAnswerModel.updateMany(
+            {
+              'eventInfo.ticketIds': { $in: ticketObjectIds },
+              'purchaserInfo.email': body.email,
+              ...(body.phone ? { 'purchaserInfo.phone': body.phone } : {}),
+              orderId: { $exists: false },
+            },
+            { $set: { orderId: newOrder._id } },
+          );
+        }
+      } catch (error) {
+        this.logger.error('[EXTERNAL_API_ORDERS]: FAILED TO LINK TICKET ANSWERS TO ORDER', {
+          orderId: newOrder._id.toString(),
+          err: error instanceof Error ? error.message : String(error),
+        });
+      }
 
       if (totalAmount <= 0) {
         return await this.createOrderWithOnlyVouchers(
