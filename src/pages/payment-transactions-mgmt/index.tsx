@@ -234,7 +234,7 @@ const PaymentTransactionsPage = () => {
               e.stopPropagation();
               setInvoiceUrl(row.invoiceUrl as string);
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-500 hover:text-teal-400 hover:underline"
+            className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-medium text-teal-500 hover:text-teal-400 hover:underline"
           >
             <FileText className="w-3.5 h-3.5" />
             {t("view_invoice")}
