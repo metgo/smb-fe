@@ -79,7 +79,8 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   const activeOption = currentStatus ? allStatuses[currentStatus] : undefined;
   const restrictedStatuses: TOrderStatus[] = ["canceled"];
   const isTraveller = userRole === UserRole.TRAVELLER;
-  const isCompleted = currentStatus === "completed";
+  const isCompleted =
+    currentStatus === "completed" || currentStatus === "canceled";
 
   /* -------------------- Outside Click Handler -------------------- */
   useEffect(() => {
@@ -179,10 +180,9 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
 
               const isActive = key === currentStatus;
               const isDisabled =
-                (isTraveller &&
-                  restrictedStatuses.includes(key) &&
-                  !(allowCancel && key === "canceled")) ||
-                (key === "canceled" && currentStatus === "canceled");
+                isTraveller &&
+                restrictedStatuses.includes(key) &&
+                !(allowCancel && key === "canceled");
 
               return (
                 <button
