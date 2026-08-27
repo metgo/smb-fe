@@ -7,8 +7,8 @@ import {
   closeChatPopup,
   setChatPopupMinimized,
 } from "@/features/chatPopupSlice";
-import { useChatPresence } from "@/hooks/useChatPresence";
 import { ChatPopup } from "./ChatPopup";
+import { useChatPresence } from "@/hooks/useChatPresence";
 
 const POPUP_WIDTH = 320;
 const POPUP_GAP = 16;

@@ -156,6 +156,11 @@
   "total_revenue": "סה\"כ הכנסות",
   "net_payout": "התשלום נטו",
   "status_overview": "סקירת סטטוס",
+  "vendors": "ספקים",
+  "orders_overview": "סקירת הזמנות",
+  "payable_orders": "הזמנות לתשלום",
+  "realized": "בפועל",
+  "potential": "פוטנציאלי",
   "held_for_disputes": "בהחזקה לתלונות",
   "dispute_settlement_msg": "סכומים אלו יישולמו לאחר פתרון התלונה",
   "reconciliation_status": "סטטוס התיישוב",
@@ -238,5 +243,12 @@
   "payable_amount_to_vendor": "סכום לתשלום לספק",
   "total_sales": "סה\"כ מכירות",
   "grand_total": "סה\"כ כללי",
-  "total_item_orders": "סה\"כ פריטים בהזמנות"
+  "total_item_orders": "סה\"כ פריטים בהזמנות",
+  "vendor": "ספק",
+  "orders": "הזמנות",
+  "open_disputes": "מחלוקות פתוחות",
+  "none": "ללא",
+  "open": "פתוח",
+  "chat_with": "צ'אט עם",
+  "paid_orders": "הזמנות ששולמו"
 }

@@ -41,7 +41,7 @@ interface VendorMonthlySummaryCardsProps {
   ) => void;
 }
 
-export const VendorMonthlySummaryCards = ({
+const VendorMonthlySummaryCards = ({
   vendors,
   isLoading,
   isFetching,
@@ -183,8 +183,8 @@ export const VendorMonthlySummaryCards = ({
 
   return (
     <div className="relative h-[calc(100vh-230px)] overflow-y-auto pr-2 pb-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
-        {vendors.map((vendor) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+        {vendors?.map((vendor) => {
           const vendorName = vendor.vendor_info.name || "-";
           return (
             <div
@@ -513,3 +513,5 @@ export const VendorMonthlySummaryCards = ({
     </div>
   );
 };
+
+export default VendorMonthlySummaryCards;

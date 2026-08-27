@@ -130,7 +130,7 @@ export const ChatPopup: React.FC<ChatPopupProps> = ({
                 : "bg-gray-100 text-gray-600",
             )}
           >
-            {getInitials(receiver.name)}
+            {getInitials(receiver?.name)}
           </div>
           <div className="min-w-0">
             <span

@@ -12,6 +12,7 @@ interface IMonthlyOrder {
   unitPrice: number;
   totalPrice: number;
   platformFee: number;
+  deliveryFee: number;
   netToVendor: number;
   status: string;
   reconciliationStatus: string;

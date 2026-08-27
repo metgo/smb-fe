@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { X, AlertTriangle, Upload, FileText } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
+import ModalWrapper from "@/components/wrapper/ModalWrapper";
 
 interface DisputeModalProps {
   order: IMonthlyOrder;
@@ -113,43 +114,35 @@ export default function DisputeModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl" height="">
       <div
-        className={`${bgPrimary} rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto`}
+        className={`${bgPrimary} rounded-lg w-full max-h-[90vh] flex flex-col overflow-hidden`}
       >
         {/* Header */}
         <div
-          className={`sticky top-0 ${bgPrimary} border-b ${borderColor} p-6 flex items-center justify-between z-10`}
+          className={`${bgPrimary} border-b ${borderColor} p-6 flex items-center gap-3 shrink-0`}
         >
-          <div className="flex items-center gap-3">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                isDark ? "bg-orange-900/20" : "bg-orange-100"
-              }`}
-            >
-              <AlertTriangle
-                className={`w-5 h-5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
-              />
-            </div>
-            <div>
-              <h2 className={`text-xl font-bold ${textPrimary}`}>
-                {isReopen ? t("reopen_dispute_btn") : t("open_dispute")}
-              </h2>
-              <p className={`text-sm ${textTertiary}`}>
-                {t("order_number")} #{order._id}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-lg ${isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"} ${textSecondary} transition-colors`}
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              isDark ? "bg-orange-900/20" : "bg-orange-100"
+            }`}
           >
-            <X className="w-5 h-5" />
-          </button>
+            <AlertTriangle
+              className={`w-5 h-5 ${isDark ? "text-orange-400" : "text-orange-600"}`}
+            />
+          </div>
+          <div>
+            <h2 className={`text-xl font-bold ${textPrimary}`}>
+              {isReopen ? t("reopen_dispute_btn") : t("open_dispute")}
+            </h2>
+            <p className={`text-sm ${textTertiary}`}>
+              {t("order_number")} #{order._id}
+            </p>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Warning */}
           <div
             className={`border rounded-lg p-4 ${
@@ -353,7 +346,7 @@ export default function DisputeModal({
 
         {/* Actions */}
         <div
-          className={`sticky bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
+          className={`${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3 shrink-0`}
         >
           <button
             onClick={onClose}
@@ -371,6 +364,6 @@ export default function DisputeModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalWrapper>
   );
 }

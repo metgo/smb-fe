@@ -37,6 +37,7 @@ export function mapOrderProductList(d: any, language: Language) {
     unitPrice: d.price || 0,
     totalPrice: d.totalAmount || 0,
     platformFee: d.fee || 0,
+    deliveryFee: d.deliveryFee || 0,
     netToVendor: (d.totalAmount || 0) - (d.fee || 0),
     status: d.status,
     reconciliationStatus: d.reconciliationStatus,
@@ -72,6 +73,7 @@ interface OrderProductDetails {
     unitPrice: number;
     total: number;
     platformFee: number;
+    deliveryFee: number;
     disputeId?: string;
     reconciliationStatus?:
       "pending" | "approved" | "cancelled" | "disputed" | "rejected" | "closed";
@@ -146,6 +148,7 @@ export function mapOrderProductDetails(
     unitPrice: d?.orderInformation?.unitPrice || 0,
     totalPrice: d?.orderInformation?.total || 0,
     platformFee: d?.orderInformation?.platformFee || 0,
+    deliveryFee: d?.orderInformation?.deliveryFee || 0,
     vendorFacingResponse: d?.orderInformation?.vendorFacingResponse || "",
 
     netToVendor:
@@ -365,6 +368,16 @@ export function buildOrderColumns({
       ),
     },
     {
+      key: "deliveryFee",
+      sortable: true,
+      label: t("delivery_fee"),
+      render: (order: IMonthlyOrder) => (
+        <span className={`text-medium ${textPrimary}`}>
+          {formatCurrency(order.deliveryFee)}
+        </span>
+      ),
+    },
+    {
       key: "status",
       sortable: false,
       label: t("order_status"),
@@ -486,3 +499,6 @@ export function buildOrderColumns({
     },
   ];
 }
+
+export const shekel = (n: number) =>
+  "₪" + n.toLocaleString("en-US", { maximumFractionDigits: 2 });

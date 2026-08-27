@@ -154,6 +154,11 @@
   "total_revenue": "إجمالي الإيرادات",
   "net_payout": "الدفع الصافي",
   "status_overview": "نظرة عامة على الحالة",
+  "vendors": "الموردون",
+  "orders_overview": "نظرة عامة على الطلبات",
+  "payable_orders": "الطلبات المستحقة الدفع",
+  "realized": "محقق",
+  "potential": "محتمل",
   "held_for_disputes": "محتفظ به للنزاعات",
   "dispute_settlement_msg": "سيتم دفع هذه المبالغ بعد حل النزاع",
   "reconciliation_status": "حالة المصالحة",
@@ -236,5 +241,12 @@
   "payable_amount_to_vendor": "المبلغ المستحق للبائع",
   "total_sales": "إجمالي المبيعات",
   "grand_total": "الإجمالي الكلي",
-  "total_item_orders": "إجمالي عناصر الطلبات"
+  "total_item_orders": "إجمالي عناصر الطلبات",
+  "vendor": "المورد",
+  "orders": "الطلبات",
+  "open_disputes": "النزاعات المفتوحة",
+  "none": "لا يوجد",
+  "open": "مفتوح",
+  "chat_with": "الدردشة مع",
+  "paid_orders": "الطلبات المدفوعة"
 }

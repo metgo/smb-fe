@@ -158,6 +158,11 @@
   "total_revenue": "Total Revenue",
   "net_payout": "Net Payout",
   "status_overview": "Status Overview",
+  "vendors": "Vendors",
+  "orders_overview": "Orders overview",
+  "payable_orders": "Payable Orders",
+  "realized": "realized",
+  "potential": "potential",
   "held_for_disputes": "held for disputes",
   "dispute_settlement_msg": "These amounts will be paid after dispute resolution",
   "reconciliation_status": "Reconciliation Status",
@@ -240,5 +245,12 @@
   "payable_amount_to_vendor": "Payable Amount to Vendor",
   "total_sales": "Total Sales",
   "grand_total": "Grand Total",
-  "total_item_orders": "Total Item Orders"
+  "total_item_orders": "Total Item Orders",
+  "vendor": "Vendor",
+  "orders": "Orders",
+  "open_disputes": "Open Disputes",
+  "none": "None",
+  "open": "open",
+  "chat_with": "Chat with",
+  "paid_orders": "Paid Orders"
 }
