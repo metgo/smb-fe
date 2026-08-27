@@ -106,6 +106,7 @@
   "success": "ناجح",
   "refunded": "تم الاسترداد",
   "partially_refunded": "تم الاسترداد جزئياً",
+  "unpaid": "غير مدفوع",
   "pickup": "استلام",
   "delivery": "توصيل",
   "digital": "رقمي",

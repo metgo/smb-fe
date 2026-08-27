@@ -1,4 +1,11 @@
-import { MapPin, Globe2, Navigation, Compass } from "lucide-react";
+import {
+  MapPin,
+  Globe2,
+  Navigation,
+  Compass,
+  Building2,
+  Map,
+} from "lucide-react";
 import { type FC } from "react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -20,39 +27,19 @@ interface LocationDetailsclosedProps {
 /* ---------- Icons ---------- */
 
 const GoogleMapsIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 48 48"
-    className="w-4 h-4 shrink-0"
-  >
-    <path
-      fill="#48b564"
-      d="M35.76 26.36h.01C36.64 25.07 37 23.58 37 22c0-7.18-5.82-13-13-13S11 14.82 11 22c0 1.58.36 3.07 1.01 4.36h.01L24 44l11.76-17.64z"
-    />
-    <path
-      fill="#4285F4"
-      d="M24 4C15.16 4 8 11.16 8 20c0 6.08 3.37 11.36 8.33 14.17L24 44l7.67-9.83C36.63 31.36 40 26.08 40 20c0-8.84-7.16-16-16-16z"
-    />
-    <path
-      fill="#fff"
-      d="M24 14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"
-    />
-  </svg>
+  <img
+    src="/assets/images/google-map-icon.png"
+    alt="Google Maps"
+    className="w-6 h-6 shrink-0 object-contain"
+  />
 );
 
 const WazeIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 48 48"
-    className="w-4 h-4 shrink-0"
-  >
-    <ellipse cx="24" cy="26" rx="18" ry="16" fill="#33CCFF" />
-    <path
-      fill="#fff"
-      d="M17 22c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm10 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z"
-    />
-    <path fill="#fff" d="M19 28s1.5 3 5 3 5-3 5-3H19z" />
-  </svg>
+  <img
+    src="/assets/images/waze-map-icon.png"
+    alt="Waze"
+    className="w-6 h-6 shrink-0 object-contain"
+  />
 );
 
 /* ---------- Component ---------- */
@@ -61,7 +48,6 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
   lat,
   long,
   address,
-  purpose,
 }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
@@ -87,32 +73,34 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
     );
   };
 
-  if (!hasLocation && !hasCoordinates) {
-    return (
+  const header = (
+    <div className={clsx("flex items-center gap-2 md:gap-3 pb-3 border-b")}>
       <div
         className={clsx(
-          "rounded-xl border px-4 py-6 text-center",
-          isDark
-            ? "bg-gray-800/60 border-gray-700"
-            : "bg-gray-50 border-gray-200",
+          "p-1.5 md:p-2 rounded-lg shrink-0",
+          isDark ? "bg-blue-500/20" : "bg-blue-100",
         )}
       >
-        <MapPin
+        <Map
           className={clsx(
-            "w-7 h-7 mx-auto mb-2",
-            isDark ? "text-gray-600" : "text-gray-300",
+            "w-4 h-4 md:w-5 md:h-5",
+            isDark ? "text-blue-400" : "text-blue-600",
           )}
         />
-        <p
-          className={clsx(
-            "text-sm",
-            isDark ? "text-gray-400" : "text-gray-500",
-          )}
-        >
-          No location information for this {purpose}
-        </p>
       </div>
-    );
+      <h3
+        className={clsx(
+          "text-sm md:text-base font-semibold",
+          isDark ? "text-gray-100" : "text-gray-900",
+        )}
+      >
+        {t("location")}
+      </h3>
+    </div>
+  );
+
+  if (!hasLocation && !hasCoordinates) {
+    return null;
   }
 
   return (
@@ -122,9 +110,11 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
         isDark ? "bg-gray-800/80 border-gray-700" : "bg-white border-gray-200",
       )}
     >
-      {/* Address rows */}
+      {header}
+
+      {/* Address row – location, city, country side by side */}
       {hasLocation && (
-        <div className="space-y-2">
+        <div className="flex items-center gap-4 flex-wrap ">
           {address?.location && (
             <div className="flex items-center gap-2 min-w-0">
               <MapPin
@@ -144,7 +134,26 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
             </div>
           )}
 
-          {(address?.city || address?.country) && (
+          {address?.city && (
+            <div className="flex items-center gap-2 min-w-0">
+              <Building2
+                className={clsx(
+                  "w-4 h-4 shrink-0",
+                  isDark ? "text-gray-400" : "text-gray-500",
+                )}
+              />
+              <span
+                className={clsx(
+                  "text-sm truncate",
+                  isDark ? "text-gray-300" : "text-gray-700",
+                )}
+              >
+                {address.city}
+              </span>
+            </div>
+          )}
+
+          {address?.country && (
             <div className="flex items-center gap-2 min-w-0">
               <Globe2
                 className={clsx(
@@ -158,7 +167,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
                   isDark ? "text-gray-300" : "text-gray-700",
                 )}
               >
-                {[address.city, address.country].filter(Boolean).join(", ")}
+                {address.country}
               </span>
             </div>
           )}
@@ -206,11 +215,11 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
 
       {/* Navigation buttons – compact */}
       {hasCoordinates && (
-        <div className="flex gap-2 pt-1">
+        <div className="flex gap-2.5 pt-1">
           <button
             onClick={handleOpenGoogleMaps}
             className={clsx(
-              "flex md:min-w-[310px] min-w-[110px] items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-colors",
+              "flex md:min-w-[310px] min-w-[130px] items-center justify-center gap-2 py-3 px-3 rounded-lg text-sm font-medium transition-colors",
               isDark
                 ? "bg-gray-700/80 hover:bg-gray-700 text-gray-200 border border-gray-600"
                 : "bg-gray-50 hover:bg-blue-50 text-gray-700 border border-gray-200 hover:border-blue-200",
@@ -223,7 +232,7 @@ const LocationDetailsclosed: FC<LocationDetailsclosedProps> = ({
           <button
             onClick={handleOpenWaze}
             className={clsx(
-              " flex items-center md:min-w-[310px] min-w-[110px] justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors",
+              "flex items-center md:min-w-[310px] min-w-[130px] justify-center gap-2 py-3 px-3 rounded-lg text-sm font-medium transition-colors",
               isDark
                 ? "bg-gray-700/80 hover:bg-gray-700 text-gray-200 border border-gray-600"
                 : "bg-gray-50 hover:bg-sky-50 text-gray-700 border border-gray-200 hover:border-sky-200",

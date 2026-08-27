@@ -46,6 +46,7 @@ import { websiteCrashApi } from "./api/websiteCrashApi";
 import { sessionQueryApi } from "./api/sessionQueryApi";
 import { sessionMutationApi } from "./api/sessionMutationApi";
 import { reconciliationQueryApi } from "./api/reconciliationQueryApi";
+import { paymentQueryApi } from "./api/paymentQueryApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
 import { chatSystemApi } from "./api/chatSystemApi";
 
@@ -103,6 +104,7 @@ export const store = configureStore({
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
     [reconciliationQueryApi.reducerPath]: reconciliationQueryApi.reducer,
+    [paymentQueryApi.reducerPath]: paymentQueryApi.reducer,
     [chatSystemApi.reducerPath]: chatSystemApi.reducer,
   },
 
@@ -163,6 +165,7 @@ export const store = configureStore({
       sessionQueryApi.middleware,
       sessionMutationApi.middleware,
       reconciliationQueryApi.middleware,
+      paymentQueryApi.middleware,
       chatSystemApi.middleware,
       nprogressMiddleware,
     ),

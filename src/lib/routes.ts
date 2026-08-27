@@ -26,6 +26,7 @@ export const routes = {
   voucherMgmt: "/voucher-management",
   voucherDetails: "/voucher-details",
   vendorReconciliationMgmt: "/vendor-reconciliation",
+  paymentTransactions: "/payment-transactions",
   pointOfInterest: "/point-of-interest",
   poiMgmt: "/poi-management",
   poiDetails: "/poi-details",

@@ -171,6 +171,7 @@ export default function CreateEventWizardNew({
             setEventFormat={wizard.setEventFormat}
             address={wizard.address}
             setAddress={wizard.setAddress}
+            onAddressParts={wizard.setAddressParts}
             onlineLink={wizard.onlineLink}
             setOnlineLink={wizard.setOnlineLink}
             errors={wizard.errors}

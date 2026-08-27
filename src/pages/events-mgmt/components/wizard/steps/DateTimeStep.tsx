@@ -13,6 +13,7 @@ import {
 import DatePicker from "@/components/shared/DatePicker";
 import { MarkerMap } from "@/components/maps";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { type ParsedAddressParts } from "@/helpers";
 
 const WEEKDAYS = [
   { value: "Sunday", label: "sun" },
@@ -39,6 +40,7 @@ interface DateTimeStepProps {
   >;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
+  onAddressParts?: (parts: ParsedAddressParts) => void;
   onlineLink: string;
   setOnlineLink: React.Dispatch<React.SetStateAction<string>>;
   errors: { startDate?: string; address?: string; onlineLink?: string };
@@ -83,6 +85,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
   setEventFormat,
   address,
   setAddress,
+  onAddressParts,
   onlineLink,
   setOnlineLink,
   errors,
@@ -803,6 +806,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
             setGeo={setGeo}
             address={address}
             setAddress={setAddress}
+            onAddressParts={onAddressParts}
           />
         </div>
       )}

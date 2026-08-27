@@ -59,6 +59,18 @@ import { ORDER_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
 
+// Backend `paymentStatus` query enum:
+// SUCCESS, FAILURE, PENDING, CANCELING, REFUND_IN_PROCESS, REFUND_SUCCESS, UNPAID
+const PAYMENT_STATUS_FILTER_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: "SUCCESS", labelKey: "success" },
+  { value: "FAILURE", labelKey: "failed" },
+  { value: "PENDING", labelKey: "pending" },
+  { value: "CANCELING", labelKey: "cancelling" },
+  { value: "REFUND_IN_PROCESS", labelKey: "refund_in_process" },
+  { value: "REFUND_SUCCESS", labelKey: "refund_success" },
+  { value: "UNPAID", labelKey: "unpaid" },
+];
+
 const { defaultColumns, columnDefinitions } = ORDER_COLUMNS;
 
 type ColumnVisibility = typeof defaultColumns;
@@ -272,6 +284,7 @@ export default function OrdersMgmtPage() {
   // Filters
   const [filters, setFilters] = useState({
     paymentMethod: "all",
+    paymentStatus: "all",
 
     deliveryType: "all",
     status: "all",
@@ -322,6 +335,16 @@ export default function OrdersMgmtPage() {
         key: "paymentMethod",
         value: filters.paymentMethod,
       });
+
+    if (filters.paymentStatus !== "all") {
+      const opt = PAYMENT_STATUS_FILTER_OPTIONS.find(
+        (o) => o.value === filters.paymentStatus,
+      );
+      chips.push({
+        key: "paymentStatus",
+        value: opt ? t(opt.labelKey) : filters.paymentStatus,
+      });
+    }
 
     if (filters.month !== "all" && filters.month !== "custom")
       chips.push({ key: "month", value: filters.month });
@@ -424,6 +447,9 @@ export default function OrdersMgmtPage() {
     if (filters.paymentMethod !== "all") {
       params.paymentMethod = filters.paymentMethod;
     }
+    if (filters.paymentStatus !== "all") {
+      params.paymentStatus = filters.paymentStatus;
+    }
     if (filters.status !== "all") {
       params.status = filters.status;
     }
@@ -508,6 +534,7 @@ export default function OrdersMgmtPage() {
     orderType: "all",
     deliveryType: "all",
     paymentMethod: "all",
+    paymentStatus: "all",
     vendor: "all",
     status: "all",
     campaign: "all",
@@ -1109,6 +1136,26 @@ export default function OrdersMgmtPage() {
                       { value: "all", label: t("all") },
                       { value: "voucher", label: t("voucher") },
                       { value: "card", label: t("creditCard") },
+                    ]}
+                  />
+                </div>
+
+                <div className="min-w-45">
+                  <FilterSelect
+                    label={t("paymentStatus")}
+                    value={filters.paymentStatus}
+                    onChange={(value) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        paymentStatus: value,
+                      }))
+                    }
+                    options={[
+                      { value: "all", label: t("all") },
+                      ...PAYMENT_STATUS_FILTER_OPTIONS.map((o) => ({
+                        value: o.value,
+                        label: t(o.labelKey),
+                      })),
                     ]}
                   />
                 </div>
