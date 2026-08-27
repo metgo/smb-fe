@@ -192,7 +192,7 @@ const PaymentTransactionsPage = () => {
               e.stopPropagation();
               navigate(`${routes.ordersMgmt}?orderId=${row.orderId}`);
             }}
-            className="text-xs font-mono text-teal-500 hover:text-teal-400 hover:underline truncate max-w-[180px]"
+            className="cursor-pointer text-xs font-mono text-teal-500 hover:text-teal-400 hover:underline truncate max-w-[180px]"
             title={row.orderId}
           >
             {row.orderId}

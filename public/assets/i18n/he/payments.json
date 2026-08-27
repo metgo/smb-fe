@@ -1,7 +1,7 @@
 {
   "payment_transactions": "עסקאות תשלום",
   "payment_transactions_desc": "כל ניסיונות התשלום עבור ההזמנות, כולל סטטוס הסליקה וההזמנה",
-  "search_placeholder": "חיפוש לפי מזהה הזמנה, שם, אימייל, טלפון...",
+  "search_placeholder": "חיפוש לפי שם, אימייל, מזהה הזמנה, מזהה תשלום או מזהה בקשת תשלום...",
   "transactions_list": "עסקאות",
   "filters": "מסננים",
   "clear_all": "נקה הכל",
