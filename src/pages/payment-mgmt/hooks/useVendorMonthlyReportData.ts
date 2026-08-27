@@ -70,7 +70,7 @@ export function useVendorMonthlyReportData(
     refetch,
   } = useGetOrderProductsQuery(queryParams, {
     refetchOnMountOrArgChange: true,
-    skip: adminView,
+    skip: !filters.businessId && adminView,
   });
 
   const {
