@@ -70,8 +70,46 @@ const CSV_COLUMN_ALIASES: Record<CsvField, string[]> = {
     "expiredate",
     "expire date",
     "expiry",
+    "expiry date",
+    "expirydate",
+    "exp",
+    "exp date",
+    "valid until",
+    "validuntil",
+    "end date",
+    "enddate",
   ],
 };
+
+// Normalize a date cell to yyyy-mm-dd (what <input type="date"> needs).
+// Handles ISO, dd/mm/yyyy | dd-mm-yyyy | dd.mm.yyyy (day-first when ambiguous),
+// and anything the Date constructor understands. Returns "" if unparseable.
+function normalizeDate(raw: string): string {
+  const v = raw.trim();
+  if (!v) return "";
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+
+  const parts = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/.exec(v);
+  if (parts) {
+    let day = parseInt(parts[1], 10);
+    let month = parseInt(parts[2], 10);
+    let year = parseInt(parts[3], 10);
+    if (month > 12 && day <= 12) [day, month] = [month, day]; // clearly mm/dd
+    if (year < 100) year += 2000;
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+  }
+
+  const d = new Date(v);
+  if (!Number.isNaN(d.getTime())) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate(),
+    ).padStart(2, "0")}`;
+  }
+  return "";
+}
 
 const CSV_REQUIRED_FIELDS: CsvField[] = ["name", "email", "campaign", "amount"];
 
@@ -250,7 +288,6 @@ const VoucherConfigure = ({
           );
           if (campaignLabel && !campaign) unmatchedCampaigns.add(campaignLabel);
           const rawCc = cell(cells, "countryCode") || "+972";
-          const rawExpire = cell(cells, "expireDate");
           return {
             id: crypto.randomUUID(),
             name: cell(cells, "name"),
@@ -259,11 +296,7 @@ const VoucherConfigure = ({
             phone: cell(cells, "phone"),
             campaignId: campaign?._id || "",
             amount: cell(cells, "amount"),
-            expireDate: rawExpire
-              ? new Date(rawExpire).toString() !== "Invalid Date"
-                ? new Date(rawExpire).toISOString().split("T")[0]
-                : rawExpire
-              : "",
+            expireDate: normalizeDate(cell(cells, "expireDate")),
           };
         });
 
