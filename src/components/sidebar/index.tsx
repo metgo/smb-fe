@@ -227,7 +227,7 @@ export default function Sidebar() {
           path: routes.offlineVouchers,
           label: t("offline_vouchers") || "Offline Vouchers Purchases",
           icon: Receipt,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "mini-campaign",

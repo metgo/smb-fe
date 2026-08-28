@@ -52,6 +52,7 @@ import {
   StatsSummaryPage,
   PaymentMgmtPage,
   PaymentTransactionsPage,
+  OfflineVouchersMgmtPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -591,6 +592,10 @@ function App() {
             { path: routes.contentMgmt, element: <ContentMgmtPage /> },
             { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
             { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
+            {
+              path: routes.offlineVouchers,
+              element: <OfflineVouchersMgmtPage />,
+            },
 
             { path: routes.profile, element: <ProfilePage /> },
             { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
