@@ -36,7 +36,6 @@ import ChatPage from "./chat-mgmt";
 import StatsSummaryPage from "./stats-summary";
 import { PaymentMgmtPage } from "./payment-mgmt";
 import PaymentTransactionsPage from "./payment-transactions-mgmt";
-import OfflineVouchersMgmtPage from "./offline-vouchers-mgmt";
 
 export {
   ChatPage,
@@ -47,7 +46,6 @@ export {
   DmosMgmtPage,
   PaymentMgmtPage,
   PaymentTransactionsPage,
-  OfflineVouchersMgmtPage,
   CampaignsMgmtPage,
   AuthoritiesMgmtPage,
   TripsMgmtPage,

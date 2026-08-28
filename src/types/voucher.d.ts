@@ -100,32 +100,36 @@ interface ParsedData {
   AssigneePhone?: number;
 }
 
+interface IVoucherAssignee {
+  id: string;
+  name: string;
+  email: string;
+  countryCode: string;
+  phone: string;
+  campaignId: string;
+  amount: string;
+}
+
+type VoucherPurchaseType = "single" | "multiple";
+type VoucherMultiMode = "manual" | "upload";
+
 interface IVoucherFormData {
-  campaign: string;
-
-  amount: number;
-  customAmount: boolean;
-
-  creationType: string;
-  bulkCount: number;
-  bulkCreateAssigned: boolean;
-
+  // Purchaser
   purchaserName: string;
   purchaserEmail: string;
   purchaserPhone: string;
   purchaserCountryCode: string;
 
-  assigneeName: string;
-  assigneeEmail: string;
-  assigneePhone: string;
-  assigneeCountryCode: string;
+  // Configure
+  purchaseType: VoucherPurchaseType;
+  multiMode: VoucherMultiMode;
+  assignees: IVoucherAssignee[];
 
-  message: string;
-  smsMessage: string;
-  sendEmail: boolean;
-
+  // Applies to every voucher in this purchase
   expirationDate: string;
-  xlsFile: File | null;
+
+  // Greeting message sent with the voucher
+  greeting: string;
 }
 
 interface IVoucher {

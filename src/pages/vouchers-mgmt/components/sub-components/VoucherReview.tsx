@@ -11,16 +11,26 @@ interface Props {
       data?: Campaigns[];
     };
   };
-  xlsValidation: any;
+  xlsValidation?: any;
   t: (key: string) => string;
 }
 
-const VoucherReview = ({ formData, campaigns, xlsValidation, t }: Props) => {
+const VoucherReview = ({ formData, campaigns, t }: Props) => {
   const { isDark } = useThemeClasses();
 
-  const selectedCampaign = campaigns?.datas?.data?.find(
-    (c: any) => c.id === formData.campaign,
-  );
+  const campaignList = campaigns?.datas?.data ?? [];
+  const campaignName = (id: string) =>
+    campaignList.find((c) => c._id === id)?.name ?? "—";
+
+  const activeAssignees =
+    formData.purchaseType === "single"
+      ? formData.assignees.slice(0, 1)
+      : formData.assignees;
+
+  const labelCls = `block text-xs mb-1 ${
+    isDark ? "text-gray-400" : "text-gray-500"
+  }`;
+  const valueCls = isDark ? "text-gray-100" : "text-gray-900";
 
   return (
     <div className="space-y-6">
@@ -32,62 +42,16 @@ const VoucherReview = ({ formData, campaigns, xlsValidation, t }: Props) => {
 
       <div
         className={`rounded-lg p-4 space-y-4 border ${
-          isDark ? " border-gray-800" : "bg-white border-gray-200"
+          isDark ? "border-gray-800" : "bg-white border-gray-200"
         }`}
       >
-        {/* Campaign */}
-        {selectedCampaign && (
-          <div>
-            <label
-              className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
-            >
-              {t("campaign")}
-            </label>
-            <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
-              {selectedCampaign.name}
-            </div>
-          </div>
-        )}
-
-        {/* Amount */}
-        <div>
-          <label
-            className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
-          >
-            {t("amount_per_voucher")}
-          </label>
-          <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
-            ₪{formData.amount}
-          </div>
-        </div>
-
-        {/* Expiration */}
-        {formData.expirationDate && (
-          <div>
-            <label
-              className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
-            >
-              {t("expiration_date")}
-            </label>
-            <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
-              {formData.expirationDate}
-            </div>
-          </div>
-        )}
-
         {/* Purchaser */}
-        {(formData.purchaserEmail ||
-          formData.purchaserName ||
+        {(formData.purchaserName ||
+          formData.purchaserEmail ||
           formData.purchaserPhone) && (
-          <div
-            className={`pt-4 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
-          >
-            <label
-              className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
-            >
-              {t("purchaser_details")}
-            </label>
-            <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
+          <div>
+            <label className={labelCls}>{t("purchaser_details")}</label>
+            <div className={valueCls}>
               {formData.purchaserName && (
                 <>
                   {formData.purchaserName}
@@ -100,93 +64,89 @@ const VoucherReview = ({ formData, campaigns, xlsValidation, t }: Props) => {
                   <br />
                 </>
               )}
-              {formData.purchaserPhone && <>{formData.purchaserPhone}</>}
+              {formData.purchaserPhone && (
+                <>
+                  {formData.purchaserCountryCode} {formData.purchaserPhone}
+                </>
+              )}
             </div>
           </div>
         )}
 
-        {/* Creation Type */}
-        <div>
-          <label
-            className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
-          >
-            {t("creation_type")}
-          </label>
-          <div
-            className={`${isDark ? "text-gray-100" : "text-gray-900"} capitalize`}
-          >
-            {t(`creation_type_${formData.creationType}`)}
+        {/* Purchase Type */}
+        <div
+          className={`pt-4 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
+        >
+          <label className={labelCls}>{t("purchase_type")}</label>
+          <div className={`${valueCls} capitalize`}>
+            {formData.purchaseType === "single"
+              ? t("single_voucher")
+              : t("multiple_vouchers")}
           </div>
         </div>
 
-        {/* Single */}
-        {formData.creationType === "single" && (
+        {/* Expiration */}
+        {formData.expirationDate && (
           <div>
-            <label
-              className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
-            >
-              {t("assignee")}
-            </label>
-            <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
-              {formData.assigneeName || "-"}
-              <br />
-              {formData.assigneeEmail || "-"}
-              <br />
-              {formData.assigneePhone || "-"}
+            <label className={labelCls}>{t("expiration_date")}</label>
+            <div className={valueCls}>{formData.expirationDate}</div>
+          </div>
+        )}
+
+        {/* Greeting */}
+        {formData.greeting && (
+          <div>
+            <label className={labelCls}>{t("greeting_message")}</label>
+            <div className={`${valueCls} whitespace-pre-wrap`}>
+              {formData.greeting}
             </div>
           </div>
         )}
 
-        {/* Bulk */}
-        {formData.creationType === "bulk" && (
-          <>
-            <div>
-              <label
-                className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
-              >
-                {t("quantity")}
-              </label>
-              <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
-                {formData.bulkCount} {t("vouchers")}
-              </div>
-            </div>
-
-            {formData.bulkCreateAssigned && (
-              <div>
-                <label
-                  className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+        {/* Assignees */}
+        <div
+          className={`pt-4 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
+        >
+          <label className={labelCls}>
+            {t("assignees")} ({activeAssignees.length})
+          </label>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr
+                  className={`text-xs uppercase ${
+                    isDark ? "text-gray-400" : "text-gray-500"
+                  }`}
                 >
-                  {t("assignee")}
-                </label>
-                <div
-                  className={`${isDark ? "text-gray-100" : "text-gray-900"}`}
-                >
-                  {formData.assigneeName}
-                  <br />
-                  {formData.assigneeEmail}
-                  <br />
-                  {formData.assigneePhone}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Upload */}
-        {formData.creationType === "upload" &&
-          formData.xlsFile &&
-          xlsValidation && (
-            <div>
-              <label
-                className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                  <th className="px-3 py-2 text-left">{t("name")}</th>
+                  <th className="px-3 py-2 text-left">{t("email")}</th>
+                  <th className="px-3 py-2 text-left">{t("phone")}</th>
+                  <th className="px-3 py-2 text-left">{t("campaign")}</th>
+                  <th className="px-3 py-2 text-left">{t("amount")}</th>
+                </tr>
+              </thead>
+              <tbody
+                className={`divide-y ${
+                  isDark ? "divide-gray-800" : "divide-gray-100"
+                }`}
               >
-                {t("upload_results")}
-              </label>
-              <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
-                {xlsValidation.valid} {t("valid_vouchers_will_be_created")}
-              </div>
-            </div>
-          )}
+                {activeAssignees.map((a) => (
+                  <tr key={a.id} className={valueCls}>
+                    <td className="px-3 py-2">{a.name || "—"}</td>
+                    <td className="px-3 py-2">{a.email || "—"}</td>
+                    <td className="px-3 py-2">
+                      {a.phone ? `${a.countryCode} ${a.phone}` : "—"}
+                    </td>
+                    <td className="px-3 py-2">{campaignName(a.campaignId)}</td>
+                    <td className="px-3 py-2">
+                      {a.amount ? `₪${Number(a.amount).toLocaleString()}` : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <div
