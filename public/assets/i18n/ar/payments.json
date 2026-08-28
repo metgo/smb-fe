@@ -9,6 +9,8 @@
   "customer": "العميل",
   "guest": "زائر",
   "order_id": "معرف الطلب",
+  "order": "الطلب",
+  "view_order": "عرض الطلب",
   "payment_request_id": "معرف طلب الدفع",
   "amount": "المبلغ",
   "method": "طريقة الدفع",

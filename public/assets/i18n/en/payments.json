@@ -9,6 +9,8 @@
   "customer": "Customer",
   "guest": "Guest",
   "order_id": "Order ID",
+  "order": "Order",
+  "view_order": "View order",
   "payment_request_id": "Payment Request ID",
   "amount": "Amount",
   "method": "Payment Method",
