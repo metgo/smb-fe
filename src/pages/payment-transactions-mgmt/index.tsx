@@ -191,7 +191,7 @@ const PaymentTransactionsPage = () => {
       render: (row: PaymentTransaction) =>
         row.orderId ? (
           <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
-            <CopyableId id={row.orderId} />
+            <CopyableId id={row.orderId} full />
           </span>
         ) : (
           <span className="text-xs text-gray-500">-</span>
@@ -225,6 +225,7 @@ const PaymentTransactionsPage = () => {
     {
       key: "invoiceUrl",
       label: t("invoice"),
+      width: "160px",
       render: (row: PaymentTransaction) =>
         row.invoiceUrl ? (
           <button
@@ -232,9 +233,9 @@ const PaymentTransactionsPage = () => {
               e.stopPropagation();
               setInvoiceUrl(row.invoiceUrl as string);
             }}
-            className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-medium text-teal-500 hover:text-teal-400 hover:underline"
+            className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap text-xs font-medium text-teal-500 hover:text-teal-400 hover:underline"
           >
-            <FileText className="w-3.5 h-3.5" />
+            <FileText className="w-3.5 h-3.5 shrink-0" />
             {t("view_invoice")}
           </button>
         ) : (
