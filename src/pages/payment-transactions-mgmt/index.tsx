@@ -1,11 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { FileText, PackageOpen } from "lucide-react";
+import { FileText } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetPaymentTransactionsQuery } from "@/store/api/paymentQueryApi";
 import type { PaymentTransaction } from "@/store/api/paymentQueryApi";
-import { PageHeader, SearchInput, ReordableDataTable } from "@/components/shared";
+import {
+  PageHeader,
+  SearchInput,
+  ReordableDataTable,
+  CopyableId,
+} from "@/components/shared";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterButton } from "@/components/btns";
 import FilterSelect from "@/pages/orders-mgmt/components/FilterSelect";
@@ -184,23 +189,15 @@ const PaymentTransactionsPage = () => {
     },
     {
       key: "orderId",
-      label: t("order"),
+      label: t("order_id"),
       render: (row: PaymentTransaction) =>
         row.orderId ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedOrderId(row.orderId);
-            }}
-            title={t("view_order")}
-            className={`inline-flex cursor-pointer items-center justify-center rounded-lg border p-2 transition-colors ${
-              isDark
-                ? "border-gray-700 text-teal-400 hover:border-teal-500 hover:bg-teal-900/20"
-                : "border-gray-200 text-teal-600 hover:border-teal-500 hover:bg-teal-50"
-            }`}
+          <span
+            className="inline-flex"
+            onClick={(e) => e.stopPropagation()}
           >
-            <PackageOpen className="h-4 w-4" />
-          </button>
+            <CopyableId id={row.orderId} />
+          </span>
         ) : (
           <span className="text-xs text-gray-500">-</span>
         ),

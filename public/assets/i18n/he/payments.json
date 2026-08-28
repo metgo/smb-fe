@@ -9,8 +9,6 @@
   "customer": "לקוח",
   "guest": "אורח",
   "order_id": "מזהה הזמנה",
-  "order": "הזמנה",
-  "view_order": "צפייה בהזמנה",
   "payment_request_id": "מזהה בקשת תשלום",
   "amount": "סכום",
   "method": "אמצעי תשלום",
