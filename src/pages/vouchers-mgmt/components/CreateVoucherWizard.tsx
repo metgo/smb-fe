@@ -1,5 +1,12 @@
 import { useState, useCallback } from "react";
-import { User, ClipboardList, Eye, Table, CheckCircle } from "lucide-react";
+import {
+  User,
+  ClipboardList,
+  MessageSquareText,
+  Eye,
+  Table,
+  CheckCircle,
+} from "lucide-react";
 import { ModalWrapper } from "@/components/wrapper";
 import { useCreateVoucherMutation } from "@/store/api/voucherMutationApi";
 
@@ -9,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   VoucherConfigure,
+  VoucherGreeting,
   VoucherInformation,
   VoucherReview,
   VoucherSuccess,
@@ -28,7 +36,7 @@ interface AddVoucherWizardProps {
   };
 }
 
-const totalSteps = 4;
+const totalSteps = 5;
 
 const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
   const { t } = useTranslation("vouchers");
@@ -140,6 +148,9 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
       case 3:
         break;
 
+      case 4:
+        break;
+
       default:
         return false;
     }
@@ -154,7 +165,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
 
   const handlePublish = async () => {
     let allValid = true;
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 4; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -176,7 +187,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
       toast.error(t("fill_all_fields"));
       return;
     }
-    if (currentStep === 3) {
+    if (currentStep === 4) {
       handlePublish();
     }
     setCurrentStep((prev) => prev + 1);
@@ -186,8 +197,9 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
   const steps = [
     { number: 1, icon: User, title: t("purchaser_info") },
     { number: 2, icon: ClipboardList, title: t("assignee_information") },
-    { number: 3, icon: Eye, title: t("review") },
-    { number: 4, icon: Table, title: t("success") },
+    { number: 3, icon: MessageSquareText, title: t("greeting_message") },
+    { number: 4, icon: Eye, title: t("review") },
+    { number: 5, icon: Table, title: t("success") },
   ];
 
   return (
@@ -227,7 +239,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
       {/* Progress Bar */}
       {currentStep <= totalSteps && (
         <div
-          className={`px-4 md:px-6 pt-3 md:pt-4 pb-2 border-b ${
+          className={`px-4 md:px-6 pb-2 border-b ${
             isDark ? "border-gray-800" : "border-gray-200"
           }`}
         >
@@ -241,7 +253,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto ">
+      <div className="flex-1 overflow-y-auto  p-2">
         {currentStep === 1 && (
           <VoucherInformation
             t={t}
@@ -260,14 +272,12 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
           />
         )}
         {currentStep === 3 && (
-          <VoucherReview
-            formData={formData}
-            setFormData={setFormData}
-            campaigns={campaigns}
-            t={t}
-          />
+          <VoucherGreeting formData={formData} setFormData={setFormData} t={t} />
         )}
-        {currentStep === 4 && <VoucherSuccess response={response} t={t} />}
+        {currentStep === 4 && (
+          <VoucherReview formData={formData} campaigns={campaigns} t={t} />
+        )}
+        {currentStep === 5 && <VoucherSuccess response={response} t={t} />}
       </div>
 
       <WizardFooter

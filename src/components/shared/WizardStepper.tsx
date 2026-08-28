@@ -143,7 +143,7 @@ export default function WizardStepper({
             >
               <div
                 className={clsx(
-                  "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all shadow-sm",
+                  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all shadow-sm",
                   getIconBg(step),
                   step.number === currentStep &&
                     "ring-2 ring-teal-400 ring-offset-2 ring-offset-white scale-105",

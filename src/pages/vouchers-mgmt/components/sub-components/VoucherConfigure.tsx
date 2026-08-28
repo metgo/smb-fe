@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -118,6 +118,13 @@ const VoucherConfigure = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState("");
+
+  // Auto-dismiss the upload error message after 6 seconds.
+  useEffect(() => {
+    if (!uploadError) return;
+    const timer = setTimeout(() => setUploadError(""), 6000);
+    return () => clearTimeout(timer);
+  }, [uploadError]);
 
   const card = isDark
     ? "bg-gray-900 border-gray-800"
@@ -289,7 +296,7 @@ const VoucherConfigure = ({
         {/* Sticky block — count, sample/upload/add actions and apply-to-all
             stay visible while scrolling through the assignee cards. */}
         <div
-          className={`sticky -top-1 z-20 ${
+          className={`sticky -top-2 z-20 ${
             isDark ? "bg-gray-900" : "bg-white"
           }`}
         >
@@ -345,9 +352,9 @@ const VoucherConfigure = ({
               />
             </div>
           </div>
-          <p className={` text-xs ${textTertiary}`}>
-            {t("supports_csv_sample_hint")}
-          </p>
+            {/* <p className={` text-xs ${textTertiary}`}>
+              {t("supports_csv_sample_hint")}
+            </p> */}
         </div>
 
         {uploadError && (
@@ -361,7 +368,7 @@ const VoucherConfigure = ({
           </div>
         )}
 
-        {/* Apply to all — shown with 2+ assignees */}
+        {/* Apply to all — shown Ïth 2+ assignees */}
         {activeAssignees.length >= 2 && (
           <BulkApplyBar
             campaigns={campaignList}
@@ -380,7 +387,7 @@ const VoucherConfigure = ({
           {activeAssignees.map((a, idx) => (
             <div
               key={a.id}
-              className={`rounded-xl border ${
+              className={`rounded-xl border transition-colors focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 ${
                 isDark
                   ? "border-gray-800 bg-gray-800/30"
                   : "border-gray-200 bg-gray-50/60"
