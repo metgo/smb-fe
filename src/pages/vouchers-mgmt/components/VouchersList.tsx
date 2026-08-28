@@ -37,7 +37,6 @@ import {
   useGetVoucherStatsQuery,
 } from "@/store/api/voucherQueryApi";
 import { FilterSelect } from "@/pages/orders-mgmt/components";
-import { BulkUploadButton } from "@/components/shared/BulkUploadButton";
 import {
   useSendEmailMutation,
   useSendSMSMutation,
@@ -683,7 +682,7 @@ const VouchersList = ({
           titleGradient="from-purple-500 via-violet-600 to-indigo-600"
           count={totalData}
           addLabel={t("add_voucher")}
-          onAdd={onAddVoucher}
+          onAdd={isSuperadmin ? onAddVoucher : undefined}
           stats={voucherStats}
           isStatsLoading={isStatsLoading}
           filterToggle={filterToggleButton}
@@ -911,15 +910,6 @@ const VouchersList = ({
           storageKey="vouchersTableColumnOrder"
         />
       </div>
-
-      {showAddWizard && (
-        <BulkUploadButton
-          isOpen={showAddWizard}
-          onClose={() => {
-            /* handled by parent */
-          }}
-        />
-      )}
     </>
   );
 };

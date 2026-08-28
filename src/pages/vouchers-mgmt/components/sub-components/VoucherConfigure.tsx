@@ -41,6 +41,53 @@ export function makeVoucherAssignee(): IVoucherAssignee {
   };
 }
 
+// ─── CSV import helpers ──────────────────────────────────────────────────────
+// Columns are matched by header name (case-insensitive), NOT by position, so
+// the order of columns in the uploaded file does not matter.
+type CsvField =
+  "name" | "email" | "countryCode" | "phone" | "campaign" | "amount";
+
+const CSV_COLUMN_ALIASES: Record<CsvField, string[]> = {
+  name: ["name", "assigneename", "assignee name"],
+  email: ["email", "assigneeemail", "assignee email"],
+  countryCode: ["countrycode", "country code", "assigneecountrycode"],
+  phone: ["phone", "mobile", "assigneephone", "assignee phone"],
+  campaign: ["campaign", "campaignname", "campaign name"],
+  amount: ["amount", "value"],
+};
+
+const CSV_REQUIRED_FIELDS: CsvField[] = ["name", "email", "campaign", "amount"];
+
+// Minimal CSV splitter that understands quoted fields with embedded commas
+// and "" escapes — good enough for the sample template and spreadsheet exports.
+function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        cur += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out.map((v) => v.trim());
+}
+
 const VoucherConfigure = ({
   formData,
   setFormData,
@@ -123,7 +170,8 @@ const VoucherConfigure = ({
     URL.revokeObjectURL(url);
   };
 
-  // CSV parse (client-side, plain CSV only)
+  // CSV parse (client-side, plain CSV only). Columns are resolved by header
+  // name so re-ordered / extra columns don't silently shift values.
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError("");
     const file = e.target.files?.[0];
@@ -131,45 +179,78 @@ const VoucherConfigure = ({
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const text = ev.target?.result as string;
-        const lines = text
-          .split("\n")
+        const text = (ev.target?.result as string).replace(/^\uFEFF/, "");
+        const rows = text
+          .split(/\r?\n/)
           .map((l) => l.trim())
           .filter(Boolean);
-        if (lines.length < 2) {
+        if (rows.length < 2) {
           setUploadError(
             "File must have a header row and at least one data row.",
           );
           return;
         }
-        const parsed: IVoucherAssignee[] = lines.slice(1).map((line) => {
-          const [
-            name = "",
-            email = "",
-            countryCode = "+972",
-            phone = "",
-            campaignLabel = "",
-            amount = "",
-          ] = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+
+        // Map each expected field to its column index via the header row.
+        const header = parseCsvLine(rows[0]).map((h) => h.toLowerCase());
+        const colIndex: Partial<Record<CsvField, number>> = {};
+        (Object.keys(CSV_COLUMN_ALIASES) as CsvField[]).forEach((field) => {
+          const idx = header.findIndex((h) =>
+            CSV_COLUMN_ALIASES[field].includes(h),
+          );
+          if (idx !== -1) colIndex[field] = idx;
+        });
+
+        const missing = CSV_REQUIRED_FIELDS.filter(
+          (f) => colIndex[f] === undefined,
+        );
+        if (missing.length) {
+          setUploadError(
+            `Missing required column(s): ${missing.join(", ")}. ` +
+              `Use "Download sample" for the expected format.`,
+          );
+          return;
+        }
+
+        const cell = (cells: string[], field: CsvField) => {
+          const idx = colIndex[field];
+          return idx === undefined ? "" : (cells[idx] ?? "").trim();
+        };
+
+        const unmatchedCampaigns = new Set<string>();
+        const parsed: IVoucherAssignee[] = rows.slice(1).map((line) => {
+          const cells = parseCsvLine(line);
+          const campaignLabel = cell(cells, "campaign");
           const campaign = campaignList.find(
             (c) => c.name.toLowerCase() === campaignLabel.toLowerCase(),
           );
+          if (campaignLabel && !campaign) unmatchedCampaigns.add(campaignLabel);
+          const rawCc = cell(cells, "countryCode") || "+972";
           return {
             id: crypto.randomUUID(),
-            name,
-            email,
-            countryCode,
-            phone,
+            name: cell(cells, "name"),
+            email: cell(cells, "email"),
+            countryCode: rawCc.startsWith("+") ? rawCc : `+${rawCc}`,
+            phone: cell(cells, "phone"),
             campaignId: campaign?._id || "",
-            amount,
+            amount: cell(cells, "amount"),
           };
         });
+
         setFormData((prev) => ({
           ...prev,
           assignees: parsed,
           purchaseType: "multiple",
           multiMode: "upload",
         }));
+
+        if (unmatchedCampaigns.size) {
+          setUploadError(
+            `Imported ${parsed.length} row(s). These campaign names didn't ` +
+              `match any campaign and were left blank: ` +
+              `${[...unmatchedCampaigns].join(", ")}.`,
+          );
+        }
       } catch {
         setUploadError(
           "Could not parse the file. Please use the sample format.",
@@ -195,7 +276,9 @@ const VoucherConfigure = ({
               onClick={() => setPurchaseType(type)}
               className={`flex-1 py-3 rounded-xl border-2 text-sm transition-all ${
                 purchaseType === type
-                  ? "border-teal-500 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300"
+                  ? isDark
+                    ? "border-teal-500 bg-teal-900/20 text-teal-300"
+                    : "border-teal-500 bg-teal-50 text-teal-700"
                   : `border-transparent ${
                       isDark
                         ? "bg-gray-800 text-gray-300 hover:bg-gray-700"

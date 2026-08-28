@@ -44,7 +44,7 @@ const VoucherInformation = ({
         {t("purchaser_details")}
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4 max-w-full">
         {/* Name */}
         <div>
           <label className={`block text-xs mb-1.5 ${textSecondary}`}>
