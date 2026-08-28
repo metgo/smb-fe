@@ -62,7 +62,7 @@ interface IOrderProduct {
   orderedProductId?: string;
 }
 
-class ProductDto {
+class IProductDto {
   _id: string;
   orderedProductId: string;
   name: string;
@@ -71,6 +71,7 @@ class ProductDto {
   quantity: number;
   amount: number;
   status: string;
+  itemType: "PRODUCT" | "TICKET";
 
   receiverEmail: string;
   receiverCountryCode: string;
@@ -89,6 +90,15 @@ class ProductDto {
 
   isGift: boolean;
   additionalInfo: string;
+
+  cancelled: {
+    _id: string;
+    additionalInfo: string;
+    canceledDate: string;
+    canceledReson: string;
+    email: string; //canceledBy Admin email
+    name: string; //canceledBy Admin name
+  };
 
   business?: {
     _id: string;
@@ -121,7 +131,7 @@ class IOrdersRes {
   createdAt: string;
   externalApiId: string;
 
-  products: ProductDto[];
+  products: IProductDto[];
 }
 
 interface IOrderColumnVisibility {

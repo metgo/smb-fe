@@ -1,14 +1,6 @@
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import {
-  X,
-  Sparkles,
-  Building2,
-  ShoppingBag,
-  Check,
-  Info,
-  MapPin,
-} from "lucide-react";
+import { X, Sparkles, Building2, ShoppingBag, Check, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getPlainTextFromRichText } from "@/helpers";
 import { ImageWithFallback } from "@/components/shared";
@@ -21,11 +13,9 @@ interface AiReviewModalProps {
   categoryName: string;
   suggestedBusinesses: IAiSuggestedEntity[];
   suggestedProducts: IAiSuggestedEntity[];
-  suggestedPois: IAiSuggestedEntity[];
   onConfirm: (
     selectedBusinesses: IAiSuggestedEntity[],
     selectedProducts: IAiSuggestedEntity[],
-    selectedPois: IAiSuggestedEntity[],
   ) => void;
   isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
 }
@@ -139,31 +129,26 @@ const AiReviewModal = ({
   categoryName,
   suggestedBusinesses,
   suggestedProducts,
-  suggestedPois,
   onConfirm,
   isMarketplace = false,
 }: AiReviewModalProps) => {
   const { isDark } = useThemeClasses();
-  // For TRAVELLER, show businesses and POIs tabs. For MARKETPLACE, show only products tab.
-  const [activeTab, setActiveTab] = useState<
-    "businesses" | "products" | "pois"
-  >(isMarketplace ? "products" : "businesses");
+  // For TRAVELLER, show businesses tab. For MARKETPLACE, show only products tab.
+  const [activeTab, setActiveTab] = useState<"businesses" | "products">(
+    isMarketplace ? "products" : "businesses",
+  );
   const [selectedBusinessIds, setSelectedBusinessIds] = useState<Set<string>>(
     () => new Set(suggestedBusinesses.map((b) => b._id)),
   );
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
     () => new Set(suggestedProducts.map((p) => p._id)),
   );
-  const [selectedPoiIds, setSelectedPoiIds] = useState<Set<string>>(
-    () => new Set(suggestedPois.map((p) => p._id)),
-  );
 
   useEffect(() => {
     if (!isOpen) return;
     setSelectedBusinessIds(new Set(suggestedBusinesses.map((b) => b._id)));
     setSelectedProductIds(new Set(suggestedProducts.map((p) => p._id)));
-    setSelectedPoiIds(new Set(suggestedPois.map((p) => p._id)));
-  }, [isOpen, suggestedBusinesses, suggestedProducts, suggestedPois]);
+  }, [isOpen, suggestedBusinesses, suggestedProducts]);
 
   if (!isOpen) return null;
 
@@ -181,13 +166,6 @@ const AiReviewModal = ({
       return next;
     });
 
-  const togglePoi = (id: string) =>
-    setSelectedPoiIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-
   const handleConfirm = () => {
     const selectedBiz = suggestedBusinesses.filter((b) =>
       selectedBusinessIds.has(b._id),
@@ -195,16 +173,12 @@ const AiReviewModal = ({
     const selectedProd = suggestedProducts.filter((p) =>
       selectedProductIds.has(p._id),
     );
-    const selectedPois = suggestedPois.filter((p) => selectedPoiIds.has(p._id));
-    onConfirm(selectedBiz, selectedProd, selectedPois);
+    onConfirm(selectedBiz, selectedProd);
   };
 
-  const totalSelected =
-    selectedBusinessIds.size + selectedProductIds.size + selectedPoiIds.size;
+  const totalSelected = selectedBusinessIds.size + selectedProductIds.size;
   const hasResults =
-    suggestedBusinesses.length > 0 ||
-    suggestedProducts.length > 0 ||
-    suggestedPois.length > 0;
+    suggestedBusinesses.length > 0 || suggestedProducts.length > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -284,39 +258,26 @@ const AiReviewModal = ({
         >
           {(
             [
-              ...(isMarketplace
-                ? [
-                    {
-                      key: "products",
-                      label: "Products",
-                      icon: ShoppingBag,
-                      count: suggestedProducts.length,
-                      selected: selectedProductIds.size,
-                    },
-                  ]
-                : [
-                    {
-                      key: "businesses",
-                      label: "Businesses",
-                      icon: Building2,
-                      count: suggestedBusinesses.length,
-                      selected: selectedBusinessIds.size,
-                    },
-                    {
-                      key: "pois",
-                      label: "POIs",
-                      icon: MapPin,
-                      count: suggestedPois.length,
-                      selected: selectedPoiIds.size,
-                    },
-                  ]),
+              isMarketplace
+                ? {
+                    key: "products",
+                    label: "Products",
+                    icon: ShoppingBag,
+                    count: suggestedProducts.length,
+                    selected: selectedProductIds.size,
+                  }
+                : {
+                    key: "businesses",
+                    label: "Businesses",
+                    icon: Building2,
+                    count: suggestedBusinesses.length,
+                    selected: selectedBusinessIds.size,
+                  },
             ] as const
           ).map(({ key, label, icon: Icon, count, selected }) => (
             <button
               key={key}
-              onClick={() =>
-                setActiveTab(key as "businesses" | "products" | "pois")
-              }
+              onClick={() => setActiveTab(key as "businesses" | "products")}
               className={clsx(
                 "flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
                 activeTab === key
@@ -399,28 +360,6 @@ const AiReviewModal = ({
                       entity={p}
                       selected={selectedProductIds.has(p._id)}
                       onToggle={() => toggleProduct(p._id)}
-                      isDark={isDark}
-                    />
-                  ))
-                ))}
-
-              {activeTab === "pois" &&
-                (suggestedPois.length === 0 ? (
-                  <p
-                    className={clsx(
-                      "col-span-full py-8 text-center text-sm",
-                      isDark ? "text-gray-500" : "text-gray-400",
-                    )}
-                  >
-                    No matching POIs found.
-                  </p>
-                ) : (
-                  suggestedPois.map((p) => (
-                    <EntityCard
-                      key={p._id}
-                      entity={p}
-                      selected={selectedPoiIds.has(p._id)}
-                      onToggle={() => togglePoi(p._id)}
                       isDark={isDark}
                     />
                   ))

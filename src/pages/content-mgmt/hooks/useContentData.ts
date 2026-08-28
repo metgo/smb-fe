@@ -3,9 +3,6 @@ import { skipToken } from "@reduxjs/toolkit/query";
 
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
-import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
-// import { useGetContentManagementEventsQuery } from "@/store/api/eventQueryApi"; // Events disabled for TRAVELLER purpose
-import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 import type { TabState } from "./useContentTabs";
 
 const PAGE_LIMIT = 20;
@@ -31,20 +28,13 @@ export function useContentData({
 }: UseContentDataParams) {
   const [page, setPage] = useState(1);
   const [productPage, setProductPage] = useState(1);
-  const [poiPage, setPoiPage] = useState(1);
-  // const [eventPage, setEventPage] = useState(1); // Events disabled for TRAVELLER purpose
   const [isApiIdChanging, setIsApiIdChanging] = useState(false);
 
   const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
-  const [combinedPOIs, setCombinedPOIs] = useState<any[]>([]);
-  // const [combinedEvents, setCombinedEvents] = useState<any[]>([]); // Events disabled for TRAVELLER purpose
 
   const businessTab = tabState["Businesses"];
   const productTab = tabState["Products"];
-  const tripTab = tabState["Trips"];
-  // const eventTab = tabState["Events"]; // Events disabled for TRAVELLER purpose
-  const poiTab = tabState["POI"];
 
   // ── Query params ────────────────────────────────────────────────────────────
 
@@ -90,50 +80,6 @@ export function useContentData({
     return params;
   }, [productTab, dmoId, authorityId, externalApiId, productPage]);
 
-  const tripParams = useMemo(() => {
-    const { searchQuery, filters } = tabState["Trips"];
-    const params: any = { dmoId, authorityId, limit: PAGE_LIMIT };
-    if (filters.isTrip !== "all") params.isTrip = filters.isTrip;
-    if (searchQuery) params.search = searchQuery;
-    return params;
-  }, [tripTab, authorityId, dmoId]);
-
-  // const eventParams = useMemo(() => { // Events disabled for TRAVELLER purpose
-  //   // Events disabled for TRAVELLER purpose - commented out
-  //   // const { searchQuery, filters } = tabState["Events"];
-  //   // const params: any = {
-  //   //   status: "APPROVED",
-  //   //   dmoId,
-  //   //   authorityId,
-  //   //   externalApiId,
-  //   //   limit: PAGE_LIMIT,
-  //   //   page: eventPage,
-  //   // };
-  //   // if (searchQuery) params.search = searchQuery;
-  //   // if (filters.registrationFilter !== "all")
-  //   //   params.isRegistration = filters.registrationFilter;
-  //   // if (filters.dateRangeFilter.start)
-  //   //   params.startDate = filters.dateRangeFilter.start;
-  //   // if (filters.dateRangeFilter.end)
-  //   //   params.endDate = filters.dateRangeFilter.end;
-  //   // return params;
-  //   return null; // Events disabled
-  // }, []); // Removed dependencies since events are disabled
-
-  const poiParams = useMemo(() => {
-    const { searchQuery } = tabState["POI"];
-    const params: any = {
-      dmoId,
-      authorityId,
-      limit: PAGE_LIMIT,
-      status: "APPROVED",
-      externalApiId,
-      page: poiPage,
-    };
-    if (searchQuery) params.search = searchQuery;
-    return params;
-  }, [poiTab, dmoId, authorityId, externalApiId, poiPage]);
-
   // ── Queries ─────────────────────────────────────────────────────────────────
 
   const {
@@ -147,30 +93,11 @@ export function useContentData({
     isLoading: isLoadingProduct,
     isFetching: isFetchingProduct,
   } = useGetContentManagementProductsQuery(
-    // Products disabled for TRAVELLER purpose
+    // Products only available for MARKETPLACE purpose
     selected === "Products" && externalApiId && isMarketplace
       ? productParams
       : skipToken,
   );
-
-  const { data: tripData, isLoading: isLoadingTrip } = useGetAllTripsQuery(
-    selected === "Trips" ? tripParams : skipToken,
-  );
-
-  // Events disabled for TRAVELLER purpose - commented out
-  // const {
-  //   data: eventData,
-  //   isLoading: isLoadingEvent,
-  //   isFetching: isFetchingEvent,
-  // } = useGetContentManagementEventsQuery(
-  //   selected === "Events" ? eventParams : skipToken,
-  // );
-
-  const {
-    data: poiData,
-    isLoading: isLoadingPOI,
-    isFetching: isFetchingPOI,
-  } = useGetAllPOIQuery(selected === "POI" ? poiParams : skipToken);
 
   // ── Reset all on website change ─────────────────────────────────────────────
 
@@ -179,12 +106,8 @@ export function useContentData({
     setIsApiIdChanging(true);
     setPage(1);
     setProductPage(1);
-    // setEventPage(1); // Events disabled for TRAVELLER purpose
-    setPoiPage(1);
     setCombinedBusinesses([]);
     setCombinedProducts([]);
-    // setCombinedEvents([]); // Events disabled for TRAVELLER purpose
-    setCombinedPOIs([]);
   }, [externalApiId]);
 
   // ── Businesses pagination ───────────────────────────────────────────────────
@@ -238,50 +161,6 @@ export function useContentData({
     }
   }, [productData?.data, productPage]);
 
-  // ── Events pagination ───────────────────────────────────────────────────────
-  // Events disabled for TRAVELLER purpose - commented out
-  // useEffect(() => {
-  //   setEventPage(1);
-  //   setCombinedEvents([]);
-  // }, [eventTab.searchQuery, eventTab.filters]);
-
-  // useEffect(() => {
-  //   if (!eventData?.data) return;
-  //   if (eventPage === 1) {
-  //     setCombinedEvents(eventData.data);
-  //   } else {
-  //     setCombinedEvents((prev) => {
-  //       const existingIds = new Set(prev.map((e: any) => e._id));
-  //       return [
-  //         ...prev,
-  //         ...eventData.data.filter((e: any) => !existingIds.has(e._id)),
-  //       ];
-  //     });
-  //   }
-  // }, [eventData?.data, eventPage]);
-
-  // ── POI pagination ──────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    setPoiPage(1);
-    setCombinedPOIs([]);
-  }, [poiTab.searchQuery, poiTab.filters, dmoId, authorityId, externalApiId]);
-
-  useEffect(() => {
-    if (!poiData?.data) return;
-    if (poiPage === 1) {
-      setCombinedPOIs(poiData.data);
-    } else {
-      setCombinedPOIs((prev) => {
-        const existingIds = new Set(prev.map((p: any) => p._id));
-        return [
-          ...prev,
-          ...poiData.data.filter((p: any) => !existingIds.has(p._id)),
-        ];
-      });
-    }
-  }, [poiData?.data, poiPage]);
-
   // ── Load-more callbacks ─────────────────────────────────────────────────────
 
   const fetchNextPage = () => {
@@ -292,16 +171,6 @@ export function useContentData({
   const fetchNextProductPage = () => {
     if (!productData?.meta?.hasNextPage || isFetchingProduct) return;
     setProductPage((prev) => prev + 1);
-  };
-
-  // const fetchNextEventPage = () => {
-  //   // Events disabled for TRAVELLER purpose - no-op
-  //   return;
-  // };
-
-  const fetchNextPoiPage = () => {
-    if (!poiData?.meta?.hasNextPage || isFetchingPOI) return;
-    setPoiPage((prev) => prev + 1);
   };
 
   // ── Data map (aggregates everything per tab) ────────────────────────────────
@@ -327,37 +196,13 @@ export function useContentData({
       loadMore: fetchNextProductPage,
       hasMore: productData?.meta?.hasNextPage,
     },
-    Trips: { rawData: tripData, isLoading: isLoadingTrip },
-    Events: {
-      // Events disabled for TRAVELLER purpose - commented out
-      // rawData: combinedEvents,
-      // isLoading: isLoadingEvent,
-      // loadMore: fetchNextEventPage,
-      // hasMore: eventData?.meta?.hasNextPage,
-      rawData: [],
-      isLoading: false,
-      loadMore: undefined,
-      hasMore: false,
-    },
-    POI: {
-      rawData: combinedPOIs,
-      isLoading: isLoadingPOI,
-      loadMore: fetchNextPoiPage,
-      hasMore: poiData?.meta?.hasNextPage,
-    },
   };
 
   const active = dataMap[selected ?? "Businesses"];
 
   const getItems = (rawData: any, tab: string | null) => {
     if (!rawData) return [];
-    if (
-      tab === "Businesses" ||
-      tab === "Products" ||
-      tab === "POI" ||
-      tab === "Events"
-    )
-      return rawData;
+    if (tab === "Businesses" || tab === "Products") return rawData;
     return rawData?.data ?? [];
   };
 
@@ -366,17 +211,11 @@ export function useContentData({
   const tabCounts = {
     Businesses: businessData?.totalData ?? 0,
     Products: productData?.totalData ?? 0,
-    Trips: 0,
-    Events: 0, // Events disabled for TRAVELLER purpose
-    POI: poiData?.totalData ?? combinedPOIs.length,
   };
 
   const tabLoadings = {
     Businesses: isLoading || isApiIdChanging,
     Products: isLoadingProduct || isApiIdChanging,
-    Trips: isLoadingTrip,
-    Events: false, // Events disabled for TRAVELLER purpose
-    POI: isLoadingPOI,
   };
 
   const totalData =

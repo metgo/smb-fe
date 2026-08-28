@@ -175,9 +175,7 @@ const PaymentTransactionsPage = () => {
         return (
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-medium">{name || t("guest")}</span>
-            {email && (
-              <span className="text-xs text-gray-500">{email}</span>
-            )}
+            {email && <span className="text-xs text-gray-500">{email}</span>}
             {phoneText && (
               <span className="text-xs text-gray-500" dir="ltr">
                 {phoneText}
@@ -192,10 +190,7 @@ const PaymentTransactionsPage = () => {
       label: t("order_id"),
       render: (row: PaymentTransaction) =>
         row.orderId ? (
-          <span
-            className="inline-flex"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
             <CopyableId id={row.orderId} />
           </span>
         ) : (
@@ -270,8 +265,7 @@ const PaymentTransactionsPage = () => {
 
   const isInitialLoad =
     (isLoading || isFetching) && page === 1 && allTransactions.length === 0;
-  const isRefreshing =
-    isFetching && page === 1 && allTransactions.length > 0;
+  const isRefreshing = isFetching && page === 1 && allTransactions.length > 0;
 
   return (
     <div

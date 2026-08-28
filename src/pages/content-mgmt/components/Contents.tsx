@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { CheckCircle2, Circle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import React, { useState, useCallback, useMemo } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -22,13 +23,6 @@ interface Filters {
   hasProductFilter: string;
   primaryCategory: string;
   businessId: string;
-  registrationFilter: string;
-  eventTypeFilter: string;
-  dateRangeFilter: {
-    start: string;
-    end: string;
-  };
-  isTrip: string;
   assignmentStatus: string; // 'all' | 'assigned' | 'unassigned'
   viewCategory: string; // category titleHe or 'all'
   sortOrder: string; // 'recent' | 'alpha'
@@ -57,21 +51,23 @@ interface ContentsProps {
   hasMore?: boolean;
   hiddenTabs?: string[];
 }
-const ALL_FILTER_OPTIONS = [
-  "Businesses",
-  "Products",
-  // "Trips",
-  // "Events", // Events disabled for TRAVELLER purpose
-  "POI",
-];
+const ALL_FILTER_OPTIONS = ["Businesses", "Products"];
 
 const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
   Businesses: "business",
   Products: "product",
-  Trips: "trip",
-  // Events: "event", // Events disabled for TRAVELLER purpose
-  POI: "poi",
 };
+
+type TInViewFilter = "all" | "included" | "unincluded";
+
+const IN_VIEW_FILTER_OPTIONS: {
+  value: TInViewFilter;
+  labelKey: string;
+}[] = [
+  { value: "all", labelKey: "in_view_filter_all" },
+  { value: "included", labelKey: "in_view_filter_included" },
+  { value: "unincluded", labelKey: "in_view_filter_unincluded" },
+];
 
 const FILTER_ICONS: Record<string, React.ReactNode> = {
   Businesses: (
@@ -89,21 +85,6 @@ const FILTER_ICONS: Record<string, React.ReactNode> = {
       />
     </svg>
   ),
-  Trips: (
-    <svg
-      className="w-3.5 h-3.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-      />
-    </svg>
-  ),
   Products: (
     <svg
       className="w-3.5 h-3.5"
@@ -116,42 +97,6 @@ const FILTER_ICONS: Record<string, React.ReactNode> = {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-      />
-    </svg>
-  ),
-  Events: (
-    <svg
-      className="w-3.5 h-3.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-      />
-    </svg>
-  ),
-  POI: (
-    <svg
-      className="w-3.5 h-3.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
       />
     </svg>
   ),
@@ -188,6 +133,7 @@ const Contents = ({
   const { categories: categoryFilter } = useCommon();
 
   const [showFilters, setShowFilters] = useState(false);
+  const [inViewFilter, setInViewFilter] = useState<TInViewFilter>("all");
   const [selectedItems, setSelectedItems] = useState<Map<string, any>>(
     new Map(),
   );
@@ -269,11 +215,33 @@ const Contents = ({
     return cats;
   }, [templateContents]);
 
+  // ─── IDs of items already included in the currently loaded view ───────────
+  // templateContents holds the view/template currently open in the composer.
+  const currentContentType = TAB_TO_CONTENT_TYPE[currentTab] ?? "business";
+  const inViewIds = useMemo(() => {
+    const ids = new Set<string>();
+    templateContents?.forEach((topic) =>
+      topic.groups?.forEach((group) =>
+        group.contents
+          ?.filter((c) => c.contentType === currentContentType)
+          .forEach((c) => c._id && ids.add(c._id.toString())),
+      ),
+    );
+    return ids;
+  }, [templateContents, currentContentType]);
+
   const filteredItems = useMemo(() => {
     let items = combinedBusinesses ?? [];
 
     // NOTE: assignmentStatus and viewCategory are now filtered server-side
     // via useContentData → backend handlers. Only client-side sort applied here.
+
+    // Client-side "already in view" filter (switch above the list).
+    if (inViewFilter === "included") {
+      items = items.filter((it: any) => inViewIds.has(it._id?.toString()));
+    } else if (inViewFilter === "unincluded") {
+      items = items.filter((it: any) => !inViewIds.has(it._id?.toString()));
+    }
 
     if (filters.sortOrder === "alpha") {
       items = [...items].sort((a, b) => {
@@ -291,7 +259,7 @@ const Contents = ({
     }
 
     return items;
-  }, [combinedBusinesses, filters.sortOrder]);
+  }, [combinedBusinesses, filters.sortOrder, inViewFilter, inViewIds]);
 
   // ─── Selection handler ────────────────────────────────────────────────────
   const handleSelect = useCallback(
@@ -449,14 +417,51 @@ const Contents = ({
               storageKey="contentSearchTerm"
             />
           </div>
-          {currentTab !== "POI" && (
-            <FilterButton value={showFilters} onChange={setShowFilters} />
-          )}
+          <FilterButton value={showFilters} onChange={setShowFilters} />
           <ViewModeToggle
             onChange={setViewMode}
             value={viewMode}
             tableName="contentViewMode"
           />
+        </div>
+
+        {/* ── "Already in view" filter switch ── */}
+        <div className="flex items-center gap-1 mb-4">
+          <div
+            className={clsx(
+              "inline-flex items-center rounded-lg border p-0.5",
+              isDark
+                ? "border-gray-700 bg-gray-800"
+                : "border-gray-200 bg-gray-50",
+            )}
+          >
+            {IN_VIEW_FILTER_OPTIONS.map((opt) => {
+              const isActive = inViewFilter === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setInViewFilter(opt.value)}
+                  className={clsx(
+                    "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                    isActive
+                      ? "bg-teal-500/15 text-teal-600"
+                      : isDark
+                        ? "text-gray-400 hover:text-gray-200"
+                        : "text-gray-500 hover:text-gray-700",
+                  )}
+                >
+                  {opt.value === "included" && (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  {opt.value === "unincluded" && (
+                    <Circle className="w-3.5 h-3.5" />
+                  )}
+                  {t(opt.labelKey)}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Filters Panel */}
@@ -622,111 +627,12 @@ const Contents = ({
                     </select>
                   </div>
                 )}
-
-                {currentTab === "Trips" && (
-                  <div className="flex flex-col min-w-45">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("isTrip")}
-                    </label>
-                    <select
-                      value={filters.isTrip}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          isTrip: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="all">{tc("all")}</option>
-                      <option value="true">{tc("yes")}</option>
-                      <option value="false">{tc("no")}</option>
-                    </select>
-                  </div>
-                )}
-                {/* ── Event filters ── */}
-                {/* Events disabled for TRAVELLER purpose - commented out */}
-                {/* {currentTab === "Events" && (
-                  <div className="flex flex-col min-w-45">
-                    <label className={`block text-sm mb-2 `}>
-                      {t("registration")}
-                    </label>
-                    <select
-                      value={filters.registrationFilter}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          registrationFilter: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="all">{tc("all")}</option>
-                      <option value="true">{tc("required")}</option>
-                      <option value="false">{tc("not_required")}</option>
-                    </select>
-                    <label className={`block text-sm mb-2 `}>
-                      {t("date_range")}
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="date"
-                        value={filters?.dateRangeFilter.start}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            dateRangeFilter: {
-                              ...filters.dateRangeFilter,
-                              start: e.target.value,
-                            },
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                          isDark
-                            ? "bg-gray-900 border-gray-700 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                      />
-                      <input
-                        type="date"
-                        value={filters?.dateRangeFilter.end}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            dateRangeFilter: {
-                              ...filters.dateRangeFilter,
-                              end: e.target.value,
-                            },
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                          isDark
-                            ? "bg-gray-900 border-gray-700 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                      />
-                    </div>
-                  </div>
-                )} */}
               </div>
 
               {/* ── Active Filter Chips ── */}
-              {(currentTab === "Businesses" &&
-                (filters.hasProductFilter !== "all" ||
-                  filters.primaryCategory !== "all")) ||
-              /* Products disabled for TRAVELLER purpose - commented out */
-              /* Events disabled for TRAVELLER purpose - commented out */
-              false ? (
+              {currentTab === "Businesses" &&
+              (filters.hasProductFilter !== "all" ||
+                filters.primaryCategory !== "all") ? (
                 <div className="flex flex-col items-start gap-1">
                   <label
                     className={`block text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -743,25 +649,10 @@ const Contents = ({
                         // Only show chips relevant to current tab
                         if (currentTab === "Businesses" && key === "businessId")
                           return null;
-                        /* Products disabled for TRAVELLER purpose - commented out
-                        if (currentTab === "Products" && key !== "businessId")
-                          return null;
-                        */
-                        // Events disabled for TRAVELLER purpose - commented out
-                        // if (
-                        //   currentTab === "Events" &&
-                        //   key !== "registrationFilter"
-                        // )
-                        //   return null;
 
                         let displayValue = value;
                         if (key === "hasProductFilter")
                           displayValue = value === "yes" ? t("yes") : t("no");
-                        else if (key === "registrationFilter")
-                          displayValue =
-                            value === "true"
-                              ? tc("required")
-                              : tc("not_required");
                         else if (key === "primaryCategory") {
                           const found = categoryFilter?.find(
                             (item: any) => item._id === value,
@@ -788,20 +679,6 @@ const Contents = ({
                           />
                         );
                       })}
-                      {/* Events disabled for TRAVELLER purpose - commented out */}
-                      {/* {currentTab === "Events" &&
-                        (filters.dateRangeFilter.start ||
-                          filters.dateRangeFilter.end) && (
-                          <FilterChips
-                            label={`${filters.dateRangeFilter.start || "..."} → ${filters.dateRangeFilter.end || "..."}`}
-                            onRemove={() =>
-                              setFilters((prev: Filters) => ({
-                                ...prev,
-                                dateRangeFilter: { start: "", end: "" },
-                              }))
-                            }
-                          />
-                        )} */}
                     </div>
                     <button
                       onClick={clearFilter}
@@ -875,8 +752,9 @@ const Contents = ({
                 viewMode={viewMode}
                 isExpanded={isExpanded}
                 isSelected={selectedItems.has(item._id)}
+                isInView={inViewIds.has(item._id?.toString())}
                 selectedItems={selectedItems}
-                contentType={TAB_TO_CONTENT_TYPE[currentTab] ?? "business"}
+                contentType={currentContentType}
                 handleClick={(e) => handleClick(e, item)}
                 handleContextMenu={() => handleContextMenu(item)}
               />

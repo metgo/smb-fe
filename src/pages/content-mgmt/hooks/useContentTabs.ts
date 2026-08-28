@@ -4,10 +4,6 @@ export interface Filters {
   hasProductFilter: string;
   primaryCategory: string;
   businessId: string;
-  registrationFilter: string;
-  eventTypeFilter: string;
-  dateRangeFilter: { start: string; end: string };
-  isTrip: string;
   assignmentStatus: string;
   viewCategory: string;
   sortOrder: string;
@@ -18,7 +14,7 @@ export interface TabState {
   filters: Filters;
 }
 
-const ALL_TABS = ["Businesses", "Products", "Trips", "Events", "POI"] as const;
+const ALL_TABS = ["Businesses", "Products"] as const;
 
 export const defaultTabState: TabState = {
   searchQuery: "",
@@ -26,10 +22,6 @@ export const defaultTabState: TabState = {
     hasProductFilter: "all",
     primaryCategory: "all",
     businessId: "",
-    registrationFilter: "",
-    eventTypeFilter: "",
-    dateRangeFilter: { start: "", end: "" },
-    isTrip: "all",
     assignmentStatus: "all",
     viewCategory: "all",
     sortOrder: "recent",
