@@ -38,14 +38,23 @@ export function makeVoucherAssignee(): IVoucherAssignee {
     phone: "",
     campaignId: "",
     amount: "",
+    expireDate: "",
   };
 }
+
+const TODAY = new Date().toISOString().split("T")[0];
 
 // ─── CSV import helpers ──────────────────────────────────────────────────────
 // Columns are matched by header name (case-insensitive), NOT by position, so
 // the order of columns in the uploaded file does not matter.
 type CsvField =
-  "name" | "email" | "countryCode" | "phone" | "campaign" | "amount";
+  | "name"
+  | "email"
+  | "countryCode"
+  | "phone"
+  | "campaign"
+  | "amount"
+  | "expireDate";
 
 const CSV_COLUMN_ALIASES: Record<CsvField, string[]> = {
   name: ["name", "assigneename", "assignee name"],
@@ -54,6 +63,14 @@ const CSV_COLUMN_ALIASES: Record<CsvField, string[]> = {
   phone: ["phone", "mobile", "assigneephone", "assignee phone"],
   campaign: ["campaign", "campaignname", "campaign name"],
   amount: ["amount", "value"],
+  expireDate: [
+    "expiration",
+    "expirationdate",
+    "expiration date",
+    "expiredate",
+    "expire date",
+    "expiry",
+  ],
 };
 
 const CSV_REQUIRED_FIELDS: CsvField[] = ["name", "email", "campaign", "amount"];
@@ -115,17 +132,14 @@ const VoucherConfigure = ({
       ? "bg-gray-800 border-gray-700 text-gray-100"
       : "bg-white border-gray-300 text-gray-900"
   }`;
+  const labelCls = `block text-xs mb-1 ${
+    isDark ? "text-gray-400" : "text-gray-500"
+  }`;
 
-  const { purchaseType, multiMode, assignees } = formData;
+  const { assignees } = formData;
 
-  const activeAssignees =
-    purchaseType === "single" ? assignees.slice(0, 1) : assignees;
-
-  const setPurchaseType = (type: VoucherPurchaseType) =>
-    setFormData((prev) => ({ ...prev, purchaseType: type }));
-
-  const setMultiMode = (mode: VoucherMultiMode) =>
-    setFormData((prev) => ({ ...prev, multiMode: mode }));
+  // Always a "multiple vouchers" flow now — one card per assignee.
+  const activeAssignees = assignees;
 
   const updateAssignee = (
     id: string,
@@ -151,7 +165,10 @@ const VoucherConfigure = ({
       assignees: prev.assignees.filter((a) => a.id !== id),
     }));
 
-  const applyToAll = (field: "campaignId" | "amount", value: string) =>
+  const applyToAll = (
+    field: "campaignId" | "amount" | "expireDate",
+    value: string,
+  ) =>
     setFormData((prev) => ({
       ...prev,
       assignees: prev.assignees.map((a) => ({ ...a, [field]: value })),
@@ -160,7 +177,7 @@ const VoucherConfigure = ({
   // Sample CSV download
   const downloadSample = () => {
     const csv =
-      "Name,Email,CountryCode,Phone,Campaign,Amount\nJohn Doe,john@example.com,+972,501234567,Summer Sale 2024,200\nJane Smith,jane@example.com,+1,2125550100,VIP Members,500";
+      "Name,Email,CountryCode,Phone,Campaign,Amount,Expiration\nJohn Doe,john@example.com,+972,501234567,Summer Sale 2024,200,2026-12-31\nJane Smith,jane@example.com,+1,2125550100,VIP Members,500,2026-12-31";
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -226,6 +243,7 @@ const VoucherConfigure = ({
           );
           if (campaignLabel && !campaign) unmatchedCampaigns.add(campaignLabel);
           const rawCc = cell(cells, "countryCode") || "+972";
+          const rawExpire = cell(cells, "expireDate");
           return {
             id: crypto.randomUUID(),
             name: cell(cells, "name"),
@@ -234,6 +252,11 @@ const VoucherConfigure = ({
             phone: cell(cells, "phone"),
             campaignId: campaign?._id || "",
             amount: cell(cells, "amount"),
+            expireDate: rawExpire
+              ? new Date(rawExpire).toString() !== "Invalid Date"
+                ? new Date(rawExpire).toISOString().split("T")[0]
+                : rawExpire
+              : "",
           };
         });
 
@@ -241,7 +264,6 @@ const VoucherConfigure = ({
           ...prev,
           assignees: parsed,
           purchaseType: "multiple",
-          multiMode: "upload",
         }));
 
         if (unmatchedCampaigns.size) {
@@ -263,208 +285,149 @@ const VoucherConfigure = ({
 
   return (
     <div className="space-y-6">
-      {/* Purchase Type */}
-      <div className={`rounded-xl border p-6 space-y-4 ${card}`}>
-        <h2 className={`text-sm uppercase tracking-wider ${textTertiary}`}>
-          {t("purchase_type")}
-        </h2>
-        <div className="flex gap-3">
-          {(["single", "multiple"] as VoucherPurchaseType[]).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setPurchaseType(type)}
-              className={`flex-1 py-3 rounded-xl border-2 text-sm transition-all ${
-                purchaseType === type
-                  ? isDark
-                    ? "border-teal-500 bg-teal-900/20 text-teal-300"
-                    : "border-teal-500 bg-teal-50 text-teal-700"
-                  : `border-transparent ${
-                      isDark
-                        ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`
-              }`}
-            >
-              {type === "single"
-                ? `🎫  ${t("single_voucher")}`
-                : `🎟  ${t("multiple_vouchers")}`}
-            </button>
-          ))}
-        </div>
-
-        {/* Multiple sub-options */}
-        {purchaseType === "multiple" && (
-          <div className="space-y-4 pt-2">
-            <div
-              className={`flex gap-2 p-1 rounded-lg w-fit ${
-                isDark ? "bg-gray-800" : "bg-gray-100"
-              }`}
-            >
-              {(["manual", "upload"] as VoucherMultiMode[]).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setMultiMode(mode)}
-                  className={`px-4 py-1.5 rounded-md text-sm transition-all ${
-                    multiMode === mode
-                      ? `${
-                          isDark
-                            ? "bg-gray-700 text-gray-100"
-                            : "bg-white text-gray-900"
-                        } shadow-sm`
-                      : textTertiary
-                  }`}
-                >
-                  {mode === "manual"
-                    ? t("enter_manually")
-                    : t("upload_excel_csv")}
-                </button>
-              ))}
-            </div>
-
-            {multiMode === "upload" && (
-              <div
-                className={`flex flex-wrap items-center gap-4 p-4 rounded-xl border-2 border-dashed ${
-                  isDark ? "border-gray-700" : "border-gray-300"
-                }`}
-              >
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
-                      isDark
-                        ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    <Upload className="w-4 h-4" />
-                    {t("choose_file")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadSample}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
-                      isDark
-                        ? "bg-teal-900/40 hover:bg-teal-900/60 text-teal-300 border border-teal-700"
-                        : "bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200"
-                    }`}
-                  >
-                    <Download className="w-4 h-4" />
-                    {t("download_sample")}
-                  </button>
-                </div>
-                <p className={`text-xs ${textTertiary}`}>
-                  {t("supports_csv_sample_hint")}
-                </p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </div>
-            )}
-            {uploadError && (
-              <div className="flex items-center gap-2 text-sm text-red-500">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                {uploadError}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Assignees Table */}
-      <div className={`rounded-xl border overflow-hidden ${card}`}>
+      <div className={`rounded-xl border ${card}`}>
+        {/* Sticky block — count, sample/upload/add actions and apply-to-all
+            stay visible while scrolling through the assignee cards. */}
         <div
-          className={`px-6 py-4 border-b flex items-center justify-between ${
+          className={`sticky top-0 z-20 rounded-t-xl ${
+            isDark ? "bg-gray-900" : "bg-white"
+          }`}
+        >
+        {/* Header: title + sample / upload / add actions */}
+        <div
+          className={`px-6 py-4 border-b ${
             isDark ? "border-gray-800" : "border-gray-100"
           }`}
         >
-          <h2 className={`text-sm uppercase tracking-wider ${textTertiary}`}>
-            {purchaseType === "single"
-              ? t("assignee_details")
-              : `${t("assignees")} (${activeAssignees.length})`}
-          </h2>
-          {purchaseType === "multiple" && multiMode === "manual" && (
-            <button
-              type="button"
-              onClick={addAssignee}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              {t("add_assignee")}
-            </button>
-          )}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className={`text-sm uppercase tracking-wider ${textTertiary}`}>
+              {`${t("assignees")} (${activeAssignees.length})`}
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={downloadSample}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  isDark
+                    ? "bg-teal-900/40 hover:bg-teal-900/60 text-teal-300 border border-teal-700"
+                    : "bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200"
+                }`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                {t("download_sample")}
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                {t("upload_sample")}
+              </button>
+              <button
+                type="button"
+                onClick={addAssignee}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {t("add_assignee")}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+          <p className={`mt-2 text-xs ${textTertiary}`}>
+            {t("supports_csv_sample_hint")}
+          </p>
         </div>
 
-        {/* Apply to all — only shown in multiple mode with 2+ rows */}
-        {purchaseType === "multiple" && activeAssignees.length >= 2 && (
+        {uploadError && (
+          <div
+            className={`flex items-center gap-2 text-sm px-6 py-3 border-b text-red-500 ${
+              isDark ? "border-gray-800" : "border-gray-100"
+            }`}
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {uploadError}
+          </div>
+        )}
+
+        {/* Apply to all — shown with 2+ assignees */}
+        {activeAssignees.length >= 2 && (
           <BulkApplyBar
             campaigns={campaignList}
             onApplyCampaign={(id) => applyToAll("campaignId", id)}
             onApplyAmount={(amt) => applyToAll("amount", amt)}
+            onApplyExpiration={(d) => applyToAll("expireDate", d)}
             inputCls={inputCls}
             selectCls={selectCls}
             t={t}
           />
         )}
+        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr
-                className={`text-xs uppercase tracking-wide ${
-                  isDark
-                    ? "bg-gray-800/50 text-gray-400"
-                    : "bg-gray-50 text-gray-500"
-                }`}
-              >
-                {purchaseType === "multiple" && (
-                  <th className="px-4 py-3 text-left w-10">#</th>
-                )}
-                <th className="px-4 py-3 text-left min-w-[160px]">
-                  {t("name")} *
-                </th>
-                <th className="px-4 py-3 text-left min-w-[180px]">
-                  {t("email")} *
-                </th>
-                <th className="px-4 py-3 text-left min-w-[200px]">
-                  {t("phone")}
-                </th>
-                <th className="px-4 py-3 text-left min-w-[180px]">
-                  {t("campaign")} *
-                </th>
-                <th className="px-4 py-3 text-left min-w-[120px]">
-                  {t("amount")} (₪) *
-                </th>
-                {purchaseType === "multiple" && (
-                  <th className="px-4 py-3 w-12"></th>
-                )}
-              </tr>
-            </thead>
-            <tbody
-              className={`divide-y ${
-                isDark ? "divide-gray-800" : "divide-gray-100"
+        {/* Assignee cards */}
+        <div className="p-4 md:p-2 space-y-4">
+          {activeAssignees.map((a, idx) => (
+            <div
+              key={a.id}
+              className={`rounded-xl border ${
+                isDark
+                  ? "border-gray-800 bg-gray-800/30"
+                  : "border-gray-200 bg-gray-50/60"
               }`}
             >
-              {activeAssignees.map((a, idx) => (
-                <tr
-                  key={a.id}
-                  className={`transition-colors ${
-                    isDark ? "hover:bg-gray-800/40" : "hover:bg-gray-50"
+              {/* Card header — makes each assignee distinct */}
+              <div
+                className={`flex items-center justify-between px-4 py-2.5 border-b ${
+                  isDark ? "border-gray-800" : "border-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider ${
+                    isDark ? "text-teal-300" : "text-teal-700"
                   }`}
                 >
-                  {purchaseType === "multiple" && (
-                    <td className={`px-4 py-2 text-sm ${textTertiary}`}>
-                      {idx + 1}
-                    </td>
-                  )}
-                  {/* Name */}
-                  <td className="px-4 py-2">
+                  <span
+                    className={`grid place-items-center w-6 h-6 rounded-full text-[11px] ${
+                      isDark
+                        ? "bg-teal-900/50 text-teal-200"
+                        : "bg-teal-100 text-teal-700"
+                    }`}
+                  >
+                    {idx + 1}
+                  </span>
+                  {t("assignee")} {idx + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => assignees.length > 1 && removeAssignee(a.id)}
+                  disabled={assignees.length <= 1}
+                  className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 ${
+                    isDark
+                      ? "hover:bg-red-900/30 text-red-400"
+                      : "hover:bg-red-50 text-red-500"
+                  }`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Card body */}
+              <div className="p-4 space-y-3">
+                {/* Line 1: Name / Email / Phone */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className={labelCls}>{t("name")} *</label>
                     <input
                       type="text"
                       value={a.name}
@@ -474,9 +437,9 @@ const VoucherConfigure = ({
                       placeholder={t("name")}
                       className={inputCls}
                     />
-                  </td>
-                  {/* Email */}
-                  <td className="px-4 py-2">
+                  </div>
+                  <div>
+                    <label className={labelCls}>{t("email")} *</label>
                     <input
                       type="email"
                       value={a.email}
@@ -486,9 +449,9 @@ const VoucherConfigure = ({
                       placeholder="email@example.com"
                       className={inputCls}
                     />
-                  </td>
-                  {/* Country + Phone */}
-                  <td className="px-4 py-2">
+                  </div>
+                  <div>
+                    <label className={labelCls}>{t("phone")}</label>
                     <div className="flex gap-1.5">
                       <select
                         value={a.countryCode}
@@ -514,9 +477,13 @@ const VoucherConfigure = ({
                         className={inputCls}
                       />
                     </div>
-                  </td>
-                  {/* Campaign */}
-                  <td className="px-4 py-2">
+                  </div>
+                </div>
+
+                {/* Line 2: Campaign / Amount / Expiration */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className={labelCls}>{t("campaign")} *</label>
                     <select
                       value={a.campaignId}
                       onChange={(e) =>
@@ -531,9 +498,9 @@ const VoucherConfigure = ({
                         </option>
                       ))}
                     </select>
-                  </td>
-                  {/* Amount */}
-                  <td className="px-4 py-2">
+                  </div>
+                  <div>
+                    <label className={labelCls}>{t("amount")} (₪) *</label>
                     <div className="relative">
                       <span
                         className={`absolute top-2.5 ${
@@ -553,84 +520,30 @@ const VoucherConfigure = ({
                         className={`${inputCls} ${isRTL ? "pr-7" : "pl-7"}`}
                       />
                     </div>
-                  </td>
-                  {/* Delete */}
-                  {purchaseType === "multiple" && (
-                    <td className="px-4 py-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          assignees.length > 1 && removeAssignee(a.id)
-                        }
-                        disabled={assignees.length <= 1}
-                        className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 ${
-                          isDark
-                            ? "hover:bg-red-900/30 text-red-400"
-                            : "hover:bg-red-50 text-red-500"
-                        }`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                  <div>
+                    <label className={labelCls}>
+                      {t("expiration_date")} *
+                    </label>
+                    <input
+                      type="date"
+                      value={a.expireDate}
+                      min={TODAY}
+                      onChange={(e) =>
+                        updateAssignee(a.id, "expireDate", e.target.value)
+                      }
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
+
         {errors.assignees && (
-          <p className="text-red-500 text-xs px-6 py-3">{errors.assignees}</p>
+          <p className="text-red-500 text-xs px-6 pb-4">{errors.assignees}</p>
         )}
-      </div>
-
-      {/* Expiration */}
-      <div className={`rounded-xl border p-6 space-y-3 ${card}`}>
-        <h2 className={`text-sm uppercase tracking-wider ${textTertiary}`}>
-          {t("expiration_date")} *
-        </h2>
-        <input
-          type="date"
-          value={formData.expirationDate}
-          min={new Date().toISOString().split("T")[0]}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, expirationDate: e.target.value }))
-          }
-          className={`${inputCls} max-w-xs`}
-        />
-        <p className={`text-xs ${textTertiary}`}>
-          {t("expiration_applies_to_all")}
-        </p>
-        {errors.expirationDate && (
-          <p className="text-red-500 text-xs">{errors.expirationDate}</p>
-        )}
-      </div>
-
-      {/* Greeting */}
-      <div className={`rounded-xl border p-6 space-y-3 ${card}`}>
-        <div className="flex items-center justify-between">
-          <h2 className={`text-sm uppercase tracking-wider ${textTertiary}`}>
-            {t("greeting_message")}
-          </h2>
-          <span
-            className={`text-xs ${
-              formData.greeting.length > 450 ? "text-orange-500" : textTertiary
-            }`}
-          >
-            {formData.greeting.length} / 500
-          </span>
-        </div>
-        <textarea
-          value={formData.greeting}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              greeting: e.target.value.slice(0, 500),
-            }))
-          }
-          placeholder={t("greeting_placeholder")}
-          rows={4}
-          className={`${inputCls} resize-none`}
-        />
       </div>
     </div>
   );
@@ -644,6 +557,7 @@ interface BulkApplyBarProps {
   campaigns: Campaign[];
   onApplyCampaign: (id: string) => void;
   onApplyAmount: (amt: string) => void;
+  onApplyExpiration: (date: string) => void;
   inputCls: string;
   selectCls: string;
   t: (key: string) => string;
@@ -653,6 +567,7 @@ function BulkApplyBar({
   campaigns,
   onApplyCampaign,
   onApplyAmount,
+  onApplyExpiration,
   inputCls,
   selectCls,
   t,
@@ -660,8 +575,10 @@ function BulkApplyBar({
   const { isDark, textTertiary } = useThemeClasses();
   const [bulkCampaign, setBulkCampaign] = useState("");
   const [bulkAmount, setBulkAmount] = useState("");
+  const [bulkExpiration, setBulkExpiration] = useState("");
   const [campaignApplied, setCampaignApplied] = useState(false);
   const [amountApplied, setAmountApplied] = useState(false);
+  const [expirationApplied, setExpirationApplied] = useState(false);
 
   const applyBulkCampaign = () => {
     if (!bulkCampaign) return;
@@ -675,6 +592,13 @@ function BulkApplyBar({
     onApplyAmount(bulkAmount);
     setAmountApplied(true);
     setTimeout(() => setAmountApplied(false), 1500);
+  };
+
+  const applyBulkExpiration = () => {
+    if (!bulkExpiration) return;
+    onApplyExpiration(bulkExpiration);
+    setExpirationApplied(true);
+    setTimeout(() => setExpirationApplied(false), 1500);
   };
 
   return (
@@ -763,6 +687,39 @@ function BulkApplyBar({
         >
           {amountApplied ? <CheckCircle className="w-3.5 h-3.5" /> : null}
           {amountApplied ? t("applied") : t("apply")}
+        </button>
+      </div>
+
+      <div className={`h-4 w-px ${isDark ? "bg-gray-700" : "bg-gray-300"}`} />
+
+      {/* Same Expiration */}
+      <div className="flex items-center gap-2">
+        <input
+          type="date"
+          value={bulkExpiration}
+          min={TODAY}
+          onChange={(e) => {
+            setBulkExpiration(e.target.value);
+            setExpirationApplied(false);
+          }}
+          className={`${inputCls} text-xs py-1.5`}
+          style={{ width: 150 }}
+          aria-label={t("same_expiration")}
+        />
+        <button
+          type="button"
+          onClick={applyBulkExpiration}
+          disabled={!bulkExpiration}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-all disabled:opacity-40 ${
+            expirationApplied
+              ? "bg-green-500 text-white"
+              : isDark
+                ? "bg-teal-800 hover:bg-teal-700 text-teal-200"
+                : "bg-teal-600 hover:bg-teal-700 text-white"
+          }`}
+        >
+          {expirationApplied ? <CheckCircle className="w-3.5 h-3.5" /> : null}
+          {expirationApplied ? t("applied") : t("apply")}
         </button>
       </div>
     </div>

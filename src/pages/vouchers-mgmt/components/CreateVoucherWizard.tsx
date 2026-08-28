@@ -47,7 +47,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
     purchaserCountryCode: "+972",
 
     // Configure
-    purchaseType: "single",
+    purchaseType: "multiple",
     multiMode: "manual",
     assignees: [makeVoucherAssignee()],
 
@@ -69,8 +69,8 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
       campaignId: a.campaignId,
       amount: Number(a.amount),
       noOfVoucher: 1,
-      expireDate: formData.expirationDate
-        ? new Date(formData.expirationDate).toISOString()
+      expireDate: a.expireDate
+        ? new Date(a.expireDate).toISOString()
         : undefined,
 
       purchaserName: formData.purchaserName,
@@ -122,13 +122,15 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         break;
 
       case 2:
-        if (!formData.expirationDate) {
-          newErrors.expirationDate = t("error_expiration_required");
-        }
         if (
           activeAssignees.length === 0 ||
           !activeAssignees.every(
-            (a) => a.name.trim() && a.email.trim() && a.campaignId && a.amount,
+            (a) =>
+              a.name.trim() &&
+              a.email.trim() &&
+              a.campaignId &&
+              a.amount &&
+              a.expireDate,
           )
         ) {
           newErrors.assignees = t("error_complete_all_assignees");
@@ -183,7 +185,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
   // Step configuration
   const steps = [
     { number: 1, icon: User, title: t("purchaser_info") },
-    { number: 2, icon: ClipboardList, title: t("configure") },
+    { number: 2, icon: ClipboardList, title: t("assignee_information") },
     { number: 3, icon: Eye, title: t("review") },
     { number: 4, icon: Table, title: t("success") },
   ];
@@ -258,7 +260,12 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
           />
         )}
         {currentStep === 3 && (
-          <VoucherReview formData={formData} campaigns={campaigns} t={t} />
+          <VoucherReview
+            formData={formData}
+            setFormData={setFormData}
+            campaigns={campaigns}
+            t={t}
+          />
         )}
         {currentStep === 4 && <VoucherSuccess response={response} t={t} />}
       </div>

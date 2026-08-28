@@ -108,6 +108,8 @@ interface IVoucherAssignee {
   phone: string;
   campaignId: string;
   amount: string;
+  // Per-assignee expiration date (YYYY-MM-DD from the date input)
+  expireDate: string;
 }
 
 type VoucherPurchaseType = "single" | "multiple";
