@@ -6,6 +6,7 @@ import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 import { useInitBusinessCreateMutation } from "@/store/api/businessMutationApi";
 import { Check, ExternalLink, Info, Mail, Phone } from "lucide-react";
 import { ModalWrapper } from "@/components/wrapper";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -248,21 +249,12 @@ export const BusinessContentForm = ({
             : undefined
         }
       >
-        <textarea
+        <RichTextEditor
           value={formData[fullDescField] || ""}
-          onChange={(e) => onChange({ [fullDescField]: e.target.value })}
+          onChange={(html) => onChange({ [fullDescField]: html })}
           placeholder={t("full_description_placeholder")}
-          className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
-          rows={3}
-          dir={dir}
           maxLength={500}
         />
-        <p className={`text-xs ${textTertiary} mt-1`}>
-          {t("char_count", {
-            count: (formData[fullDescField] || "").length,
-            limit: 500,
-          })}
-        </p>
       </FormFieldWrapper>
 
       {availabilityStatus === "unavailable" && (
