@@ -284,18 +284,18 @@ const VoucherConfigure = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className={`rounded-xl border ${card}`}>
+    <div className="">
+      <div className={`border ${card}`}>
         {/* Sticky block — count, sample/upload/add actions and apply-to-all
             stay visible while scrolling through the assignee cards. */}
         <div
-          className={`sticky top-0 z-20 rounded-t-xl ${
+          className={`sticky -top-1 z-20 ${
             isDark ? "bg-gray-900" : "bg-white"
           }`}
         >
         {/* Header: title + sample / upload / add actions */}
         <div
-          className={`px-6 py-4 border-b ${
+          className={`px-6 py-1 pb-2 border-b ${
             isDark ? "border-gray-800" : "border-gray-100"
           }`}
         >
@@ -345,7 +345,7 @@ const VoucherConfigure = ({
               />
             </div>
           </div>
-          <p className={`mt-2 text-xs ${textTertiary}`}>
+          <p className={` text-xs ${textTertiary}`}>
             {t("supports_csv_sample_hint")}
           </p>
         </div>
@@ -603,7 +603,7 @@ function BulkApplyBar({
 
   return (
     <div
-      className={`px-6 py-3 flex flex-wrap items-center gap-4 border-b ${
+      className={`px-6 py-1 flex flex-wrap items-center gap-4 border-b ${
         isDark
           ? "bg-teal-950/30 border-teal-900/40"
           : "bg-teal-50/70 border-teal-100"
