@@ -6,7 +6,9 @@ import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 import { useInitBusinessCreateMutation } from "@/store/api/businessMutationApi";
 import { Check, ExternalLink, Info, Mail, Phone } from "lucide-react";
 import { ModalWrapper } from "@/components/wrapper";
-import RichTextEditor from "@/components/shared/RichTextEditor";
+import RichTextEditor, {
+  getPlainText,
+} from "@/components/shared/RichTextEditor";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -244,7 +246,7 @@ export const BusinessContentForm = ({
         label={t("full_description")}
         required
         error={
-          (formData[fullDescField] || "").length > 500
+          getPlainText(formData[fullDescField] || "").length > 500
             ? t("exceeds_char_limit", { limit: 500 })
             : undefined
         }

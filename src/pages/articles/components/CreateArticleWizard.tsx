@@ -20,6 +20,7 @@ import { ReactSelect } from "@/components/form-fields";
 
 import Media from "@/components/details-sections/Media";
 import { detectLanguage, getLngWiseStr } from "@/helpers";
+import { getPlainText } from "@/components/shared/RichTextEditor";
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
 import ArticleReviewSection from "./sub-components/ArticleReviewSection";
@@ -248,9 +249,9 @@ const CreateArticleWizard = ({
       return false;
     }
     if (
-      (formData.shortDescription || "").length > 150 ||
-      (formData.shortDescriptionHe || "").length > 150 ||
-      (formData.shortDescriptionAr || "").length > 150
+      getPlainText(formData.shortDescription || "").length > 150 ||
+      getPlainText(formData.shortDescriptionHe || "").length > 150 ||
+      getPlainText(formData.shortDescriptionAr || "").length > 150
     ) {
       toast.error(tc("exceeds_char_limit", { limit: 150 }));
       return false;

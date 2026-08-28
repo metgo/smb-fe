@@ -257,7 +257,7 @@ function rgbToHex(rgb: string): string {
   );
 }
 
-function getPlainText(html: string): string {
+export function getPlainText(html: string): string {
   const d = document.createElement("div");
   d.innerHTML = html;
   return d.textContent ?? d.innerText ?? "";

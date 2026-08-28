@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import RichTextEditor from "@/components/shared/RichTextEditor";
+import RichTextEditor, {
+  getPlainText,
+} from "@/components/shared/RichTextEditor";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 
 interface ArticleContentFormProps {
@@ -61,7 +63,7 @@ export default function ArticleContentForm({
         label={t("short_description")}
         required
         error={
-          (formData[shortDescField] || "").length > 150
+          getPlainText(formData[shortDescField] || "").length > 150
             ? tc("exceeds_char_limit", { limit: 150 })
             : undefined
         }
