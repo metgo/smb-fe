@@ -166,7 +166,6 @@ export const endpoints = {
   bulkVouchersUpdate: "/bulk-vouchers-update",
   sendemail: "/vouchers/send-email",
   sendsms: "/vouchers/send-sms",
-  offlineVoucherPurchase: "/vouchers/offline-purchase",
 
   // cmpaings
   campaign: "/admin/campaign",

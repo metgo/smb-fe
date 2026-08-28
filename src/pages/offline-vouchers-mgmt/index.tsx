@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllCampaignsQuery } from "@/store/api/masterDataApi";
-import { useCreateOfflineVoucherPurchaseMutation } from "@/store/api/voucherMutationApi";
+import { useCreateVoucherMutation } from "@/store/api/voucherMutationApi";
 
 const COUNTRY_CODES = [
   { code: "+972", flag: "🇮🇱", label: "IL" },
@@ -59,14 +59,20 @@ type PurchaseType = "single" | "multiple";
 type MultiMode = "manual" | "upload";
 
 export default function OfflineVouchersMgmtPage() {
-  const { isDark, isRTL, bgPrimary, textPrimary, textSecondary, textTertiary } =
-    useThemeClasses();
+  const {
+    isDark,
+    isRTL,
+    bgPrimary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    language,
+  } = useThemeClasses();
 
   const { data: campaignsResp } = useGetAllCampaignsQuery({ type: "CASH_IN" });
   const campaigns: Campaign[] = campaignsResp?.datas?.data ?? [];
 
-  const [createOfflineVoucherPurchase] =
-    useCreateOfflineVoucherPurchaseMutation();
+  const [createVoucher] = useCreateVoucherMutation();
 
   // Purchaser
   const [purchaserName, setPurchaserName] = useState("");
@@ -83,6 +89,9 @@ export default function OfflineVouchersMgmtPage() {
 
   // Greeting
   const [greeting, setGreeting] = useState("");
+
+  // Expiration (applies to every voucher in this purchase)
+  const [expireDate, setExpireDate] = useState("");
 
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -113,6 +122,7 @@ export default function OfflineVouchersMgmtPage() {
     purchaseType === "single" ? assignees.slice(0, 1) : assignees;
   const isValid =
     purchaserName.trim() !== "" &&
+    expireDate !== "" &&
     activeAssignees.length > 0 &&
     activeAssignees.every(
       (a) => a.name.trim() && a.email.trim() && a.campaignId && a.amount,
@@ -204,27 +214,30 @@ export default function OfflineVouchersMgmtPage() {
   const handleCreate = async () => {
     setCreating(true);
     try {
+      const dialCode = (cc: string) => cc.replace(/^\+/, "");
       const payload = activeAssignees.map((a) => ({
         campaignId: a.campaignId,
         amount: Number(a.amount),
         noOfVoucher: 1,
-        languagePreference: "en",
+        expireDate: new Date(expireDate).toISOString(),
 
         purchaserName,
         purchaserEmail,
+        purchaserCountryCode: dialCode(purchaserCountry),
         purchaserPhone,
-        purchaserCountryCode: purchaserCountry,
 
         assigneeName: a.name,
         assigneeEmail: a.email,
+        assigneeCountryCode: dialCode(a.countryCode),
         assigneePhone: a.phone,
-        assigneeCountryCode: a.countryCode,
 
+        languagePreference: language || "en",
         message: greeting || "",
+        smsMessage: greeting || "",
         sendEmail: true,
       }));
 
-      await createOfflineVoucherPurchase(payload).unwrap();
+      await createVoucher(payload).unwrap();
       setCreated(true);
       toast.success("Vouchers created successfully");
     } catch (err: any) {
@@ -243,6 +256,7 @@ export default function OfflineVouchersMgmtPage() {
       setPurchaserPhone("");
       setAssignees([makeAssignee()]);
       setGreeting("");
+      setExpireDate("");
       setPurchaseType("single");
       setCreated(false);
     }
@@ -250,10 +264,10 @@ export default function OfflineVouchersMgmtPage() {
 
   return (
     <div
-      className={`${bgPrimary} pt-4 md:pt-0`}
+      className={`${bgPrimary} `}
       dir={isRTL ? "rtl" : "ltr"}
     >
-      <div className="max-w-5xl mx-auto space-y-6 pb-10">
+      <div className=" mx-auto space-y-6 pb-10">
         {/* Page title */}
         <div>
           <h1 className={`text-2xl ${textPrimary}`}>Offline Voucher Purchases</h1>
@@ -647,6 +661,23 @@ export default function OfflineVouchersMgmtPage() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Expiration */}
+        <div className={`rounded-xl border p-6 space-y-3 ${card}`}>
+          <h2 className={`text-sm uppercase tracking-wider ${textTertiary}`}>
+            Expiration Date *
+          </h2>
+          <input
+            type="date"
+            value={expireDate}
+            min={new Date().toISOString().split("T")[0]}
+            onChange={(e) => setExpireDate(e.target.value)}
+            className={`${inputCls} max-w-xs`}
+          />
+          <p className={`text-xs ${textTertiary}`}>
+            Applies to every voucher in this purchase.
+          </p>
         </div>
 
         {/* Greeting */}

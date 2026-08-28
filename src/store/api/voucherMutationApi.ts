@@ -25,17 +25,6 @@ export const voucherMutationApi = createApi({
       invalidatesTags: ["Voucher"],
     }),
 
-    // Offline voucher purchase — vouchers bought/assigned manually on
-    // behalf of a customer. Kept separate from `createVoucher` for now.
-    createOfflineVoucherPurchase: builder.mutation<any, any>({
-      query: (payload) => ({
-        url: endpoints.offlineVoucherPurchase,
-        method: "POST",
-        data: payload,
-      }),
-      invalidatesTags: ["Voucher"],
-    }),
-
     sendEmail: builder.mutation<any, any>({
       query: (body) => ({
         url: endpoints.sendemail,
@@ -71,7 +60,6 @@ export const voucherMutationApi = createApi({
 
 export const {
   useCreateVoucherMutation,
-  useCreateOfflineVoucherPurchaseMutation,
   useUpdateVoucherMutation,
   useBulkVouchersUpdateMutation,
   useSendEmailMutation,
