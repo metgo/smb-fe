@@ -224,9 +224,11 @@ const PaymentTransactionsPage = () => {
     {
       key: "method",
       label: t("payment_method"),
-      render: (row: PaymentTransaction) => (
-        <span className="text-sm capitalize">{row.method || "-"}</span>
-      ),
+      render: (row: PaymentTransaction) => {
+        const modes = (row.paymentMode ?? []).filter(Boolean);
+        const text = modes.length ? modes.join(", ") : row.method || "-";
+        return <span className="text-sm capitalize">{text}</span>;
+      },
     },
     {
       key: "invoiceUrl",

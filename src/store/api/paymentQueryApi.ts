@@ -24,6 +24,7 @@ export interface PaymentTransaction {
   amount: number;
   currency: string;
   method: string | null;
+  paymentMode?: string[] | null;
   paymentRequestId: string;
   orderId: string;
   paymentDate: string;
