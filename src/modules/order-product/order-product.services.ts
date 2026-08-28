@@ -26,8 +26,14 @@ export class OrderProductService {
 
   async create(command: CreateOrderProductCommand): Promise<OrderProduct> {
     try {
+      const to2dp = (n: number) => (typeof n === 'number' && Number.isFinite(n)
+        ? Math.round(n * 100) / 100
+        : n);
+
       const productDetails = new this.OrderProductModel({
         ...command,
+        amount: to2dp(command.amount),
+        deliveryFee: to2dp(command.deliveryFee),
         userId: command.loggedInUserId ?? null,
         createdBy: command.loggedInUserId ?? null,
         createdAt: new Date(),

@@ -1232,7 +1232,9 @@ export class OrdersService {
           vendor.products.map(p => {
             const productDeliveryFee
               = totalQty > 0
-                ? ((vendor.deliveryFee || 0) * p.quantity) / totalQty
+                ? Math.round(
+                  (((vendor.deliveryFee || 0) * p.quantity) / totalQty) * 100,
+                ) / 100
                 : 0;
             const productInfo = productInfoMap[p._id.toString()];
             const amount = productInfo?.price?.sellingPrice || 0;
@@ -1428,7 +1430,9 @@ export class OrdersService {
             // Divide delivery fee proportionally by quantity for all models
             const productDeliveryFee
               = totalQty > 0
-                ? ((vendor.deliveryFee || 0) * p.quantity) / totalQty
+                ? Math.round(
+                  (((vendor.deliveryFee || 0) * p.quantity) / totalQty) * 100,
+                ) / 100
                 : 0;
             const productInfo = productInfoMap[p._id.toString()];
             const amount = productInfo?.price?.sellingPrice || 0;
