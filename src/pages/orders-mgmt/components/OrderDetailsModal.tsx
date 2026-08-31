@@ -302,8 +302,7 @@ function OrderDetailsModal({
                       </p>
                     </div>
 
-                    {orderDetails?.products?.length > 1 &&
-                      orderDetails?.status !== "canceled" &&
+                    {orderDetails?.status !== "canceled" &&
                       product?.status !== "canceled" &&
                       !product?.cancelled &&
                       (product?.itemType === "TICKET" ||
