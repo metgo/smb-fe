@@ -294,7 +294,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto  p-2">
+      <div className="flex-1 overflow-y-auto p-4">
         {currentStep === 1 && (
           <VoucherInformation
             t={t}
