@@ -320,26 +320,26 @@ export default function PoiMgmtPage() {
             filterToggle={filterToggleButton}
           />
         </div>
-        {/* Expandable Search, Filters & Controls Panel */}
-        {showControlsDrawer && (
-          <div
-            className={clsx(
-              "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
-              isDark
-                ? "bg-gray-900/90 border-gray-800/90"
-                : "bg-white border-gray-200",
-            )}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-              <div className="flex-1 min-w-0 relative">
-                <SearchInput
-                  placeholder={t("search_pois_placeholder")}
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                />
-              </div>
+        {/* Search bar (always visible) + collapsible controls on the same row */}
+        <div
+          className={clsx(
+            "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+            isDark
+              ? "bg-gray-900/90 border-gray-800/90"
+              : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <div className="flex-1 min-w-0 relative" data-tour="search">
+              <SearchInput
+                placeholder={t("search_pois_placeholder")}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+              />
+            </div>
 
-              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap">
+            {showControlsDrawer && (
+              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <FilterButton value={showFilters} onChange={setShowFilters} />
                   <ShowColumns
@@ -366,53 +366,57 @@ export default function PoiMgmtPage() {
                   tableName="poiViewMode"
                 />
               </div>
-            </div>
-
-            {(showFilters || hasSavedFilters) && (
-              <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
-                <PoiFiltersPanel
-                  filters={filters}
-                  setFilters={setFilters}
-                  hasSavedFilters={hasSavedFilters}
-                  clearFilter={clearFilter}
-                />
-              </div>
-            )}
-
-            {/* Active Filters Summary */}
-            {(searchTerm || hasSavedFilters) && (
-              <div className="pt-1 flex items-center gap-2 flex-wrap">
-                <span className={`text-sm ${textTertiary}`}>
-                  {t("active_filters")}:
-                </span>
-
-                {searchTerm && (
-                  <span className="flex items-center gap-1 px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
-                    "{searchTerm}"
-                    <button
-                      onClick={() => setSearchTerm("")}
-                      className="ml-1 text-teal-500 hover:text-teal-700 font-bold"
-                    >
-                      ×
-                    </button>
-                  </span>
-                )}
-
-                {hasSavedFilters && (
-                  <button
-                    onClick={() => {
-                      clearFilter();
-                      setSearchTerm("");
-                    }}
-                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                  >
-                    {t("clear_all")}
-                  </button>
-                )}
-              </div>
             )}
           </div>
-        )}
+
+          {showControlsDrawer && (
+            <>
+              {(showFilters || hasSavedFilters) && (
+                <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
+                  <PoiFiltersPanel
+                    filters={filters}
+                    setFilters={setFilters}
+                    hasSavedFilters={hasSavedFilters}
+                    clearFilter={clearFilter}
+                  />
+                </div>
+              )}
+
+              {/* Active Filters Summary */}
+              {(searchTerm || hasSavedFilters) && (
+                <div className="pt-1 flex items-center gap-2 flex-wrap">
+                  <span className={`text-sm ${textTertiary}`}>
+                    {t("active_filters")}:
+                  </span>
+
+                  {searchTerm && (
+                    <span className="flex items-center gap-1 px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
+                      "{searchTerm}"
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="ml-1 text-teal-500 hover:text-teal-700 font-bold"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+
+                  {hasSavedFilters && (
+                    <button
+                      onClick={() => {
+                        clearFilter();
+                        setSearchTerm("");
+                      }}
+                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                    >
+                      {t("clear_all")}
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
         <BulkActionBar
           selectedItemCount={selectedPois.size}
           handleBulkStatusChange={handleBulkStatusChange}

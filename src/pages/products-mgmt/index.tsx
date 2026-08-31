@@ -449,27 +449,27 @@ function ProductsMgmtPageInner() {
           />
         </div>
 
-        {/* Expandable Search, Filters & Controls Panel (Collapses on scroll or when toggled) */}
-        {showControlsDrawer && (
-          <div
-            className={clsx(
-              "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
-              isDark
-                ? "bg-gray-900/90 border-gray-800/90"
-                : "bg-white border-gray-200",
-            )}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-              <div className="flex-1 min-w-0 relative" data-tour="search">
-                <SearchInput
-                  placeholder={t("search_products")}
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                />
-              </div>
+        {/* Search bar (always visible) + collapsible controls on the same row */}
+        <div
+          className={clsx(
+            "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+            isDark
+              ? "bg-gray-900/90 border-gray-800/90"
+              : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <div className="flex-1 min-w-0 relative" data-tour="search">
+              <SearchInput
+                placeholder={t("search_products")}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+              />
+            </div>
 
+            {showControlsDrawer && (
               <div
-                className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap"
+                className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2"
                 data-tour="toolbar"
               >
                 <div className="flex items-center gap-2 flex-wrap">
@@ -514,34 +514,38 @@ function ProductsMgmtPageInner() {
                   />
                 </div>
               </div>
-            </div>
-
-            {/* Filters Panel */}
-            {(showFilters || urlBusinessId || hasSavedFilters) && (
-              <ProductFiltersPanel
-                filters={filters}
-                setFilters={setFilters}
-                hasSavedFilters={hasSavedFilters}
-                clearFilter={clearFilter}
-                urlBusinessId={urlBusinessId}
-                urlBusinessName={urlBusinessName}
-                urlBusinessNameProduct={urlBusinessNameProduct}
-                removeQueryParams={removeQueryParams}
-                businesses={businesses ?? []}
-                searchBusiness={searchBusiness}
-                isSearching={isSearching}
-                isBusinessesLoading={isBusinessesLoading}
-              />
             )}
-
-            <BulkActionBar
-              selectedItemCount={selectedProducts.size}
-              handleBulkStatusChange={handleBulkStatusChange}
-              handleBulkDelete={promptBulkDelete}
-              hancleClearSelection={() => setSelectedProducts(new Set())}
-            />
           </div>
-        )}
+
+          {showControlsDrawer && (
+            <>
+              {/* Filters Panel */}
+              {(showFilters || urlBusinessId || hasSavedFilters) && (
+                <ProductFiltersPanel
+                  filters={filters}
+                  setFilters={setFilters}
+                  hasSavedFilters={hasSavedFilters}
+                  clearFilter={clearFilter}
+                  urlBusinessId={urlBusinessId}
+                  urlBusinessName={urlBusinessName}
+                  urlBusinessNameProduct={urlBusinessNameProduct}
+                  removeQueryParams={removeQueryParams}
+                  businesses={businesses ?? []}
+                  searchBusiness={searchBusiness}
+                  isSearching={isSearching}
+                  isBusinessesLoading={isBusinessesLoading}
+                />
+              )}
+
+              <BulkActionBar
+                selectedItemCount={selectedProducts.size}
+                handleBulkStatusChange={handleBulkStatusChange}
+                handleBulkDelete={promptBulkDelete}
+                hancleClearSelection={() => setSelectedProducts(new Set())}
+              />
+            </>
+          )}
+        </div>
 
         {/* Content Area (product list/grid rendered naturally) */}
         <div className="flex-1 mt-1" data-tour="product-list">

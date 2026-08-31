@@ -617,34 +617,34 @@ export default function OrdersSummaryMgmtPage() {
         </div>
       </div>
 
-      {/* Expandable Search, Filters & Controls Panel */}
-      {showControlsDrawer && (
+      {/* Search bar (always visible) + collapsible controls on the same row */}
+      <div
+        className={clsx(
+          "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+          isDark
+            ? "bg-gray-900/90 border-gray-800/90"
+            : "bg-white border-gray-200",
+        )}
+      >
         <div
           className={clsx(
-            "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
-            isDark
-              ? "bg-gray-900/90 border-gray-800/90"
-              : "bg-white border-gray-200",
+            "flex flex-col lg:flex-row lg:items-center gap-3",
+            isRTL && "lg:flex-row-reverse",
           )}
         >
-          <div
-            className={clsx(
-              "flex flex-col lg:flex-row lg:items-center gap-3",
-              isRTL && "lg:flex-row-reverse",
-            )}
-          >
-            <div className="flex-1 min-w-0 relative">
-              <SearchInput
-                placeholder={t("search_orders")}
-                searchTerm={searchTermSummary}
-                setSearchTerm={setSearchTermSummary}
-                storageKey="orderSummarySearchTerm"
-              />
-            </div>
+          <div className="flex-1 min-w-0 relative" data-tour="search">
+            <SearchInput
+              placeholder={t("search_orders")}
+              searchTerm={searchTermSummary}
+              setSearchTerm={setSearchTermSummary}
+              storageKey="orderSummarySearchTerm"
+            />
+          </div>
 
+          {showControlsDrawer && (
             <div
               className={clsx(
-                "flex items-center gap-2 w-full lg:w-auto flex-wrap",
+                "flex items-center gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2",
                 isRTL && "flex-row-reverse",
               )}
             >
@@ -675,78 +675,78 @@ export default function OrdersSummaryMgmtPage() {
                 customDateTo={summaryFilters.endDate}
               />
             </div>
-          </div>
-
-          {showFilters && (
-            <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="min-w-45">
-                <FilterSelect
-                  label={t("status")}
-                  value={summaryFilters.status}
-                  onChange={(value) =>
-                    setSummaryFilters((prev) => ({
-                      ...prev,
-                      status: value,
-                    }))
-                  }
-                  options={[
-                    { value: "all", label: t("all") },
-                    { value: "pending", label: t("pending") },
-                    { value: "processing", label: t("processing") },
-                    { value: "completed", label: t("completed") },
-                    { value: "shipped", label: t("shipped") },
-                    { value: "canceled", label: t("canceled") },
-                  ]}
-                />
-              </div>
-
-              <div className="min-w-55">
-                <MonthFilter
-                  label={t("month")}
-                  value={summaryFilters.month}
-                  onChange={(value) =>
-                    setSummaryFilters((prev) => ({
-                      ...prev,
-                      month: value,
-                    }))
-                  }
-                  dateFrom={summaryFilters.startDate}
-                  dateTo={summaryFilters.endDate}
-                  onDateFromChange={(value) =>
-                    setSummaryFilters((prev) => ({
-                      ...prev,
-                      startDate: value,
-                    }))
-                  }
-                  onDateToChange={(value) =>
-                    setSummaryFilters((prev) => ({
-                      ...prev,
-                      endDate: value,
-                    }))
-                  }
-                  t={t}
-                />
-              </div>
-
-              {(summaryFilters.status !== "all" ||
-                summaryFilters.month !== "all") && (
-                <div className="min-w-55 mt-10">
-                  <button
-                    onClick={() => {
-                      setSummaryFilters(defaultSummaryFilters);
-                      dispatch(setDmo(""));
-                      dispatch(setAuthority(""));
-                    }}
-                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                  >
-                    {t("clear_all")}
-                  </button>
-                </div>
-              )}
-            </div>
           )}
         </div>
-      )}
+
+        {showControlsDrawer && showFilters && (
+          <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="min-w-45">
+              <FilterSelect
+                label={t("status")}
+                value={summaryFilters.status}
+                onChange={(value) =>
+                  setSummaryFilters((prev) => ({
+                    ...prev,
+                    status: value,
+                  }))
+                }
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "pending", label: t("pending") },
+                  { value: "processing", label: t("processing") },
+                  { value: "completed", label: t("completed") },
+                  { value: "shipped", label: t("shipped") },
+                  { value: "canceled", label: t("canceled") },
+                ]}
+              />
+            </div>
+
+            <div className="min-w-55">
+              <MonthFilter
+                label={t("month")}
+                value={summaryFilters.month}
+                onChange={(value) =>
+                  setSummaryFilters((prev) => ({
+                    ...prev,
+                    month: value,
+                  }))
+                }
+                dateFrom={summaryFilters.startDate}
+                dateTo={summaryFilters.endDate}
+                onDateFromChange={(value) =>
+                  setSummaryFilters((prev) => ({
+                    ...prev,
+                    startDate: value,
+                  }))
+                }
+                onDateToChange={(value) =>
+                  setSummaryFilters((prev) => ({
+                    ...prev,
+                    endDate: value,
+                  }))
+                }
+                t={t}
+              />
+            </div>
+
+            {(summaryFilters.status !== "all" ||
+              summaryFilters.month !== "all") && (
+              <div className="min-w-55 mt-10">
+                <button
+                  onClick={() => {
+                    setSummaryFilters(defaultSummaryFilters);
+                    dispatch(setDmo(""));
+                    dispatch(setAuthority(""));
+                  }}
+                  className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                >
+                  {t("clear_all")}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Orders Summary Table */}
       <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
