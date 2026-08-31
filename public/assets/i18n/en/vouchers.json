@@ -8,7 +8,7 @@
   "upload_excel_csv": "Upload Excel / CSV",
   "choose_file": "Choose File",
   "download_sample": "Download Sample",
-  "upload_sample": "Upload Sample",
+  "upload_sample": "Upload File",
   "supports_csv_sample_hint": "Supports .csv — use the sample for correct column order",
   "assignees": "Assignees",
   "add_assignee": "Add Assignee",

@@ -8,7 +8,7 @@
   "upload_excel_csv": "تحميل Excel / CSV",
   "choose_file": "اختر ملفًا",
   "download_sample": "تنزيل نموذج",
-  "upload_sample": "رفع نموذج",
+  "upload_sample": "رفع ملف",
   "supports_csv_sample_hint": "يدعم ‎.csv — استخدم النموذج لترتيب الأعمدة الصحيح",
   "assignees": "المستفيدون",
   "add_assignee": "إضافة مستفيد",
