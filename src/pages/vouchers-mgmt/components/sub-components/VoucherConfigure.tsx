@@ -6,6 +6,7 @@ import {
   Upload,
   CheckCircle,
   AlertCircle,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -156,6 +157,11 @@ const VoucherConfigure = ({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const markTouched = (id: string, field: RequiredField) =>
     setTouched((prev) => ({ ...prev, [`${id}:${field}`]: true }));
+
+  // Per-card collapse state, keyed by assignee id (default expanded).
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const toggleCollapsed = (id: string) =>
+    setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
 
   // When the parent step validation fails it sets `errors.assignees` — that's
   // our cue to reveal every field error, not just the touched ones.
@@ -369,7 +375,7 @@ const VoucherConfigure = ({
         {/* Sticky block — count, sample/upload/add actions and apply-to-all
             stay visible while scrolling through the assignee cards. */}
         <div
-          className={`sticky -top-2 z-20 ${
+          className={`sticky -top-4 z-20 ${
             isDark ? "bg-gray-900" : "bg-white"
           }`}
         >
@@ -466,176 +472,226 @@ const VoucherConfigure = ({
 
         {/* Assignee cards */}
         <div className="p-4 md:p-2 space-y-4">
-          {activeAssignees.map((a, idx) => (
-            <div
-              key={a.id}
-              ref={(el) => {
-                cardRefs.current[a.id] = el;
-              }}
-              className={`rounded-xl border transition-colors focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 ${
-                isDark
-                  ? "border-gray-800 bg-gray-800/30"
-                  : "border-gray-200 bg-gray-50/60"
-              }`}
-            >
-              {/* Card header — makes each assignee distinct */}
+          {activeAssignees.map((a, idx) => {
+            const hasError =
+              revealAllErrors &&
+              (
+                ["name", "email", "campaignId", "amount"] as RequiredField[]
+              ).some((f) => fieldError(a, f));
+            // Cards with unresolved errors stay open so the messages are visible.
+            const isCollapsed = Boolean(collapsed[a.id]) && !hasError;
+            const summaryCampaign =
+              campaignList.find((c) => c._id === a.campaignId)?.name || "";
+            const summary = [
+              a.name.trim(),
+              a.email.trim(),
+              a.phone.trim() ? `${a.countryCode} ${a.phone.trim()}` : "",
+              summaryCampaign,
+              String(a.amount).trim() ? `₪${a.amount}` : "",
+            ]
+              .filter(Boolean)
+              .join("  ·  ");
+            return (
               <div
-                className={`flex items-center justify-between px-4 py-2.5 border-b ${
-                  isDark ? "border-gray-800" : "border-gray-200"
+                key={a.id}
+                ref={(el) => {
+                  cardRefs.current[a.id] = el;
+                }}
+                className={`rounded-xl border transition-colors focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 ${
+                  isDark
+                    ? "border-gray-800 bg-gray-800/30"
+                    : "border-gray-200 bg-gray-50/60"
                 }`}
               >
-                <span
-                  className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider ${
-                    isDark ? "text-teal-300" : "text-teal-700"
-                  }`}
+                {/* Card header — click to collapse / expand */}
+                <div
+                  className={`flex items-center justify-between px-4 py-2.5 ${
+                    isCollapsed ? "" : "border-b"
+                  } ${isDark ? "border-gray-800" : "border-gray-200"}`}
                 >
-                  <span
-                    className={`grid place-items-center w-6 h-6 rounded-full text-[11px] ${
-                      isDark
-                        ? "bg-teal-900/50 text-teal-200"
-                        : "bg-teal-100 text-teal-700"
-                    }`}
+                  <button
+                    type="button"
+                    onClick={() => toggleCollapsed(a.id)}
+                    aria-expanded={!isCollapsed}
+                    className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0 flex-1 text-left"
                   >
-                    {idx + 1}
-                  </span>
-                  {t("assignee")} {idx + 1}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => assignees.length > 1 && removeAssignee(a.id)}
-                  disabled={assignees.length <= 1}
-                  className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 ${
-                    isDark
-                      ? "hover:bg-red-900/30 text-red-400"
-                      : "hover:bg-red-50 text-red-500"
-                  }`}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Card body — one row: Name / Email / Phone / Campaign / Amount */}
-              <div className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-[2.5fr_2.5fr_3.5fr_3fr_2fr] gap-3">
-                  <div>
-                    <label className={labelCls}>{t("name")} *</label>
-                    <input
-                      type="text"
-                      value={a.name}
-                      onChange={(e) =>
-                        updateAssignee(a.id, "name", e.target.value)
-                      }
-                      onBlur={() => markTouched(a.id, "name")}
-                      placeholder={t("name")}
-                      className={`${inputCls} ${
-                        shownError(a, "name") ? errInputCls : ""
-                      }`}
+                    <ChevronDown
+                      className={`w-4 h-4 shrink-0 transition-transform ${
+                        isCollapsed ? "-rotate-90" : ""
+                      } ${isDark ? "text-gray-400" : "text-gray-500"}`}
                     />
-                    {shownError(a, "name") && (
-                      <p className={errText}>{shownError(a, "name")}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className={labelCls}>{t("email")} *</label>
-                    <input
-                      type="email"
-                      value={a.email}
-                      onChange={(e) =>
-                        updateAssignee(a.id, "email", e.target.value)
-                      }
-                      onBlur={() => markTouched(a.id, "email")}
-                      placeholder="email@example.com"
-                      className={`${inputCls} ${
-                        shownError(a, "email") ? errInputCls : ""
-                      }`}
-                    />
-                    {shownError(a, "email") && (
-                      <p className={errText}>{shownError(a, "email")}</p>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <label className={labelCls}>{t("phone")}</label>
-                    <div className="flex gap-1.5">
-                      <select
-                        value={a.countryCode}
-                        onChange={(e) =>
-                          updateAssignee(a.id, "countryCode", e.target.value)
-                        }
-                        className={`${selectCls} shrink-0`}
-                        style={{ minWidth: 80 }}
-                      >
-                        {VOUCHER_COUNTRY_CODES.map((c) => (
-                          <option key={c.code} value={c.code}>
-                            {c.flag} {c.code}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="tel"
-                        value={a.phone}
-                        onChange={(e) =>
-                          updateAssignee(a.id, "phone", e.target.value)
-                        }
-                        placeholder="50-000-0000"
-                        className={inputCls}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelCls}>{t("campaign")} *</label>
-                    <select
-                      value={a.campaignId}
-                      onChange={(e) =>
-                        updateAssignee(a.id, "campaignId", e.target.value)
-                      }
-                      onBlur={() => markTouched(a.id, "campaignId")}
-                      className={`${selectCls} w-full ${
-                        shownError(a, "campaignId") ? errInputCls : ""
+                    <span
+                      className={`grid place-items-center w-6 h-6 rounded-full text-[11px] shrink-0 ${
+                        isDark
+                          ? "bg-teal-900/50 text-teal-200"
+                          : "bg-teal-100 text-teal-700"
                       }`}
                     >
-                      <option value="">{t("select_campaign")}</option>
-                      {campaignList.map((c) => (
-                        <option key={c._id} value={c._id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                    {shownError(a, "campaignId") && (
-                      <p className={errText}>{shownError(a, "campaignId")}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className={labelCls}>{t("amount")} (₪) *</label>
-                    <div className="relative">
+                      {idx + 1}
+                    </span>
+                    <span
+                      className={`text-xs font-semibold uppercase tracking-wider shrink-0 ${
+                        isDark ? "text-teal-300" : "text-teal-700"
+                      }`}
+                    >
+                      {t("assignee")} {idx + 1}
+                    </span>
+                    {isCollapsed && summary && (
                       <span
-                        className={`absolute top-2.5 ${
-                          isRTL ? "right-3" : "left-3"
-                        } text-sm ${textTertiary}`}
-                      >
-                        ₪
-                      </span>
-                      <input
-                        type="number"
-                        min={1}
-                        value={a.amount}
-                        onChange={(e) =>
-                          updateAssignee(a.id, "amount", e.target.value)
-                        }
-                        onBlur={() => markTouched(a.id, "amount")}
-                        placeholder="0"
-                        className={`${inputCls} ${isRTL ? "pr-7" : "pl-7"} ${
-                          shownError(a, "amount") ? errInputCls : ""
+                        title={summary}
+                        className={`min-w-0 break-words text-xs ${
+                          isDark ? "text-gray-400" : "text-gray-500"
                         }`}
-                      />
-                    </div>
-                    {shownError(a, "amount") && (
-                      <p className={errText}>{shownError(a, "amount")}</p>
+                      >
+                        — {summary}
+                      </span>
                     )}
-                  </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => assignees.length > 1 && removeAssignee(a.id)}
+                    disabled={assignees.length <= 1}
+                    className={`ml-2 p-1.5 rounded-lg transition-colors disabled:opacity-30 ${
+                      isDark
+                        ? "hover:bg-red-900/30 text-red-400"
+                        : "hover:bg-red-50 text-red-500"
+                    }`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
+
+                {/* Card body — one row: Name / Email / Phone / Campaign / Amount */}
+                {!isCollapsed && (
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-[2.5fr_2.5fr_3.5fr_3fr_2fr] gap-3">
+                      <div>
+                        <label className={labelCls}>{t("name")} *</label>
+                        <input
+                          type="text"
+                          value={a.name}
+                          onChange={(e) =>
+                            updateAssignee(a.id, "name", e.target.value)
+                          }
+                          onBlur={() => markTouched(a.id, "name")}
+                          placeholder={t("name")}
+                          className={`${inputCls} ${
+                            shownError(a, "name") ? errInputCls : ""
+                          }`}
+                        />
+                        {shownError(a, "name") && (
+                          <p className={errText}>{shownError(a, "name")}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className={labelCls}>{t("email")} *</label>
+                        <input
+                          type="email"
+                          value={a.email}
+                          onChange={(e) =>
+                            updateAssignee(a.id, "email", e.target.value)
+                          }
+                          onBlur={() => markTouched(a.id, "email")}
+                          placeholder="email@example.com"
+                          className={`${inputCls} ${
+                            shownError(a, "email") ? errInputCls : ""
+                          }`}
+                        />
+                        {shownError(a, "email") && (
+                          <p className={errText}>{shownError(a, "email")}</p>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <label className={labelCls}>{t("phone")}</label>
+                        <div className="flex gap-1.5">
+                          <select
+                            value={a.countryCode}
+                            onChange={(e) =>
+                              updateAssignee(
+                                a.id,
+                                "countryCode",
+                                e.target.value,
+                              )
+                            }
+                            className={`${selectCls} shrink-0`}
+                            style={{ minWidth: 80 }}
+                          >
+                            {VOUCHER_COUNTRY_CODES.map((c) => (
+                              <option key={c.code} value={c.code}>
+                                {c.flag} {c.code}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            type="tel"
+                            value={a.phone}
+                            onChange={(e) =>
+                              updateAssignee(a.id, "phone", e.target.value)
+                            }
+                            placeholder="50-000-0000"
+                            className={inputCls}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelCls}>{t("campaign")} *</label>
+                        <select
+                          value={a.campaignId}
+                          onChange={(e) =>
+                            updateAssignee(a.id, "campaignId", e.target.value)
+                          }
+                          onBlur={() => markTouched(a.id, "campaignId")}
+                          className={`${selectCls} w-full ${
+                            shownError(a, "campaignId") ? errInputCls : ""
+                          }`}
+                        >
+                          <option value="">{t("select_campaign")}</option>
+                          {campaignList.map((c) => (
+                            <option key={c._id} value={c._id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                        {shownError(a, "campaignId") && (
+                          <p className={errText}>
+                            {shownError(a, "campaignId")}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className={labelCls}>{t("amount")} (₪) *</label>
+                        <div className="relative">
+                          <span
+                            className={`absolute top-2.5 ${
+                              isRTL ? "right-3" : "left-3"
+                            } text-sm ${textTertiary}`}
+                          >
+                            ₪
+                          </span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={a.amount}
+                            onChange={(e) =>
+                              updateAssignee(a.id, "amount", e.target.value)
+                            }
+                            onBlur={() => markTouched(a.id, "amount")}
+                            placeholder="0"
+                            className={`${inputCls} ${isRTL ? "pr-7" : "pl-7"} ${
+                              shownError(a, "amount") ? errInputCls : ""
+                            }`}
+                          />
+                        </div>
+                        {shownError(a, "amount") && (
+                          <p className={errText}>{shownError(a, "amount")}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
