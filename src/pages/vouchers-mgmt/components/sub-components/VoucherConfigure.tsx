@@ -377,11 +377,17 @@ const VoucherConfigure = ({
           };
         });
 
-        setFormData((prev) => ({
-          ...prev,
-          assignees: parsed,
-          purchaseType: "multiple",
-        }));
+        // Append the imported rows to whatever the user already entered.
+        // Only the untouched placeholder cards are dropped so the list
+        // doesn't carry empty entries after an import.
+        setFormData((prev) => {
+          const manual = prev.assignees.filter((a) => !isAssigneeEmpty(a));
+          return {
+            ...prev,
+            assignees: [...manual, ...parsed],
+            purchaseType: "multiple",
+          };
+        });
 
         if (unmatchedCampaigns.size) {
           setUploadError(
