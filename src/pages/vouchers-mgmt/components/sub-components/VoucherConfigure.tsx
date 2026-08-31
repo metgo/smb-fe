@@ -713,6 +713,12 @@ function BulkApplyBar({
             onChangeCampaign(e.target.value);
             setCampaignApplied(false);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              applyBulkCampaign();
+            }
+          }}
           className={`${selectCls} text-xs`}
           style={{ minWidth: 170 }}
         >
@@ -755,6 +761,12 @@ function BulkApplyBar({
             onChange={(e) => {
               onChangeAmount(e.target.value);
               setAmountApplied(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyBulkAmount();
+              }
             }}
             placeholder={t("same_amount")}
             className={`${inputCls} pl-6 text-xs py-1.5`}
