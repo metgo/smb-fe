@@ -43,19 +43,11 @@ export function makeVoucherAssignee(): IVoucherAssignee {
   };
 }
 
-const TODAY = new Date().toISOString().split("T")[0];
-
 // ─── CSV import helpers ──────────────────────────────────────────────────────
 // Columns are matched by header name (case-insensitive), NOT by position, so
 // the order of columns in the uploaded file does not matter.
 type CsvField =
-  | "name"
-  | "email"
-  | "countryCode"
-  | "phone"
-  | "campaign"
-  | "amount"
-  | "expireDate";
+  "name" | "email" | "countryCode" | "phone" | "campaign" | "amount";
 
 const CSV_COLUMN_ALIASES: Record<CsvField, string[]> = {
   name: ["name", "assigneename", "assignee name"],
@@ -64,53 +56,7 @@ const CSV_COLUMN_ALIASES: Record<CsvField, string[]> = {
   phone: ["phone", "mobile", "assigneephone", "assignee phone"],
   campaign: ["campaign", "campaignname", "campaign name"],
   amount: ["amount", "value"],
-  expireDate: [
-    "expiration",
-    "expirationdate",
-    "expiration date",
-    "expiredate",
-    "expire date",
-    "expiry",
-    "expiry date",
-    "expirydate",
-    "exp",
-    "exp date",
-    "valid until",
-    "validuntil",
-    "end date",
-    "enddate",
-  ],
 };
-
-// Normalize a date cell to yyyy-mm-dd (what <input type="date"> needs).
-// Handles ISO, dd/mm/yyyy | dd-mm-yyyy | dd.mm.yyyy (day-first when ambiguous),
-// and anything the Date constructor understands. Returns "" if unparseable.
-function normalizeDate(raw: string): string {
-  const v = raw.trim();
-  if (!v) return "";
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
-
-  const parts = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/.exec(v);
-  if (parts) {
-    let day = parseInt(parts[1], 10);
-    let month = parseInt(parts[2], 10);
-    let year = parseInt(parts[3], 10);
-    if (month > 12 && day <= 12) [day, month] = [month, day]; // clearly mm/dd
-    if (year < 100) year += 2000;
-    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    }
-  }
-
-  const d = new Date(v);
-  if (!Number.isNaN(d.getTime())) {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-      d.getDate(),
-    ).padStart(2, "0")}`;
-  }
-  return "";
-}
 
 const CSV_REQUIRED_FIELDS: CsvField[] = ["name", "email", "campaign", "amount"];
 
@@ -197,15 +143,14 @@ const VoucherConfigure = ({
     !a.email.trim() &&
     !a.phone.trim() &&
     !a.campaignId &&
-    !a.amount &&
-    !a.expireDate;
+    !a.amount;
 
   // Block adding another card while an existing one is still completely empty.
   const hasEmptyAssignee = activeAssignees.some(isAssigneeEmpty);
 
   // ─── Per-field required / format validation ────────────────────────────────
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  type RequiredField = "name" | "email" | "campaignId" | "amount" | "expireDate";
+  type RequiredField = "name" | "email" | "campaignId" | "amount";
 
   // Fields touched (blurred) by the user, keyed `${assigneeId}:${field}`.
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -228,9 +173,6 @@ const VoucherConfigure = ({
       case "amount":
         if (String(a.amount).trim() === "") return t("error_amount_required");
         return Number(a.amount) > 0 ? "" : t("error_invalid_amount");
-      case "expireDate":
-        if (!a.expireDate) return t("error_expiration_required");
-        return a.expireDate < TODAY ? t("error_expiration_past") : "";
       default:
         return "";
     }
@@ -269,6 +211,13 @@ const VoucherConfigure = ({
       ),
     }));
 
+  // Last values pushed through "Apply to all" — new assignee cards inherit
+  // these so a bulk selection also covers rows added afterwards.
+  const [bulkValues, setBulkValues] = useState<{
+    campaignId: string;
+    amount: string;
+  }>({ campaignId: "", amount: "" });
+
   const addAssignee = () => {
     if (hasEmptyAssignee) {
       toast.error(t("fill_current_assignee_first"));
@@ -277,7 +226,16 @@ const VoucherConfigure = ({
     shouldScrollToLast.current = true;
     setFormData((prev) => ({
       ...prev,
-      assignees: [...prev.assignees, makeVoucherAssignee()],
+      assignees: [
+        ...prev.assignees,
+        {
+          ...makeVoucherAssignee(),
+          ...(bulkValues.campaignId
+            ? { campaignId: bulkValues.campaignId }
+            : {}),
+          ...(bulkValues.amount ? { amount: bulkValues.amount } : {}),
+        },
+      ],
     }));
   };
 
@@ -287,19 +245,18 @@ const VoucherConfigure = ({
       assignees: prev.assignees.filter((a) => a.id !== id),
     }));
 
-  const applyToAll = (
-    field: "campaignId" | "amount" | "expireDate",
-    value: string,
-  ) =>
+  const applyToAll = (field: "campaignId" | "amount", value: string) => {
+    setBulkValues((prev) => ({ ...prev, [field]: value }));
     setFormData((prev) => ({
       ...prev,
       assignees: prev.assignees.map((a) => ({ ...a, [field]: value })),
     }));
+  };
 
   // Sample CSV download
   const downloadSample = () => {
     const csv =
-      "Name,Email,CountryCode,Phone,Campaign,Amount,Expiration\nJohn Doe,john@example.com,+972,501234567,Summer Sale 2024,200,2026-12-31\nJane Smith,jane@example.com,+1,2125550100,VIP Members,500,2026-12-31";
+      "Name,Email,CountryCode,Phone,Campaign,Amount\nJohn Doe,john@example.com,+972,501234567,Summer Sale 2024,200\nJane Smith,jane@example.com,+1,2125550100,VIP Members,500";
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -373,7 +330,7 @@ const VoucherConfigure = ({
             phone: cell(cells, "phone"),
             campaignId: campaign?._id || "",
             amount: cell(cells, "amount"),
-            expireDate: normalizeDate(cell(cells, "expireDate")),
+            expireDate: "",
           };
         });
 
@@ -416,88 +373,93 @@ const VoucherConfigure = ({
             isDark ? "bg-gray-900" : "bg-white"
           }`}
         >
-        {/* Header: title + sample / upload / add actions */}
-        <div
-          className={`px-6 py-1 pb-2 border-b ${
-            isDark ? "border-gray-800" : "border-gray-100"
-          }`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className={`text-sm uppercase tracking-wider ${textTertiary}`}>
-              {`${t("assignees")} (${activeAssignees.length})`}
-            </h2>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={downloadSample}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  isDark
-                    ? "bg-teal-900/40 hover:bg-teal-900/60 text-teal-300 border border-teal-700"
-                    : "bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200"
-                }`}
-              >
-                <Download className="w-3.5 h-3.5" />
-                {t("download_sample")}
-              </button>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  isDark
-                    ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                }`}
-              >
-                <Upload className="w-3.5 h-3.5" />
-                {t("upload_sample")}
-              </button>
-              <button
-                type="button"
-                onClick={addAssignee}
-                disabled={hasEmptyAssignee}
-                title={hasEmptyAssignee ? t("fill_current_assignee_first") : ""}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:from-teal-500 disabled:hover:to-blue-500"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                {t("add_assignee")}
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </div>
-          </div>
-            {/* <p className={` text-xs ${textTertiary}`}>
-              {t("supports_csv_sample_hint")}
-            </p> */}
-        </div>
-
-        {uploadError && (
+          {/* Header: title + sample / upload / add actions */}
           <div
-            className={`flex items-center gap-2 text-sm px-6 py-3 border-b text-red-500 ${
+            className={`px-6 py-1 pb-2 border-b ${
               isDark ? "border-gray-800" : "border-gray-100"
             }`}
           >
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            {uploadError}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2
+                className={`text-sm uppercase tracking-wider ${textTertiary}`}
+              >
+                {`${t("assignees")} (${activeAssignees.length})`}
+              </h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={downloadSample}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark
+                      ? "bg-teal-900/40 hover:bg-teal-900/60 text-teal-300 border border-teal-700"
+                      : "bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200"
+                  }`}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  {t("download_sample")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark
+                      ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  {t("upload_sample")}
+                </button>
+                <button
+                  type="button"
+                  onClick={addAssignee}
+                  disabled={hasEmptyAssignee}
+                  title={
+                    hasEmptyAssignee ? t("fill_current_assignee_first") : ""
+                  }
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:from-teal-500 disabled:hover:to-blue-500"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {t("add_assignee")}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
+            {/* <p className={` text-xs ${textTertiary}`}>
+              {t("supports_csv_sample_hint")}
+            </p> */}
           </div>
-        )}
 
-        {/* Apply to all — shown Ïth 2+ assignees */}
-        {activeAssignees.length >= 2 && (
-          <BulkApplyBar
-            campaigns={campaignList}
-            onApplyCampaign={(id) => applyToAll("campaignId", id)}
-            onApplyAmount={(amt) => applyToAll("amount", amt)}
-            onApplyExpiration={(d) => applyToAll("expireDate", d)}
-            inputCls={inputCls}
-            selectCls={selectCls}
-            t={t}
-          />
-        )}
+          {uploadError && (
+            <div
+              className={`flex items-center gap-2 text-sm px-6 py-3 border-b text-red-500 ${
+                isDark ? "border-gray-800" : "border-gray-100"
+              }`}
+            >
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {uploadError}
+            </div>
+          )}
+
+          {/* Apply to all — shown with 2+ assignees */}
+          {activeAssignees.length >= 2 && (
+            <BulkApplyBar
+              campaigns={campaignList}
+              defaultCampaign={bulkValues.campaignId}
+              defaultAmount={bulkValues.amount}
+              onApplyCampaign={(id) => applyToAll("campaignId", id)}
+              onApplyAmount={(amt) => applyToAll("amount", amt)}
+              inputCls={inputCls}
+              selectCls={selectCls}
+              t={t}
+            />
+          )}
         </div>
 
         {/* Assignee cards */}
@@ -550,10 +512,9 @@ const VoucherConfigure = ({
                 </button>
               </div>
 
-              {/* Card body */}
-              <div className="p-4 space-y-3">
-                {/* Line 1: Name / Email / Phone */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Card body — one row: Name / Email / Phone / Campaign / Amount */}
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-[2.5fr_2.5fr_3.5fr_3fr_2fr] gap-3">
                   <div>
                     <label className={labelCls}>{t("name")} *</label>
                     <input
@@ -590,7 +551,7 @@ const VoucherConfigure = ({
                       <p className={errText}>{shownError(a, "email")}</p>
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <label className={labelCls}>{t("phone")}</label>
                     <div className="flex gap-1.5">
                       <select
@@ -618,10 +579,6 @@ const VoucherConfigure = ({
                       />
                     </div>
                   </div>
-                </div>
-
-                {/* Line 2: Campaign / Amount / Expiration */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <label className={labelCls}>{t("campaign")} *</label>
                     <select
@@ -673,26 +630,6 @@ const VoucherConfigure = ({
                       <p className={errText}>{shownError(a, "amount")}</p>
                     )}
                   </div>
-                  <div>
-                    <label className={labelCls}>
-                      {t("expiration_date")} *
-                    </label>
-                    <input
-                      type="date"
-                      value={a.expireDate}
-                      min={TODAY}
-                      onChange={(e) =>
-                        updateAssignee(a.id, "expireDate", e.target.value)
-                      }
-                      onBlur={() => markTouched(a.id, "expireDate")}
-                      className={`${inputCls} ${
-                        shownError(a, "expireDate") ? errInputCls : ""
-                      }`}
-                    />
-                    {shownError(a, "expireDate") && (
-                      <p className={errText}>{shownError(a, "expireDate")}</p>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
@@ -709,9 +646,10 @@ export default VoucherConfigure;
 
 interface BulkApplyBarProps {
   campaigns: Campaign[];
+  defaultCampaign?: string;
+  defaultAmount?: string;
   onApplyCampaign: (id: string) => void;
   onApplyAmount: (amt: string) => void;
-  onApplyExpiration: (date: string) => void;
   inputCls: string;
   selectCls: string;
   t: (key: string) => string;
@@ -719,20 +657,19 @@ interface BulkApplyBarProps {
 
 function BulkApplyBar({
   campaigns,
+  defaultCampaign = "",
+  defaultAmount = "",
   onApplyCampaign,
   onApplyAmount,
-  onApplyExpiration,
   inputCls,
   selectCls,
   t,
 }: BulkApplyBarProps) {
   const { isDark, textTertiary } = useThemeClasses();
-  const [bulkCampaign, setBulkCampaign] = useState("");
-  const [bulkAmount, setBulkAmount] = useState("");
-  const [bulkExpiration, setBulkExpiration] = useState("");
+  const [bulkCampaign, setBulkCampaign] = useState(defaultCampaign);
+  const [bulkAmount, setBulkAmount] = useState(defaultAmount);
   const [campaignApplied, setCampaignApplied] = useState(false);
   const [amountApplied, setAmountApplied] = useState(false);
-  const [expirationApplied, setExpirationApplied] = useState(false);
 
   const applyBulkCampaign = () => {
     if (!bulkCampaign) return;
@@ -746,13 +683,6 @@ function BulkApplyBar({
     onApplyAmount(bulkAmount);
     setAmountApplied(true);
     setTimeout(() => setAmountApplied(false), 1500);
-  };
-
-  const applyBulkExpiration = () => {
-    if (!bulkExpiration) return;
-    onApplyExpiration(bulkExpiration);
-    setExpirationApplied(true);
-    setTimeout(() => setExpirationApplied(false), 1500);
   };
 
   return (
@@ -841,39 +771,6 @@ function BulkApplyBar({
         >
           {amountApplied ? <CheckCircle className="w-3.5 h-3.5" /> : null}
           {amountApplied ? t("applied") : t("apply")}
-        </button>
-      </div>
-
-      <div className={`h-4 w-px ${isDark ? "bg-gray-700" : "bg-gray-300"}`} />
-
-      {/* Same Expiration */}
-      <div className="flex items-center gap-2">
-        <input
-          type="date"
-          value={bulkExpiration}
-          min={TODAY}
-          onChange={(e) => {
-            setBulkExpiration(e.target.value);
-            setExpirationApplied(false);
-          }}
-          className={`${inputCls} text-xs py-1.5`}
-          style={{ width: 150 }}
-          aria-label={t("same_expiration")}
-        />
-        <button
-          type="button"
-          onClick={applyBulkExpiration}
-          disabled={!bulkExpiration}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-all disabled:opacity-40 ${
-            expirationApplied
-              ? "bg-green-500 text-white"
-              : isDark
-                ? "bg-teal-800 hover:bg-teal-700 text-teal-200"
-                : "bg-teal-600 hover:bg-teal-700 text-white"
-          }`}
-        >
-          {expirationApplied ? <CheckCircle className="w-3.5 h-3.5" /> : null}
-          {expirationApplied ? t("applied") : t("apply")}
         </button>
       </div>
     </div>

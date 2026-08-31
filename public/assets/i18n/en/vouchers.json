@@ -24,6 +24,7 @@
   "apply": "Apply",
   "applied": "Applied",
   "error_purchaser_name_required": "Purchaser name is required",
+  "error_purchaser_email_required": "Purchaser email is required",
   "error_expiration_required": "Expiration date is required",
   "error_expiration_past": "Expiration date must be today or later",
   "error_name_required": "Name is required",

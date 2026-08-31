@@ -10,7 +10,11 @@ import {
 import { ModalWrapper } from "@/components/wrapper";
 import { useCreateVoucherMutation } from "@/store/api/voucherMutationApi";
 
-import { WizardFooter, WizardStepper, ConfirmDialog } from "@/components/shared";
+import {
+  WizardFooter,
+  WizardStepper,
+  ConfirmDialog,
+} from "@/components/shared";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -126,8 +130,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         a.email.trim() ||
         a.phone.trim() ||
         a.campaignId ||
-        a.amount ||
-        a.expireDate,
+        a.amount,
     );
 
   // Guarded close: if the user entered data but never created the vouchers,
@@ -144,15 +147,21 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
     const newErrors: Record<string, string> = {};
 
     switch (step) {
-      case 1:
+      case 1: {
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!formData.purchaserName.trim()) {
           newErrors.purchaserName = t("error_purchaser_name_required");
         }
+        if (!formData.purchaserEmail.trim()) {
+          newErrors.purchaserEmail = t("error_purchaser_email_required");
+        } else if (!emailRe.test(formData.purchaserEmail.trim())) {
+          newErrors.purchaserEmail = t("error_email_invalid");
+        }
         break;
+      }
 
       case 2: {
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const today = new Date().toISOString().split("T")[0];
         const allAssigneesValid =
           activeAssignees.length > 0 &&
           activeAssignees.every(
@@ -160,9 +169,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
               a.name.trim() &&
               emailRe.test(a.email.trim()) &&
               a.campaignId &&
-              Number(a.amount) > 0 &&
-              a.expireDate &&
-              a.expireDate >= today,
+              Number(a.amount) > 0,
           );
         if (!allAssigneesValid) {
           // Flag only — VoucherConfigure reads this to reveal the per-field
@@ -304,7 +311,11 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
           />
         )}
         {currentStep === 3 && (
-          <VoucherGreeting formData={formData} setFormData={setFormData} t={t} />
+          <VoucherGreeting
+            formData={formData}
+            setFormData={setFormData}
+            t={t}
+          />
         )}
         {currentStep === 4 && (
           <VoucherReview formData={formData} campaigns={campaigns} t={t} />

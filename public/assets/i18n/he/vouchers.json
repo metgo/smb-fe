@@ -24,6 +24,7 @@
   "apply": "החל",
   "applied": "הוחל",
   "error_purchaser_name_required": "שם הרוכש נדרש",
+  "error_purchaser_email_required": "אימייל הרוכש נדרש",
   "error_expiration_required": "תאריך תפוגה נדרש",
   "error_expiration_past": "תאריך התפוגה חייב להיות היום או מאוחר יותר",
   "error_name_required": "שם נדרש",

@@ -90,9 +90,6 @@ const VoucherReview = ({ formData, campaigns, t }: Props) => {
                   <th className="px-3 py-2 text-left">{t("phone")}</th>
                   <th className="px-3 py-2 text-left">{t("campaign")}</th>
                   <th className="px-3 py-2 text-left">{t("amount")}</th>
-                  <th className="px-3 py-2 text-left">
-                    {t("expiration_date")}
-                  </th>
                 </tr>
               </thead>
               <tbody
@@ -111,7 +108,6 @@ const VoucherReview = ({ formData, campaigns, t }: Props) => {
                     <td className="px-3 py-2">
                       {a.amount ? `₪${Number(a.amount).toLocaleString()}` : "—"}
                     </td>
-                    <td className="px-3 py-2">{a.expireDate || "—"}</td>
                   </tr>
                 ))}
               </tbody>

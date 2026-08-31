@@ -77,7 +77,7 @@ const VoucherInformation = ({
         {/* Email */}
         <div>
           <label className={`block text-xs mb-1.5 ${textSecondary}`}>
-            {t("email")}
+            {t("email")} *
           </label>
           <div className="relative">
             <Mail
@@ -98,6 +98,9 @@ const VoucherInformation = ({
               className={`${inputCls} ${isRTL ? "pr-9" : "pl-9"}`}
             />
           </div>
+          {errors.purchaserEmail && (
+            <p className="text-red-500 text-xs mt-1">{errors.purchaserEmail}</p>
+          )}
         </div>
 
         {/* Phone */}

@@ -24,6 +24,7 @@
   "apply": "تطبيق",
   "applied": "تم التطبيق",
   "error_purchaser_name_required": "اسم المشتري مطلوب",
+  "error_purchaser_email_required": "بريد المشتري الإلكتروني مطلوب",
   "error_expiration_required": "تاريخ انتهاء الصلاحية مطلوب",
   "error_expiration_past": "يجب أن يكون تاريخ انتهاء الصلاحية اليوم أو بعده",
   "error_name_required": "الاسم مطلوب",
