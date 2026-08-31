@@ -692,10 +692,6 @@ const VoucherConfigure = ({
             </div>
           ))}
         </div>
-
-        {errors.assignees && (
-          <p className="text-red-500 text-xs px-6 pb-4">{errors.assignees}</p>
-        )}
       </div>
     </div>
   );

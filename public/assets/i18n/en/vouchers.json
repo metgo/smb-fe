@@ -31,7 +31,6 @@
   "error_email_invalid": "Enter a valid email address",
   "error_campaign_required": "Campaign is required",
   "error_amount_required": "Amount is required",
-  "error_complete_all_assignees": "Complete name, email, campaign, amount and expiration for every assignee",
 
   "select_websites_multi_select": "Select Websites (multi-select)",
   "select_websites_placeholder": "Select websites...",
@@ -165,7 +164,11 @@
   "vouchers_management": "Vouchers Management",
   "create_track_manage_vouchers": "Create, track, and manage your vouchers",
   "add_voucher": "Add Voucher",
+  "cancel": "Cancel",
+  "create_vouchers": "Create Vouchers",
+  "confirm_discard_voucher": "You haven't created these vouchers yet. Discard and close?",
   "voucher_published": "Voucher Published",
+  "voucher_publish_failed": "Failed to create vouchers",
   "assignee_information": "Assignee Information",
 
   "assigned_at": "Assigned At",

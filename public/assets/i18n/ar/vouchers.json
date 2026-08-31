@@ -31,7 +31,6 @@
   "error_email_invalid": "أدخل عنوان بريد إلكتروني صالح",
   "error_campaign_required": "الحملة مطلوبة",
   "error_amount_required": "المبلغ مطلوب",
-  "error_complete_all_assignees": "أكمل الاسم والبريد الإلكتروني والحملة والمبلغ وتاريخ الانتهاء لكل مستفيد",
 
   "select_websites_multi_select": "اختر المواقع (اختيار متعدد)",
   "select_websites_placeholder": "اختر المواقع...",
@@ -159,7 +158,11 @@
   "vouchers_management": "إدارة القسائم",
   "create_track_manage_vouchers": "إنشاء وتتبع وإدارة القسائم الخاصة بك",
   "add_voucher": "إضافة قسيمة",
+  "cancel": "إلغاء",
+  "create_vouchers": "إنشاء القسائم",
+  "confirm_discard_voucher": "لم يتم إنشاء هذه القسائم بعد. تجاهل وإغلاق؟",
   "voucher_published": "تم نشر القسيمة",
+  "voucher_publish_failed": "فشل إنشاء القسائم",
 
   "assignee_information": "معلومات المستلم",
 

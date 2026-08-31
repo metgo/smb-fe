@@ -31,7 +31,6 @@
   "error_email_invalid": "יש להזין כתובת אימייל תקינה",
   "error_campaign_required": "קמפיין נדרש",
   "error_amount_required": "סכום נדרש",
-  "error_complete_all_assignees": "יש להשלים שם, אימייל, קמפיין, סכום ותאריך תפוגה עבור כל נמען",
 
   "select_websites_multi_select": "בחר אתרים (בחירה מרובה)",
   "select_websites_placeholder": "בחר אתרים...",
@@ -159,7 +158,11 @@
   "vouchers_management": "ניהול שוברים",
   "create_track_manage_vouchers": "צור, עקוב ונהל את השוברים שלך",
   "add_voucher": "הוסף שובר",
+  "cancel": "ביטול",
+  "create_vouchers": "צור שוברים",
+  "confirm_discard_voucher": "השוברים עדיין לא נוצרו. לבטל ולסגור?",
   "voucher_published": "השובר פורסם",
+  "voucher_publish_failed": "יצירת השוברים נכשלה",
 
   "assignee_information": "מידע על המקבל",
 

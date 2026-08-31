@@ -46,6 +46,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isPublishing, setIsPublishing] = useState(false);
+  const [hasCreated, setHasCreated] = useState(false);
 
   const [formData, setFormData] = useState<IVoucherFormData>({
     // Purchaser
@@ -101,22 +102,41 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const saveDraft = useCallback(
-    async (isPublish = false) => {
-      try {
-        const res = await createVoucher(buildPayload()).unwrap();
-        setResponse(res);
+  const publishVouchers = useCallback(async (): Promise<boolean> => {
+    try {
+      const res = await createVoucher(buildPayload()).unwrap();
+      setResponse(res);
+      setHasCreated(true);
+      toast.success(t("voucher_published"));
+      return true;
+    } catch (err: any) {
+      toast.error(err?.data?.message || t("voucher_publish_failed"));
+      return false;
+    }
+  }, [buildPayload, createVoucher, t]);
 
-        toast.success(isPublish ? t("voucher_published") : t("draft_saved"));
-      } catch (err: any) {
-        toast.error(err?.data?.message || t("draft_failed"));
-      }
-    },
-    [buildPayload, createVoucher, t],
-  );
+  // Is there anything worth warning about before a plain close/cancel?
+  const isDirty =
+    formData.purchaserName.trim() !== "" ||
+    formData.greeting.trim() !== "" ||
+    formData.assignees.some(
+      (a) =>
+        a.name.trim() ||
+        a.email.trim() ||
+        a.phone.trim() ||
+        a.campaignId ||
+        a.amount ||
+        a.expireDate,
+    );
 
-  const handleSaveDraft = async () => {
-    await saveDraft(false);
+  // Guarded close: if the user entered data but never created the vouchers,
+  // confirm before discarding. Used for the X / drag-dismiss / cancel paths.
+  const requestClose = () => {
+    if (hasCreated || currentStep >= totalSteps || !isDirty) {
+      onClose();
+      return;
+    }
+    if (window.confirm(t("confirm_discard_voucher"))) onClose();
   };
 
   const validateStep = (step: number) => {
@@ -144,7 +164,9 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
               a.expireDate >= today,
           );
         if (!allAssigneesValid) {
-          newErrors.assignees = t("error_complete_all_assignees");
+          // Flag only — VoucherConfigure reads this to reveal the per-field
+          // errors; no aggregate message is displayed.
+          newErrors.assignees = "invalid";
         }
         break;
       }
@@ -168,22 +190,19 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
   };
 
   const handlePublish = async () => {
-    let allValid = true;
     for (let i = 1; i <= 4; i++) {
       if (!validateStep(i)) {
-        allValid = false;
         setCurrentStep(i);
-        break;
+        toast.error(t("fill_all_fields"));
+        return;
       }
-    }
-    if (!allValid) {
-      toast.error(t("fill_all_fields"));
-      return;
     }
 
     setIsPublishing(true);
-    await saveDraft(true);
+    const ok = await publishVouchers();
     setIsPublishing(false);
+    // Only move to the success screen once the vouchers really exist.
+    if (ok) setCurrentStep(totalSteps);
   };
 
   const handleNext = () => {
@@ -191,8 +210,11 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
       toast.error(t("fill_all_fields"));
       return;
     }
+    // Step 4 → publish. handlePublish advances to the success step itself,
+    // and only if the API call succeeds.
     if (currentStep === 4) {
       handlePublish();
+      return;
     }
     setCurrentStep((prev) => prev + 1);
   };
@@ -206,8 +228,10 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
     { number: 5, icon: Table, title: t("success") },
   ];
 
+  const onSuccessStep = currentStep >= totalSteps;
+
   return (
-    <ModalWrapper onClose={onClose} showSpinner={isCreating}>
+    <ModalWrapper onClose={requestClose} showSpinner={isCreating}>
       {/* Header */}
       <div
         className={`px-4 py-3 md:px-6 md:py-4 flex items-center justify-between gap-3 border-b ${
@@ -231,13 +255,30 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
             </p>
           )}
         </div>
-        <button
-          onClick={handleDone}
-          className="px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer shrink-0"
-        >
-          <CheckCircle className="w-4 h-4" />
-          <span className="hidden sm:inline">{t("done")}</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {!onSuccessStep && (
+            <button
+              onClick={requestClose}
+              className={`px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border transition-colors cursor-pointer ${
+                isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+              }`}
+            >
+              {t("cancel")}
+            </button>
+          )}
+          <button
+            onClick={onSuccessStep ? handleDone : handlePublish}
+            disabled={isPublishing || isCreating}
+            className="px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <CheckCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">
+              {onSuccessStep ? t("done") : t("create_vouchers")}
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Progress Bar */}
@@ -291,7 +332,6 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         isPublishing={isPublishing}
         onPrevious={handlePrevious}
         onNext={handleNext}
-        onSaveDraft={handleSaveDraft}
         onDone={handleDone}
         onPublish={() => {}}
         isPublishButton={false}
