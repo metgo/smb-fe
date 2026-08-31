@@ -618,37 +618,65 @@ const RichTextEditor = ({
     }
   };
 
-  const insertLink = () => {
-    const url = prompt("Enter URL:");
-    if (!url) return;
-
+  // Returns the anchor the current selection sits inside, if any.
+  const getSelectionAnchor = (): HTMLAnchorElement | null => {
     const sel = window.getSelection();
-    const hadSelection = !!sel && sel.rangeCount > 0 && !sel.isCollapsed;
+    if (!sel || sel.rangeCount === 0) return null;
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== editorRef.current) {
+      if (node instanceof HTMLAnchorElement) return node;
+      node = node.parentNode;
+    }
+    return null;
+  };
+
+  // Prepend a scheme to a bare host like "example.com" so the browser doesn't
+  // treat it as a relative path (which resolves against the current site URL).
+  // Absolute URLs, mail/tel links and in-page anchors are left untouched.
+  const normalizeUrl = (raw: string): string => {
+    const url = raw.trim();
+    if (!url) return "";
+    if (/^(https?:\/\/|mailto:|tel:|#)/i.test(url)) return url;
+    return `https://${url}`;
+  };
+
+  const insertLink = () => {
+    saveSelection();
+
+    // Cursor inside an existing link → remove it, keeping the text.
+    const existingAnchor = getSelectionAnchor();
+    if (existingAnchor) {
+      const sel = window.getSelection();
+      const range = document.createRange();
+      range.selectNode(existingAnchor);
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      document.execCommand("unlink");
+      editorRef.current?.focus();
+      if (editorRef.current) onChange(editorRef.current.innerHTML);
+      return;
+    }
+
+    const input = prompt("Enter URL:");
+    restoreSelection();
+    const url = normalizeUrl(input ?? "");
+    if (!url) return;
 
     execCmd("createLink", url);
 
     // execCommand("createLink") does not set a target, so links open in the
-    // same tab. Find the anchor(s) just created and make them open in a new tab.
+    // same tab. Style any anchor that hasn't been handled yet.
     const root = editorRef.current;
     if (!root) return;
 
-    const styleAnchor = (a: HTMLAnchorElement) => {
-      a.setAttribute("target", "_blank");
-      a.setAttribute("rel", "noopener noreferrer");
-      a.style.textDecoration = "underline";
-    };
-
     root
-      .querySelectorAll<HTMLAnchorElement>(`a[href="${url}"]`)
-      .forEach(styleAnchor);
-
-    // If nothing was selected, execCommand inserts the URL as the link text;
-    // ensure that anchor also gets the attributes even if href was normalized.
-    if (!hadSelection) {
-      root
-        .querySelectorAll<HTMLAnchorElement>("a:not([target])")
-        .forEach(styleAnchor);
-    }
+      .querySelectorAll<HTMLAnchorElement>("a:not([data-rte-styled])")
+      .forEach((a) => {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+        a.setAttribute("data-rte-styled", "");
+        a.style.textDecoration = "underline";
+      });
 
     onChange(root.innerHTML);
   };
@@ -713,7 +741,7 @@ const RichTextEditor = ({
         {
           icon: LinkIcon,
           command: "link",
-          title: "Insert Link",
+          title: "Insert / Remove Link",
           onClick: insertLink,
         },
         {
