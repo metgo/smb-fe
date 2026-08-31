@@ -4,6 +4,8 @@
   "add_order": "צור הזמנה חדשה",
   "scan_qr_code": "סרוק קוד QR",
   "search_orders": "חיפוש לפי מזהה הזמנה, שם, אימייל, טלפון...",
+  "amount": "סכום",
+  "amount_placeholder": "סכום מדויק",
   "order_id": "מזהה הזמנה",
   "purchaser_name": "רוכש",
   "purchaser_information": "פרטי הרוכש",

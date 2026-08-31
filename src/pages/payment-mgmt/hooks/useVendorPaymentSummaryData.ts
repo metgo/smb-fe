@@ -12,6 +12,7 @@ export interface VendorPaymentSummaryFilters {
   month: string;
   startDate: string;
   endDate: string;
+  amount?: string;
 }
 
 export function useVendorPaymentSummaryData(
@@ -34,6 +35,7 @@ export function useVendorPaymentSummaryData(
     filters.month,
     filters.startDate,
     filters.endDate,
+    filters.amount,
     dmoId,
     authorityId,
   ]);
@@ -47,6 +49,7 @@ export function useVendorPaymentSummaryData(
     };
 
     if (searchTerm) params.search = searchTerm;
+    if (filters.amount) params.amount = filters.amount;
 
     Object.assign(
       params,
@@ -59,6 +62,7 @@ export function useVendorPaymentSummaryData(
     filters.month,
     filters.startDate,
     filters.endDate,
+    filters.amount,
     searchTerm,
     dmoId,
     authorityId,
