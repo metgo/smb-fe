@@ -56,6 +56,7 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
+import { getPlainText } from "@/components/shared/RichTextEditor";
 // import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
@@ -875,9 +876,9 @@ function CreateBusinessWizardInner({
       return;
     }
     if (
-      (formData.fullDescription || "").length > 500 ||
-      (formData.fullDescriptionHe || "").length > 500 ||
-      (formData.fullDescriptionAr || "").length > 500
+      getPlainText(formData.fullDescription || "").length > 500 ||
+      getPlainText(formData.fullDescriptionHe || "").length > 500 ||
+      getPlainText(formData.fullDescriptionAr || "").length > 500
     ) {
       setCurrentStep(1);
       toast.error(tc("exceeds_char_limit", { limit: 500 }));

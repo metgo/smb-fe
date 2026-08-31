@@ -95,7 +95,7 @@ const VendorMonthlySummaryTable = ({
       }
     : null;
 
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   const [bankDetailsVendor, setBankDetailsVendor] =
     useState<VendorPaymentSummaryRow | null>(null);
@@ -193,8 +193,8 @@ const VendorMonthlySummaryTable = ({
           <span />
         </div>
 
-        {vendors?.map((v) => {
-          const isOpen = expanded === v.owner_info._id;
+        {vendors?.map((v, index) => {
+          const isOpen = expanded === index;
           const total = v.orderSummary.totalCount;
           return (
             <div
@@ -202,7 +202,7 @@ const VendorMonthlySummaryTable = ({
               className={clsx("border-b last:border-b-0", borderColor)}
             >
               <div
-                onClick={() => setExpanded(isOpen ? null : v.owner_info?._id)}
+                onClick={() => setExpanded(isOpen ? null : index)}
                 className={clsx(
                   "grid w-full grid-cols-1 items-center gap-4 px-5 py-4 text-left transition-colors md:grid-cols-[minmax(0,1fr)_180px_130px_140px_136px_36px]",
                   hoverBg,

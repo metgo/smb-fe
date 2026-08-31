@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { FileText } from "lucide-react";
 
-import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetPaymentTransactionsQuery } from "@/store/api/paymentQueryApi";
 import type { PaymentTransaction } from "@/store/api/paymentQueryApi";
@@ -11,10 +9,12 @@ import {
   PageHeader,
   SearchInput,
   ReordableDataTable,
+  CopyableId,
 } from "@/components/shared";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterButton } from "@/components/btns";
 import FilterSelect from "@/pages/orders-mgmt/components/FilterSelect";
+import { OrderDetailsModal } from "@/pages/orders-mgmt/components";
 import { formatDateTime } from "@/helpers/formatter";
 import InvoicePdfModal from "./components/InvoicePdfModal";
 
@@ -45,7 +45,7 @@ const DEFAULT_FILTERS = {
 
 const PaymentTransactionsPage = () => {
   const { t } = useTranslation("payments");
-  const navigate = useNavigate();
+  const { t: tOrders } = useTranslation("orders");
   const { isDark, language, bgPrimary, textTertiary } = useThemeClasses();
 
   const [page, setPage] = useState(1);
@@ -53,6 +53,7 @@ const PaymentTransactionsPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [allTransactions, setAllTransactions] = useState<PaymentTransaction[]>(
     [],
   );
@@ -189,16 +190,9 @@ const PaymentTransactionsPage = () => {
       label: t("order_id"),
       render: (row: PaymentTransaction) =>
         row.orderId ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`${routes.ordersMgmt}?orderId=${row.orderId}`);
-            }}
-            className="cursor-pointer text-xs font-mono text-teal-500 hover:text-teal-400 hover:underline truncate max-w-[180px]"
-            title={row.orderId}
-          >
-            {row.orderId}
-          </button>
+          <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
+            <CopyableId id={row.orderId} full />
+          </span>
         ) : (
           <span className="text-xs text-gray-500">-</span>
         ),
@@ -222,23 +216,26 @@ const PaymentTransactionsPage = () => {
     {
       key: "method",
       label: t("payment_method"),
-      render: (row: PaymentTransaction) => (
-        <span className="text-sm capitalize">{row.method || "-"}</span>
-      ),
+      render: (row: PaymentTransaction) => {
+        const modes = (row.paymentMode ?? []).filter(Boolean);
+        const text = modes.length ? modes.join(", ") : row.method || "-";
+        return <span className="text-sm capitalize">{text}</span>;
+      },
     },
     {
-      key: "invoiceURL",
+      key: "invoiceUrl",
       label: t("invoice"),
+      width: "160px",
       render: (row: PaymentTransaction) =>
-        row.invoiceURL ? (
+        row.invoiceUrl ? (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setInvoiceUrl(row.invoiceURL as string);
+              setInvoiceUrl(row.invoiceUrl as string);
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-500 hover:text-teal-400 hover:underline"
+            className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap text-xs font-medium text-teal-500 hover:text-teal-400 hover:underline"
           >
-            <FileText className="w-3.5 h-3.5" />
+            <FileText className="w-3.5 h-3.5 shrink-0" />
             {t("view_invoice")}
           </button>
         ) : (
@@ -373,6 +370,10 @@ const PaymentTransactionsPage = () => {
             isDataLoading={isInitialLoad}
             hasMore={hasMore}
             next={fetchNextPage}
+            onRowClick={(row) => {
+              if (!row.orderId) return;
+              setSelectedOrderId(row.orderId);
+            }}
           />
         )}
 
@@ -388,6 +389,14 @@ const PaymentTransactionsPage = () => {
           url={invoiceUrl}
           title={t("invoice")}
           onClose={() => setInvoiceUrl(null)}
+        />
+      )}
+
+      {selectedOrderId && (
+        <OrderDetailsModal
+          t={tOrders}
+          orderId={selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
         />
       )}
     </div>

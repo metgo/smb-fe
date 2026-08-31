@@ -29,47 +29,8 @@ interface BlogImage {
   caption?: string;
 }
 
-interface BlogDetails {
-  _id: string;
-  status: string;
-  title: string;
-  titleHe: string;
-  titleAr: string;
-  shortDescription: string;
-  shortDescriptionHe: string;
-  shortDescriptionAr: string;
-  contentHe: string;
-  contentAr: string;
-  content: string;
-  summary: string;
-  summaryHe: string;
-  summaryAr: string;
-  slug: string;
-  metaTitle: string;
-  metaTitleHe: string;
-  metaTitleAr: string;
-  metaDescription: string;
-  metaDescriptionHe: string;
-  metaDescriptionAr: string;
-  tags: string[];
-  tagsHe: string[];
-  tagsAr: string[];
-  images: BlogImage[];
-  createdAt: string;
-  updatedAt: string | null;
-  createdBy: string;
-  updatedBy: string | null;
-  externalApiId: {
-    id: string;
-    name: string;
-    logo: string;
-    url: string;
-  };
-}
-
 // ─── Mapper ───────────────────────────────────────────────────────────────────
-
-function mapBlogDetailsToArticle(blogDetails: any): BlogDetails {
+function mapBlogDetailsToArticle(blogDetails: any): IBlogDetails {
   return {
     _id: blogDetails?._id,
     status: blogDetails?.status?.toLowerCase() ?? "draft",
@@ -133,7 +94,7 @@ export default function ArticleDetails() {
   } = useGetBlogByIdQuery({ blogId }, { skip: !blogId });
 
   // Prefer API data; fall back to passed article prop
-  const blogDetails: BlogDetails | null = blogDetailsRaw
+  const blogDetails: IBlogDetails | null = blogDetailsRaw
     ? mapBlogDetailsToArticle(blogDetailsRaw)
     : null;
 
@@ -206,14 +167,18 @@ export default function ArticleDetails() {
         <h3 className={`text-sm mb-2 ${textTertiary}`}>
           {t("short_description")}
         </h3>
-        <p className={textPrimary}>
-          {getLngWiseStr(
-            language,
-            blogDetails?.shortDescription,
-            blogDetails?.shortDescriptionHe,
-            blogDetails?.shortDescriptionAr,
-          ) || "-"}
-        </p>
+        <div
+          className={textPrimary}
+          dangerouslySetInnerHTML={{
+            __html:
+              getLngWiseStr(
+                language,
+                blogDetails?.shortDescription,
+                blogDetails?.shortDescriptionHe,
+                blogDetails?.shortDescriptionAr,
+              ) || "-",
+          }}
+        />
       </div>
 
       {/* Subtitle */}
@@ -502,10 +467,13 @@ export default function ArticleDetails() {
                       style={{ background: "currentColor" }}
                     />
                     <a
-                      href={blogDetails?.externalApiId?.url}
+                      href={`${blogDetails?.externalApiId?.url}blog-article-details/${blogDetails?.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-gray-700"
+                      className={clsx(
+                        "inline-flex items-center gap-1 text-xs",
+                        textSecondary,
+                      )}
                     >
                       <img
                         src={blogDetails?.externalApiId?.logo}

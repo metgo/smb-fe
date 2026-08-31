@@ -24,13 +24,14 @@ export interface PaymentTransaction {
   amount: number;
   currency: string;
   method: string | null;
+  paymentMode?: string[] | null;
   paymentRequestId: string;
   orderId: string;
   paymentDate: string;
   paymentStatus: PaymentTransactionStatus | string;
   orderStatus: string;
   orderProductId: string;
-  invoiceURL?: string | null;
+  invoiceUrl?: string | null;
   userInfo: PaymentTransactionUserInfo;
 }
 

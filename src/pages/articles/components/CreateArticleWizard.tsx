@@ -1,13 +1,7 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback, useEffect } from "react";
-import {
-  Eye,
-  FileText,
-  Image as ImageIcon,
-  // LanguagesIcon,
-  Section,
-} from "lucide-react";
+import { BarChart, Eye, FileText, Image as ImageIcon } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
@@ -24,13 +18,13 @@ import {
 import { useAppSelector } from "@/hooks/hooks";
 import { ReactSelect } from "@/components/form-fields";
 
+import Media from "@/components/details-sections/Media";
+import { detectLanguage, getLngWiseStr } from "@/helpers";
+import { getPlainText } from "@/components/shared/RichTextEditor";
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
-import { detectLanguage, getLngWiseStr } from "@/helpers";
-// import ArticleTranslateButton from "./sub-components/ArticleTranslateButton";
 import ArticleReviewSection from "./sub-components/ArticleReviewSection";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
-import Media from "@/components/details-sections/Media";
 
 const EMPTY_FORM: IArticleFormData = {
   externalApiId: {
@@ -124,7 +118,7 @@ const CreateArticleWizard = ({
     { number: 1, title: t("form"), icon: FileText },
     // { number: 2, title: t("translation"), icon: LanguagesIcon },
     { number: 2, title: t("media"), icon: ImageIcon },
-    { number: 3, title: t("seo"), icon: Section },
+    { number: 3, title: t("seo"), icon: BarChart },
     { number: 4, title: t("review"), icon: Eye },
   ];
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
@@ -255,9 +249,9 @@ const CreateArticleWizard = ({
       return false;
     }
     if (
-      (formData.shortDescription || "").length > 150 ||
-      (formData.shortDescriptionHe || "").length > 150 ||
-      (formData.shortDescriptionAr || "").length > 150
+      getPlainText(formData.shortDescription || "").length > 150 ||
+      getPlainText(formData.shortDescriptionHe || "").length > 150 ||
+      getPlainText(formData.shortDescriptionAr || "").length > 150
     ) {
       toast.error(tc("exceeds_char_limit", { limit: 150 }));
       return false;
@@ -458,14 +452,6 @@ const CreateArticleWizard = ({
             />
           </div>
         );
-      // case 2:
-      //   return (
-      //     <ArticleTranslateButton
-      //       formData={formData}
-      //       syncKey={existingArticle?._id}
-      //       onChange={handleChange}
-      //     />
-      //   );
       case 2:
         return <Media {...mediaProps} {...commonProps} />;
       case 3:

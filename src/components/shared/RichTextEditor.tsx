@@ -257,7 +257,7 @@ function rgbToHex(rgb: string): string {
   );
 }
 
-function getPlainText(html: string): string {
+export function getPlainText(html: string): string {
   const d = document.createElement("div");
   d.innerHTML = html;
   return d.textContent ?? d.innerText ?? "";
@@ -330,6 +330,13 @@ function sanitizePastedHTML(html: string): string {
               el.removeAttribute(attr.name);
             }
           }
+        }
+
+        // Make every pasted link open in a new tab and stay underlined
+        if (el.tagName === "A" && el.getAttribute("href")) {
+          el.setAttribute("target", "_blank");
+          el.setAttribute("rel", "noopener noreferrer");
+          el.style.textDecoration = "underline";
         }
 
         // Filter inline styles to only allowed properties
@@ -613,7 +620,37 @@ const RichTextEditor = ({
 
   const insertLink = () => {
     const url = prompt("Enter URL:");
-    if (url) execCmd("createLink", url);
+    if (!url) return;
+
+    const sel = window.getSelection();
+    const hadSelection = !!sel && sel.rangeCount > 0 && !sel.isCollapsed;
+
+    execCmd("createLink", url);
+
+    // execCommand("createLink") does not set a target, so links open in the
+    // same tab. Find the anchor(s) just created and make them open in a new tab.
+    const root = editorRef.current;
+    if (!root) return;
+
+    const styleAnchor = (a: HTMLAnchorElement) => {
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener noreferrer");
+      a.style.textDecoration = "underline";
+    };
+
+    root
+      .querySelectorAll<HTMLAnchorElement>(`a[href="${url}"]`)
+      .forEach(styleAnchor);
+
+    // If nothing was selected, execCommand inserts the URL as the link text;
+    // ensure that anchor also gets the attributes even if href was normalized.
+    if (!hadSelection) {
+      root
+        .querySelectorAll<HTMLAnchorElement>("a:not([target])")
+        .forEach(styleAnchor);
+    }
+
+    onChange(root.innerHTML);
   };
 
   const insertVariable = (val: string) => {
@@ -792,7 +829,7 @@ const RichTextEditor = ({
               saveSelection();
               setFontSizeOpen((o) => !o);
             }}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded transition-colors ${hoverBg} ${textPrimary} min-w-[72px] justify-between`}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded transition-colors ${hoverBg} ${textPrimary} min-w-18 justify-between`}
           >
             <span className="text-sm">{parseInt(activeFontSize) / 16}rem</span>
             <ChevronDown className="w-3 h-3 shrink-0" />
@@ -800,7 +837,7 @@ const RichTextEditor = ({
 
           {fontSizeOpen && (
             <div
-              className={`absolute top-full left-0 mt-1 ${dropdownBg} border ${borderColor} rounded-lg shadow-lg z-20 min-w-[110px] max-h-60 overflow-y-auto`}
+              className={`absolute top-full left-0 mt-1 ${dropdownBg} border ${borderColor} rounded-lg shadow-lg z-20 min-w-27.5 max-h-60 overflow-y-auto`}
             >
               {DEFAULT_FONT_SIZES.map((size) => (
                 <button
