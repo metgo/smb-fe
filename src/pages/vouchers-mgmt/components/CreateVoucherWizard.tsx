@@ -255,30 +255,16 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {!onSuccessStep && (
-            <button
-              onClick={requestClose}
-              className={`px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg border transition-colors cursor-pointer ${
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              {t("cancel")}
-            </button>
-          )}
-          <button
-            onClick={onSuccessStep ? handleDone : handlePublish}
-            disabled={isPublishing || isCreating}
-            className="px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <CheckCircle className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {onSuccessStep ? t("done") : t("create_vouchers")}
-            </span>
-          </button>
-        </div>
+        <button
+          onClick={onSuccessStep ? handleDone : handlePublish}
+          disabled={isPublishing || isCreating}
+          className="px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <CheckCircle className="w-4 h-4" />
+          <span className="hidden sm:inline">
+            {onSuccessStep ? t("done") : t("create_vouchers")}
+          </span>
+        </button>
       </div>
 
       {/* Progress Bar */}
