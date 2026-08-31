@@ -160,7 +160,10 @@
   "add_voucher": "הוסף שובר",
   "cancel": "ביטול",
   "create_vouchers": "צור שוברים",
-  "confirm_discard_voucher": "השוברים עדיין לא נוצרו. לבטל ולסגור?",
+  "confirm_discard_voucher": "השוברים עדיין לא נוצרו. אם תסגור עכשיו, כל מה שהזנת יאבד.",
+  "discard_changes_title": "לבטל את השינויים?",
+  "discard": "בטל שינויים",
+  "keep_editing": "המשך עריכה",
   "voucher_published": "השובר פורסם",
   "voucher_publish_failed": "יצירת השוברים נכשלה",
 

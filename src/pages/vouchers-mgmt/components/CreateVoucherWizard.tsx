@@ -10,7 +10,7 @@ import {
 import { ModalWrapper } from "@/components/wrapper";
 import { useCreateVoucherMutation } from "@/store/api/voucherMutationApi";
 
-import { WizardFooter, WizardStepper } from "@/components/shared";
+import { WizardFooter, WizardStepper, ConfirmDialog } from "@/components/shared";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -47,6 +47,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isPublishing, setIsPublishing] = useState(false);
   const [hasCreated, setHasCreated] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const [formData, setFormData] = useState<IVoucherFormData>({
     // Purchaser
@@ -130,13 +131,13 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
     );
 
   // Guarded close: if the user entered data but never created the vouchers,
-  // confirm before discarding. Used for the X / drag-dismiss / cancel paths.
+  // confirm before discarding. Used for the X / drag-dismiss paths.
   const requestClose = () => {
     if (hasCreated || currentStep >= totalSteps || !isDirty) {
       onClose();
       return;
     }
-    if (window.confirm(t("confirm_discard_voucher"))) onClose();
+    setShowDiscardConfirm(true);
   };
 
   const validateStep = (step: number) => {
@@ -321,6 +322,20 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         onDone={handleDone}
         onPublish={() => {}}
         isPublishButton={false}
+      />
+
+      <ConfirmDialog
+        open={showDiscardConfirm}
+        title={t("discard_changes_title")}
+        message={t("confirm_discard_voucher")}
+        confirmText={t("discard")}
+        cancelText={t("keep_editing")}
+        variant="danger"
+        onCancel={() => setShowDiscardConfirm(false)}
+        onConfirm={() => {
+          setShowDiscardConfirm(false);
+          onClose();
+        }}
       />
     </ModalWrapper>
   );

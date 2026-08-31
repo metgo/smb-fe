@@ -160,7 +160,10 @@
   "add_voucher": "إضافة قسيمة",
   "cancel": "إلغاء",
   "create_vouchers": "إنشاء القسائم",
-  "confirm_discard_voucher": "لم يتم إنشاء هذه القسائم بعد. تجاهل وإغلاق؟",
+  "confirm_discard_voucher": "لم يتم إنشاء هذه القسائم بعد. إذا أغلقت الآن، ستفقد كل ما أدخلته.",
+  "discard_changes_title": "تجاهل التغييرات؟",
+  "discard": "تجاهل",
+  "keep_editing": "متابعة التحرير",
   "voucher_published": "تم نشر القسيمة",
   "voucher_publish_failed": "فشل إنشاء القسائم",
 
