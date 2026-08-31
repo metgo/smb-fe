@@ -127,6 +127,9 @@ interface IVoucherFormData {
   multiMode: VoucherMultiMode;
   assignees: IVoucherAssignee[];
 
+  bulkCampaignId: string;
+  bulkAmount: string;
+
   // Applies to every voucher in this purchase
   expirationDate: string;
 

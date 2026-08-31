@@ -64,6 +64,8 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
     purchaseType: "multiple",
     multiMode: "manual",
     assignees: [makeVoucherAssignee()],
+    bulkCampaignId: "",
+    bulkAmount: "",
 
     expirationDate: "",
     greeting: "",

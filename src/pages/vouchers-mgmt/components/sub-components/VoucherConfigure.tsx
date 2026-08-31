@@ -132,7 +132,7 @@ const VoucherConfigure = ({
     isDark ? "text-gray-400" : "text-gray-500"
   }`;
 
-  const { assignees } = formData;
+  const { assignees, bulkCampaignId, bulkAmount } = formData;
 
   // Always a "multiple vouchers" flow now — one card per assignee.
   const activeAssignees = assignees;
@@ -211,12 +211,13 @@ const VoucherConfigure = ({
       ),
     }));
 
-  // Last values pushed through "Apply to all" — new assignee cards inherit
-  // these so a bulk selection also covers rows added afterwards.
-  const [bulkValues, setBulkValues] = useState<{
-    campaignId: string;
-    amount: string;
-  }>({ campaignId: "", amount: "" });
+  // "Apply to all" selections live in formData (see IVoucherFormData) so they
+  // survive leaving and re-entering this step. New assignee cards inherit them
+  // so a bulk selection also covers rows added afterwards.
+  const setBulkValue = (
+    field: "bulkCampaignId" | "bulkAmount",
+    value: string,
+  ) => setFormData((prev) => ({ ...prev, [field]: value }));
 
   const addAssignee = () => {
     if (hasEmptyAssignee) {
@@ -230,10 +231,8 @@ const VoucherConfigure = ({
         ...prev.assignees,
         {
           ...makeVoucherAssignee(),
-          ...(bulkValues.campaignId
-            ? { campaignId: bulkValues.campaignId }
-            : {}),
-          ...(bulkValues.amount ? { amount: bulkValues.amount } : {}),
+          ...(prev.bulkCampaignId ? { campaignId: prev.bulkCampaignId } : {}),
+          ...(prev.bulkAmount ? { amount: prev.bulkAmount } : {}),
         },
       ],
     }));
@@ -246,9 +245,10 @@ const VoucherConfigure = ({
     }));
 
   const applyToAll = (field: "campaignId" | "amount", value: string) => {
-    setBulkValues((prev) => ({ ...prev, [field]: value }));
+    const bulkKey = field === "campaignId" ? "bulkCampaignId" : "bulkAmount";
     setFormData((prev) => ({
       ...prev,
+      [bulkKey]: value,
       assignees: prev.assignees.map((a) => ({ ...a, [field]: value })),
     }));
   };
@@ -451,8 +451,10 @@ const VoucherConfigure = ({
           {activeAssignees.length >= 2 && (
             <BulkApplyBar
               campaigns={campaignList}
-              defaultCampaign={bulkValues.campaignId}
-              defaultAmount={bulkValues.amount}
+              campaignValue={bulkCampaignId}
+              amountValue={bulkAmount}
+              onChangeCampaign={(id) => setBulkValue("bulkCampaignId", id)}
+              onChangeAmount={(amt) => setBulkValue("bulkAmount", amt)}
               onApplyCampaign={(id) => applyToAll("campaignId", id)}
               onApplyAmount={(amt) => applyToAll("amount", amt)}
               inputCls={inputCls}
@@ -646,8 +648,10 @@ export default VoucherConfigure;
 
 interface BulkApplyBarProps {
   campaigns: Campaign[];
-  defaultCampaign?: string;
-  defaultAmount?: string;
+  campaignValue: string;
+  amountValue: string;
+  onChangeCampaign: (id: string) => void;
+  onChangeAmount: (amt: string) => void;
   onApplyCampaign: (id: string) => void;
   onApplyAmount: (amt: string) => void;
   inputCls: string;
@@ -657,8 +661,10 @@ interface BulkApplyBarProps {
 
 function BulkApplyBar({
   campaigns,
-  defaultCampaign = "",
-  defaultAmount = "",
+  campaignValue,
+  amountValue,
+  onChangeCampaign,
+  onChangeAmount,
   onApplyCampaign,
   onApplyAmount,
   inputCls,
@@ -666,21 +672,19 @@ function BulkApplyBar({
   t,
 }: BulkApplyBarProps) {
   const { isDark, textTertiary } = useThemeClasses();
-  const [bulkCampaign, setBulkCampaign] = useState(defaultCampaign);
-  const [bulkAmount, setBulkAmount] = useState(defaultAmount);
   const [campaignApplied, setCampaignApplied] = useState(false);
   const [amountApplied, setAmountApplied] = useState(false);
 
   const applyBulkCampaign = () => {
-    if (!bulkCampaign) return;
-    onApplyCampaign(bulkCampaign);
+    if (!campaignValue) return;
+    onApplyCampaign(campaignValue);
     setCampaignApplied(true);
     setTimeout(() => setCampaignApplied(false), 1500);
   };
 
   const applyBulkAmount = () => {
-    if (!bulkAmount) return;
-    onApplyAmount(bulkAmount);
+    if (!amountValue) return;
+    onApplyAmount(amountValue);
     setAmountApplied(true);
     setTimeout(() => setAmountApplied(false), 1500);
   };
@@ -704,9 +708,9 @@ function BulkApplyBar({
       {/* Same Campaign */}
       <div className="flex items-center gap-2">
         <select
-          value={bulkCampaign}
+          value={campaignValue}
           onChange={(e) => {
-            setBulkCampaign(e.target.value);
+            onChangeCampaign(e.target.value);
             setCampaignApplied(false);
           }}
           className={`${selectCls} text-xs`}
@@ -722,7 +726,7 @@ function BulkApplyBar({
         <button
           type="button"
           onClick={applyBulkCampaign}
-          disabled={!bulkCampaign}
+          disabled={!campaignValue}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-all disabled:opacity-40 ${
             campaignApplied
               ? "bg-green-500 text-white"
@@ -747,9 +751,9 @@ function BulkApplyBar({
           <input
             type="number"
             min={1}
-            value={bulkAmount}
+            value={amountValue}
             onChange={(e) => {
-              setBulkAmount(e.target.value);
+              onChangeAmount(e.target.value);
               setAmountApplied(false);
             }}
             placeholder={t("same_amount")}
@@ -760,7 +764,7 @@ function BulkApplyBar({
         <button
           type="button"
           onClick={applyBulkAmount}
-          disabled={!bulkAmount}
+          disabled={!amountValue}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-all disabled:opacity-40 ${
             amountApplied
               ? "bg-green-500 text-white"
