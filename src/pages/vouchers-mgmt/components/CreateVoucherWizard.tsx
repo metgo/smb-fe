@@ -129,21 +129,25 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         }
         break;
 
-      case 2:
-        if (
-          activeAssignees.length === 0 ||
-          !activeAssignees.every(
+      case 2: {
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const today = new Date().toISOString().split("T")[0];
+        const allAssigneesValid =
+          activeAssignees.length > 0 &&
+          activeAssignees.every(
             (a) =>
               a.name.trim() &&
-              a.email.trim() &&
+              emailRe.test(a.email.trim()) &&
               a.campaignId &&
-              a.amount &&
-              a.expireDate,
-          )
-        ) {
+              Number(a.amount) > 0 &&
+              a.expireDate &&
+              a.expireDate >= today,
+          );
+        if (!allAssigneesValid) {
           newErrors.assignees = t("error_complete_all_assignees");
         }
         break;
+      }
 
       case 3:
         break;

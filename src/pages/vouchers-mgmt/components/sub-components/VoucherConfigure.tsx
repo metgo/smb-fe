@@ -7,6 +7,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { VOUCHER_COUNTRY_CODES } from "./VoucherInformation";
@@ -157,6 +158,10 @@ const VoucherConfigure = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState("");
 
+  // Refs to each assignee card so we can scroll a newly added one into view.
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const shouldScrollToLast = useRef(false);
+
   // Auto-dismiss the upload error message after 6 seconds.
   useEffect(() => {
     if (!uploadError) return;
@@ -186,6 +191,72 @@ const VoucherConfigure = ({
   // Always a "multiple vouchers" flow now — one card per assignee.
   const activeAssignees = assignees;
 
+  // An assignee card with no value entered in any field yet.
+  const isAssigneeEmpty = (a: IVoucherAssignee) =>
+    !a.name.trim() &&
+    !a.email.trim() &&
+    !a.phone.trim() &&
+    !a.campaignId &&
+    !a.amount &&
+    !a.expireDate;
+
+  // Block adding another card while an existing one is still completely empty.
+  const hasEmptyAssignee = activeAssignees.some(isAssigneeEmpty);
+
+  // ─── Per-field required / format validation ────────────────────────────────
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  type RequiredField = "name" | "email" | "campaignId" | "amount" | "expireDate";
+
+  // Fields touched (blurred) by the user, keyed `${assigneeId}:${field}`.
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const markTouched = (id: string, field: RequiredField) =>
+    setTouched((prev) => ({ ...prev, [`${id}:${field}`]: true }));
+
+  // When the parent step validation fails it sets `errors.assignees` — that's
+  // our cue to reveal every field error, not just the touched ones.
+  const revealAllErrors = Boolean(errors.assignees);
+
+  const fieldError = (a: IVoucherAssignee, field: RequiredField): string => {
+    switch (field) {
+      case "name":
+        return a.name.trim() ? "" : t("error_name_required");
+      case "email":
+        if (!a.email.trim()) return t("error_email_required");
+        return EMAIL_RE.test(a.email.trim()) ? "" : t("error_email_invalid");
+      case "campaignId":
+        return a.campaignId ? "" : t("error_campaign_required");
+      case "amount":
+        if (String(a.amount).trim() === "") return t("error_amount_required");
+        return Number(a.amount) > 0 ? "" : t("error_invalid_amount");
+      case "expireDate":
+        if (!a.expireDate) return t("error_expiration_required");
+        return a.expireDate < TODAY ? t("error_expiration_past") : "";
+      default:
+        return "";
+    }
+  };
+
+  // Error to actually display for a field (respects touched / reveal state).
+  const shownError = (a: IVoucherAssignee, field: RequiredField): string =>
+    revealAllErrors || touched[`${a.id}:${field}`] ? fieldError(a, field) : "";
+
+  const errInputCls = isDark
+    ? "border-red-500/70 focus:ring-red-500"
+    : "border-red-500 focus:ring-red-500";
+  const errText = "mt-1 text-xs text-red-500";
+
+  // After a card is added, scroll it into view (only when there are 2+ cards).
+  useEffect(() => {
+    if (!shouldScrollToLast.current) return;
+    shouldScrollToLast.current = false;
+    if (assignees.length <= 1) return;
+    const lastId = assignees[assignees.length - 1].id;
+    cardRefs.current[lastId]?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [assignees]);
+
   const updateAssignee = (
     id: string,
     field: keyof IVoucherAssignee,
@@ -198,11 +269,17 @@ const VoucherConfigure = ({
       ),
     }));
 
-  const addAssignee = () =>
+  const addAssignee = () => {
+    if (hasEmptyAssignee) {
+      toast.error(t("fill_current_assignee_first"));
+      return;
+    }
+    shouldScrollToLast.current = true;
     setFormData((prev) => ({
       ...prev,
       assignees: [...prev.assignees, makeVoucherAssignee()],
     }));
+  };
 
   const removeAssignee = (id: string) =>
     setFormData((prev) => ({
@@ -371,7 +448,9 @@ const VoucherConfigure = ({
               <button
                 type="button"
                 onClick={addAssignee}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white transition-all"
+                disabled={hasEmptyAssignee}
+                title={hasEmptyAssignee ? t("fill_current_assignee_first") : ""}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:from-teal-500 disabled:hover:to-blue-500"
               >
                 <Plus className="w-3.5 h-3.5" />
                 {t("add_assignee")}
@@ -420,6 +499,9 @@ const VoucherConfigure = ({
           {activeAssignees.map((a, idx) => (
             <div
               key={a.id}
+              ref={(el) => {
+                cardRefs.current[a.id] = el;
+              }}
               className={`rounded-xl border transition-colors focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500 ${
                 isDark
                   ? "border-gray-800 bg-gray-800/30"
@@ -474,9 +556,15 @@ const VoucherConfigure = ({
                       onChange={(e) =>
                         updateAssignee(a.id, "name", e.target.value)
                       }
+                      onBlur={() => markTouched(a.id, "name")}
                       placeholder={t("name")}
-                      className={inputCls}
+                      className={`${inputCls} ${
+                        shownError(a, "name") ? errInputCls : ""
+                      }`}
                     />
+                    {shownError(a, "name") && (
+                      <p className={errText}>{shownError(a, "name")}</p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>{t("email")} *</label>
@@ -486,9 +574,15 @@ const VoucherConfigure = ({
                       onChange={(e) =>
                         updateAssignee(a.id, "email", e.target.value)
                       }
+                      onBlur={() => markTouched(a.id, "email")}
                       placeholder="email@example.com"
-                      className={inputCls}
+                      className={`${inputCls} ${
+                        shownError(a, "email") ? errInputCls : ""
+                      }`}
                     />
+                    {shownError(a, "email") && (
+                      <p className={errText}>{shownError(a, "email")}</p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>{t("phone")}</label>
@@ -529,7 +623,10 @@ const VoucherConfigure = ({
                       onChange={(e) =>
                         updateAssignee(a.id, "campaignId", e.target.value)
                       }
-                      className={`${selectCls} w-full`}
+                      onBlur={() => markTouched(a.id, "campaignId")}
+                      className={`${selectCls} w-full ${
+                        shownError(a, "campaignId") ? errInputCls : ""
+                      }`}
                     >
                       <option value="">{t("select_campaign")}</option>
                       {campaignList.map((c) => (
@@ -538,6 +635,9 @@ const VoucherConfigure = ({
                         </option>
                       ))}
                     </select>
+                    {shownError(a, "campaignId") && (
+                      <p className={errText}>{shownError(a, "campaignId")}</p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>{t("amount")} (₪) *</label>
@@ -556,10 +656,16 @@ const VoucherConfigure = ({
                         onChange={(e) =>
                           updateAssignee(a.id, "amount", e.target.value)
                         }
+                        onBlur={() => markTouched(a.id, "amount")}
                         placeholder="0"
-                        className={`${inputCls} ${isRTL ? "pr-7" : "pl-7"}`}
+                        className={`${inputCls} ${isRTL ? "pr-7" : "pl-7"} ${
+                          shownError(a, "amount") ? errInputCls : ""
+                        }`}
                       />
                     </div>
+                    {shownError(a, "amount") && (
+                      <p className={errText}>{shownError(a, "amount")}</p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>
@@ -572,8 +678,14 @@ const VoucherConfigure = ({
                       onChange={(e) =>
                         updateAssignee(a.id, "expireDate", e.target.value)
                       }
-                      className={inputCls}
+                      onBlur={() => markTouched(a.id, "expireDate")}
+                      className={`${inputCls} ${
+                        shownError(a, "expireDate") ? errInputCls : ""
+                      }`}
                     />
+                    {shownError(a, "expireDate") && (
+                      <p className={errText}>{shownError(a, "expireDate")}</p>
+                    )}
                   </div>
                 </div>
               </div>
