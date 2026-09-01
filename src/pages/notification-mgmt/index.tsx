@@ -309,96 +309,96 @@ export default function NotificationsMgmtPage() {
           </div>
         </div>
 
-        {/* Expandable Search, Filters & Toolbar Panel */}
-        {showControlsDrawer && (
-          <div
-            className={clsx(
-              "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
-              isDark
-                ? "bg-gray-900/90 border-gray-800/90"
-                : "bg-white border-gray-200",
-            )}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-              <div className="flex-1 min-w-0 relative">
-                <SearchInput
-                  placeholder={t("search_notifications")}
-                  searchTerm={searchQuery}
-                  setSearchTerm={setSearchQuery}
-                  storageKey={SEARCH_STORAGE_KEY}
-                />
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-              </div>
+        {/* Search bar (always visible) + collapsible controls on the same row */}
+        <div
+          className={clsx(
+            "transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+            isDark
+              ? "bg-gray-900/90 border-gray-800/90"
+              : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <div className="flex-1 min-w-0 relative" data-tour="search">
+              <SearchInput
+                placeholder={t("search_notifications")}
+                searchTerm={searchQuery}
+                setSearchTerm={setSearchQuery}
+                storageKey={SEARCH_STORAGE_KEY}
+              />
             </div>
 
-            {/* Filters Panel */}
-            {showFilters && (
-              <div
-                className={`p-4 rounded-xl border ${borderColor} ${bgTertiary}`}
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  {/* Read Status */}
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t("read_status")}
-                    </label>
-                    <select
-                      value={readFilter}
-                      onChange={(e) => setReadFilter(e.target.value as any)}
-                      className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
-                    >
-                      <option value="ALL">{t("all")}</option>
-                      <option value="UNREAD">{t("unread")}</option>
-                      <option value="READ">{t("read")}</option>
-                    </select>
-                  </div>
-
-                  {/* Type */}
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t("action_type")}
-                    </label>
-                    <select
-                      value={typeFilter}
-                      onChange={(e) => setTypeFilter(e.target.value as any)}
-                      className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
-                    >
-                      <option value="ALL">{t("all")}</option>
-                      <option value="INFO">{t("info")}</option>
-                      <option value="ACTION">{t("action_required")}</option>
-                      <option value="WARNING">{t("warning")}</option>
-                      <option value="ERROR">{t("error")}</option>
-                      <option value="URGENT">{t("urgent")}</option>
-                    </select>
-                  </div>
-
-                  {/* Item Type */}
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t("item_type")}
-                    </label>
-                    <select
-                      value={itemTypeFilter}
-                      onChange={(e) => setItemTypeFilter(e.target.value as any)}
-                      className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
-                    >
-                      <option value="ALL">{t("all")}</option>
-                      <option value="BUSINESS">{t("business")}</option>
-                      <option value="PRODUCT">{t("product")}</option>
-                      <option value="EVENT">{t("event")}</option>
-                      <option value="TRIP">{t("trip")}</option>
-                      <option value="FUNDAY">{t("funday")}</option>
-                      <option value="USER">{t("user")}</option>
-                    </select>
-                  </div>
-                </div>
+            {showControlsDrawer && (
+              <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
               </div>
             )}
           </div>
-        )}
+
+          {/* Filters Panel */}
+          {showControlsDrawer && showFilters && (
+            <div
+              className={`p-4 rounded-xl border ${borderColor} ${bgTertiary}`}
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                {/* Read Status */}
+                <div>
+                  <label className={`block text-sm ${textSecondary} mb-2`}>
+                    {t("read_status")}
+                  </label>
+                  <select
+                    value={readFilter}
+                    onChange={(e) => setReadFilter(e.target.value as any)}
+                    className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
+                  >
+                    <option value="ALL">{t("all")}</option>
+                    <option value="UNREAD">{t("unread")}</option>
+                    <option value="READ">{t("read")}</option>
+                  </select>
+                </div>
+
+                {/* Type */}
+                <div>
+                  <label className={`block text-sm ${textSecondary} mb-2`}>
+                    {t("action_type")}
+                  </label>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value as any)}
+                    className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
+                  >
+                    <option value="ALL">{t("all")}</option>
+                    <option value="INFO">{t("info")}</option>
+                    <option value="ACTION">{t("action_required")}</option>
+                    <option value="WARNING">{t("warning")}</option>
+                    <option value="ERROR">{t("error")}</option>
+                    <option value="URGENT">{t("urgent")}</option>
+                  </select>
+                </div>
+
+                {/* Item Type */}
+                <div>
+                  <label className={`block text-sm ${textSecondary} mb-2`}>
+                    {t("item_type")}
+                  </label>
+                  <select
+                    value={itemTypeFilter}
+                    onChange={(e) => setItemTypeFilter(e.target.value as any)}
+                    className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
+                  >
+                    <option value="ALL">{t("all")}</option>
+                    <option value="BUSINESS">{t("business")}</option>
+                    <option value="PRODUCT">{t("product")}</option>
+                    <option value="EVENT">{t("event")}</option>
+                    <option value="TRIP">{t("trip")}</option>
+                    <option value="FUNDAY">{t("funday")}</option>
+                    <option value="USER">{t("user")}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Selected-items bulk bar (kept inline above the list, same spot as before) */}
         {selectedNotifications.size > 0 && (

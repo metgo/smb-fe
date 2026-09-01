@@ -1,19 +1,19 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { User } from "lucide-react";
+import { User, Mail, Phone } from "lucide-react";
+
+export const VOUCHER_COUNTRY_CODES = [
+  { code: "+972", flag: "🇮🇱", label: "IL" },
+  { code: "+1", flag: "🇺🇸", label: "US" },
+  { code: "+44", flag: "🇬🇧", label: "UK" },
+  { code: "+33", flag: "🇫🇷", label: "FR" },
+  { code: "+49", flag: "🇩🇪", label: "DE" },
+];
 
 interface VoucherInformationProps {
   formData: IVoucherFormData;
   setFormData: React.Dispatch<React.SetStateAction<IVoucherFormData>>;
   errors: Record<string, string>;
-  campaigns: {
-    datas?: {
-      data?: any[];
-    };
-  };
-  handleCampaignChange: (id: string) => void;
-
   t: (key: string) => string;
-  handlePurchaserEmailChange: (email: string) => void;
 }
 
 const VoucherInformation = ({
@@ -21,172 +21,129 @@ const VoucherInformation = ({
   t,
   setFormData,
   errors,
-  campaigns,
-  handleCampaignChange,
-
-  handlePurchaserEmailChange,
 }: VoucherInformationProps) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, isRTL, textSecondary, textTertiary } = useThemeClasses();
+
+  const inputCls = `w-full px-3 py-2 rounded-lg border text-sm outline-none transition-colors focus:ring-1 focus:ring-teal-500 ${
+    isDark
+      ? "bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500"
+      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+  }`;
+  const selectCls = `px-2 py-2 rounded-lg border text-sm outline-none transition-colors ${
+    isDark
+      ? "bg-gray-800 border-gray-700 text-gray-100"
+      : "bg-white border-gray-300 text-gray-900"
+  }`;
 
   return (
-    <div className="space-y-6">
-      {/* Campaign */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("select_campaign_optional")}
-        </label>
-        <select
-          value={formData.campaign}
-          onChange={(e) => handleCampaignChange(e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg ${
-            isDark
-              ? " text-white border-gray-600"
-              : "bg-white text-black border-gray-300"
-          }`}
-        >
-          <option value="">{t("no_campaign")}</option>
-          {campaigns?.datas?.data?.map((campaign: any) => (
-            <option key={campaign._id} value={campaign._id}>
-              {campaign.name} (₪{campaign.defaultAmount})
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Amount + Expiration */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label
-            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("voucher_amount")}
-          </label>
-          <input
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData((prev: any) => ({
-                ...prev,
-                amount: Number(e.target.value),
-                customAmount: true,
-              }))
-            }
-            className={`w-full px-3 py-2 border rounded-lg ${
-              isDark
-                ? " text-white border-gray-600 placeholder-gray-400"
-                : "bg-white text-black border-gray-300"
-            }`}
-          />
-          {errors.amount && (
-            <p className="text-red-500 text-xs mt-1">
-              {t("error_invalid_amount")}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label
-            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("expiration_date")}
-          </label>
-          <input
-            type="date"
-            value={formData.expirationDate}
-            onChange={(e) =>
-              setFormData((prev: any) => ({
-                ...prev,
-                expirationDate: e.target.value,
-              }))
-            }
-            className={`w-full px-3 py-2 border rounded-lg ${
-              isDark
-                ? " text-white border-gray-600 placeholder-gray-400"
-                : "bg-white text-black border-gray-300"
-            }`}
-          />
-        </div>
-      </div>
-
-      {/* Purchaser */}
-      <div
-        className={`border-t pt-6 ${isDark ? "border-gray-700" : "border-gray-200"}`}
+    <div className="space-y-4">
+      <h3
+        className={`text-sm uppercase tracking-wider flex items-center gap-2 ${textTertiary}`}
       >
-        <h3
-          className={`text-sm mb-4 flex items-center gap-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
-        >
-          <User className="w-4 h-4" />
-          {t("purchaser_details_optional")}
-        </h3>
+        <User className="w-4 h-4" />
+        {t("purchaser_details")}
+      </h3>
 
-        {/* Email */}
+      <div className="space-y-4 max-w-full">
+        {/* Name */}
         <div>
-          <label
-            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("email")}
+          <label className={`block text-xs mb-1.5 ${textSecondary}`}>
+            {t("name")} *
           </label>
           <div className="relative">
-            <input
-              type="email"
-              value={formData.purchaserEmail}
-              onChange={(e) => handlePurchaserEmailChange(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg ${
-                isDark
-                  ? " text-white border-gray-600 placeholder-gray-400"
-                  : "bg-white text-black border-gray-300"
-              }`}
+            <User
+              className={`absolute top-2.5 ${
+                isRTL ? "right-3" : "left-3"
+              } w-4 h-4 ${textTertiary}`}
             />
-          </div>
-        </div>
-
-        {/* Name + Phone */}
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div>
-            <label
-              className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-            >
-              {t("name")}
-            </label>
             <input
               type="text"
               value={formData.purchaserName}
               onChange={(e) =>
-                setFormData((prev: any) => ({
+                setFormData((prev) => ({
                   ...prev,
                   purchaserName: e.target.value,
                 }))
               }
-              className={`w-full px-3 py-2 border rounded-lg ${
-                isDark
-                  ? " text-white border-gray-600 placeholder-gray-400"
-                  : "bg-white text-black border-gray-300"
-              }`}
+              placeholder={t("name")}
+              className={`${inputCls} ${isRTL ? "pr-9" : "pl-9"}`}
             />
           </div>
+          {errors.purchaserName && (
+            <p className="text-red-500 text-xs mt-1">{errors.purchaserName}</p>
+          )}
+        </div>
 
-          <div>
-            <label
-              className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-            >
-              {t("phone")}
-            </label>
+        {/* Email */}
+        <div>
+          <label className={`block text-xs mb-1.5 ${textSecondary}`}>
+            {t("email")} *
+          </label>
+          <div className="relative">
+            <Mail
+              className={`absolute top-2.5 ${
+                isRTL ? "right-3" : "left-3"
+              } w-4 h-4 ${textTertiary}`}
+            />
             <input
-              type="tel"
-              value={formData.purchaserPhone}
+              type="email"
+              value={formData.purchaserEmail}
               onChange={(e) =>
-                setFormData((prev: any) => ({
+                setFormData((prev) => ({
                   ...prev,
-                  purchaserPhone: e.target.value,
+                  purchaserEmail: e.target.value,
                 }))
               }
-              className={`w-full px-3 py-2 border rounded-lg ${
-                isDark
-                  ? " text-white border-gray-600 placeholder-gray-400"
-                  : "bg-white text-black border-gray-300"
-              }`}
+              placeholder="email@example.com"
+              className={`${inputCls} ${isRTL ? "pr-9" : "pl-9"}`}
             />
+          </div>
+          {errors.purchaserEmail && (
+            <p className="text-red-500 text-xs mt-1">{errors.purchaserEmail}</p>
+          )}
+        </div>
+
+        {/* Phone */}
+        <div>
+          <label className={`block text-xs mb-1.5 ${textSecondary}`}>
+            {t("phone")}
+          </label>
+          <div className="flex gap-2">
+            <select
+              value={formData.purchaserCountryCode}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  purchaserCountryCode: e.target.value,
+                }))
+              }
+              className={`${selectCls} shrink-0`}
+            >
+              {VOUCHER_COUNTRY_CODES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.flag} {c.code}
+                </option>
+              ))}
+            </select>
+            <div className="relative flex-1">
+              <Phone
+                className={`absolute top-2.5 ${
+                  isRTL ? "right-3" : "left-3"
+                } w-4 h-4 ${textTertiary}`}
+              />
+              <input
+                type="tel"
+                value={formData.purchaserPhone}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    purchaserPhone: e.target.value,
+                  }))
+                }
+                placeholder="50-000-0000"
+                className={`${inputCls} ${isRTL ? "pr-9" : "pl-9"}`}
+              />
+            </div>
           </div>
         </div>
       </div>

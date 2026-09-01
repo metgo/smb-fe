@@ -286,6 +286,64 @@ export const sanitizeMessageHtml = (html: string): string =>
     ALLOWED_ATTR: ["href", "target", "rel", "style"],
   });
 
+// Turns a scheme-less href like "example.com" into "https://example.com" so
+// the browser doesn't resolve it against the current origin (which is why
+// bare links were opening as http://localhost:5173/example.com). Absolute
+// URLs, mail/tel links, in-page anchors and root-relative paths are left as-is.
+const toAbsoluteHref = (raw: string): string => {
+  const url = (raw || "").trim();
+  if (!url) return url;
+  if (/^(https?:\/\/|mailto:|tel:|#|\/)/i.test(url)) return url;
+  return `https://${url}`;
+};
+
+// Sanitizes RichTextEditor-authored HTML for display and normalizes every
+// link so it points at an absolute URL and opens in a new tab.
+export const sanitizeRichTextHtml = (html: string): string => {
+  if (!html) return "";
+
+  const clean = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "hr",
+      "strong",
+      "b",
+      "em",
+      "i",
+      "u",
+      "s",
+      "strike",
+      "a",
+      "ul",
+      "ol",
+      "li",
+      "blockquote",
+      "pre",
+      "code",
+      "span",
+      "div",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "img",
+    ],
+    ALLOWED_ATTR: ["href", "target", "rel", "style", "src", "alt"],
+  });
+
+  const doc = new DOMParser().parseFromString(clean, "text/html");
+  doc.querySelectorAll("a[href]").forEach((a) => {
+    a.setAttribute("href", toAbsoluteHref(a.getAttribute("href") || ""));
+    a.setAttribute("target", "_blank");
+    a.setAttribute("rel", "noopener noreferrer");
+  });
+
+  return doc.body.innerHTML;
+};
+
 export function getMatchedItems(originalList: any, selectedIds?: string[]) {
   if (!originalList?.length || !selectedIds?.length) return [];
 

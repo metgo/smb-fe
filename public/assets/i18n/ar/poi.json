@@ -20,6 +20,7 @@
   "name": "الاسم",
   "shortDescription": "وصف قصير",
   "status": "الحالة",
+  "actions": "الإجراءات",
   "page_views": "عدد المشاهدات",
   "active_users": "المستخدمون النشطون",
   "unique_visitors": "الزوار الفريدون",

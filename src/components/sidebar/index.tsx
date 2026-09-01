@@ -223,13 +223,6 @@ export default function Sidebar() {
           isEnabled: true,
         },
         {
-          id: "offline-vouchers",
-          path: routes.offlineVouchers,
-          label: t("offline_vouchers") || "Offline Vouchers Purchases",
-          icon: Receipt,
-          isEnabled: false,
-        },
-        {
           id: "mini-campaign",
           path: routes.miniCampaign,
           label: t("mini_campaigns") || "Mini-Campaigns",

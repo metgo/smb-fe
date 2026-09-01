@@ -1010,11 +1010,11 @@ export default function OrdersMgmtPage() {
         )}
       </div>
 
-      {/* Expandable Search, Filters & Controls Panel */}
-      {canViewOrders && showControlsDrawer && (
+      {/* Search bar (always visible) + collapsible controls on the same row */}
+      {canViewOrders && (
         <div
           className={clsx(
-            "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
+            "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
             isDark
               ? "bg-gray-900/90 border-gray-800/90"
               : "bg-white border-gray-200",
@@ -1026,7 +1026,7 @@ export default function OrdersMgmtPage() {
               isRTL && "lg:flex-row-reverse",
             )}
           >
-            <div className="flex-1 min-w-0 relative">
+            <div className="flex-1 min-w-0 relative" data-tour="search">
               <SearchInput
                 placeholder={t("search_orders")}
                 searchTerm={searchTerm}
@@ -1035,44 +1035,46 @@ export default function OrdersMgmtPage() {
               />
             </div>
 
-            <div
-              className={clsx(
-                "flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap",
-                isRTL && "flex-row-reverse",
-              )}
-            >
-              <div className="flex items-center gap-2 flex-wrap">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-                <ShowColumns
-                  t={t}
-                  viewMode="list"
-                  columnDefinitions={columnDefinitions}
-                  columnVisibility={columnVisibility}
-                  showColumnSettings={showColumnSettings}
-                  setShowColumnSettings={setShowColumnSettings}
-                  setColumnVisibility={setColumnVisibility}
-                  resetToDefault={() =>
-                    setColumnVisibility(ORDER_COLUMNS.defaultColumns)
-                  }
-                />
-                <ExportOrdersButton
-                  orders={combinedOrders}
-                  selectedOrders={selectedOrders}
-                  columnVisibility={columnVisibility}
-                  websiteMap={websiteMap}
-                  isSummaryMode={false}
-                  summaryData={[]}
-                  t={t}
-                  tc={tc}
-                  monthFilter={filters.month}
-                  customDateFrom={filters.startDate}
-                  customDateTo={filters.endDate}
-                />
+            {showControlsDrawer && (
+              <div
+                className={clsx(
+                  "flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2",
+                  isRTL && "flex-row-reverse",
+                )}
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+                  <ShowColumns
+                    t={t}
+                    viewMode="list"
+                    columnDefinitions={columnDefinitions}
+                    columnVisibility={columnVisibility}
+                    showColumnSettings={showColumnSettings}
+                    setShowColumnSettings={setShowColumnSettings}
+                    setColumnVisibility={setColumnVisibility}
+                    resetToDefault={() =>
+                      setColumnVisibility(ORDER_COLUMNS.defaultColumns)
+                    }
+                  />
+                  <ExportOrdersButton
+                    orders={combinedOrders}
+                    selectedOrders={selectedOrders}
+                    columnVisibility={columnVisibility}
+                    websiteMap={websiteMap}
+                    isSummaryMode={false}
+                    summaryData={[]}
+                    t={t}
+                    tc={tc}
+                    monthFilter={filters.month}
+                    customDateFrom={filters.startDate}
+                    customDateTo={filters.endDate}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {showFilters && (
+          {showControlsDrawer && showFilters && (
             <div
               className={`flex flex-wrap items-start gap-4 pt-4 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
             >
