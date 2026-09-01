@@ -646,12 +646,27 @@ const RichTextEditor = ({
     // Cursor inside an existing link → remove it, keeping the text.
     const existingAnchor = getSelectionAnchor();
     if (existingAnchor) {
-      const sel = window.getSelection();
-      const range = document.createRange();
-      range.selectNode(existingAnchor);
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-      document.execCommand("unlink");
+      const parent = existingAnchor.parentNode;
+      if (parent) {
+        // Unwrap the <a> manually rather than via execCommand("unlink"): the
+        // browser's unlink leaves a <span style="text-decoration:underline">
+        // behind to preserve the look, so the word stays underlined.
+        const frag = document.createDocumentFragment();
+        while (existingAnchor.firstChild)
+          frag.appendChild(existingAnchor.firstChild);
+
+        // Drop the link underline the editor added, but leave real <u> spans
+        // (explicit underline formatting) alone.
+        frag.querySelectorAll<HTMLElement>("span[style]").forEach((span) => {
+          if (/underline/i.test(span.style.textDecoration || "")) {
+            span.style.textDecoration = "";
+          }
+          if (!span.getAttribute("style")) span.removeAttribute("style");
+        });
+
+        parent.replaceChild(frag, existingAnchor);
+        parent.normalize();
+      }
       editorRef.current?.focus();
       if (editorRef.current) onChange(editorRef.current.innerHTML);
       return;
