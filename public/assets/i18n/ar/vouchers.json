@@ -128,6 +128,8 @@
   "vouchers_created_successfully": "تم إنشاء القسائم بنجاح!",
   "voucher": "قسيمة",
   "voucher_code": "رمز القسيمة",
+  "email_sent": "تم إرسال البريد الإلكتروني",
+  "sms_sent": "تم إرسال الرسالة النصية",
   "send_message": "إرسال رسالة",
   "re_send_vouchers": "إعادة إرسال القسائم",
   "clear_all": "مسح الكل",
