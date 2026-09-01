@@ -50,6 +50,7 @@ import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
 import SearchInput from "@/components/shared/SearchInput";
+import AmountFilter from "@/components/shared/AmountFilter";
 import StatsMarquee from "@/components/shared/StatsMarquee";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
@@ -293,6 +294,7 @@ export default function OrdersMgmtPage() {
     month: "all", // 'all', 'MM-YYYY', or 'custom'
     dmoId: dmoId || "all",
     authorityId: authorityId || "all",
+    amount: "",
   });
 
   const lastGlobalDmoId = useRef(dmoId);
@@ -348,6 +350,9 @@ export default function OrdersMgmtPage() {
 
     if (filters.month !== "all" && filters.month !== "custom")
       chips.push({ key: "month", value: filters.month });
+
+    if (filters.amount !== "")
+      chips.push({ key: "amount", value: `₪${filters.amount}` });
 
     if (filters.month === "custom") {
       if (filters.startDate)
@@ -454,6 +459,10 @@ export default function OrdersMgmtPage() {
       params.status = filters.status;
     }
 
+    if (filters.amount !== "") {
+      params.amount = filters.amount;
+    }
+
     // Month filter
     if (filters.month !== "all" && filters.month !== "custom") {
       const [month, year] = filters.month.split("-");
@@ -543,6 +552,7 @@ export default function OrdersMgmtPage() {
     endDate: "",
     dmoId: "all",
     authorityId: "all",
+    amount: "",
   };
 
   // Column visibility
@@ -1162,6 +1172,15 @@ export default function OrdersMgmtPage() {
                   />
                 </div>
 
+                <div className="min-w-45">
+                  <AmountFilter
+                    value={filters.amount}
+                    onChange={(amount) =>
+                      setFilters((prev) => ({ ...prev, amount }))
+                    }
+                  />
+                </div>
+
                 {/* Active Filter Chips */}
                 {activeFilterChips?.length > 0 && (
                   <div className="flex flex-wrap items-center gap-3 mt-3">
@@ -1173,9 +1192,11 @@ export default function OrdersMgmtPage() {
                           onRemove={() =>
                             setFilters((prev) => ({
                               ...prev,
-                              [chip.key]: chip.key.includes("date")
-                                ? ""
-                                : "all",
+                              [chip.key]:
+                                chip.key.includes("date") ||
+                                chip.key === "amount"
+                                  ? ""
+                                  : "all",
                             }))
                           }
                         />

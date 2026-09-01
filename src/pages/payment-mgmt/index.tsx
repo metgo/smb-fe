@@ -19,6 +19,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import type { VendorPaymentSummaryRow } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
+import AmountFilter from "@/components/shared/AmountFilter";
 import { ReordableDataTable, ConfirmDialog } from "@/components/shared";
 import MonthFilter from "@/pages/orders-mgmt/components/MonthFilter";
 import FilterButton from "@/components/btns/FilterButton";
@@ -67,6 +68,7 @@ export const PaymentMgmtPage = () => {
     endDate: "",
     month: "all",
     businessId: "",
+    amount: "",
   });
 
   const [activeVendor, setActiveVendor] =
@@ -110,6 +112,7 @@ export const PaymentMgmtPage = () => {
       month: filters.month,
       startDate: filters.startDate,
       endDate: filters.endDate,
+      amount: filters.amount,
     },
     searchTerm,
     adminView,
@@ -441,6 +444,11 @@ export const PaymentMgmtPage = () => {
                 </div>
               )}
             </div>
+
+            <AmountFilter
+              value={filters.amount}
+              onChange={(amount) => setFilters((prev) => ({ ...prev, amount }))}
+            />
           </div>
         )}
       </div>

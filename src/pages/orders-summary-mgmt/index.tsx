@@ -29,6 +29,7 @@ import {
 } from "@/store/api/orderQueryApi";
 import { FilterButton } from "@/components/btns";
 import SearchInput from "@/components/shared/SearchInput";
+import AmountFilter from "@/components/shared/AmountFilter";
 import StatsMarquee from "@/components/shared/StatsMarquee";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import { getLngWiseStr } from "@/helpers";
@@ -70,6 +71,7 @@ export default function OrdersSummaryMgmtPage() {
     month: "all",
     dmoId: dmoId || "all",
     authorityId: authorityId || "all",
+    amount: "",
   });
 
   const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
@@ -99,6 +101,10 @@ export default function OrdersSummaryMgmtPage() {
 
     if (summaryFilters.status !== "all") {
       params.status = summaryFilters.status;
+    }
+
+    if (summaryFilters.amount !== "") {
+      params.amount = summaryFilters.amount;
     }
 
     // Month filter
@@ -191,6 +197,7 @@ export default function OrdersSummaryMgmtPage() {
     month: "all",
     dmoId: "all",
     authorityId: "all",
+    amount: "",
   };
 
   const [columnVisibility, setColumnVisibility] =
@@ -519,6 +526,7 @@ export default function OrdersSummaryMgmtPage() {
     if (summaryFilters.month !== "all") count += 1;
     if (summaryFilters.dmoId !== "all") count += 1;
     if (summaryFilters.authorityId !== "all") count += 1;
+    if (summaryFilters.amount !== "") count += 1;
     return count;
   }, [searchTermSummary, summaryFilters]);
 
@@ -729,8 +737,18 @@ export default function OrdersSummaryMgmtPage() {
               />
             </div>
 
+            <div className="min-w-45">
+              <AmountFilter
+                value={summaryFilters.amount}
+                onChange={(amount) =>
+                  setSummaryFilters((prev) => ({ ...prev, amount }))
+                }
+              />
+            </div>
+
             {(summaryFilters.status !== "all" ||
-              summaryFilters.month !== "all") && (
+              summaryFilters.month !== "all" ||
+              summaryFilters.amount !== "") && (
               <div className="min-w-55 mt-10">
                 <button
                   onClick={() => {
