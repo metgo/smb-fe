@@ -251,5 +251,9 @@
   "migrate_website_to_prod": "Migrate to Production",
   "migrate_website_to_prod_confirm": "Are you sure you want to migrate this website to production?",
   "migrate_to_prod": "Migrate",
-  "completeness": "Completeness"
+  "completeness": "Completeness",
+  "please_wait_loading": "Please wait, settings are still loading",
+  "google_ads_conversion_tracking_id": "Google Ads Conversion Tracking ID",
+  "enable_widget_id": "Enable Widget ID",
+  "hotjar_id": "Hotjar Site ID"
 }
