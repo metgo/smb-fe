@@ -15,6 +15,7 @@ export interface VendorMonthlyReportFilters {
   endDate: string;
   month: string;
   businessId: string;
+  amount?: string;
 }
 
 export function useVendorMonthlyReportData(
@@ -49,6 +50,7 @@ export function useVendorMonthlyReportData(
       params.reconciliationStatus = filters.reconciliationStatus;
     }
     if (searchTerm) params.search = searchTerm;
+    if (filters.amount) params.amount = filters.amount;
 
     Object.assign(
       params,

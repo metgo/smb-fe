@@ -4,6 +4,8 @@
   "add_order": "Create New Order",
   "scan_qr_code": "Scan QR Code",
   "search_orders": "Search by Order ID, Name, Email, Phone...",
+  "amount": "Amount",
+  "amount_placeholder": "Exact amount",
   "order_id": "Order ID",
   "purchaser_name": "Purchaser",
   "order_date": "Order Date",
