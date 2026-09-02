@@ -43,6 +43,7 @@
   "purpose": "Purpose",
   "purpose_marketplace": "Marketplace",
   "purpose_traveling": "Traveling",
+  "purpose_discount": "Discount",
   "purpose_other": "Other",
   "identifier_id": "Identifier ID",
   "identifier_id_placeholder": "Enter identifier ID",

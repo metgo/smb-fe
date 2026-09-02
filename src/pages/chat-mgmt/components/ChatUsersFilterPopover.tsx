@@ -28,7 +28,7 @@ export const countAppliedChatUsersFilters = (
   (filters.authorityId && !locks?.lockAuthority ? 1 : 0) +
   (filters.role ? 1 : 0);
 
-const ALL_ROLES: TUserRole[] = ["superadmin", "dmo", "authority", "traveller"];
+const ALL_ROLES: TUserRole[] = ["dmo", "authority", "traveller"];
 
 const roleIcons: Record<TUserRole, LucideIcon> = {
   superadmin: Crown,
@@ -94,7 +94,7 @@ export const ChatUsersFilterPopover: React.FC<ChatUsersFilterPopoverProps> = ({
     <div
       ref={popoverRef}
       className={clsx(
-        "absolute z-50 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border shadow-lg p-4 space-y-4",
+        "absolute z-50 top-full mt-2 w-94 max-w-[calc(100vw-1rem)] rounded-xl border shadow-lg px-2 py-4 space-y-3",
         isRTL ? "left-0" : "right-0",
         borderColor,
         bgPrimary,
@@ -135,54 +135,56 @@ export const ChatUsersFilterPopover: React.FC<ChatUsersFilterPopoverProps> = ({
       </div>
 
       <div className="space-y-3">
-        <div>
-          <p
-            className={clsx(
-              "text-[11px] font-semibold uppercase tracking-wider mb-1.5",
-              textTertiary,
-            )}
-          >
-            {t("dmo")}
-          </p>
-          <ReactSelect
-            value={filters.dmoId}
-            onChange={(v) =>
-              onChange({ ...filters, dmoId: v, authorityId: "" })
-            }
-            placeholder={t("dmo")}
-            isClearable={!lockDmo}
-            isDisabled={lockDmo}
-            minWidth={0}
-            items={dmosAuthorities?.map((d) => ({
-              _id: d._id,
-              name: d.name,
-              logo: d.logoPath,
-            }))}
-          />
-        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <p
+              className={clsx(
+                "text-[11px] font-semibold uppercase tracking-wider mb-1.5",
+                textTertiary,
+              )}
+            >
+              {t("dmo")}
+            </p>
+            <ReactSelect
+              value={filters.dmoId}
+              onChange={(v) =>
+                onChange({ ...filters, dmoId: v, authorityId: "" })
+              }
+              placeholder={t("dmo")}
+              isClearable={!lockDmo}
+              isDisabled={lockDmo}
+              minWidth={0}
+              items={dmosAuthorities?.map((d) => ({
+                _id: d._id,
+                name: d.name,
+                logo: d.logoPath,
+              }))}
+            />
+          </div>
 
-        <div>
-          <p
-            className={clsx(
-              "text-[11px] font-semibold uppercase tracking-wider mb-1.5",
-              textTertiary,
-            )}
-          >
-            {t("authority")}
-          </p>
-          <ReactSelect
-            value={filters.authorityId}
-            onChange={(v) => onChange({ ...filters, authorityId: v })}
-            placeholder={t("authority")}
-            isClearable={!lockAuthority}
-            isDisabled={lockAuthority || !selectedDmo}
-            minWidth={0}
-            items={selectedDmo?.authorities?.map((a) => ({
-              _id: a._id,
-              name: a.name,
-              logo: a.logoPath,
-            }))}
-          />
+          <div>
+            <p
+              className={clsx(
+                "text-[11px] font-semibold uppercase tracking-wider mb-1.5",
+                textTertiary,
+              )}
+            >
+              {t("authority")}
+            </p>
+            <ReactSelect
+              value={filters.authorityId}
+              onChange={(v) => onChange({ ...filters, authorityId: v })}
+              placeholder={t("authority")}
+              isClearable={!lockAuthority}
+              isDisabled={lockAuthority || !selectedDmo}
+              minWidth={0}
+              items={selectedDmo?.authorities?.map((a) => ({
+                _id: a._id,
+                name: a.name,
+                logo: a.logoPath,
+              }))}
+            />
+          </div>
         </div>
 
         <div>

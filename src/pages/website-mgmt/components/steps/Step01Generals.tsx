@@ -158,6 +158,7 @@ const Step01Generals = ({
           >
             <option value="MARKETPLACE">{t("purpose_marketplace")}</option>
             <option value="TRAVELING">{t("purpose_traveling")}</option>
+            <option value="DISCOUNT">{t("purpose_discount")}</option>
             <option value="OTHER">{t("purpose_other")}</option>
           </select>
         </div>

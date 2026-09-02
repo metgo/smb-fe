@@ -68,7 +68,7 @@ export const ChatConversationRow: React.FC<ChatConversationRowProps> = ({
         conv.type !== "broadcast" && onContextMenu(e, conv.id)
       }
       className={clsx(
-        "relative px-4 py-3 flex items-center gap-3 transition-all duration-200 select-none cursor-pointer hover:scale-[1.01] active:scale-[0.99]",
+        "relative px-0.5 py-3 flex items-center gap-3 transition-all duration-200 select-none cursor-pointer hover:scale-[1.01] active:scale-[0.99]",
         active
           ? clsx(
               isDark

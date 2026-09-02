@@ -129,7 +129,7 @@ interface IWebsiteListRes {
   url: string;
   score: number;
   identifierId: string;
-  purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
+  purpose: "MARKETPLACE" | "TRAVELING" | "DISCOUNT" | "OTHER";
   isActive: boolean;
   primaryColor: string;
   secondaryColor: string;

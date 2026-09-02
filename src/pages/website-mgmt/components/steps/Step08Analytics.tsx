@@ -39,7 +39,7 @@ const Step08Analytics = ({ formData, errors, onChange }: Props) => {
     {
       field: "enableWidgetId",
       label: t("enable_widget_id"),
-      placeholder: "XX-XXXXXXX",
+      placeholder: "L51962c1rufewge6-1234-56789",
     },
     {
       field: "hotjarId",
@@ -49,7 +49,7 @@ const Step08Analytics = ({ formData, errors, onChange }: Props) => {
     {
       field: "facebookPixelId",
       label: t("facebook_pixel_id"),
-      placeholder: "123456789012345",
+      placeholder: "12345678901234567",
     },
   ];
 
