@@ -8,6 +8,7 @@ import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
 import {
   ConnectedDmoAuthorityWebsites,
+  DiscountWebsiteQR,
   LocationDetailsclosed,
 } from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
@@ -42,6 +43,8 @@ interface Business {
   dmoId: string;
   authorityId: string;
   associatedWebsiteIds: string[];
+  _id?: string;
+  providesDiscount?: boolean;
 }
 
 interface BusinessInfoDetailsProps {
@@ -108,6 +111,12 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         websiteIds={business?.associatedWebsiteIds}
         pathname={clientSitePath.businessDetails + "/" + business?.slug}
       />
+
+      {/* Regional discount website QR */}
+      {business?.providesDiscount && (
+        <DiscountWebsiteQR businessId={business?._id} />
+      )}
+
       {/* Internal Notes */}
       {/* {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
         <div
