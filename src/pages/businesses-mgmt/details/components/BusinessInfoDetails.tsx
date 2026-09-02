@@ -42,6 +42,9 @@ interface Business {
   dmoId: string;
   authorityId: string;
   associatedWebsiteIds: string[];
+  providesDiscount?: boolean;
+  minDiscount?: number | string;
+  maxDiscount?: number | string;
 }
 
 interface BusinessInfoDetailsProps {
@@ -108,6 +111,22 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         websiteIds={business?.associatedWebsiteIds}
         pathname={clientSitePath.businessDetails + "/" + business?.slug}
       />
+
+      {/* Traveller Discount */}
+      {business?.providesDiscount && (
+        <div
+          className={`p-4 rounded-lg ${isDark ? "bg-gray-800/50 border border-gray-700" : "bg-gray-50 border border-gray-200"}`}
+        >
+          <h3
+            className={`text-sm mb-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
+          >
+            {t("traveller_discount")}
+          </h3>
+          <p className={isDark ? "text-gray-300" : "text-gray-700"}>
+            {`${business?.minDiscount ?? "—"}% – ${business?.maxDiscount ?? "—"}%`}
+          </p>
+        </div>
+      )}
       {/* Internal Notes */}
       {/* {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
         <div

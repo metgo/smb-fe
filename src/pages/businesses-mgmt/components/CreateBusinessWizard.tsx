@@ -225,6 +225,9 @@ function CreateBusinessWizardInner({
     fullDescriptionAr: "",
     internalNotes: "",
     categories: [] as string[],
+    providesDiscount: false,
+    minDiscount: "" as number | string,
+    maxDiscount: "" as number | string,
 
     // Step 2
     email: "",
@@ -519,6 +522,9 @@ function CreateBusinessWizardInner({
         fullDescriptionAr:
           editData?.descriptionAr || editData?.description || "",
         internalNotes: editData?.internalNotes || "",
+        providesDiscount: editData?.providesDiscount ?? false,
+        minDiscount: editData?.minDiscount ?? "",
+        maxDiscount: editData?.maxDiscount ?? "",
         slug: editData?.slug || "",
         //images
         logo: opMode === IOpMode.EDIT ? editData?.logo?.image : "",
@@ -664,6 +670,13 @@ function CreateBusinessWizardInner({
     descriptionAr: formData.fullDescriptionAr,
     descriptionHe: formData.fullDescriptionHe,
     internalNotes: formData.internalNotes,
+    providesDiscount: formData.providesDiscount,
+    minDiscount: formData.providesDiscount
+      ? Number(formData.minDiscount) || 0
+      : undefined,
+    maxDiscount: formData.providesDiscount
+      ? Number(formData.maxDiscount) || 0
+      : undefined,
 
     // step 2
     busiEmail: formData.email,
@@ -818,6 +831,22 @@ function CreateBusinessWizardInner({
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
+  // Validate the optional traveller discount range (0-100, min <= max).
+  const hasInvalidDiscountRange = () => {
+    if (!formData.providesDiscount) return false;
+    const min = Number(formData.minDiscount);
+    const max = Number(formData.maxDiscount);
+    return (
+      formData.minDiscount === "" ||
+      formData.maxDiscount === "" ||
+      Number.isNaN(min) ||
+      Number.isNaN(max) ||
+      min < 0 ||
+      max > 100 ||
+      min > max
+    );
+  };
+
   const handleSaveDraft = async () => {
     if (
       !formData.name?.trim() &&
@@ -825,6 +854,11 @@ function CreateBusinessWizardInner({
       !formData.nameAr?.trim()
     ) {
       toast.error(tt("name_required"));
+      return;
+    }
+    if (hasInvalidDiscountRange()) {
+      setCurrentStep(1);
+      toast.error(t("traveller_discount_range_invalid"));
       return;
     }
     if (
@@ -865,6 +899,12 @@ function CreateBusinessWizardInner({
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (hasInvalidDiscountRange()) {
+      setCurrentStep(1);
+      toast.error(t("traveller_discount_range_invalid"));
+      return;
+    }
 
     if (
       (formData.shortDescription || "").length > 150 ||

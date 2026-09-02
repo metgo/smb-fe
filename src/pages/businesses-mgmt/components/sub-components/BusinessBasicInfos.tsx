@@ -21,6 +21,10 @@ interface BusinessFormData {
   fullDescription: string;
   fullDescriptionHe: string;
   fullDescriptionAr: string;
+
+  providesDiscount?: boolean;
+  minDiscount?: number | string;
+  maxDiscount?: number | string;
 }
 
 interface FormErrors {
@@ -68,8 +72,14 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   isEditMode = false,
   onAvailabilityStatusChange,
 }) => {
-  const { isSuperadmin } = useUserRoles();
+  const { isSuperadmin, isTraveller } = useUserRoles();
   const { borderColor, isDark } = useThemeClasses();
+
+  const inputClasses = `w-24 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+    isDark
+      ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
+      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+  }`;
   const handleChange = (updates: Partial<BusinessFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   };
@@ -83,10 +93,76 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h3 className={`text-lg ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           {t("basic_information")}
         </h3>
+
+        {isTraveller && (
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!formData.providesDiscount}
+                onChange={(e) =>
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    providesDiscount: e.target.checked,
+                  }))
+                }
+                className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+              />
+              <span
+                className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("offer_traveller_discount")}
+              </span>
+            </label>
+
+            {formData.providesDiscount && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formData.minDiscount ?? ""}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      minDiscount: e.target.value,
+                    }))
+                  }
+                  placeholder={t("min_discount_percent")}
+                  className={inputClasses}
+                />
+                <span
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                >
+                  &ndash;
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formData.maxDiscount ?? ""}
+                  onChange={(e) =>
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      maxDiscount: e.target.value,
+                    }))
+                  }
+                  placeholder={t("max_discount_percent")}
+                  className={inputClasses}
+                />
+                <span
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                >
+                  %
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <DmoAuthorityWebsiteIdsSelector

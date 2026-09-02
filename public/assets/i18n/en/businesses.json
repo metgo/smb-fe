@@ -241,6 +241,11 @@
   "delivery_specific_seller_info": "Specific Seller Delivery Information",
   "delivery_policy": "Delivery Policy",
   "delivery": "Delivery",
+  "traveller_discount": "Traveller Discount",
+  "offer_traveller_discount": "Offer traveller discount",
+  "min_discount_percent": "Min %",
+  "max_discount_percent": "Max %",
+  "traveller_discount_range_invalid": "Min discount must be between 0 and 100 and not greater than max",
   "specific_seller_delivery_info": "Specific Seller Delivery Information",
 
   "same_as_business": "Same as Business",
