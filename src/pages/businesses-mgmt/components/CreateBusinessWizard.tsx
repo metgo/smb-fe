@@ -673,10 +673,10 @@ function CreateBusinessWizardInner({
     providesDiscount: formData.providesDiscount,
     minDiscount: formData.providesDiscount
       ? Number(formData.minDiscount) || 0
-      : undefined,
+      : null,
     maxDiscount: formData.providesDiscount
       ? Number(formData.maxDiscount) || 0
-      : undefined,
+      : null,
 
     // step 2
     busiEmail: formData.email,
@@ -831,20 +831,31 @@ function CreateBusinessWizardInner({
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  // Validate the optional traveller discount range (0-100, min <= max).
-  const hasInvalidDiscountRange = () => {
-    if (!formData.providesDiscount) return false;
-    const min = Number(formData.minDiscount);
-    const max = Number(formData.maxDiscount);
-    return (
-      formData.minDiscount === "" ||
-      formData.maxDiscount === "" ||
+  // Validate the optional traveller discount. Returns an i18n key when invalid,
+  // or null when it's fine / disabled.
+  const getDiscountError = (): string | null => {
+    if (!formData.providesDiscount) return null;
+    const { minDiscount, maxDiscount } = formData;
+    if (
+      minDiscount === "" ||
+      minDiscount == null ||
+      maxDiscount === "" ||
+      maxDiscount == null
+    ) {
+      return "traveller_discount_required";
+    }
+    const min = Number(minDiscount);
+    const max = Number(maxDiscount);
+    if (
       Number.isNaN(min) ||
       Number.isNaN(max) ||
       min < 0 ||
       max > 100 ||
       min > max
-    );
+    ) {
+      return "traveller_discount_range_invalid";
+    }
+    return null;
   };
 
   const handleSaveDraft = async () => {
@@ -856,9 +867,10 @@ function CreateBusinessWizardInner({
       toast.error(tt("name_required"));
       return;
     }
-    if (hasInvalidDiscountRange()) {
+    const draftDiscountError = getDiscountError();
+    if (draftDiscountError) {
       setCurrentStep(1);
-      toast.error(t("traveller_discount_range_invalid"));
+      toast.error(t(draftDiscountError));
       return;
     }
     if (
@@ -900,9 +912,10 @@ function CreateBusinessWizardInner({
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
 
-    if (hasInvalidDiscountRange()) {
+    const publishDiscountError = getDiscountError();
+    if (publishDiscountError) {
       setCurrentStep(1);
-      toast.error(t("traveller_discount_range_invalid"));
+      toast.error(t(publishDiscountError));
       return;
     }
 

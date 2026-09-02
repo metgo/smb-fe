@@ -131,10 +131,15 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
             role="switch"
             aria-checked={!!formData.providesDiscount}
             onClick={() =>
-              setFormData((prev: any) => ({
-                ...prev,
-                providesDiscount: !prev.providesDiscount,
-              }))
+              setFormData((prev: any) => {
+                const next = !prev.providesDiscount;
+                return {
+                  ...prev,
+                  providesDiscount: next,
+                  // clear the range when the owner turns the discount off
+                  ...(next ? {} : { minDiscount: "", maxDiscount: "" }),
+                };
+              })
             }
             className="flex w-full items-start justify-between gap-3 text-start focus:outline-none"
           >
@@ -199,7 +204,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 <label
                   className={`mb-1.5 block text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  {t("min_discount_percent")}
+                  {t("min_discount_percent")}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -228,7 +234,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 <label
                   className={`mb-1.5 block text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}
                 >
-                  {t("max_discount_percent")}
+                  {t("max_discount_percent")}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input

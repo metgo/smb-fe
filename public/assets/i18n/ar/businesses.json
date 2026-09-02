@@ -245,6 +245,7 @@
   "traveller_discount_info": "إذا نقرت هنا، سيحصل العملاء على خصم",
   "min_discount_percent": "الحد الأدنى للخصم",
   "max_discount_percent": "الحد الأقصى للخصم",
+  "traveller_discount_required": "الحد الأدنى والحد الأقصى للخصم مطلوبان",
   "traveller_discount_range_invalid": "يجب أن يكون الحد الأدنى للخصم بين 0 و100 وألا يتجاوز الحد الأقصى",
   "specific_seller_delivery_info": "معلومات التوصيل الخاصة بالبائع",
   "same_as_business": "نفس عنوان العمل التجاري",

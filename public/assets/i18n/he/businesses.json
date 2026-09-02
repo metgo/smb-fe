@@ -244,6 +244,7 @@
   "traveller_discount_info": "אם תסמן כאן, לקוחות יקבלו הנחה",
   "min_discount_percent": "הנחה מינימלית",
   "max_discount_percent": "הנחה מקסימלית",
+  "traveller_discount_required": "יש להזין הנחה מינימלית ומקסימלית",
   "traveller_discount_range_invalid": "הנחת מינימום חייבת להיות בין 0 ל-100 ולא גדולה מהמקסימום",
   "specific_seller_delivery_info": "מידע משלוח ספציפי לספק",
   "same_as_business": "כמו העסק",

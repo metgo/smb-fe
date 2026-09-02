@@ -246,6 +246,7 @@
   "traveller_discount_info": "If you click here, customers will get a discount",
   "min_discount_percent": "Minimum discount",
   "max_discount_percent": "Maximum discount",
+  "traveller_discount_required": "Minimum and maximum discount are required",
   "traveller_discount_range_invalid": "Min discount must be between 0 and 100 and not greater than max",
   "specific_seller_delivery_info": "Specific Seller Delivery Information",
 
