@@ -42,7 +42,11 @@ const UsersMgmtPage = () => {
   const { t } = useTranslation("user");
   const { t: tt } = useTranslation("toast");
 
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { userRole, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
+  console.log("🚀 ~ UsersMgmtPage ~ authorityId:", authorityId);
+  console.log("🚀 ~ UsersMgmtPage ~ dmoId:", dmoId);
 
   const visibleTabs = useMemo(() => {
     const myIndex = ROLE_ORDER.indexOf(userRole as UserRole);
@@ -89,9 +93,11 @@ const UsersMgmtPage = () => {
       page,
       limit: LIMIT,
       role: activeRole,
+      dmoId,
+      authorityId,
       search,
     }),
-    [page, activeRole, search],
+    [page, activeRole, search, dmoId, authorityId],
   );
 
   const { data, isFetching, isLoading, refetch } = useGetUsersQuery(
@@ -100,6 +106,7 @@ const UsersMgmtPage = () => {
       refetchOnMountOrArgChange: true,
     },
   );
+  console.log("🚀 ~ UsersMgmtPage ~ data:", data);
   const totalData = data?.totalData ?? 0;
   const hasMore = data?.meta?.hasNextPage ?? false;
 

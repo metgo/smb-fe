@@ -58,7 +58,7 @@ export function useChatUserPicker(
         debouncedSearch.trim().length >= 2 ? debouncedSearch.trim() : undefined,
       dmoId: filters.dmoId || undefined,
       authorityId: filters.authorityId || undefined,
-      role: filters.role ? [filters.role] : undefined,
+      role: filters.role ? filters.role : undefined,
     },
     { skip: !isOpen },
   );

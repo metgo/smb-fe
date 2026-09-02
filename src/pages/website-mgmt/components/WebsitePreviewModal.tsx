@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Settings,
@@ -15,6 +15,38 @@ import {
   ExternalLink,
   Minus,
   Check,
+  Type,
+  MessageSquareQuote,
+  Link2,
+  Target,
+  Fingerprint,
+  CircleDollarSign,
+  Megaphone,
+  Star,
+  Image as ImageSquare,
+  Droplet,
+  Baseline,
+  MousePointerClick,
+  CornerDownRight,
+  Moon,
+  Music2,
+  Play,
+  Eye,
+  ExternalLink as ExternalLinkAlt,
+  MessageCircle,
+  Mail,
+  LifeBuoy,
+  MapPin,
+  Map,
+  PhoneCall,
+  Tag,
+  Hash,
+  FileText,
+  Link as LinkIcon,
+  Code2,
+  Languages,
+  Clock,
+  CalendarDays,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -56,17 +88,35 @@ interface TabMeta {
 /*  Small presentational helpers                                       */
 /* ------------------------------------------------------------------ */
 
+/** Small uppercase caption with a leading icon, shared by every field type. */
+function FieldLabel({ label, Icon }: { label: string; Icon?: LucideIcon }) {
+  const { textTertiary } = useThemeClasses();
+  return (
+    <span
+      className={clsx(
+        "flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide",
+        textTertiary,
+      )}
+    >
+      {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+      {label}
+    </span>
+  );
+}
+
 /** A single label / value pair rendered in read-only style. */
 function Field({
   label,
   value,
   isLink,
   fullWidth,
+  Icon,
 }: {
   label: string;
   value?: string | number | null;
   isLink?: boolean;
   fullWidth?: boolean;
+  Icon?: LucideIcon;
 }) {
   const { textTertiary, textPrimary } = useThemeClasses();
   const isEmpty =
@@ -76,14 +126,7 @@ function Field({
 
   return (
     <div className={clsx("flex flex-col gap-1", fullWidth && "sm:col-span-2")}>
-      <span
-        className={clsx(
-          "text-[11px] font-semibold uppercase tracking-wide",
-          textTertiary,
-        )}
-      >
-        {label}
-      </span>
+      <FieldLabel label={label} Icon={Icon} />
       {isEmpty ? (
         <span
           className={clsx(
@@ -104,7 +147,7 @@ function Field({
           {value}
         </a>
       ) : (
-        <span className={clsx("text-sm break-words", textPrimary)}>
+        <span className={clsx("text-sm wrap-break-word", textPrimary)}>
           {value}
         </span>
       )}
@@ -113,18 +156,18 @@ function Field({
 }
 
 /** Boolean shown as an on/off chip. */
-function BoolField({ label, value }: { label: string; value?: boolean }) {
-  const { textTertiary } = useThemeClasses();
+function BoolField({
+  label,
+  value,
+  Icon,
+}: {
+  label: string;
+  value?: boolean;
+  Icon?: LucideIcon;
+}) {
   return (
     <div className="flex flex-col gap-1">
-      <span
-        className={clsx(
-          "text-[11px] font-semibold uppercase tracking-wide",
-          textTertiary,
-        )}
-      >
-        {label}
-      </span>
+      <FieldLabel label={label} Icon={Icon} />
       <span
         className={clsx(
           "inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
@@ -170,18 +213,19 @@ function Section({
 }
 
 /** Image preview tile. */
-function ImageField({ label, url }: { label: string; url?: string }) {
+function ImageField({
+  label,
+  url,
+  Icon = ImageIcon,
+}: {
+  label: string;
+  url?: string;
+  Icon?: LucideIcon;
+}) {
   const { textTertiary, borderColor, bgSecondary } = useThemeClasses();
   return (
     <div className="flex flex-col gap-1.5">
-      <span
-        className={clsx(
-          "text-[11px] font-semibold uppercase tracking-wide",
-          textTertiary,
-        )}
-      >
-        {label}
-      </span>
+      <FieldLabel label={label} Icon={Icon} />
       <div
         className={clsx(
           "h-24 w-full rounded-lg border flex items-center justify-center overflow-hidden",
@@ -203,18 +247,19 @@ function ImageField({ label, url }: { label: string; url?: string }) {
   );
 }
 
-function ColorSwatch({ label, value }: { label: string; value?: string }) {
-  const { textTertiary, textPrimary, borderColor } = useThemeClasses();
+function ColorSwatch({
+  label,
+  value,
+  Icon = Droplet,
+}: {
+  label: string;
+  value?: string;
+  Icon?: LucideIcon;
+}) {
+  const { textPrimary, borderColor } = useThemeClasses();
   return (
     <div className="flex flex-col gap-1">
-      <span
-        className={clsx(
-          "text-[11px] font-semibold uppercase tracking-wide",
-          textTertiary,
-        )}
-      >
-        {label}
-      </span>
+      <FieldLabel label={label} Icon={Icon} />
       <span
         className={clsx("inline-flex items-center gap-2 text-sm", textPrimary)}
       >
@@ -275,22 +320,50 @@ export default function WebsitePreviewModal({
             <Field
               label={t("website_name_en_placeholder")}
               value={data.websiteNameEn}
+              Icon={Type}
             />
             <Field
               label={t("website_name_he_placeholder")}
               value={data.websiteNameHe}
+              Icon={Type}
             />
             <Field
               label={t("website_name_ar_placeholder")}
               value={data.websiteNameAr}
+              Icon={Type}
             />
-            <Field label={t("slogan_en_placeholder")} value={data.sloganEn} />
-            <Field label={t("slogan_he_placeholder")} value={data.sloganHe} />
-            <Field label={t("slogan_ar_placeholder")} value={data.sloganAr} />
-            <Field label={t("website_url")} value={data.websiteUrl} isLink />
-            <Field label={t("purpose")} value={data.purpose} />
-            <Field label={t("identifier_id")} value={data.identifierId} />
-            <Field label={t("platform_charge")} value={data.platformCharge} />
+            <Field
+              label={t("slogan_en_placeholder")}
+              value={data.sloganEn}
+              Icon={MessageSquareQuote}
+            />
+            <Field
+              label={t("slogan_he_placeholder")}
+              value={data.sloganHe}
+              Icon={MessageSquareQuote}
+            />
+            <Field
+              label={t("slogan_ar_placeholder")}
+              value={data.sloganAr}
+              Icon={MessageSquareQuote}
+            />
+            <Field
+              label={t("website_url")}
+              value={data.websiteUrl}
+              isLink
+              Icon={Link2}
+            />
+            <Field label={t("purpose")} value={data.purpose} Icon={Target} />
+            <Field
+              label={t("identifier_id")}
+              value={data.identifierId}
+              Icon={Fingerprint}
+            />
+            <Field
+              label={t("platform_charge")}
+              value={data.platformCharge}
+              Icon={CircleDollarSign}
+            />
           </Section>
         );
 
@@ -305,11 +378,13 @@ export default function WebsitePreviewModal({
                   : ""
               }
               fullWidth
+              Icon={Star}
             />
             <Field
               label={t("campaigns_title")}
               value={data.campIds?.length ? data.campIds.join(", ") : ""}
               fullWidth
+              Icon={Megaphone}
             />
           </Section>
         );
@@ -317,13 +392,26 @@ export default function WebsitePreviewModal({
       case "branding":
         return (
           <Section>
-            <ImageField label={t("website_logo")} url={data.logoUrl} />
-            <ImageField label={t("favicon")} url={data.faviconUrl} />
+            <ImageField
+              label={t("website_logo")}
+              url={data.logoUrl}
+              Icon={ImageSquare}
+            />
+            <ImageField
+              label={t("favicon")}
+              url={data.faviconUrl}
+              Icon={Star}
+            />
             <ImageField
               label={t("special_symbole")}
               url={data.specialSymbolUrl}
+              Icon={Star}
             />
-            <ImageField label={t("background_image")} url={data.bgImageUrl} />
+            <ImageField
+              label={t("background_image")}
+              url={data.bgImageUrl}
+              Icon={ImageSquare}
+            />
           </Section>
         );
 
@@ -357,39 +445,84 @@ export default function WebsitePreviewModal({
               label={t("background_color")}
               value={data.backgroundColor}
             />
-            <Field label={t("font_family")} value={data.fontFamily} />
+            <Field
+              label={t("font_family")}
+              value={data.fontFamily}
+              Icon={Baseline}
+            />
             <Field
               label={t("font_source_url")}
               value={data.fontSourceUrl}
               isLink
               fullWidth
+              Icon={Link2}
             />
-            <Field label={t("button_style")} value={data.buttonStyle} />
-            <Field label={t("btn_custom")} value={data.buttonRadius} />
-            <BoolField label={t("dark_mode")} value={data.darkModeEnabled} />
+            <Field
+              label={t("button_style")}
+              value={data.buttonStyle}
+              Icon={MousePointerClick}
+            />
+            <Field
+              label={t("btn_custom")}
+              value={data.buttonRadius}
+              Icon={CornerDownRight}
+            />
+            <BoolField
+              label={t("dark_mode")}
+              value={data.darkModeEnabled}
+              Icon={Moon}
+            />
           </Section>
         );
 
       case "social":
         return (
           <Section>
-            <Field label={t("facebook_url")} value={data.facebookUrl} isLink />
+            <Field
+              label={t("facebook_url")}
+              value={data.facebookUrl}
+              isLink
+              Icon={Share2}
+            />
             <Field
               label={t("instagram_url")}
               value={data.instagramUrl}
               isLink
+              Icon={ImageSquare}
             />
-            <Field label={t("twitter_url")} value={data.twitterUrl} isLink />
-            <Field label={t("youtube_url")} value={data.youtubeUrl} isLink />
-            <Field label={t("linkedin_url")} value={data.linkedinUrl} isLink />
-            <Field label={t("tiktok_url")} value={data.tiktokUrl} isLink />
+            <Field
+              label={t("twitter_url")}
+              value={data.twitterUrl}
+              isLink
+              Icon={MessageCircle}
+            />
+            <Field
+              label={t("youtube_url")}
+              value={data.youtubeUrl}
+              isLink
+              Icon={Video}
+            />
+            <Field
+              label={t("linkedin_url")}
+              value={data.linkedinUrl}
+              isLink
+              Icon={Link2}
+            />
+            <Field
+              label={t("tiktok_url")}
+              value={data.tiktokUrl}
+              isLink
+              Icon={Music2}
+            />
             <BoolField
               label={t("show_social_icons")}
               value={data.showSocialIcons}
+              Icon={Eye}
             />
             <BoolField
               label={t("open_links_new_tab")}
               value={data.socialLinksNewTab}
+              Icon={ExternalLinkAlt}
             />
           </Section>
         );
@@ -397,39 +530,58 @@ export default function WebsitePreviewModal({
       case "contact":
         return (
           <Section>
-            <Field label={t("phone_number")} value={data.phoneNumber} />
-            <Field label={t("whatsapp_number")} value={data.whatsappNumber} />
-            <Field label={t("email_address")} value={data.email} />
-            <Field label={t("support_email")} value={data.supportEmail} />
+            <Field
+              label={t("phone_number")}
+              value={data.phoneNumber}
+              Icon={Phone}
+            />
+            <Field
+              label={t("whatsapp_number")}
+              value={data.whatsappNumber}
+              Icon={MessageCircle}
+            />
+            <Field label={t("email_address")} value={data.email} Icon={Mail} />
+            <Field
+              label={t("support_email")}
+              value={data.supportEmail}
+              Icon={LifeBuoy}
+            />
             <Field
               label={t("physical_address")}
               value={data.physicalAddress}
               fullWidth
+              Icon={MapPin}
             />
             <Field
               label={t("google_maps_embed")}
               value={data.googleMapsEmbed}
               fullWidth
+              Icon={Map}
             />
             <Field
               label={`${t("whatsapp_message")} (EN)`}
               value={data.whatsappMessageEn}
+              Icon={MessageCircle}
             />
             <Field
               label={`${t("whatsapp_message")} (HE)`}
               value={data.whatsappMessageHe}
+              Icon={MessageCircle}
             />
             <Field
               label={`${t("whatsapp_message")} (AR)`}
               value={data.whatsappMessageAr}
+              Icon={MessageCircle}
             />
             <BoolField
               label={t("enable_click_to_call")}
               value={data.enableClickToCall}
+              Icon={PhoneCall}
             />
             <BoolField
               label={t("enable_whatsapp_chat")}
               value={data.enableWhatsappChat}
+              Icon={MessageCircle}
             />
           </Section>
         );
@@ -438,33 +590,49 @@ export default function WebsitePreviewModal({
         return (
           <div className="flex flex-col gap-6">
             <Section title={t("basic_meta")}>
-              <Field label={t("meta_title")} value={data.metaTitle} />
-              <Field label={t("meta_keywords")} value={data.metaKeywords} />
+              <Field
+                label={t("meta_title")}
+                value={data.metaTitle}
+                Icon={Type}
+              />
+              <Field
+                label={t("meta_keywords")}
+                value={data.metaKeywords}
+                Icon={Tag}
+              />
               <Field
                 label={t("meta_description")}
                 value={data.metaDescription}
                 fullWidth
+                Icon={FileText}
               />
               <Field
                 label={t("canonical_url")}
                 value={data.canonicalUrl}
                 isLink
                 fullWidth
+                Icon={LinkIcon}
               />
             </Section>
             <Section title={t("open_graph")}>
-              <Field label={t("og_title")} value={data.ogTitle} />
-              <Field label={t("og_description")} value={data.ogDescription} />
+              <Field label={t("og_title")} value={data.ogTitle} Icon={Type} />
+              <Field
+                label={t("og_description")}
+                value={data.ogDescription}
+                Icon={FileText}
+              />
               <ImageField label={t("og_image")} url={data.ogImageUrl} />
             </Section>
             <Section title={t("twitter_card")}>
               <Field
                 label={t("twitter_card_title")}
                 value={data.twitterCardTitle}
+                Icon={Type}
               />
               <Field
                 label={t("twitter_card_description")}
                 value={data.twitterCardDescription}
+                Icon={FileText}
               />
               <ImageField
                 label={t("twitter_card_image")}
@@ -472,12 +640,18 @@ export default function WebsitePreviewModal({
               />
             </Section>
             <Section title={t("robots_sitemap")}>
-              <Field label={t("robots_txt")} value={data.robotsTxt} fullWidth />
+              <Field
+                label={t("robots_txt")}
+                value={data.robotsTxt}
+                fullWidth
+                Icon={FileText}
+              />
               <Field
                 label={t("sitemap_url")}
                 value={data.sitemapUrl}
                 isLink
                 fullWidth
+                Icon={LinkIcon}
               />
             </Section>
           </div>
@@ -490,19 +664,23 @@ export default function WebsitePreviewModal({
               <Field
                 label={t("google_analytics_id")}
                 value={data.googleAnalyticsId}
+                Icon={BarChart2}
               />
               <Field
                 label={t("google_ads_conversion_tracking_id")}
                 value={data.googleAdsConvTrackId}
+                Icon={Target}
               />
               <Field
                 label={t("enable_widget_id")}
                 value={data.enableWidgetId}
+                Icon={Hash}
               />
-              <Field label={t("hotjar_id")} value={data.hotjarId} />
+              <Field label={t("hotjar_id")} value={data.hotjarId} Icon={Hash} />
               <Field
                 label={t("facebook_pixel_id")}
                 value={data.facebookPixelId}
+                Icon={Hash}
               />
             </Section>
             <Section title={t("custom_scripts")}>
@@ -510,11 +688,13 @@ export default function WebsitePreviewModal({
                 label={t("header_scripts")}
                 value={data.headerScripts}
                 fullWidth
+                Icon={Code2}
               />
               <Field
                 label={t("footer_scripts")}
                 value={data.footerScripts}
                 fullWidth
+                Icon={Code2}
               />
             </Section>
           </div>
@@ -523,13 +703,26 @@ export default function WebsitePreviewModal({
       case "localization":
         return (
           <Section>
-            <Field label={t("default_language")} value={data.defaultLanguage} />
-            <Field label={t("timezone")} value={data.timezone} />
-            <Field label={t("currency")} value={data.currency} />
-            <Field label={t("date_format")} value={data.dateFormat} />
+            <Field
+              label={t("default_language")}
+              value={data.defaultLanguage}
+              Icon={Languages}
+            />
+            <Field label={t("timezone")} value={data.timezone} Icon={Clock} />
+            <Field
+              label={t("currency")}
+              value={data.currency}
+              Icon={CircleDollarSign}
+            />
+            <Field
+              label={t("date_format")}
+              value={data.dateFormat}
+              Icon={CalendarDays}
+            />
             <BoolField
               label={t("multi_language_support")}
               value={data.multiLanguageEnabled}
+              Icon={Languages}
             />
           </Section>
         );
@@ -642,6 +835,46 @@ export default function WebsitePreviewModal({
 /*  Video / thumbnail list                                             */
 /* ------------------------------------------------------------------ */
 
+/** Poster-style video tile: click the play button to load native controls. */
+function VideoPlayer({ src }: { src: string }) {
+  const [playing, setPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handlePlay = () => {
+    setPlaying(true);
+    // Wait for the render that adds `controls` before requesting playback.
+    requestAnimationFrame(() => void videoRef.current?.play());
+  };
+
+  return (
+    <div className="relative h-full w-full">
+      <video
+        ref={videoRef}
+        src={src}
+        className="h-full w-full object-contain"
+        controls={playing}
+        preload="metadata"
+        playsInline
+      />
+      {!playing && (
+        <button
+          type="button"
+          onClick={handlePlay}
+          aria-label="Play video"
+          className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors hover:bg-black/40 cursor-pointer"
+        >
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg">
+            <Play
+              className="w-5 h-5 translate-x-0.5 text-gray-900"
+              fill="currentColor"
+            />
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
+
 function VideoList({
   title,
   items,
@@ -678,7 +911,7 @@ function VideoList({
                 bgSecondary,
               )}
             >
-              <div className="h-20 flex items-center justify-center overflow-hidden">
+              <div className="h-28 flex items-center justify-center overflow-hidden bg-black">
                 {isImage ? (
                   <ImageWithFallback
                     src={item.url}
@@ -686,11 +919,7 @@ function VideoList({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <video
-                    src={item.url}
-                    className="h-full w-full object-cover"
-                    muted
-                  />
+                  <VideoPlayer src={item.url} />
                 )}
               </div>
               <div className="px-2 py-1.5 flex items-center justify-between gap-2">

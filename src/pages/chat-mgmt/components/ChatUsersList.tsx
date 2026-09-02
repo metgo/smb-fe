@@ -118,7 +118,7 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
         : undefined,
     dmoId: chatUsersFilters.dmoId || undefined,
     authorityId: chatUsersFilters.authorityId || undefined,
-    role: chatUsersFilters.role ? [chatUsersFilters.role] : undefined,
+    role: chatUsersFilters.role ? chatUsersFilters.role : undefined,
   });
 
   useEffect(() => {

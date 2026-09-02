@@ -842,12 +842,12 @@ export default function WebsiteConfigPage() {
   return (
     <div className="flex flex-col gap-3 sm:gap-6 px-4 sm:px-6 lg:px-8 py-6 mx-auto w-full h-full">
       {/* Page Header */}
-      <section className="flex items-center flex-wrap justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          {/* Back button stacked above the logo, aligned to its left edge */}
-          <div className="flex flex-col items-center gap-1 shrink-0">
-            <BackToListBtn navPath={routes.websiteMgmt} />
-            <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg flex items-center justify-center border border-teal-500 db1">
+
+      <div>
+        <BackToListBtn navPath={routes.websiteMgmt} />
+        <section className="flex items-center flex-wrap justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg flex items-center justify-center border border-teal-500">
               {websiteLogo ? (
                 <ImageWithFallback
                   src={websiteLogo}
@@ -858,69 +858,69 @@ export default function WebsiteConfigPage() {
                 <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
               )}
             </div>
-          </div>
-          <div className="min-w-0 mt-7">
-            <h1
-              className={clsx(
-                "text-base sm:text-xl font-bold truncate",
-                textPrimary,
-              )}
-            >
-              {websiteName && websiteName + " - "} {t("page_title")}
-            </h1>
-            <p className={clsx("text-xs sm:text-sm", textSecondary)}>
-              {t("page_subtitle")}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-          {(() => {
-            const score = calculateCompletionScore(formData);
-            const color =
-              score >= 75
-                ? "text-teal-600 bg-teal-50 border-teal-200 dark:bg-teal-900/30 dark:border-teal-700"
-                : score >= 40
-                  ? "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700"
-                  : "text-red-500 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-700";
-            return (
-              <div
+            <div className="min-w-0">
+              <h1
                 className={clsx(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-semibold",
-                  color,
+                  "text-base sm:text-xl font-bold truncate",
+                  textPrimary,
                 )}
               >
-                <svg
-                  viewBox="0 0 32 32"
-                  className="w-5 h-5 -rotate-90"
-                  aria-hidden="true"
+                {websiteName && websiteName + " - "} {t("page_title")}
+              </h1>
+              <p className={clsx("text-xs sm:text-sm", textSecondary)}>
+                {t("page_subtitle")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            {(() => {
+              const score = calculateCompletionScore(formData);
+              const color =
+                score >= 75
+                  ? "text-teal-600 bg-teal-50 border-teal-200 dark:bg-teal-900/30 dark:border-teal-700"
+                  : score >= 40
+                    ? "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700"
+                    : "text-red-500 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-700";
+              return (
+                <div
+                  className={clsx(
+                    "flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-semibold",
+                    color,
+                  )}
                 >
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="12"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeOpacity="0.2"
-                    strokeWidth="3.5"
-                  />
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="12"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3.5"
-                    strokeDasharray={`${(score / 100) * 75.4} 75.4`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                {score}%
-              </div>
-            );
-          })()}
-          <PublishButton isLoading={isPublishing} onClick={handlePublish} />
-        </div>
-      </section>
+                  <svg
+                    viewBox="0 0 32 32"
+                    className="w-5 h-5 -rotate-90"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeOpacity="0.2"
+                      strokeWidth="3.5"
+                    />
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3.5"
+                      strokeDasharray={`${(score / 100) * 75.4} 75.4`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  {score}%
+                </div>
+              );
+            })()}
+            <PublishButton isLoading={isPublishing} onClick={handlePublish} />
+          </div>
+        </section>
+      </div>
 
       {/* Wizard — fills remaining height */}
       <div className="flex-1 min-h-0">
