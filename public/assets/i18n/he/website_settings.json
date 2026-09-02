@@ -251,5 +251,9 @@
   "migrate_website_to_prod": "העברה לייצור",
   "migrate_website_to_prod_confirm": "האם אתה בטוח שברצונך להעביר אתר זה לסביבת הייצור?",
   "migrate_to_prod": "העבר",
-  "completeness": "שלמות"
+  "completeness": "שלמות",
+  "please_wait_loading": "אנא המתן, ההגדרות עדיין נטענות",
+  "google_ads_conversion_tracking_id": "מזהה מעקב המרות של Google Ads",
+  "enable_widget_id": "מזהה Enable Widget",
+  "hotjar_id": "מזהה אתר Hotjar"
 }

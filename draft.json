@@ -1,130 +1,83 @@
-[
-    {
-        "_id": "665ea1ebb543b9e55f3bff71",
-        "name": "תו 8",
-        "websiteUrl": "https://tav-8.co.il",
-        "logo": "https://storage.googleapis.com/tav8-sderot20w3s71w1n/logo/company.svg",
-        "purpose": "MARKETPLACE",
-        "dmoIds": [
-            "61dc551b1fd34e871d6abf0d"
-        ],
-        "authorityIds": []
-    },
-    {
-        "_id": "67ff852373b8abc8aeb7bd80",
-        "name": "תו הנגב",
-        "websiteUrl": "https://tavhanegev.co.il",
-        "logo": "https://storage.googleapis.com/metgo_dev/2026/5/ceRAmdRbBO6DcbUE.svg",
-        "purpose": "MARKETPLACE",
-        "dmoIds": [
-            "6637806e4d0835c88ccaea99"
-        ],
-        "authorityIds": []
-    },
-    {
-        "_id": "689aca6896fc4dd7086c8834",
-        "name": "הנגב הפורח",
-        "websiteUrl": "https://negevtime.co.il",
-        "logo": "https://storage.googleapis.com/bnei-fo5gz43xdb6i5t/images/logo/black.svg",
-        "purpose": "TRAVELING",
-        "dmoIds": [],
-        "authorityIds": [
-            "61dc551b1fd34e871d6abf0d"
-        ]
-    },
-    {
-        "_id": "68cbeaae68573c3ff74ab1ff",
-        "name": "חוף אשקלון",
-        "websiteUrl": "https://hofash.co.il/",
-        "logo": "https://storage.googleapis.com/hofash-ft5gz4td6b68g9/images/logo/black.svg",
-        "purpose": "TRAVELING",
-        "dmoIds": [],
-        "authorityIds": [
-            "61f2b8a89325a6bd4ddc9b8f"
-        ]
-    },
-    {
-        "_id": "6927d45f50add3723628b4d9",
-        "name": "הקצה",
-        "websiteUrl": "https://hakatze.co.il",
-        "logo": "https://storage.googleapis.com/hakatze-v-ho7fgf-os/images/logo/white.svg",
-        "purpose": "TRAVELING",
-        "dmoIds": [
-            "61dc551b1fd34e871d6abf0d"
-        ],
-        "authorityIds": []
-    },
-    {
-        "_id": "696cb7a40ae797cedc4d013b",
-        "name": "קסם המדבר",
-        "websiteUrl": "",
-        "logo": "https://storage.googleapis.com/metgo_dev/2026/5/INTNEHNqjGqx6HSu.png",
-        "purpose": "TRAVELING",
-        "dmoIds": [],
-        "authorityIds": [
-            "61dc551b1fd34e871d6abf0d"
-        ]
-    },
-    {
-        "_id": "69a15fcdffe2526563bfb907",
-        "name": "כיף בעוטף",
-        "websiteUrl": "https://kefotef.co.il/",
-        "logo": "https://storage.googleapis.com/metgo_dev/2026/5/krLY9C4fAfNJPXIm.webp",
-        "purpose": "TRAVELING",
-        "dmoIds": [
-            "61dc551b1fd34e871d6abf0d"
-        ],
-        "authorityIds": []
-    },
-    {
-        "_id": "69d4ac45a21dc4e01d306c86",
-        "name": "מטבע הארי",
-        "websiteUrl": "https://visitgalil.co.il",
-        "logo": "https://storage.googleapis.com/galil-u123ho7fgfosd/emails/header/company-logo.png",
-        "purpose": "MARKETPLACE",
-        "dmoIds": [
-            "69cfaf01b01b3de9c650b8fb",
-            "69d49781a21dc4e01d306c59"
-        ],
-        "authorityIds": []
-    },
-    {
-        "_id": "69e217df883f154071b49de1",
-        "name": "גלבוע, מעל הכל",
-        "websiteUrl": "https://theviewpoint.co.il/",
-        "logo": "https://storage.googleapis.com/metgo_dev/2026/3/0K6DKWUcFce1sj1x.png",
-        "purpose": "TRAVELING",
-        "dmoIds": [
-            "69e218ec883f154071b49de3"
-        ],
-        "authorityIds": [
-            "69e21f77883f154071b49de7"
-        ]
-    },
-    {
-        "_id": "69fc595e2add117312a6bfad",
-        "name": "במעלה",
-        "websiteUrl": "https://bamaale.co.il/",
-        "logo": "https://storage.googleapis.com/metgo_dev/2026/4/XTesy3Nj4FnUVTx1.png",
-        "purpose": "TRAVELING",
-        "dmoIds": [
-            "69fc577f2add117312a6bfa8"
-        ],
-        "authorityIds": [
-            "69fc57bb2add117312a6bfaa"
-        ]
-    },
-    {
-        "_id": "69fc87cc2add117312a6bfb5",
-        "name": "K8 Market",
-        "websiteUrl": "https://k8market.com/",
-        "logo": "https://storage.googleapis.com/metgo_dev/2026/4/8wx5Es79rjcabFFf.png",
-        "purpose": "MARKETPLACE",
-        "dmoIds": [
-            "69fc88e22add117312a6bfb7"
-        ],
-        "authorityIds": [
-            "69fc89082add117312a6bfb8"
-        ]
-    }
-]
+{
+    "_id": "68cbeaae68573c3ff74ab1ff",
+    "createdAt": "2025-08-11T05:00:24.512Z",
+    "updatedAt": "2026-09-01T07:18:00.688Z",
+    "createdBy": "659649e04267dd2b02174cc3",
+    "updatedBy": "659649e04267dd2b02174cc3",
+    "name": "חוף אשקלון",
+    "identifierId": "HOFASH-FT5$GZ)4TD6!=B68G9",
+    "authorityId": "61f2b8a89325a6bd4ddc9b8f",
+    "campIds": [
+        "68c937984e7ffd509e3cfb15"
+    ],
+    "purpose": "TRAVELING",
+    "faviconUrl": "",
+    "isActive": true,
+    "logoUrl": "https://storage.googleapis.com/hofash-ft5gz4td6b68g9/images/logo/black.svg",
+    "metaDescription": "ברוכים הבאים לאתר הרשמי של תיירות חוף אשקלון: חופים מטופחים, מסלולי טבע בין הים לשדות, קולינריה, אירועים ולינה. תכננו חופשה וגַלו איך השלם גדול מסך חלקיו. כאשר חופש הופך ל HOFASH ",
+    "metaKeywords": " תיירות חוף אשקלון, חופי אשקלון, ים, נופש,  דירות אירוח, צימרים, ספורט ימי, מסלולי הליכה, קמפינג, קולינריה, שווקים, אירועים, משפחות, זוגות, מרינה, עתיקות, פארקים, טיילת, Ashkelon",
+    "metaTitle": "תיירות חוף אשקלון – סיפור של שדות וים | האתר הרשמי",
+    "ogTitle": "",
+    "primaryColor": "#0d9488",
+    "secondaryColor": "#6366f1",
+    "websiteNameAr": "חוף אשקלון",
+    "websiteNameEn": "חוף אשקלון",
+    "websiteNameHe": "חוף אשקלון",
+    "websiteUrl": "https://hofash.co.il/",
+    "backgroundColor": "#ffffff",
+    "bgImageUrl": "",
+    "buttonRadius": "8",
+    "buttonStyle": "rounded",
+    "canonicalUrl": "",
+    "currency": "USD",
+    "darkModeEnabled": false,
+    "dateFormat": "",
+    "defaultLanguage": "English",
+    "desktopVideoThumbnails": [],
+    "desktopVideos": [],
+    "email": "",
+    "enableClickToCall": true,
+    "enableWhatsappChat": false,
+    "facebookPixelId": "",
+    "facebookUrl": "",
+    "fontFamily": "Inter",
+    "fontSourceUrl": "",
+    "footerScripts": "",
+    "gaPropertyId": "",
+    "googleAnalyticsId": "",
+    "googleMapsEmbed": "",
+    "googleTagManagerId": "",
+    "headerScripts": "",
+    "instagramUrl": "",
+    "linkedinUrl": "",
+    "mobileVideoThumbnails": [],
+    "mobileVideos": [],
+    "multiLanguageEnabled": false,
+    "ogDescription": "",
+    "ogImageUrl": "",
+    "phoneNumber": "",
+    "physicalAddress": "",
+    "platformCharge": 0,
+    "robotsTxt": "User-agent: *\nAllow: /",
+    "score": 25,
+    "showSocialIcons": true,
+    "sitemapUrl": "",
+    "sloganAr": "",
+    "sloganEn": "check",
+    "sloganHe": "",
+    "socialLinksNewTab": true,
+    "specialSymbolUrl": "",
+    "supportEmail": "",
+    "tiktokUrl": "",
+    "timezone": "UTC",
+    "twitterCardDescription": "",
+    "twitterCardImageUrl": "",
+    "twitterCardTitle": "",
+    "twitterUrl": "",
+    "whatsappMessageAr": "",
+    "whatsappMessageEn": "",
+    "whatsappMessageHe": "",
+    "whatsappNumber": "",
+    "youtubeUrl": ""
+}
+

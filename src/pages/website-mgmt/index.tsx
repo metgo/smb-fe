@@ -10,6 +10,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
 import { ConfirmDialog, PageHeader } from "@/components/shared";
 import WebsiteCard from "./components/WebsiteCard";
+import WebsitePreviewModal from "./components/WebsitePreviewModal";
 import {
   useUpdateWebsiteSettingMutation,
   useDeleteWebsiteMutation,
@@ -52,6 +53,9 @@ export default function WebsiteMgmtPage() {
   const [deactivateTarget, setDeactivateTarget] =
     useState<IWebsiteListRes | null>(null);
   const [isDeactivating, setIsDeactivating] = useState(false);
+  const [previewTarget, setPreviewTarget] = useState<IWebsiteListRes | null>(
+    null,
+  );
 
   const purposeTabs: PurposeTab[] = [
     { id: "ALL", label: tc("all"), Icon: LayoutGrid },
@@ -212,6 +216,7 @@ export default function WebsiteMgmtPage() {
                           ? setDeactivateTarget(website)
                           : handleToggleActive(website._id, true)
                       }
+                      onPreview={() => setPreviewTarget(website)}
                       onEdit={() => handleConfigure(website)}
                       onDelete={() => setDeleteTarget(website)}
                     />
@@ -221,6 +226,15 @@ export default function WebsiteMgmtPage() {
             </div>
           )}
         </>
+      )}
+
+      {previewTarget && (
+        <WebsitePreviewModal
+          websiteId={previewTarget._id}
+          websiteName={previewTarget.websiteName}
+          websiteLogo={previewTarget.logo}
+          onClose={() => setPreviewTarget(null)}
+        />
       )}
 
       <ConfirmDialog
