@@ -1,5 +1,5 @@
 import { useEffect, useRef, type FC } from "react";
-import { BadgePercent, HelpCircle } from "lucide-react";
+import { BadgePercent } from "lucide-react";
 
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -160,12 +160,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                   {t("offer_traveller_discount")}
                 </span>
                 <span
-                  className={`mt-0.5 flex items-center gap-1.5 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                  className={`mt-0.5 block text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
                 >
-                  <HelpCircle
-                    className="h-3.5 w-3.5 shrink-0"
-                    aria-hidden="true"
-                  />
                   {t("traveller_discount_info")}
                 </span>
               </span>
