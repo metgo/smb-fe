@@ -1,6 +1,7 @@
 import {
   CHAT_USERS_PAGE_LIMIT,
   ChatUserRowSkeleton,
+  ChatUserRoleBadge,
 } from "./chatUsersListShared";
 import { ChatUsersCollapsedSidebar } from "./ChatUsersCollapsedSidebar";
 import { ChatUsersListHeader } from "./ChatUsersListHeader";
@@ -12,6 +13,7 @@ import { ChatCurrentUserFooter } from "./ChatCurrentUserFooter";
 export {
   CHAT_USERS_PAGE_LIMIT,
   ChatUserRowSkeleton,
+  ChatUserRoleBadge,
   ChatUsersCollapsedSidebar,
   ChatUsersListHeader,
   ChatActiveNowStrip,

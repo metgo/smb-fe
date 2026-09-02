@@ -2,11 +2,7 @@ import clsx from "clsx";
 import { Info } from "lucide-react";
 
 import { getInitials } from "@/helpers";
-import {
-  getRoleBadgeClasses,
-  getPresenceLabel,
-  getRoleIcon,
-} from "./chatUsersListShared";
+import { getPresenceLabel, ChatUserRoleBadge } from "./chatUsersListShared";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
@@ -35,14 +31,11 @@ export const ChatContactRow: React.FC<ChatContactRowProps> = ({
     hoverBg,
   } = useThemeClasses();
 
-  const roleBadgeClasses = getRoleBadgeClasses(isDark);
-  const RoleIcon = getRoleIcon(user.role);
-
   return (
     <div
       onClick={() => onStartDm?.(user._id)}
       className={clsx(
-        "w-full text-left px-4 py-3 flex items-center gap-3 transition-all duration-200 select-none cursor-pointer",
+        "w-full text-left py-3 flex items-center gap-3 transition-all duration-200 select-none cursor-pointer",
         hoverBg,
       )}
     >
@@ -70,15 +63,7 @@ export const ChatContactRow: React.FC<ChatContactRowProps> = ({
           <p className={clsx("text-sm font-bold truncate", textPrimary)}>
             {user.name}
           </p>
-          <span
-            className={clsx(
-              "px-2 py-0.5 text-xs font-semibold rounded-full capitalize shrink-0 flex items-center gap-1",
-              user.role && roleBadgeClasses[user.role],
-            )}
-          >
-            <RoleIcon className="w-3 h-3" />
-            {user.role}
-          </span>
+          <ChatUserRoleBadge role={user.role} isDark={isDark} />
         </div>
         <p className={clsx("text-xs truncate", textSecondary)}>
           {getPresenceLabel(presence, t, timeAgo, user._id) || user.email}

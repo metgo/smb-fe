@@ -38,6 +38,32 @@ export const roleIcons: Record<TUserRole, LucideIcon> = {
 export const getRoleIcon = (role?: TUserRole): LucideIcon =>
   (role && roleIcons[role]) || User;
 
+// Shared role pill — the role-specific icon + color used across the
+// conversations/contacts lists and the New Group / New Broadcast pickers.
+export const ChatUserRoleBadge = ({
+  role,
+  isDark,
+  className,
+}: {
+  role?: TUserRole;
+  isDark: boolean;
+  className?: string;
+}) => {
+  const RoleIcon = getRoleIcon(role);
+  return (
+    <span
+      className={clsx(
+        "px-2 py-0.5 text-xs font-semibold rounded-full capitalize shrink-0 flex items-center gap-1",
+        role && getRoleBadgeClasses(isDark)[role],
+        className,
+      )}
+    >
+      <RoleIcon className="w-3 h-3" />
+      {role}
+    </span>
+  );
+};
+
 // "Online" / "Last seen <relative time>" / nothing (never connected)
 export const getPresenceLabel = (
   presence: Record<string, IPresenceEntry>,

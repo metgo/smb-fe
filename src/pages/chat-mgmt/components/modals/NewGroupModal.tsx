@@ -10,7 +10,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
 import { useChatUserPicker } from "../../hooks/useChatUserPicker";
 import { ChatUsersFilterDropdown } from "../ChatUsersFilterDropdown";
-import { ChatUserRowSkeleton } from "../sub-components";
+import { ChatUserRowSkeleton, ChatUserRoleBadge } from "../sub-components";
 
 interface NewGroupModalProps extends ModalProps {
   currentUser: IChatUser | null;
@@ -276,7 +276,7 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
             <div
               ref={listRef}
               className={clsx(
-                "max-h-45 overflow-y-auto mt-2 space-y-1.5 border rounded-lg p-2",
+                "max-h-88 overflow-y-auto mt-2 space-y-1.5 border rounded-lg p-2",
                 borderColor,
               )}
             >
@@ -315,9 +315,11 @@ export const NewGroupModal: React.FC<NewGroupModalProps> = ({
                             >
                               {user.name}
                             </p>
-                            <p className="text-[11px] text-gray-400 capitalize truncate">
-                              {user.role}
-                            </p>
+                            <ChatUserRoleBadge
+                              role={user.role}
+                              isDark={isDark}
+                              className="mt-0.5"
+                            />
                           </div>
                         </div>
                         <div

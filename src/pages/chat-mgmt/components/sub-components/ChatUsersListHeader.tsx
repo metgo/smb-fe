@@ -83,7 +83,7 @@ export const ChatUsersListHeader: React.FC<ChatUsersListHeaderProps> = ({
   ];
 
   return (
-    <div className={clsx("p-4 border-b space-y-4", borderColor)}>
+    <div className={clsx(" border-b space-y-4", borderColor)}>
       <div className="flex items-center justify-between">
         <div>
           <h2
@@ -138,7 +138,7 @@ export const ChatUsersListHeader: React.FC<ChatUsersListHeaderProps> = ({
       </div>
 
       {/* Global Search Bar + Filters */}
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-2 px-0.5">
         <div className="relative flex-1">
           <Search
             className={clsx(

@@ -56,7 +56,7 @@ export function useChatUserPicker(
       limit: CHAT_USERS_PAGE_LIMIT,
       search:
         debouncedSearch.trim().length >= 2 ? debouncedSearch.trim() : undefined,
-      dmoId: filters.dmoId || undefined,
+      dmoId: filters.authorityId ? undefined : filters.dmoId || undefined,
       authorityId: filters.authorityId || undefined,
       role: filters.role ? filters.role : undefined,
     },
