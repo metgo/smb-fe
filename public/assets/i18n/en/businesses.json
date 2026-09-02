@@ -243,6 +243,7 @@
   "delivery": "Delivery",
   "traveller_discount": "Traveller Discount",
   "offer_traveller_discount": "Offer traveller discount",
+  "traveller_discount_info": "If you click here, customers will get a discount",
   "min_discount_percent": "Min %",
   "max_discount_percent": "Max %",
   "traveller_discount_range_invalid": "Min discount must be between 0 and 100 and not greater than max",

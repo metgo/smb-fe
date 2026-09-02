@@ -1,4 +1,5 @@
 import { useEffect, useRef, type FC } from "react";
+import { HelpCircle } from "lucide-react";
 
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -93,13 +94,28 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="flex items-center justify-between mb-4">
         <h3 className={`text-lg ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           {t("basic_information")}
         </h3>
+      </div>
 
-        {isTraveller && (
-          <div className="flex flex-wrap items-center gap-3">
+      <DmoAuthorityWebsiteIdsSelector
+        errors={errors}
+        setErrors={setErrors}
+        selectedDmoId={selectedDmoId}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId}
+        setSelectAuthorityId={setSelectAuthorityId}
+        selectedWebsiteIds={websiteVisibilityIds}
+        setSelectWebsiteIds={setWebsiteVisibilityIds}
+        dmoSectionRef={dmoSectionRef}
+      />
+
+      {/* Traveller discount */}
+      {isTraveller && (
+        <div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -162,20 +178,15 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               </div>
             )}
           </div>
-        )}
-      </div>
 
-      <DmoAuthorityWebsiteIdsSelector
-        errors={errors}
-        setErrors={setErrors}
-        selectedDmoId={selectedDmoId}
-        setSelectDmoId={setSelectDmoId}
-        selectedAuthorityId={selectedAuthorityId}
-        setSelectAuthorityId={setSelectAuthorityId}
-        selectedWebsiteIds={websiteVisibilityIds}
-        setSelectWebsiteIds={setWebsiteVisibilityIds}
-        dmoSectionRef={dmoSectionRef}
-      />
+          <p
+            className={`mt-1 flex items-center gap-1.5 text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}
+          >
+            <HelpCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            {t("traveller_discount_info")}
+          </p>
+        </div>
+      )}
 
       <BusinessContentForm
         formData={formData}

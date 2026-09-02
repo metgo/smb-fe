@@ -242,6 +242,7 @@
   "delivery": "التوصيل",
   "traveller_discount": "خصم المسافر",
   "offer_traveller_discount": "تقديم خصم للمسافر",
+  "traveller_discount_info": "إذا نقرت هنا، سيحصل العملاء على خصم",
   "min_discount_percent": "الحد الأدنى %",
   "max_discount_percent": "الحد الأقصى %",
   "traveller_discount_range_invalid": "يجب أن يكون الحد الأدنى للخصم بين 0 و100 وألا يتجاوز الحد الأقصى",

@@ -241,6 +241,7 @@
   "delivery": "משלוח",
   "traveller_discount": "הנחת מטייל",
   "offer_traveller_discount": "הצע הנחת מטייל",
+  "traveller_discount_info": "אם תסמן כאן, לקוחות יקבלו הנחה",
   "min_discount_percent": "מינ׳ %",
   "max_discount_percent": "מקס׳ %",
   "traveller_discount_range_invalid": "הנחת מינימום חייבת להיות בין 0 ל-100 ולא גדולה מהמקסימום",
