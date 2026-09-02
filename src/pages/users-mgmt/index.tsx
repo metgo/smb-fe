@@ -30,7 +30,6 @@ const ROLE_ORDER: UserRole[] = [
 
 const ROLE_TAB_LABEL_KEYS: Partial<Record<UserRole, string>> = {
   [UserRole.SUPERADMIN]: "super_admins_tab",
-  // [UserRole.ADMIN]: "admins_tab",
   [UserRole.DMO]: "dmos_tab",
   [UserRole.AUTHORITY]: "authorities_tab",
   [UserRole.TRAVELLER]: "travellers_tab",
@@ -45,8 +44,6 @@ const UsersMgmtPage = () => {
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
   );
-  console.log("🚀 ~ UsersMgmtPage ~ authorityId:", authorityId);
-  console.log("🚀 ~ UsersMgmtPage ~ dmoId:", dmoId);
 
   const visibleTabs = useMemo(() => {
     const myIndex = ROLE_ORDER.indexOf(userRole as UserRole);
@@ -93,7 +90,7 @@ const UsersMgmtPage = () => {
       page,
       limit: LIMIT,
       role: activeRole,
-      dmoId,
+      dmoId: authorityId ? undefined : dmoId, // If authorityId is present, don't filter by dmoId
       authorityId,
       search,
     }),
@@ -106,7 +103,6 @@ const UsersMgmtPage = () => {
       refetchOnMountOrArgChange: true,
     },
   );
-  console.log("🚀 ~ UsersMgmtPage ~ data:", data);
   const totalData = data?.totalData ?? 0;
   const hasMore = data?.meta?.hasNextPage ?? false;
 
