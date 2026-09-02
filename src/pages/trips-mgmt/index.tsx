@@ -261,26 +261,26 @@ const TripsMgmtPage = () => {
           />
         </div>
 
-        {/* Expandable Search, Filters & Controls Panel */}
-        {showControlsDrawer && (
-          <div
-            className={clsx(
-              "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
-              isDark
-                ? "bg-gray-900/90 border-gray-800/90"
-                : "bg-white border-gray-200",
-            )}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-              <div className="flex-1 min-w-0 relative">
-                <SearchInput
-                  placeholder={t("search_trips_placeholder")}
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                />
-              </div>
+        {/* Search bar (always visible) + collapsible controls on the same row */}
+        <div
+          className={clsx(
+            "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+            isDark
+              ? "bg-gray-900/90 border-gray-800/90"
+              : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <div className="flex-1 min-w-0 relative" data-tour="search">
+              <SearchInput
+                placeholder={t("search_trips_placeholder")}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+              />
+            </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
+            {showControlsDrawer && (
+              <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2">
                 <FilterButton value={showFilters} onChange={setShowFilters} />
                 <ShowColumns
                   t={t}
@@ -292,18 +292,18 @@ const TripsMgmtPage = () => {
                   resetToDefault={resetToDefault}
                 />
               </div>
-            </div>
-
-            {(showFilters || hasSavedFilters) && (
-              <TripsFiltersPanel
-                filters={filters}
-                setFilters={setFilters}
-                hasSavedFilters={hasSavedFilters}
-                clearFilter={clearFilter}
-              />
             )}
           </div>
-        )}
+
+          {showControlsDrawer && (showFilters || hasSavedFilters) && (
+            <TripsFiltersPanel
+              filters={filters}
+              setFilters={setFilters}
+              hasSavedFilters={hasSavedFilters}
+              clearFilter={clearFilter}
+            />
+          )}
+        </div>
 
         {/* Bulk Action Bar (when items selected) */}
         {selectedTrips.size > 0 && (

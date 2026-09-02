@@ -20,7 +20,7 @@ import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
 import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
 import { formatDateTime } from "@/helpers/formatter";
-import { getLngWiseStr } from "@/helpers";
+import { getLngWiseStr, sanitizeRichTextHtml } from "@/helpers";
 
 interface BlogImage {
   image: string;
@@ -171,11 +171,13 @@ export default function ArticleDetails() {
           className={textPrimary}
           dangerouslySetInnerHTML={{
             __html:
-              getLngWiseStr(
-                language,
-                blogDetails?.shortDescription,
-                blogDetails?.shortDescriptionHe,
-                blogDetails?.shortDescriptionAr,
+              sanitizeRichTextHtml(
+                getLngWiseStr(
+                  language,
+                  blogDetails?.shortDescription,
+                  blogDetails?.shortDescriptionHe,
+                  blogDetails?.shortDescriptionAr,
+                ),
               ) || "-",
           }}
         />
@@ -236,13 +238,14 @@ export default function ArticleDetails() {
       <div
         className={`p-6 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} prose max-w-none`}
         dangerouslySetInnerHTML={{
-          __html:
+          __html: sanitizeRichTextHtml(
             getLngWiseStr(
               language,
               blogDetails?.content,
               blogDetails?.contentHe,
               blogDetails?.contentAr,
-            ) || "",
+            ),
+          ),
         }}
       />
     </div>

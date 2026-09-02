@@ -258,27 +258,27 @@ export default function EventsMgmtPage() {
           />
         </div>
 
-        {/* Expandable Search, Filters & Controls Panel */}
-        {showControlsDrawer && (
-          <div
-            className={clsx(
-              "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
-              isDark
-                ? "bg-gray-900/90 border-gray-800/90"
-                : "bg-white border-gray-200",
-            )}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-              <div className="flex-1 min-w-0 relative">
-                <SearchInput
-                  placeholder={t("search_events_placeholder")}
-                  searchTerm={searchQuery}
-                  setSearchTerm={setSearchQuery}
-                  storageKey="eventSearchTerm"
-                />
-              </div>
+        {/* Search bar (always visible) + collapsible controls on the same row */}
+        <div
+          className={clsx(
+            "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+            isDark
+              ? "bg-gray-900/90 border-gray-800/90"
+              : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <div className="flex-1 min-w-0 relative" data-tour="search">
+              <SearchInput
+                placeholder={t("search_events_placeholder")}
+                searchTerm={searchQuery}
+                setSearchTerm={setSearchQuery}
+                storageKey="eventSearchTerm"
+              />
+            </div>
 
-              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap">
+            {showControlsDrawer && (
+              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <FilterButton value={showFilters} onChange={setShowFilters} />
                 </div>
@@ -290,169 +290,184 @@ export default function EventsMgmtPage() {
                   tableName="eventViewMode"
                 />
               </div>
-            </div>
+            )}
+          </div>
 
-            {(showFilters || hasSavedFilters) && (
-              <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
-                {/* Collapsible Filters */}
-                <div className="grid grid-cols-12 gap-2 pt-2 dark:border-gray-700">
-                  {/* Event Type */}
-                  <div className="col-span-12 sm:col-span-6 lg:col-span-3">
-                    <label className={`block text-sm mb-2 ${textSecondary}`}>
-                      {t("event_type")}
-                    </label>
-                    <select
-                      value={eventTypeFilter}
-                      onChange={(e) =>
-                        setEventTypeFilter(e.target.value as any)
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="all">{tc("all")}</option>
-                      <option value="free">{tc("free")}</option>
-                      <option value="paid">{tc("paid")}</option>
-                    </select>
-                  </div>
-
-                  {/* Registration Required */}
-                  <div className="col-span-12 sm:col-span-6 lg:col-span-3">
-                    <label className={`block text-sm mb-2 ${textSecondary}`}>
-                      {t("registration")}
-                    </label>
-                    <select
-                      value={registrationFilter}
-                      onChange={(e) =>
-                        setRegistrationFilter(e.target.value as any)
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="all">{tc("all")}</option>
-                      <option value="true">{tc("required")}</option>
-                      <option value="false">{tc("not_required")}</option>
-                    </select>
-                  </div>
-
-                  {/* Status */}
-                  <div className="col-span-12 sm:col-span-6 lg:col-span-2">
-                    <FilterByStatus
-                      filters={statusFilter}
-                      setFilters={(newStatus) =>
-                        setStatusFilter(newStatus.status)
-                      }
-                    />
-                  </div>
-
-                  {/* Date Range */}
-                  <div className="col-span-12 sm:col-span-6 lg:col-span-4">
-                    <label className={`block text-sm mb-2 ${textSecondary}`}>
-                      {t("date_range")}
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="date"
-                        value={dateRangeFilter.start}
-                        onChange={(e) =>
-                          setDateRangeFilter({
-                            ...dateRangeFilter,
-                            start: e.target.value,
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                          isDark
-                            ? "bg-gray-900 border-gray-700 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                      />
-                      <input
-                        type="date"
-                        value={dateRangeFilter.end}
-                        onChange={(e) =>
-                          setDateRangeFilter({
-                            ...dateRangeFilter,
-                            end: e.target.value,
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                          isDark
-                            ? "bg-gray-900 border-gray-700 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                      />
-                    </div>
-                  </div>
+          {showControlsDrawer && (showFilters || hasSavedFilters) && (
+            <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
+              {/* Collapsible Filters */}
+              <div className="grid grid-cols-12 gap-2 pt-2 dark:border-gray-700">
+                {/* Event Type */}
+                <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>
+                    {t("event_type")}
+                  </label>
+                  <select
+                    value={eventTypeFilter}
+                    onChange={(e) => setEventTypeFilter(e.target.value as any)}
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      isDark
+                        ? "bg-gray-900 border-gray-700 text-white"
+                        : "bg-white border-gray-300 text-gray-900"
+                    }`}
+                  >
+                    <option value="all">{tc("all")}</option>
+                    <option value="free">{tc("free")}</option>
+                    <option value="paid">{tc("paid")}</option>
+                  </select>
                 </div>
 
-                {/* Active Filters Summary */}
-                {(eventTypeFilter !== "all" ||
-                  registrationFilter !== "all" ||
-                  statusFilter !== "all" ||
-                  dateRangeFilter.start ||
-                  dateRangeFilter.end ||
-                  searchQuery) && (
-                  <div className=" pt-4 flex items-center gap-2 flex-wrap">
-                    <span className={`text-sm ${textTertiary}`}>
-                      {t("active_filters")}:
+                {/* Registration Required */}
+                <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>
+                    {t("registration")}
+                  </label>
+                  <select
+                    value={registrationFilter}
+                    onChange={(e) =>
+                      setRegistrationFilter(e.target.value as any)
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      isDark
+                        ? "bg-gray-900 border-gray-700 text-white"
+                        : "bg-white border-gray-300 text-gray-900"
+                    }`}
+                  >
+                    <option value="all">{tc("all")}</option>
+                    <option value="true">{tc("required")}</option>
+                    <option value="false">{tc("not_required")}</option>
+                  </select>
+                </div>
+
+                {/* Status */}
+                <div className="col-span-12 sm:col-span-6 lg:col-span-2">
+                  <FilterByStatus
+                    filters={statusFilter}
+                    setFilters={(newStatus) =>
+                      setStatusFilter(newStatus.status)
+                    }
+                  />
+                </div>
+
+                {/* Date Range */}
+                <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>
+                    {t("date_range")}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={dateRangeFilter.start}
+                      onChange={(e) =>
+                        setDateRangeFilter({
+                          ...dateRangeFilter,
+                          start: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                        isDark
+                          ? "bg-gray-900 border-gray-700 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                    <input
+                      type="date"
+                      value={dateRangeFilter.end}
+                      onChange={(e) =>
+                        setDateRangeFilter({
+                          ...dateRangeFilter,
+                          end: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                        isDark
+                          ? "bg-gray-900 border-gray-700 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Filters Summary */}
+              {(eventTypeFilter !== "all" ||
+                registrationFilter !== "all" ||
+                statusFilter !== "all" ||
+                dateRangeFilter.start ||
+                dateRangeFilter.end ||
+                searchQuery) && (
+                <div className=" pt-4 flex items-center gap-2 flex-wrap">
+                  <span className={`text-sm ${textTertiary}`}>
+                    {t("active_filters")}:
+                  </span>
+
+                  {/* Search Query */}
+                  {searchQuery && (
+                    <span className="flex items-center gap-1 px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
+                      "{searchQuery}"
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="ml-1 text-teal-500 hover:text-teal-700 font-bold"
+                      >
+                        ×
+                      </button>
                     </span>
+                  )}
 
-                    {/* Search Query */}
-                    {searchQuery && (
-                      <span className="flex items-center gap-1 px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
-                        "{searchQuery}"
-                        <button
-                          onClick={() => setSearchQuery("")}
-                          className="ml-1 text-teal-500 hover:text-teal-700 font-bold"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    )}
+                  {/* Event Type Filter */}
+                  {eventTypeFilter !== "all" && (
+                    <span className="flex items-center gap-1 px-3 py-1 bg-purple-500/20 text-purple-500 rounded-full text-xs">
+                      {eventTypeFilter === "free" ? t("free") : t("paid")}
+                      <button
+                        onClick={() => setEventTypeFilter("all")}
+                        className="ml-1 text-purple-500 hover:text-purple-700 font-bold"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
 
-                    {/* Event Type Filter */}
-                    {eventTypeFilter !== "all" && (
-                      <span className="flex items-center gap-1 px-3 py-1 bg-purple-500/20 text-purple-500 rounded-full text-xs">
-                        {eventTypeFilter === "free" ? t("free") : t("paid")}
-                        <button
-                          onClick={() => setEventTypeFilter("all")}
-                          className="ml-1 text-purple-500 hover:text-purple-700 font-bold"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    )}
+                  {/* Registration Filter */}
+                  {registrationFilter !== "all" && (
+                    <span className="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
+                      {registrationFilter === "true"
+                        ? t("registration_required")
+                        : t("registration_not_required")}
+                      <button
+                        onClick={() => setRegistrationFilter("all")}
+                        className="ml-1 text-green-500 hover:text-green-700 font-bold"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
 
-                    {/* Registration Filter */}
-                    {registrationFilter !== "all" && (
-                      <span className="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
-                        {registrationFilter === "true"
-                          ? t("registration_required")
-                          : t("registration_not_required")}
-                        <button
-                          onClick={() => setRegistrationFilter("all")}
-                          className="ml-1 text-green-500 hover:text-green-700 font-bold"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    )}
+                  {/* Status Filter */}
+                  {statusFilter !== "all" && (
+                    <span className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
+                      {statusFilter === "APPROVED"
+                        ? t("approved")
+                        : statusFilter === "PENDING"
+                          ? t("pending")
+                          : t("draft")}
+                      <button
+                        onClick={() => setStatusFilter("all")}
+                        className="ml-1 text-orange-500 hover:text-orange-700 font-bold"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
 
-                    {/* Status Filter */}
-                    {statusFilter !== "all" && (
+                  {/* Date Range Filter */}
+                  {dateRangeFilter.start !== "" &&
+                    dateRangeFilter.end !== "" && (
                       <span className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
-                        {statusFilter === "APPROVED"
-                          ? t("approved")
-                          : statusFilter === "PENDING"
-                            ? t("pending")
-                            : t("draft")}
+                        {dateRangeFilter.start} - {dateRangeFilter.end}
                         <button
-                          onClick={() => setStatusFilter("all")}
+                          onClick={() =>
+                            setDateRangeFilter({ start: "", end: "" })
+                          }
                           className="ml-1 text-orange-500 hover:text-orange-700 font-bold"
                         >
                           ×
@@ -460,43 +475,26 @@ export default function EventsMgmtPage() {
                       </span>
                     )}
 
-                    {/* Date Range Filter */}
-                    {dateRangeFilter.start !== "" &&
-                      dateRangeFilter.end !== "" && (
-                        <span className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
-                          {dateRangeFilter.start} - {dateRangeFilter.end}
-                          <button
-                            onClick={() =>
-                              setDateRangeFilter({ start: "", end: "" })
-                            }
-                            className="ml-1 text-orange-500 hover:text-orange-700 font-bold"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      )}
-
-                    {/* Clear All */}
-                    <button
-                      onClick={() => {
-                        setSearchQuery("");
-                        setEventTypeFilter("all");
-                        setRegistrationFilter("all");
-                        setStatusFilter("all");
-                        setDateRangeFilter({ start: "", end: "" });
-                        localStorage.removeItem(STORAGE_KEY);
-                        localStorage.removeItem("eventSearchTerm");
-                      }}
-                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                    >
-                      {t("clear_all")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+                  {/* Clear All */}
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setEventTypeFilter("all");
+                      setRegistrationFilter("all");
+                      setStatusFilter("all");
+                      setDateRangeFilter({ start: "", end: "" });
+                      localStorage.removeItem(STORAGE_KEY);
+                      localStorage.removeItem("eventSearchTerm");
+                    }}
+                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                  >
+                    {t("clear_all")}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Events with different View */}
         <div className="flex-1 mt-1">

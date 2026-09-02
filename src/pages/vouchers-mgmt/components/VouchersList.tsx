@@ -37,7 +37,6 @@ import {
   useGetVoucherStatsQuery,
 } from "@/store/api/voucherQueryApi";
 import { FilterSelect } from "@/pages/orders-mgmt/components";
-import { BulkUploadButton } from "@/components/shared/BulkUploadButton";
 import {
   useSendEmailMutation,
   useSendSMSMutation,
@@ -683,34 +682,34 @@ const VouchersList = ({
           titleGradient="from-purple-500 via-violet-600 to-indigo-600"
           count={totalData}
           addLabel={t("add_voucher")}
-          onAdd={onAddVoucher}
+          onAdd={isSuperadmin ? onAddVoucher : undefined}
           stats={voucherStats}
           isStatsLoading={isStatsLoading}
           filterToggle={filterToggleButton}
         />
       </div>
 
-      {/* Expandable Search, Filters & Controls Panel */}
-      {showControlsDrawer && (
-        <div
-          className={clsx(
-            "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3 animate-in fade-in slide-in-from-top-2",
-            isDark
-              ? "bg-gray-900/90 border-gray-800/90"
-              : "bg-white border-gray-200",
-          )}
-        >
-          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-            <div className="flex-1 min-w-0 relative">
-              <SearchInput
-                placeholder={t("search_voucher_placeholder")}
-                searchTerm={searchQuery}
-                setSearchTerm={setSearchQuery}
-                storageKey={SEARCH_STORAGE_KEY}
-              />
-            </div>
+      {/* Search bar (always visible) + collapsible controls on the same row */}
+      <div
+        className={clsx(
+          "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+          isDark
+            ? "bg-gray-900/90 border-gray-800/90"
+            : "bg-white border-gray-200",
+        )}
+      >
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+          <div className="flex-1 min-w-0 relative" data-tour="search">
+            <SearchInput
+              placeholder={t("search_voucher_placeholder")}
+              searchTerm={searchQuery}
+              setSearchTerm={setSearchQuery}
+              storageKey={SEARCH_STORAGE_KEY}
+            />
+          </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+          {showControlsDrawer && (
+            <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2">
               <FilterButton value={showFilters} onChange={setShowFilters} />
               <button
                 onClick={handleExportCSVVouchers}
@@ -726,165 +725,162 @@ const VouchersList = ({
                 <span className="hidden sm:inline">{t("downloadCSV")}</span>
               </button>
             </div>
-          </div>
+          )}
+        </div>
 
-          {(showFilters || hasSavedFilters) && (
-            <div
-              className={clsx(
-                "px-4 pb-2 rounded-md",
-                isDark ? "bg-gray-950/50" : "bg-gray-50",
-              )}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 pt-2">
-                {/* Status */}
-                <div className="lg:col-span-2">
-                  <FilterSelect
-                    label={t("status")}
-                    value={statusFilter}
-                    onChange={setStatusFilter}
-                    options={[
-                      { value: "all", label: t("all") },
-                      { value: "assigned", label: t("assigned") },
-                      { value: "unassigned", label: t("unassigned") },
-                      { value: "waiting", label: t("waiting") },
-                      { value: "expired", label: t("expired") },
-                      { value: "redeemed", label: t("redeemed") },
-                    ]}
+        {showControlsDrawer && (showFilters || hasSavedFilters) && (
+          <div
+            className={clsx(
+              "px-4 pb-2 rounded-md",
+              isDark ? "bg-gray-950/50" : "bg-gray-50",
+            )}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 pt-2">
+              {/* Status */}
+              <div className="lg:col-span-2">
+                <FilterSelect
+                  label={t("status")}
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  options={[
+                    { value: "all", label: t("all") },
+                    { value: "assigned", label: t("assigned") },
+                    { value: "unassigned", label: t("unassigned") },
+                    { value: "waiting", label: t("waiting") },
+                    { value: "expired", label: t("expired") },
+                    { value: "redeemed", label: t("redeemed") },
+                  ]}
+                />
+              </div>
+
+              {/* Campaign */}
+              <div className="lg:col-span-2">
+                <FilterSelect
+                  label={t("campaign")}
+                  value={campaignFilter}
+                  onChange={setCampaignFilter}
+                  options={[
+                    { value: "all", label: t("all") },
+                    ...(campaigns?.datas?.data || []).map((campaign) => ({
+                      value: campaign._id,
+                      label: campaign.name,
+                    })),
+                  ]}
+                />
+              </div>
+
+              {/* Payment status */}
+              <div className="lg:col-span-2">
+                <FilterSelect
+                  label={t("payment_status")}
+                  value={paymentFilter}
+                  onChange={setPaymentFilter}
+                  options={[
+                    { value: "all", label: t("all") },
+                    { value: "unpaid", label: t("unpaid") },
+                    { value: "paid", label: t("paid") },
+                    { value: "failed", label: t("failed") },
+                  ]}
+                />
+              </div>
+
+              {/* Date Range */}
+              <div className="sm:col-span-2 lg:col-span-4">
+                <label
+                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("date_range")}
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700 text-gray-100"
+                        : "bg-white border-gray-300 text-gray-900"
+                    }`}
                   />
-                </div>
-
-                {/* Campaign */}
-                <div className="lg:col-span-2">
-                  <FilterSelect
-                    label={t("campaign")}
-                    value={campaignFilter}
-                    onChange={setCampaignFilter}
-                    options={[
-                      { value: "all", label: t("all") },
-                      ...(campaigns?.datas?.data || []).map((campaign) => ({
-                        value: campaign._id,
-                        label: campaign.name,
-                      })),
-                    ]}
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700 text-gray-100"
+                        : "bg-white border-gray-300 text-gray-900"
+                    }`}
                   />
-                </div>
-
-                {/* Payment status */}
-                <div className="lg:col-span-2">
-                  <FilterSelect
-                    label={t("payment_status")}
-                    value={paymentFilter}
-                    onChange={setPaymentFilter}
-                    options={[
-                      { value: "all", label: t("all") },
-                      { value: "unpaid", label: t("unpaid") },
-                      { value: "paid", label: t("paid") },
-                      { value: "failed", label: t("failed") },
-                    ]}
-                  />
-                </div>
-
-                {/* Date Range */}
-                <div className="sm:col-span-2 lg:col-span-4">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                  >
-                    {t("date_range")}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="date"
-                      value={dateFrom}
-                      onChange={(e) => setDateFrom(e.target.value)}
-                      className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${
-                        isDark
-                          ? "bg-gray-800 border-gray-700 text-gray-100"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <input
-                      type="date"
-                      value={dateTo}
-                      onChange={(e) => setDateTo(e.target.value)}
-                      className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${
-                        isDark
-                          ? "bg-gray-800 border-gray-700 text-gray-100"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                  </div>
-                </div>
-
-                {/* Amount Range */}
-                <div className="sm:col-span-2 lg:col-span-2">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                  >
-                    {t("amount_range")}
-                  </label>
-                  <div className="space-y-3 pt-3">
-                    <Slider.Root
-                      className="relative flex items-center w-full h-5 select-none touch-none"
-                      min={0}
-                      max={maxVoucherAmount}
-                      step={100}
-                      value={[
-                        minAmountLocal,
-                        maxAmountLocal ?? maxVoucherAmount,
-                      ]}
-                      onValueChange={([min, max]) => {
-                        setHasInteractedWithAmount(true);
-                        setMinAmountLocal(min);
-                        setMaxAmountLocal(max);
-                      }}
-                    >
-                      <Slider.Track
-                        className={`relative grow rounded-full h-2 ${isDark ? "bg-gray-700" : "bg-gray-200"}`}
-                      >
-                        <Slider.Range className="absolute h-full rounded-full bg-teal-500" />
-                      </Slider.Track>
-                      <Slider.Thumb
-                        className="block w-4 h-4 rounded-full bg-teal-500 shadow border-2 border-white focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
-                        aria-label="Minimum amount"
-                      />
-                      <Slider.Thumb
-                        className="block w-4 h-4 rounded-full bg-teal-500 shadow border-2 border-white focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
-                        aria-label="Maximum amount"
-                      />
-                    </Slider.Root>
-
-                    <div
-                      className={`flex items-center justify-between text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                    >
-                      <span>₪{minAmountLocal.toLocaleString()}</span>
-                      <span>
-                        ₪{(maxAmountLocal ?? maxVoucherAmount).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               </div>
 
-              {/* Clear All */}
-              {activeFilterCount > 0 && (
-                <div className="mt-4">
-                  <button
-                    onClick={clearAllFilters}
-                    className={`text-sm flex items-center gap-1 transition-colors ${
-                      isDark
-                        ? "text-teal-400 hover:text-teal-300"
-                        : "text-teal-600 hover:text-teal-700"
-                    }`}
+              {/* Amount Range */}
+              <div className="sm:col-span-2 lg:col-span-2">
+                <label
+                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("amount_range")}
+                </label>
+                <div className="space-y-3 pt-3">
+                  <Slider.Root
+                    className="relative flex items-center w-full h-5 select-none touch-none"
+                    min={0}
+                    max={maxVoucherAmount}
+                    step={100}
+                    value={[minAmountLocal, maxAmountLocal ?? maxVoucherAmount]}
+                    onValueChange={([min, max]) => {
+                      setHasInteractedWithAmount(true);
+                      setMinAmountLocal(min);
+                      setMaxAmountLocal(max);
+                    }}
                   >
-                    <X className="w-4 h-4" />
-                    {t("clear_all")}
-                  </button>
+                    <Slider.Track
+                      className={`relative grow rounded-full h-2 ${isDark ? "bg-gray-700" : "bg-gray-200"}`}
+                    >
+                      <Slider.Range className="absolute h-full rounded-full bg-teal-500" />
+                    </Slider.Track>
+                    <Slider.Thumb
+                      className="block w-4 h-4 rounded-full bg-teal-500 shadow border-2 border-white focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
+                      aria-label="Minimum amount"
+                    />
+                    <Slider.Thumb
+                      className="block w-4 h-4 rounded-full bg-teal-500 shadow border-2 border-white focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
+                      aria-label="Maximum amount"
+                    />
+                  </Slider.Root>
+
+                  <div
+                    className={`flex items-center justify-between text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                  >
+                    <span>₪{minAmountLocal.toLocaleString()}</span>
+                    <span>
+                      ₪{(maxAmountLocal ?? maxVoucherAmount).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Clear All */}
+            {activeFilterCount > 0 && (
+              <div className="mt-4">
+                <button
+                  onClick={clearAllFilters}
+                  className={`text-sm flex items-center gap-1 transition-colors ${
+                    isDark
+                      ? "text-teal-400 hover:text-teal-300"
+                      : "text-teal-600 hover:text-teal-700"
+                  }`}
+                >
+                  <X className="w-4 h-4" />
+                  {t("clear_all")}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Bulk Actions */}
       {selectedVouchers.size > 0 && (
@@ -911,15 +907,6 @@ const VouchersList = ({
           storageKey="vouchersTableColumnOrder"
         />
       </div>
-
-      {showAddWizard && (
-        <BulkUploadButton
-          isOpen={showAddWizard}
-          onClose={() => {
-            /* handled by parent */
-          }}
-        />
-      )}
     </>
   );
 };

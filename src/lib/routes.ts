@@ -36,7 +36,6 @@ export const routes = {
 
   funDays: "/fun-days",
   vouchers: "/vouchers",
-  offlineVouchers: "/offline-vouchers",
   miniCampaign: "/mini-campaign",
   auth: "/authentication",
   noInternet: "/no-internet",

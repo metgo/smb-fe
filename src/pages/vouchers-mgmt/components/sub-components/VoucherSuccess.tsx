@@ -1,7 +1,7 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import clsx from "clsx";
-import { Download } from "lucide-react";
+import { Download, CheckCircle2, XCircle } from "lucide-react";
 interface IVoucherResponse {
   name: string;
   campCode: string;
@@ -26,10 +26,40 @@ const VoucherSuccess = ({
   const { isDark } = useThemeClasses();
   const { isSuperadmin } = useUserRoles();
 
+  const isSent = (value?: string) => value?.toUpperCase() === "SUCCESS";
+
+  // CSV can't carry colour, so use a green check / red cross glyph.
+  const sentGlyph = (value?: string) =>
+    value ? (isSent(value) ? "✅" : "❌") : "-";
+
+  const renderSent = (value?: string) => {
+    if (!value) return <span className="text-gray-400">-</span>;
+    return isSent(value) ? (
+      <CheckCircle2 className="w-4 h-4 text-green-500" aria-label="sent" />
+    ) : (
+      <XCircle className="w-4 h-4 text-red-500" aria-label="failed" />
+    );
+  };
+
   const handleDownload = () => {
     const headers = isSuperadmin
-      ? ["Voucher Code", "Assignee Name", "Email", "Amount", "Status"]
-      : ["Assignee Name", "Email", "Amount", "Status"];
+      ? [
+          "Voucher Code",
+          "Assignee Name",
+          "Email",
+          "Amount",
+          "Status",
+          "Email Sent",
+          "SMS Sent",
+        ]
+      : [
+          "Assignee Name",
+          "Email",
+          "Amount",
+          "Status",
+          "Email Sent",
+          "SMS Sent",
+        ];
     const rows = response.map((v) =>
       isSuperadmin
         ? [
@@ -38,12 +68,16 @@ const VoucherSuccess = ({
             v.email || "-",
             v.amount ?? "-",
             v.paymentStatus || "-",
+            sentGlyph(v.emailSent),
+            sentGlyph(v.smsSent),
           ]
         : [
             v.name || "-",
             v.email || "-",
             v.amount ?? "-",
             v.paymentStatus || "-",
+            sentGlyph(v.emailSent),
+            sentGlyph(v.smsSent),
           ],
     );
 
@@ -90,8 +124,23 @@ const VoucherSuccess = ({
             >
               <tr>
                 {(isSuperadmin
-                  ? ["voucher_code", "name", "email", "amount", "status"]
-                  : ["name", "email", "amount", "status"]
+                  ? [
+                      "voucher_code",
+                      "name",
+                      "email",
+                      "amount",
+                      "status",
+                      "email_sent",
+                      "sms_sent",
+                    ]
+                  : [
+                      "name",
+                      "email",
+                      "amount",
+                      "status",
+                      "email_sent",
+                      "sms_sent",
+                    ]
                 ).map((key) => (
                   <th
                     key={key}
@@ -111,7 +160,7 @@ const VoucherSuccess = ({
               {!response?.length ? (
                 <tr>
                   <td
-                    colSpan={isSuperadmin ? 5 : 4}
+                    colSpan={isSuperadmin ? 7 : 6}
                     className={`px-4 py-6 text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
                   >
                     {t("no_vouchers")}
@@ -146,6 +195,12 @@ const VoucherSuccess = ({
                       className={`${isDark ? "text-gray-400" : "text-gray-600"} px-4 py-3 text-sm`}
                     >
                       {item?.paymentStatus || "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {renderSent(item.emailSent)}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {renderSent(item.smsSent)}
                     </td>
                   </tr>
                 ))

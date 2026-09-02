@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import {
-  FileText,
-  Users,
+  User,
   ClipboardList,
+  MessageSquareText,
   Eye,
   Table,
   CheckCircle,
@@ -10,17 +10,22 @@ import {
 import { ModalWrapper } from "@/components/wrapper";
 import { useCreateVoucherMutation } from "@/store/api/voucherMutationApi";
 
-import { WizardFooter, WizardStepper } from "@/components/shared";
+import {
+  WizardFooter,
+  WizardStepper,
+  ConfirmDialog,
+} from "@/components/shared";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   VoucherConfigure,
+  VoucherGreeting,
   VoucherInformation,
   VoucherReview,
   VoucherSuccess,
-  VoucherType,
 } from "./sub-components";
+import { makeVoucherAssignee } from "./sub-components/VoucherConfigure";
 
 interface Campaign {
   _id: string;
@@ -40,172 +45,143 @@ const totalSteps = 5;
 const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
   const { t } = useTranslation("vouchers");
 
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [parsedData, setParsedData] = useState<ParsedData[]>([]);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [hasCreated, setHasCreated] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const [formData, setFormData] = useState<IVoucherFormData>({
-    campaign: "",
-
-    amount: 1000,
-    customAmount: false,
-
-    creationType: "bulk",
-    bulkCount: 1,
-    bulkCreateAssigned: false,
-
-    // Purchaser fields
+    // Purchaser
     purchaserName: "",
     purchaserEmail: "",
     purchaserPhone: "",
-    purchaserCountryCode: "",
+    purchaserCountryCode: "+972",
 
-    // Assignee fields
-    assigneeName: "",
-    assigneeEmail: "",
-    assigneePhone: "",
-    assigneeCountryCode: "",
+    // Configure
+    purchaseType: "multiple",
+    multiMode: "manual",
+    assignees: [makeVoucherAssignee()],
+    bulkCampaignId: "",
+    bulkAmount: "",
 
-    // Message / notification fields
-    message: "",
-    smsMessage: "",
-    sendEmail: true,
-
-    // Expiration & bulk file
     expirationDate: "",
-    xlsFile: null,
+    greeting: "",
   });
   const [response, setResponse] = useState([]);
 
-  const stepPayloadMap =
-    formData?.creationType === "upload"
-      ? parsedData?.map((item) => ({
-          campaignId: formData.campaign,
-          amount: formData.amount,
-          noOfVoucher: item.noOfVoucher,
-          languagePreference: "en",
-
-          // Purchaser stays from formData (same person placing the order)
-          purchaserName: formData.purchaserName,
-          purchaserEmail: formData.purchaserEmail,
-          purchaserPhone: formData.purchaserPhone,
-          purchaserCountryCode: formData.purchaserCountryCode,
-
-          // Assignee comes from each row in the uploaded file
-          assigneeName: item.assigneeName,
-          assigneeEmail: item.assigneeEmail,
-          assigneePhone: item.assigneePhone,
-          assigneeCountryCode: item.assigneeCountryCode,
-
-          message: formData.message || "",
-          smsMessage: formData.smsMessage || "",
-          sendEmail: formData.sendEmail ?? true,
-          expireDate: formData.expirationDate,
-        }))
-      : [
-          {
-            campaignId: formData.campaign,
-            amount: formData.amount,
-            noOfVoucher:
-              formData?.creationType === "single" ? 1 : formData.bulkCount,
-            languagePreference: "en",
-
-            purchaserName: formData.purchaserName,
-            purchaserEmail: formData.purchaserEmail,
-            purchaserPhone: formData.purchaserPhone,
-            purchaserCountryCode: formData.purchaserCountryCode,
-
-            assigneeName: formData.assigneeName,
-            assigneeEmail: formData.assigneeEmail,
-            assigneePhone: formData.assigneePhone,
-            assigneeCountryCode: formData.assigneeCountryCode,
-
-            message: formData.message || "",
-            smsMessage: formData.smsMessage || "",
-            sendEmail: formData.sendEmail ?? true,
-            expireDate: formData.expirationDate,
-          },
-        ];
-
   const [createVoucher, { isLoading: isCreating }] = useCreateVoucherMutation();
+
+  const activeAssignees =
+    formData.purchaseType === "single"
+      ? formData.assignees.slice(0, 1)
+      : formData.assignees;
+
+  const buildPayload = useCallback(() => {
+    const dialCode = (cc: string) => cc.replace(/^\+/, "");
+    return activeAssignees.map((a) => ({
+      campaignId: a.campaignId,
+      amount: Number(a.amount),
+      noOfVoucher: 1,
+      expireDate: a.expireDate
+        ? new Date(a.expireDate).toISOString()
+        : undefined,
+
+      purchaserName: formData.purchaserName,
+      purchaserEmail: formData.purchaserEmail,
+      purchaserCountryCode: dialCode(formData.purchaserCountryCode),
+      purchaserPhone: formData.purchaserPhone,
+
+      assigneeName: a.name,
+      assigneeEmail: a.email,
+      assigneeCountryCode: dialCode(a.countryCode),
+      assigneePhone: a.phone,
+
+      languagePreference: language || "en",
+      message: formData.greeting || "",
+      sendEmail: true,
+    }));
+  }, [activeAssignees, formData, language]);
 
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
-  const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
-  const [_isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
 
-  const saveDraft = useCallback(
-    async (isPublish = false) => {
-      try {
-        const payload = stepPayloadMap;
-        const res = await createVoucher(payload).unwrap();
-        setResponse(res);
+  const publishVouchers = useCallback(async (): Promise<boolean> => {
+    try {
+      const res = await createVoucher(buildPayload()).unwrap();
+      setResponse(res);
+      setHasCreated(true);
+      toast.success(t("voucher_published"));
+      return true;
+    } catch (err: any) {
+      toast.error(err?.data?.message || t("voucher_publish_failed"));
+      return false;
+    }
+  }, [buildPayload, createVoucher, t]);
 
-        toast.success(isPublish ? t("voucher_published") : t("draft_saved"));
-      } catch (err: any) {
-        toast.error(err?.data?.message || t("draft_failed"));
-      }
-    },
-    [stepPayloadMap, createVoucher, onClose, t],
-  );
+  // Is there anything worth warning about before a plain close/cancel?
+  const isDirty =
+    formData.purchaserName.trim() !== "" ||
+    formData.greeting.trim() !== "" ||
+    formData.assignees.some(
+      (a) =>
+        a.name.trim() ||
+        a.email.trim() ||
+        a.phone.trim() ||
+        a.campaignId ||
+        a.amount,
+    );
 
-  const handleSaveDraft = async () => {
-    setIsDraftBtnClicked(true);
-
-    await saveDraft(false);
+  // Guarded close: if the user entered data but never created the vouchers,
+  // confirm before discarding. Used for the X / drag-dismiss paths.
+  const requestClose = () => {
+    if (hasCreated || currentStep >= totalSteps || !isDirty) {
+      onClose();
+      return;
+    }
+    setShowDiscardConfirm(true);
   };
 
   const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
 
     switch (step) {
-      case 1:
-        if (formData.amount <= 0) {
-          newErrors.amount = "Amount must be greater than 0";
+      case 1: {
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!formData.purchaserName.trim()) {
+          newErrors.purchaserName = t("error_purchaser_name_required");
+        }
+        if (!formData.purchaserEmail.trim()) {
+          newErrors.purchaserEmail = t("error_purchaser_email_required");
+        } else if (!emailRe.test(formData.purchaserEmail.trim())) {
+          newErrors.purchaserEmail = t("error_email_invalid");
         }
         break;
+      }
 
-      case 2:
-        if (!formData.creationType) {
-          newErrors.creationType = "Please select creation type";
+      case 2: {
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const allAssigneesValid =
+          activeAssignees.length > 0 &&
+          activeAssignees.every(
+            (a) =>
+              a.name.trim() &&
+              emailRe.test(a.email.trim()) &&
+              a.campaignId &&
+              Number(a.amount) > 0,
+          );
+        if (!allAssigneesValid) {
+          // Flag only — VoucherConfigure reads this to reveal the per-field
+          // errors; no aggregate message is displayed.
+          newErrors.assignees = "invalid";
         }
         break;
+      }
 
       case 3:
-        if (formData.creationType === "single") {
-          if (!formData.assigneeName) {
-            newErrors.assigneeName = "Assignee name is required";
-          }
-          if (!formData.assigneeEmail) {
-            newErrors.assigneeEmail = "Assignee email is required";
-          }
-          if (!formData.assigneePhone) {
-            newErrors.assigneePhone = "Assignee phone is required";
-          }
-        }
-
-        if (formData.creationType === "bulk") {
-          if (formData.bulkCount <= 0 || formData.bulkCount > 1000) {
-            newErrors.bulkCount = "Bulk count must be between 1 and 1000";
-          }
-
-          if (formData.bulkCreateAssigned) {
-            if (!formData.assigneeName) {
-              newErrors.assigneeName = "Assignee name is required";
-            }
-            if (!formData.assigneeEmail) {
-              newErrors.assigneeEmail = "Assignee email is required";
-            }
-            if (!formData.assigneePhone) {
-              newErrors.assigneePhone = "Assignee phone is required";
-            }
-          }
-        }
-
         break;
 
       case 4:
@@ -218,66 +194,54 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleDone = () => {
     onClose();
   };
+
   const handlePublish = async () => {
-    setIsPublishBtnClicked(true);
-    // Validate all steps
-    let allValid = true;
     for (let i = 1; i <= 4; i++) {
       if (!validateStep(i)) {
-        allValid = false;
         setCurrentStep(i);
-        break;
+        toast.error(t("fill_all_fields"));
+        return;
       }
-    }
-    if (!allValid) {
-      toast.error(t("fill_all_fields"));
-      return;
     }
 
     setIsPublishing(true);
-
-    await saveDraft(true);
+    const ok = await publishVouchers();
     setIsPublishing(false);
-  };
-
-  const [xlsValidation] = useState<{
-    valid: number;
-    invalid: number;
-    errors: string[];
-  } | null>(null);
-
-  const handleCampaignChange = (campaignId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      campaign: campaignId,
-    }));
-  };
-
-  const handlePurchaserEmailChange = (email: string) => {
-    setFormData((prev) => ({ ...prev, purchaserEmail: email }));
+    // Only move to the success screen once the vouchers really exist.
+    if (ok) setCurrentStep(totalSteps);
   };
 
   const handleNext = () => {
+    if (currentStep <= 2 && !validateStep(currentStep)) {
+      toast.error(t("fill_all_fields"));
+      return;
+    }
+    // Step 4 → publish. handlePublish advances to the success step itself,
+    // and only if the API call succeeds.
     if (currentStep === 4) {
       handlePublish();
+      return;
     }
     setCurrentStep((prev) => prev + 1);
   };
 
   // Step configuration
   const steps = [
-    { number: 1, icon: FileText, title: t("details") },
-    { number: 2, icon: Users, title: t("type") },
-    { number: 3, icon: ClipboardList, title: t("configure") },
+    { number: 1, icon: User, title: t("purchaser_info") },
+    { number: 2, icon: ClipboardList, title: t("assignee_information") },
+    { number: 3, icon: MessageSquareText, title: t("greeting_message") },
     { number: 4, icon: Eye, title: t("review") },
     { number: 5, icon: Table, title: t("success") },
   ];
 
+  const onSuccessStep = currentStep >= totalSteps;
+
   return (
-    <ModalWrapper onClose={onClose} showSpinner={isCreating}>
+    <ModalWrapper onClose={requestClose} showSpinner={isCreating}>
       {/* Header */}
       <div
         className={`px-4 py-3 md:px-6 md:py-4 flex items-center justify-between gap-3 border-b ${
@@ -290,30 +254,33 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
           >
             {t("add_voucher")}
           </h2>
-          {currentStep < 6 && (
+          {currentStep <= totalSteps && (
             <p
               className={`mt-0.5 flex items-center gap-1 text-xs md:text-sm truncate ${
                 isDark ? "text-gray-400" : "text-gray-600"
               }`}
             >
-              {t("step_of_total", { current: currentStep, total: 5 })}
+              {t("step_of_total", { current: currentStep, total: totalSteps })}
               <span>{steps[currentStep - 1].title}</span>
             </p>
           )}
         </div>
         <button
-          onClick={handleDone}
-          className="px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer shrink-0"
+          onClick={onSuccessStep ? handleDone : handlePublish}
+          disabled={isPublishing || isCreating}
+          className="px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <CheckCircle className="w-4 h-4" />
-          <span className="hidden sm:inline">{t("done")}</span>
+          <span className="hidden sm:inline">
+            {onSuccessStep ? t("done") : t("create_vouchers")}
+          </span>
         </button>
       </div>
 
       {/* Progress Bar */}
-      {currentStep < 6 && (
+      {currentStep <= totalSteps && (
         <div
-          className={`px-4 md:px-6 pt-3 md:pt-4 pb-2 border-b ${
+          className={`px-4 md:px-6 pb-2 border-b ${
             isDark ? "border-gray-800" : "border-gray-200"
           }`}
         >
@@ -327,43 +294,33 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+      <div className="flex-1 overflow-y-auto p-4">
         {currentStep === 1 && (
           <VoucherInformation
             t={t}
             formData={formData}
             setFormData={setFormData}
             errors={errors}
-            campaigns={campaigns}
-            handleCampaignChange={handleCampaignChange}
-            handlePurchaserEmailChange={handlePurchaserEmailChange}
           />
         )}
         {currentStep === 2 && (
-          <VoucherType
-            t={t}
-            errors={errors}
-            formData={formData}
-            setFormData={setFormData}
-          />
-        )}
-        {currentStep === 3 && (
           <VoucherConfigure
             t={t}
             formData={formData}
             setFormData={setFormData}
             errors={errors}
-            parsedData={parsedData}
-            setParsedData={setParsedData}
+            campaigns={campaigns}
+          />
+        )}
+        {currentStep === 3 && (
+          <VoucherGreeting
+            formData={formData}
+            setFormData={setFormData}
+            t={t}
           />
         )}
         {currentStep === 4 && (
-          <VoucherReview
-            formData={formData}
-            campaigns={campaigns}
-            xlsValidation={xlsValidation}
-            t={t}
-          />
+          <VoucherReview formData={formData} campaigns={campaigns} t={t} />
         )}
         {currentStep === 5 && <VoucherSuccess response={response} t={t} />}
       </div>
@@ -375,10 +332,23 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         isPublishing={isPublishing}
         onPrevious={handlePrevious}
         onNext={handleNext}
-        onSaveDraft={handleSaveDraft}
         onDone={handleDone}
         onPublish={() => {}}
         isPublishButton={false}
+      />
+
+      <ConfirmDialog
+        open={showDiscardConfirm}
+        title={t("discard_changes_title")}
+        message={t("confirm_discard_voucher")}
+        confirmText={t("discard")}
+        cancelText={t("keep_editing")}
+        variant="danger"
+        onCancel={() => setShowDiscardConfirm(false)}
+        onConfirm={() => {
+          setShowDiscardConfirm(false);
+          onClose();
+        }}
       />
     </ModalWrapper>
   );
