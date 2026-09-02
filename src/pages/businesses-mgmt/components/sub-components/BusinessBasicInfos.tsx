@@ -1,5 +1,5 @@
 import { useEffect, useRef, type FC } from "react";
-import { HelpCircle } from "lucide-react";
+import { BadgePercent, HelpCircle } from "lucide-react";
 
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -74,13 +74,14 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   onAvailabilityStatusChange,
 }) => {
   const { isSuperadmin, isTraveller } = useUserRoles();
-  const { borderColor, isDark } = useThemeClasses();
+  const { borderColor, isDark, isRTL } = useThemeClasses();
 
-  const inputClasses = `w-24 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+  const discountInputClasses = `w-full rounded-lg border px-3 py-2 pe-8 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 ${
     isDark
       ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
       : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
   }`;
+
   const handleChange = (updates: Partial<BusinessFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   };
@@ -114,77 +115,145 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 
       {/* Traveller discount */}
       {isTraveller && (
-        <div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={!!formData.providesDiscount}
-                onChange={(e) =>
-                  setFormData((prev: any) => ({
-                    ...prev,
-                    providesDiscount: e.target.checked,
-                  }))
-                }
-                className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-              />
-              <span
-                className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {t("offer_traveller_discount")}
-              </span>
-            </label>
-
-            {formData.providesDiscount && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={formData.minDiscount ?? ""}
-                  onChange={(e) =>
-                    setFormData((prev: any) => ({
-                      ...prev,
-                      minDiscount: e.target.value,
-                    }))
-                  }
-                  placeholder={t("min_discount_percent")}
-                  className={inputClasses}
-                />
-                <span
-                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
-                >
-                  &ndash;
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={formData.maxDiscount ?? ""}
-                  onChange={(e) =>
-                    setFormData((prev: any) => ({
-                      ...prev,
-                      maxDiscount: e.target.value,
-                    }))
-                  }
-                  placeholder={t("max_discount_percent")}
-                  className={inputClasses}
-                />
-                <span
-                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
-                >
-                  %
-                </span>
-              </div>
-            )}
-          </div>
-
-          <p
-            className={`mt-1 flex items-center gap-1.5 text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}
+        <div
+          className={`rounded-xl border p-4 transition-colors ${
+            formData.providesDiscount
+              ? isDark
+                ? "border-teal-700/60 bg-teal-950/20"
+                : "border-teal-300 bg-teal-50/60"
+              : isDark
+                ? "border-gray-700 bg-gray-800/40"
+                : "border-gray-200 bg-gray-50"
+          }`}
+        >
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!formData.providesDiscount}
+            onClick={() =>
+              setFormData((prev: any) => ({
+                ...prev,
+                providesDiscount: !prev.providesDiscount,
+              }))
+            }
+            className="flex w-full items-start justify-between gap-3 text-start focus:outline-none"
           >
-            <HelpCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            {t("traveller_discount_info")}
-          </p>
+            <span className="flex items-start gap-3">
+              <span
+                className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                  isDark
+                    ? "bg-teal-900/40 text-teal-300"
+                    : "bg-teal-100 text-teal-700"
+                }`}
+              >
+                <BadgePercent className="h-5 w-5" />
+              </span>
+              <span className="block">
+                <span
+                  className={`block text-sm font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}
+                >
+                  {t("offer_traveller_discount")}
+                </span>
+                <span
+                  className={`mt-0.5 flex items-center gap-1.5 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                >
+                  <HelpCircle
+                    className="h-3.5 w-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
+                  {t("traveller_discount_info")}
+                </span>
+              </span>
+            </span>
+
+            <span
+              className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors ${
+                formData.providesDiscount
+                  ? "bg-teal-600"
+                  : isDark
+                    ? "bg-gray-600"
+                    : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                  formData.providesDiscount
+                    ? isRTL
+                      ? "right-0.5"
+                      : "left-[22px]"
+                    : isRTL
+                      ? "right-[22px]"
+                      : "left-0.5"
+                }`}
+              />
+            </span>
+          </button>
+
+          {formData.providesDiscount && (
+            <div
+              className={`mt-4 grid grid-cols-2 gap-3 border-t pt-4 ${
+                isDark ? "border-teal-800/40" : "border-teal-200"
+              }`}
+            >
+              <div>
+                <label
+                  className={`mb-1.5 block text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                >
+                  {t("min_discount_percent")}
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={formData.minDiscount ?? ""}
+                    onChange={(e) =>
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        minDiscount: e.target.value,
+                      }))
+                    }
+                    placeholder="0"
+                    className={discountInputClasses}
+                  />
+                  <span
+                    className={`pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}
+                  >
+                    %
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  className={`mb-1.5 block text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                >
+                  {t("max_discount_percent")}
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={formData.maxDiscount ?? ""}
+                    onChange={(e) =>
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        maxDiscount: e.target.value,
+                      }))
+                    }
+                    placeholder="0"
+                    className={discountInputClasses}
+                  />
+                  <span
+                    className={`pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}
+                  >
+                    %
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
