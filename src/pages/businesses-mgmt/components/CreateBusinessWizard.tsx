@@ -23,6 +23,7 @@ import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
+import { useGetDiscountWebsitesQuery } from "@/store/api/masterDataApi";
 
 import {
   BusinessBasicInfos,
@@ -196,6 +197,14 @@ function CreateBusinessWizardInner({
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
   );
+
+  // Fetch the "mark as supplier" list once when the wizard opens (superadmin
+  // only) and hand it to BusinessBasicInfos, so step 1 doesn't block on this
+  // request every time it's rendered.
+  const { data: discountWebsites = [], isFetching: isDiscountWebsitesLoading } =
+    useGetDiscountWebsitesQuery(undefined, {
+      skip: userRole !== "superadmin",
+    });
 
   const { allWebsites } = useCommon();
   const hasAssociatedWebsites = useMemo(
@@ -1040,6 +1049,8 @@ function CreateBusinessWizardInner({
             setSelectAuthorityId={setSelectAuthorityId}
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+            discountWebsites={discountWebsites}
+            isDiscountWebsitesLoading={isDiscountWebsitesLoading}
             isEditMode={opMode === IOpMode.EDIT}
             onAvailabilityStatusChange={setAvailabilityStatus}
           />

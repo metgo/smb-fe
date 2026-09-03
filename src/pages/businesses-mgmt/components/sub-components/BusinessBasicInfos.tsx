@@ -7,7 +7,6 @@ import {
   DmoAuthorityWebsiteIdsSelector,
   ImageWithFallback,
 } from "@/components/shared";
-import { useGetDiscountWebsitesQuery } from "@/store/api/masterDataApi";
 import { BusinessContentForm } from "./BusinesscontentForm";
 
 interface BusinessFormData {
@@ -55,6 +54,8 @@ interface BusinessBasicInfosProps {
   markDirty: (step: number) => void;
   websiteVisibilityIds: string[];
   setWebsiteVisibilityIds: React.Dispatch<React.SetStateAction<string[]>>;
+  discountWebsites?: IWebsite[];
+  isDiscountWebsitesLoading?: boolean;
   isEditMode?: boolean;
   onAvailabilityStatusChange?: (
     status: "available" | "unavailable" | null,
@@ -75,6 +76,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setBusinessId,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
+  discountWebsites = [],
+  isDiscountWebsitesLoading = false,
   isEditMode = false,
   onAvailabilityStatusChange,
 }) => {
@@ -94,11 +97,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   // ─── Discount websites — "mark as supplier" (superadmin only) ──────────────────
   // Independent of the vendor's "provides discount" flag: a superadmin can mark a
   // business as a discount supplier whether or not the business offers a discount.
+  // The list itself is fetched once by the wizard and passed in via props.
   const showDiscountWebsites = isSuperadmin;
-  const { data: discountWebsites = [] } = useGetDiscountWebsitesQuery(
-    undefined,
-    { skip: !showDiscountWebsites },
-  );
   const selectedDiscountWebsiteIds = formData.associatedDiscountWebsiteIds ?? [];
 
   const toggleDiscountWebsite = useCallback(
@@ -168,6 +168,16 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       />
 
       {/* Discount websites — mark this business as a supplier (superadmin only) */}
+      {showDiscountWebsites &&
+        isDiscountWebsitesLoading &&
+        discountWebsites.length === 0 && (
+          <p
+            className={`text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}
+          >
+            {t("mark_as_supplier_loading")}
+          </p>
+        )}
+
       {showDiscountWebsites && discountWebsites.length > 0 && (
         <div>
           <label

@@ -250,6 +250,7 @@
   "supplier_business_desc": "تظهر في صفحة المورّدين على موقع الخصومات الإقليمي",
   "mark_as_supplier": "وضع علامة كمورد",
   "mark_as_supplier_desc": "اختر مواقع الخصومات الإقليمية التي يوردها هذا العمل",
+  "mark_as_supplier_loading": "جارٍ تحميل مواقع الخصومات…",
   "specific_seller_delivery_info": "معلومات التوصيل الخاصة بالبائع",
   "same_as_business": "نفس عنوان العمل التجاري",
   "delivery_options": "خيارات التوصيل",

@@ -250,6 +250,7 @@
   "supplier_business_desc": "You appear on the supplier page of the regional discount website",
   "mark_as_supplier": "Mark as Supplier",
   "mark_as_supplier_desc": "Select the regional discount websites this business supplies",
+  "mark_as_supplier_loading": "Loading discount websites…",
   "specific_seller_delivery_info": "Specific Seller Delivery Information",
   "same_as_business": "Same as Business",
   "delivery_options": "Delivery Options",
