@@ -32,6 +32,7 @@ import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { SmsService } from 'src/services/sms/sms.service';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
 import { DocUploadService } from 'src/modules/doc-upload/doc-upload.service';
+import { notifyHighValueOrder } from 'src/modules/orders/high-value-order-alert';
 
 @CommandHandler(CreateMiniSiteOrderCommand)
 export class CreateMiniSiteOrderHandler
@@ -222,6 +223,13 @@ implements ICommandHandler<CreateMiniSiteOrderCommand> {
 
       this.logger.info('[EXTERNAL_API_ORDERS]: CREATED-PAID BY VOUCHER', {
         message: order,
+      });
+
+      await notifyHighValueOrder(order, {
+        mailchimpService: this.mailchimpService,
+        configService: this.configService,
+        externalApiService: this.externalApiService,
+        logger: this.logger,
       });
 
       // create order products

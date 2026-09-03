@@ -40,4 +40,5 @@ export const DynamicEmailTemplate = {
   InquiryFundayToUser: 'inquiry-funday',
   InquiryFundayToOwner: 'inquiry-funday-for-client',
   NoSearchResult: 'no-search-result-notification',
+  HighValueOrderAlert: 'high-value-order-alert',
 };

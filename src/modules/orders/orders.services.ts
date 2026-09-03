@@ -39,6 +39,7 @@ import {
   PaymentMode,
 } from 'src/modules/orders/orders.type';
 import { OrderProductService } from 'src/modules/order-product/order-product.services';
+import { notifyHighValueOrder } from 'src/modules/orders/high-value-order-alert';
 
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
@@ -626,6 +627,12 @@ export class OrdersService {
         paymentMode: [PaymentMode.VOUCHER],
       });
       const savedParentOrder = await parentOrder.save();
+      await notifyHighValueOrder(savedParentOrder, {
+        mailchimpService: this.mailchimpService,
+        configService: this.configService,
+        externalApiService: this.externalApiService,
+        logger: this.logger,
+      });
       return await this.createVendorSplitOrdersForVoucher(
         savedParentOrder,
         cart,
@@ -659,6 +666,13 @@ export class OrdersService {
 
     this.logger.info('[EXTERNAL_API_ORDERS]: CREATED-PAID BY VOUCHER', {
       message: order,
+    });
+
+    await notifyHighValueOrder(order, {
+      mailchimpService: this.mailchimpService,
+      configService: this.configService,
+      externalApiService: this.externalApiService,
+      logger: this.logger,
     });
 
     // create order products
@@ -862,6 +876,16 @@ export class OrdersService {
           error: qrError instanceof Error ? qrError.message : String(qrError),
         });
       }
+
+      // Alert for high-value orders (card / card + voucher, incl.
+      // the parent of a vendor split). Runs once per order - the SUCCESS
+      // guard above stops duplicate webhooks from re-triggering it.
+      await notifyHighValueOrder(updateOrder, {
+        mailchimpService: this.mailchimpService,
+        configService: this.configService,
+        externalApiService: this.externalApiService,
+        logger: this.logger,
+      });
 
       const externalApi
         = await this.externalApiService.findByIdAndPopulateTheme(
