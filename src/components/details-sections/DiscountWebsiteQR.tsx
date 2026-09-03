@@ -5,27 +5,48 @@ import { useTranslation } from "react-i18next";
 import { BadgePercent, ExternalLink, QrCodeIcon } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ImageWithFallback } from "../shared";
 import { QRWebsiteModal } from "../shared/QRWebsiteModal";
+
+interface DiscountSite {
+  _id: string;
+  name: string;
+  websiteUrl: string;
+  logo?: string;
+  purpose?: string;
+}
 
 interface DiscountWebsiteQRProps {
   businessId?: string;
+  discountWebsites?: DiscountSite[];
 }
 
-const DISCOUNT_SITE_URL = "https://tav8.metgo.app/businessId=";
+const FALLBACK_DISCOUNT_URL = "https://tav8.metgo.app/";
 
-const DiscountWebsiteQR = ({ businessId }: DiscountWebsiteQRProps) => {
+const DiscountWebsiteQR = ({
+  businessId,
+  discountWebsites = [],
+}: DiscountWebsiteQRProps) => {
   const { t } = useTranslation("businesses");
   const { isDark } = useThemeClasses();
   const [qrOpen, setQrOpen] = useState(false);
 
   if (!businessId) return null;
 
+  // The discount site the business supplies (populated by the API). QR always
+  // points at <siteUrl>businessId=<id>.
+  const site = discountWebsites[0];
+  const baseUrl = (site?.websiteUrl || FALLBACK_DISCOUNT_URL).replace(
+    /\/?$/,
+    "/",
+  );
+
   const website = {
-    name: t("discount_website"),
-    url: DISCOUNT_SITE_URL,
-    logo: "",
+    name: site?.name || t("discount_website"),
+    url: `${baseUrl}businessId=`,
+    logo: site?.logo || "",
   };
-  const fullUrl = `${DISCOUNT_SITE_URL}${businessId}`;
+  const fullUrl = `${website.url}${businessId}`;
 
   const openSite = () => {
     window.open(fullUrl, "_blank");
@@ -94,12 +115,20 @@ const DiscountWebsiteQR = ({ businessId }: DiscountWebsiteQRProps) => {
                       isDark ? "bg-gray-800" : "bg-gray-100",
                     )}
                   >
-                    <BadgePercent
-                      className={clsx(
-                        "w-6 h-6",
-                        isDark ? "text-green-400" : "text-green-600",
-                      )}
-                    />
+                    {site?.logo ? (
+                      <ImageWithFallback
+                        src={site.logo}
+                        alt={website.name}
+                        className="w-6 h-6 object-contain"
+                      />
+                    ) : (
+                      <BadgePercent
+                        className={clsx(
+                          "w-6 h-6",
+                          isDark ? "text-green-400" : "text-green-600",
+                        )}
+                      />
+                    )}
                   </div>
                   <span
                     className={clsx(

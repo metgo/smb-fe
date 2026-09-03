@@ -526,8 +526,11 @@ function CreateBusinessWizardInner({
         providesDiscount: editData?.providesDiscount ?? false,
         minDiscount: editData?.minDiscount ?? "",
         maxDiscount: editData?.maxDiscount ?? "",
-        associatedDiscountWebsiteIds:
-          editData?.associatedDiscountWebsiteIds || [],
+        // Detail route populates this to IWebsite[]; the list route returns raw
+        // ids. Normalise to ids for the form state either way.
+        associatedDiscountWebsiteIds: (
+          editData?.associatedDiscountWebsiteIds || []
+        ).map((w: any) => (typeof w === "string" ? w : w?._id)),
         slug: editData?.slug || "",
         //images
         logo: opMode === IOpMode.EDIT ? editData?.logo?.image : "",
@@ -681,7 +684,9 @@ function CreateBusinessWizardInner({
       ? Number(formData.maxDiscount) || 0
       : null,
     associatedDiscountWebsiteIds: formData.providesDiscount
-      ? formData.associatedDiscountWebsiteIds
+      ? (formData.associatedDiscountWebsiteIds ?? []).map((w: any) =>
+          typeof w === "string" ? w : w?._id,
+        )
       : [],
 
     // step 2

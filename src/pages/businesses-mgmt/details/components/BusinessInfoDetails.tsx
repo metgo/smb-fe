@@ -45,6 +45,14 @@ interface Business {
   associatedWebsiteIds: string[];
   _id?: string;
   providesDiscount?: boolean;
+  // Populated to full website objects on the by-id detail route
+  associatedDiscountWebsiteIds?: {
+    _id: string;
+    name: string;
+    websiteUrl: string;
+    logo?: string;
+    purpose?: string;
+  }[];
 }
 
 interface BusinessInfoDetailsProps {
@@ -113,9 +121,13 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       />
 
       {/* Regional discount website QR */}
-      {business?.providesDiscount && (
-        <DiscountWebsiteQR businessId={business?._id} />
-      )}
+      {business?.providesDiscount &&
+        (business?.associatedDiscountWebsiteIds?.length ?? 0) > 0 && (
+          <DiscountWebsiteQR
+            businessId={business?._id}
+            discountWebsites={business?.associatedDiscountWebsiteIds}
+          />
+        )}
 
       {/* Internal Notes */}
       {/* {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
