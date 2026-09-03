@@ -33,8 +33,8 @@ const DiscountWebsiteQR = ({
 
   if (!businessId) return null;
 
-  // The discount site the business supplies (populated by the API). QR always
-  // points at <siteUrl>businessId=<id>.
+  // The discount site the business supplies (populated by the API). QR points at
+  // <siteUrl>businessId=<id>.
   const site = discountWebsites[0];
   const baseUrl = (site?.websiteUrl || FALLBACK_DISCOUNT_URL).replace(
     /\/?$/,
@@ -57,10 +57,10 @@ const DiscountWebsiteQR = ({
     <>
       <div
         className={clsx(
-          "rounded-xl flex flex-col md:flex-row border p-2 md:p-3 gap-6 transition-all duration-200",
+          "rounded-xl flex flex-col md:flex-row border-2 p-2 md:p-3 gap-6 transition-all duration-200",
           isDark
-            ? "bg-linear-to-br from-gray-800 to-gray-800/50 border-gray-700"
-            : "bg-linear-to-br from-blue-50 to-purple-50 border-blue-200",
+            ? "bg-linear-to-br from-amber-950/30 to-yellow-900/10 border-amber-600/60"
+            : "bg-linear-to-br from-amber-50 to-yellow-50 border-amber-300",
         )}
       >
         <div className="flex-1 min-w-0">
@@ -68,13 +68,13 @@ const DiscountWebsiteQR = ({
             <div
               className={clsx(
                 "p-2 rounded-lg",
-                isDark ? "bg-green-500/20" : "bg-green-100",
+                isDark ? "bg-amber-500/20" : "bg-amber-100",
               )}
             >
               <BadgePercent
                 className={clsx(
                   "w-5 h-5",
-                  isDark ? "text-green-400" : "text-green-600",
+                  isDark ? "text-amber-400" : "text-amber-600",
                 )}
               />
             </div>
@@ -103,8 +103,8 @@ const DiscountWebsiteQR = ({
               className={clsx(
                 "flex flex-col items-center text-center rounded-xl border p-0 md:px-2 transition-all duration-200",
                 isDark
-                  ? "bg-gray-900/50 border-gray-700 hover:border-gray-600"
-                  : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100/60",
+                  ? "bg-gray-900/50 border-amber-700/50 hover:border-amber-600"
+                  : "bg-white border-amber-200 hover:border-amber-300 hover:shadow-amber-100/60",
               )}
             >
               <div className="flex w-full items-center justify-between gap-3 py-2">
@@ -125,7 +125,7 @@ const DiscountWebsiteQR = ({
                       <BadgePercent
                         className={clsx(
                           "w-6 h-6",
-                          isDark ? "text-green-400" : "text-green-600",
+                          isDark ? "text-amber-400" : "text-amber-600",
                         )}
                       />
                     )}
@@ -175,6 +175,7 @@ const DiscountWebsiteQR = ({
         setSelectedWebsite={() => setQrOpen(false)}
         isDark={isDark}
         pathname={businessId}
+        showPrint
       />
     </>
   );
