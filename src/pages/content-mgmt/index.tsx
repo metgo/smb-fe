@@ -141,6 +141,8 @@ export default function ContentMgmtPage() {
   const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
   const selectedWebsiteName = selectedWebsite?.name ?? "";
 
+  const [activeViewId, setActiveViewId] = useState<string | null>(null);
+
   const data = useContentData({
     selected: tabs.selected,
     tabState: tabs.tabState,
@@ -149,6 +151,7 @@ export default function ContentMgmtPage() {
     authorityId,
     language,
     isMarketplace,
+    viewId: activeViewId,
   });
 
   const template = useContentTemplate({
@@ -161,6 +164,10 @@ export default function ContentMgmtPage() {
     filters: tabs.filters,
     searchQuery: tabs.searchQuery,
   });
+
+  useEffect(() => {
+    setActiveViewId(template.templateContentId ?? null);
+  }, [template.templateContentId]);
 
   // ── Message composer (mock) ──────────────────────────────────────────────────
 

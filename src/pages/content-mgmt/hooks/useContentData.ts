@@ -15,6 +15,7 @@ interface UseContentDataParams {
   authorityId: string;
   language: string;
   isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
+  viewId?: string | null;
 }
 
 export function useContentData({
@@ -25,6 +26,7 @@ export function useContentData({
   authorityId,
   language,
   isMarketplace = false,
+  viewId = null,
 }: UseContentDataParams) {
   const [page, setPage] = useState(1);
   const [productPage, setProductPage] = useState(1);
@@ -54,12 +56,16 @@ export function useContentData({
       params.hasProductFilter = filters.hasProductFilter === "yes";
     if (filters.primaryCategory !== "all")
       params.primaryCategoryId = filters.primaryCategory;
+    const hasAssignmentFilter =
+      (filters.assignmentStatus && filters.assignmentStatus !== "all") ||
+      (filters.viewCategory && filters.viewCategory !== "all");
     if (filters.assignmentStatus && filters.assignmentStatus !== "all")
       params.assignmentStatus = filters.assignmentStatus;
     if (filters.viewCategory && filters.viewCategory !== "all")
       params.viewCategory = filters.viewCategory;
+    if (hasAssignmentFilter && viewId) params.viewId = viewId;
     return params;
-  }, [businessTab, dmoId, authorityId, language, page, externalApiId]);
+  }, [businessTab, dmoId, authorityId, language, page, externalApiId, viewId]);
 
   const productParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Products"];
@@ -73,12 +79,16 @@ export function useContentData({
     };
     if (filters.businessId) params.businessId = filters.businessId;
     if (searchQuery) params.search = searchQuery;
+    const hasAssignmentFilter =
+      (filters.assignmentStatus && filters.assignmentStatus !== "all") ||
+      (filters.viewCategory && filters.viewCategory !== "all");
     if (filters.assignmentStatus && filters.assignmentStatus !== "all")
       params.assignmentStatus = filters.assignmentStatus;
     if (filters.viewCategory && filters.viewCategory !== "all")
       params.viewCategory = filters.viewCategory;
+    if (hasAssignmentFilter && viewId) params.viewId = viewId;
     return params;
-  }, [productTab, dmoId, authorityId, externalApiId, productPage]);
+  }, [productTab, dmoId, authorityId, externalApiId, productPage, viewId]);
 
   // ── Queries ─────────────────────────────────────────────────────────────────
 
@@ -121,6 +131,7 @@ export function useContentData({
     dmoId,
     authorityId,
     externalApiId,
+    viewId,
   ]);
 
   useEffect(() => {
@@ -144,7 +155,7 @@ export function useContentData({
   useEffect(() => {
     setProductPage(1);
     setCombinedProducts([]);
-  }, [productTab.searchQuery, productTab.filters, dmoId, authorityId]);
+  }, [productTab.searchQuery, productTab.filters, dmoId, authorityId, viewId]);
 
   useEffect(() => {
     if (!productData?.data) return;
