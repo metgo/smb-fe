@@ -91,8 +91,10 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
     setFormData((prev: any) => ({ ...prev, ...updates }));
   };
 
-  // ─── Discount websites (superadmin only, when the business offers a discount) ──
-  const showDiscountWebsites = isSuperadmin && !!formData.providesDiscount;
+  // ─── Discount websites — "mark as supplier" (superadmin only) ──────────────────
+  // Independent of the vendor's "provides discount" flag: a superadmin can mark a
+  // business as a discount supplier whether or not the business offers a discount.
+  const showDiscountWebsites = isSuperadmin;
   const { data: discountWebsites = [] } = useGetDiscountWebsitesQuery(
     undefined,
     { skip: !showDiscountWebsites },

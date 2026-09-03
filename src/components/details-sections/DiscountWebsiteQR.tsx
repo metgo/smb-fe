@@ -85,7 +85,7 @@ const DiscountWebsiteQR = ({
                   isDark ? "text-gray-300" : "text-gray-700",
                 )}
               >
-                {t("discount_website")}
+                {t("supplier_business")}
               </h3>
               <p
                 className={clsx(
@@ -93,7 +93,7 @@ const DiscountWebsiteQR = ({
                   isDark ? "text-gray-400" : "text-gray-600",
                 )}
               >
-                {t("discount_website_desc")}
+                {t("supplier_business_desc")}
               </p>
             </div>
           </div>

@@ -246,6 +246,8 @@
   "traveller_discount_range_invalid": "يجب أن يكون الحد الأدنى للخصم بين 0 و100 وألا يتجاوز الحد الأقصى",
   "discount_website": "موقع الخصومات",
   "discount_website_desc": "امسح الرمز لفتح هذا العمل على موقع الخصومات الإقليمي",
+  "supplier_business": "عمل مورّد",
+  "supplier_business_desc": "تظهر في صفحة المورّدين على موقع الخصومات الإقليمي",
   "mark_as_supplier": "وضع علامة كمورد",
   "mark_as_supplier_desc": "اختر مواقع الخصومات الإقليمية التي يوردها هذا العمل",
   "specific_seller_delivery_info": "معلومات التوصيل الخاصة بالبائع",

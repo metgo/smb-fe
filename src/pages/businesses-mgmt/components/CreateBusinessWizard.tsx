@@ -683,11 +683,11 @@ function CreateBusinessWizardInner({
     maxDiscount: formData.providesDiscount
       ? Number(formData.maxDiscount) || 0
       : null,
-    associatedDiscountWebsiteIds: formData.providesDiscount
-      ? (formData.associatedDiscountWebsiteIds ?? []).map((w: any) =>
-          typeof w === "string" ? w : w?._id,
-        )
-      : [],
+    // "Mark as supplier" is a superadmin action independent of providesDiscount,
+    // so always persist the selected ids as-is.
+    associatedDiscountWebsiteIds: (
+      formData.associatedDiscountWebsiteIds ?? []
+    ).map((w: any) => (typeof w === "string" ? w : w?._id)),
 
     // step 2
     busiEmail: formData.email,

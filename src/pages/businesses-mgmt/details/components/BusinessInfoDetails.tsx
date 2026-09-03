@@ -120,14 +120,14 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         pathname={clientSitePath.businessDetails + "/" + business?.slug}
       />
 
-      {/* Regional discount website QR */}
-      {business?.providesDiscount &&
-        (business?.associatedDiscountWebsiteIds?.length ?? 0) > 0 && (
-          <DiscountWebsiteQR
-            businessId={business?._id}
-            discountWebsites={business?.associatedDiscountWebsiteIds}
-          />
-        )}
+      {/* Regional discount website QR — shown whenever the business is marked as
+          a supplier, independent of the vendor's providesDiscount flag */}
+      {(business?.associatedDiscountWebsiteIds?.length ?? 0) > 0 && (
+        <DiscountWebsiteQR
+          businessId={business?._id}
+          discountWebsites={business?.associatedDiscountWebsiteIds}
+        />
+      )}
 
       {/* Internal Notes */}
       {/* {userRole === UserRole.SUPERADMIN && business?.internalNotes && (

@@ -245,6 +245,8 @@
   "traveller_discount_range_invalid": "הנחת מינימום חייבת להיות בין 0 ל-100 ולא גדולה מהמקסימום",
   "discount_website": "אתר ההנחות",
   "discount_website_desc": "סרקו כדי לפתוח את העסק באתר ההנחות האיזורי",
+  "supplier_business": "עסק ספק",
+  "supplier_business_desc": "אתם מופיעים בעמוד הספקים של אתר ההנחות האיזורי",
   "mark_as_supplier": "סמן כספק",
   "mark_as_supplier_desc": "בחרו את אתרי ההנחות האיזוריים שהעסק מספק להם",
   "specific_seller_delivery_info": "מידע משלוח ספציפי לספק",
