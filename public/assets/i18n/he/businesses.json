@@ -106,7 +106,6 @@
   "back_to_businesses": "חזור לעסקים",
   "business": "עסק",
   "change_status": "שנה סטטוס",
-
   "brief_description": "תיאור קצר",
   "sunday": "ראשון",
   "monday": "שני",
@@ -167,11 +166,9 @@
   "phoneNumber": "מספר טלפון",
   "productsCount": "מספר מוצרים",
   "lifetimeSales": "מכירות מצטברות",
-
   "business_owner": "בעל העסק",
   "assign_owner": "הקצה בעלים",
   "no_owner_assigned": "לא הוקצה בעלים",
-
   "tripCount": "מספר טיולים",
   "websiteUrl": "כתובת אתר",
   "contactPhone": "טלפון איש קשר",
@@ -248,6 +245,8 @@
   "traveller_discount_range_invalid": "הנחת מינימום חייבת להיות בין 0 ל-100 ולא גדולה מהמקסימום",
   "discount_website": "אתר ההנחות",
   "discount_website_desc": "סרקו כדי לפתוח את העסק באתר ההנחות האיזורי",
+  "mark_as_supplier": "סמן כספק",
+  "mark_as_supplier_desc": "בחרו את אתרי ההנחות האיזוריים שהעסק מספק להם",
   "specific_seller_delivery_info": "מידע משלוח ספציפי לספק",
   "same_as_business": "כמו העסק",
   "delivery_options": "אפשרויות משלוח",

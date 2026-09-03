@@ -228,6 +228,7 @@ function CreateBusinessWizardInner({
     providesDiscount: false,
     minDiscount: "" as number | string,
     maxDiscount: "" as number | string,
+    associatedDiscountWebsiteIds: [] as string[],
 
     // Step 2
     email: "",
@@ -525,6 +526,8 @@ function CreateBusinessWizardInner({
         providesDiscount: editData?.providesDiscount ?? false,
         minDiscount: editData?.minDiscount ?? "",
         maxDiscount: editData?.maxDiscount ?? "",
+        associatedDiscountWebsiteIds:
+          editData?.associatedDiscountWebsiteIds || [],
         slug: editData?.slug || "",
         //images
         logo: opMode === IOpMode.EDIT ? editData?.logo?.image : "",
@@ -677,6 +680,9 @@ function CreateBusinessWizardInner({
     maxDiscount: formData.providesDiscount
       ? Number(formData.maxDiscount) || 0
       : null,
+    associatedDiscountWebsiteIds: formData.providesDiscount
+      ? formData.associatedDiscountWebsiteIds
+      : [],
 
     // step 2
     busiEmail: formData.email,

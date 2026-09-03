@@ -1,9 +1,13 @@
-import { useEffect, useRef, type FC } from "react";
-import { BadgePercent } from "lucide-react";
+import { useEffect, useRef, useCallback, type FC } from "react";
+import { BadgePercent, Globe } from "lucide-react";
 
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { DmoAuthorityWebsiteIdsSelector } from "@/components/shared";
+import {
+  DmoAuthorityWebsiteIdsSelector,
+  ImageWithFallback,
+} from "@/components/shared";
+import { useGetDiscountWebsitesQuery } from "@/store/api/masterDataApi";
 import { BusinessContentForm } from "./BusinesscontentForm";
 
 interface BusinessFormData {
@@ -26,6 +30,7 @@ interface BusinessFormData {
   providesDiscount?: boolean;
   minDiscount?: number | string;
   maxDiscount?: number | string;
+  associatedDiscountWebsiteIds?: string[];
 }
 
 interface FormErrors {
@@ -86,6 +91,53 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
     setFormData((prev: any) => ({ ...prev, ...updates }));
   };
 
+  // ─── Discount websites (superadmin only, when the business offers a discount) ──
+  const showDiscountWebsites = isSuperadmin && !!formData.providesDiscount;
+  const { data: discountWebsites = [] } = useGetDiscountWebsitesQuery(
+    undefined,
+    { skip: !showDiscountWebsites },
+  );
+  const selectedDiscountWebsiteIds = formData.associatedDiscountWebsiteIds ?? [];
+
+  const toggleDiscountWebsite = useCallback(
+    (id: string) => {
+      setFormData((prev: any) => {
+        const current: string[] = Array.isArray(
+          prev.associatedDiscountWebsiteIds,
+        )
+          ? prev.associatedDiscountWebsiteIds
+          : [];
+        return {
+          ...prev,
+          associatedDiscountWebsiteIds: current.includes(id)
+            ? current.filter((x) => x !== id)
+            : [...current, id],
+        };
+      });
+    },
+    [setFormData],
+  );
+
+  const toggleAllDiscountWebsites = useCallback(
+    (allIds: string[]) => {
+      setFormData((prev: any) => {
+        const current: string[] = Array.isArray(
+          prev.associatedDiscountWebsiteIds,
+        )
+          ? prev.associatedDiscountWebsiteIds
+          : [];
+        const allSelected = allIds.every((id) => current.includes(id));
+        return {
+          ...prev,
+          associatedDiscountWebsiteIds: allSelected
+            ? current.filter((id) => !allIds.includes(id))
+            : Array.from(new Set([...current, ...allIds])),
+        };
+      });
+    },
+    [setFormData],
+  );
+
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -112,6 +164,79 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         setSelectWebsiteIds={setWebsiteVisibilityIds}
         dmoSectionRef={dmoSectionRef}
       />
+
+      {/* Discount websites — mark this business as a supplier (superadmin only) */}
+      {showDiscountWebsites && discountWebsites.length > 0 && (
+        <div>
+          <label
+            className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
+            {t("mark_as_supplier")}
+          </label>
+          <p
+            className={`text-xs mb-2 ${isDark ? "text-gray-500" : "text-gray-500"}`}
+          >
+            {t("mark_as_supplier_desc")}
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <label
+              className={`flex items-center gap-2 cursor-pointer border rounded p-2 ${
+                isDark
+                  ? "border-gray-700 bg-gray-900 text-gray-300"
+                  : "border-gray-300 bg-white text-gray-700"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={
+                  discountWebsites.length > 0 &&
+                  discountWebsites.every((w) =>
+                    selectedDiscountWebsiteIds.includes(w._id),
+                  )
+                }
+                onChange={() =>
+                  toggleAllDiscountWebsites(discountWebsites.map((w) => w._id))
+                }
+                className={
+                  isDark
+                    ? "rounded bg-gray-900 border-gray-700 accent-teal-500"
+                    : "rounded bg-white border-gray-300 accent-teal-600"
+                }
+              />
+              <Globe className="h-6 w-6" />
+              <span>{t("all")}</span>
+            </label>
+
+            {discountWebsites.map((site) => (
+              <label
+                key={site._id}
+                className={`flex items-center gap-2 cursor-pointer border rounded p-2 ${
+                  isDark
+                    ? "border-gray-700 bg-gray-900 text-gray-300"
+                    : "border-gray-300 bg-white text-gray-700"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedDiscountWebsiteIds.includes(site._id)}
+                  onChange={() => toggleDiscountWebsite(site._id)}
+                  className={
+                    isDark
+                      ? "rounded bg-gray-900 border-gray-700 accent-teal-500"
+                      : "rounded bg-white border-gray-300 accent-teal-600"
+                  }
+                />
+                <ImageWithFallback
+                  src={site?.logo}
+                  alt={site?.name}
+                  className="w-8 h-8 object-contain"
+                />
+                <span>{site.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Traveller discount */}
       {isTraveller && (
