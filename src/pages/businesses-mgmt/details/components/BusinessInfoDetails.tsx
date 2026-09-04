@@ -47,14 +47,7 @@ interface Business {
   providesDiscount?: boolean;
   // Superadmin-only flag marking this business as a regional discount supplier
   markedAsSupplier?: boolean;
-  // Populated to full website objects on the by-id detail route (when available)
-  associatedDiscountWebsiteIds?: {
-    _id: string;
-    name: string;
-    websiteUrl: string;
-    logo?: string;
-    purpose?: string;
-  }[];
+ 
 }
 
 interface BusinessInfoDetailsProps {
@@ -127,7 +120,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       {business?.markedAsSupplier && (
         <DiscountWebsiteQR
           businessId={business?._id}
-          discountWebsites={business?.associatedDiscountWebsiteIds}
         />
       )}
 

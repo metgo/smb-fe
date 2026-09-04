@@ -5,46 +5,27 @@ import { useTranslation } from "react-i18next";
 import { BadgePercent, ExternalLink, QrCodeIcon } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ImageWithFallback } from "../shared";
 import { QRWebsiteModal } from "../shared/QRWebsiteModal";
-
-interface DiscountSite {
-  _id: string;
-  name: string;
-  websiteUrl: string;
-  logo?: string;
-  purpose?: string;
-}
 
 interface DiscountWebsiteQRProps {
   businessId?: string;
-  discountWebsites?: DiscountSite[];
 }
 
-const FALLBACK_DISCOUNT_URL = "https://tav8.metgo.app/";
+const DISCOUNT_URL = "https://tav8.metgo.app/";
 
-const DiscountWebsiteQR = ({
-  businessId,
-  discountWebsites = [],
-}: DiscountWebsiteQRProps) => {
+const DiscountWebsiteQR = ({ businessId }: DiscountWebsiteQRProps) => {
   const { t } = useTranslation("businesses");
   const { isDark } = useThemeClasses();
   const [qrOpen, setQrOpen] = useState(false);
 
   if (!businessId) return null;
 
-  // The discount site the business supplies (populated by the API). QR points at
-  // <siteUrl>businessId=<id>.
-  const site = discountWebsites[0];
-  const baseUrl = (site?.websiteUrl || FALLBACK_DISCOUNT_URL).replace(
-    /\/?$/,
-    "/",
-  );
-
+  // A "marked as supplier" business appears on the regional discount website.
+  // QR points at <DISCOUNT_URL>businessId=<id>.
   const website = {
-    name: site?.name || t("discount_website"),
-    url: `${baseUrl}businessId=`,
-    logo: site?.logo || "",
+    name: t("discount_website"),
+    url: `${DISCOUNT_URL}businessId=`,
+    logo: "",
   };
   const fullUrl = `${website.url}${businessId}`;
 
@@ -115,20 +96,12 @@ const DiscountWebsiteQR = ({
                       isDark ? "bg-gray-800" : "bg-gray-100",
                     )}
                   >
-                    {site?.logo ? (
-                      <ImageWithFallback
-                        src={site.logo}
-                        alt={website.name}
-                        className="w-6 h-6 object-contain"
-                      />
-                    ) : (
-                      <BadgePercent
-                        className={clsx(
-                          "w-6 h-6",
-                          isDark ? "text-amber-400" : "text-amber-600",
-                        )}
-                      />
-                    )}
+                    <BadgePercent
+                      className={clsx(
+                        "w-6 h-6",
+                        isDark ? "text-amber-400" : "text-amber-600",
+                      )}
+                    />
                   </div>
                   <span
                     className={clsx(
