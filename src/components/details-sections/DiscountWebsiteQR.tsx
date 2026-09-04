@@ -175,7 +175,6 @@ const DiscountWebsiteQR = ({
         setSelectedWebsite={() => setQrOpen(false)}
         isDark={isDark}
         pathname={businessId}
-        
       />
     </>
   );

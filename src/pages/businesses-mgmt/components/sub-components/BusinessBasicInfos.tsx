@@ -99,7 +99,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   // business as a discount supplier whether or not the business offers a discount.
   // The list itself is fetched once by the wizard and passed in via props.
   const showDiscountWebsites = isSuperadmin;
-  const selectedDiscountWebsiteIds = formData.associatedDiscountWebsiteIds ?? [];
+  const selectedDiscountWebsiteIds =
+    formData.associatedDiscountWebsiteIds ?? [];
 
   const toggleDiscountWebsite = useCallback(
     (id: string) => {
