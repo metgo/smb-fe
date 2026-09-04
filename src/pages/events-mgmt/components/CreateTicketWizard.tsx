@@ -202,7 +202,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
 
     const isUpdate = !!editData._id && opMode !== IOpMode.DUPLICATE;
     const initial = editData?.quantity?.initial ?? 0;
-    const sold = isUpdate ? (editData?.quantity?.sold ?? 0) : 0;
+    const isUnlimited = editData.quantity?.isUnlimited ?? false;
 
     const payload: ITicketPayload = {
       eventId,
@@ -215,12 +215,21 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
         discountPercent: editData.price?.discountPercent ?? 0,
         discountAmount: editData.price?.discountAmount ?? 0,
       },
+      // `sold` / `remaining` are server-owned. On update the backend ignores
+      // whatever we send and re-derives `remaining` from the live sold count,
+      // so we pass the current values through unchanged rather than recomputing
+      // `initial - sold` from a possibly-stale form snapshot. On create the
+      // ticket starts empty.
       quantity: {
         initial,
-        sold,
-        remaining: initial - sold,
-        isUnlimited: editData.quantity?.isUnlimited ?? false,
+        isUnlimited,
         perUserLimit: editData.quantity?.perUserLimit ?? 0,
+        sold: isUpdate ? (editData.quantity?.sold ?? 0) : 0,
+        remaining: isUpdate
+          ? (editData.quantity?.remaining ?? 0)
+          : isUnlimited
+            ? 0
+            : initial,
       },
       dayDescription: ticketDateTime.map(({ date, startTime, endTime }) => ({
         date,

@@ -281,6 +281,8 @@ interface ITicketPayload {
   };
   quantity: {
     initial: number;
+    // server-owned counters — the backend ignores these on update and
+    // re-derives remaining from the live sold count
     sold: number;
     remaining: number;
     isUnlimited: boolean;
