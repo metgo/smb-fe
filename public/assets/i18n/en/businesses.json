@@ -245,6 +245,7 @@
   "traveller_discount_required": "Minimum and maximum discount are required",
   "traveller_discount_range_invalid": "Min discount must be between 0 and 100 and not greater than max",
   "discount_website": "Discount Website",
+  "supplier_website": "Supplier Website",
   "discount_website_desc": "Scan to open this business on the regional discount website",
   "supplier_business": "Supplier Business",
   "supplier_business_desc": "You appear on the supplier page of the regional discount website",

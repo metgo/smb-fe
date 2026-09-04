@@ -245,6 +245,7 @@
   "traveller_discount_required": "الحد الأدنى والحد الأقصى للخصم مطلوبان",
   "traveller_discount_range_invalid": "يجب أن يكون الحد الأدنى للخصم بين 0 و100 وألا يتجاوز الحد الأقصى",
   "discount_website": "موقع الخصومات",
+  "supplier_website": "موقع المورّدين",
   "discount_website_desc": "امسح الرمز لفتح هذا العمل على موقع الخصومات الإقليمي",
   "supplier_business": "عمل مورّد",
   "supplier_business_desc": "تظهر في صفحة المورّدين على موقع الخصومات الإقليمي",

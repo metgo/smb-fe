@@ -23,7 +23,7 @@ const DiscountWebsiteQR = ({ businessId }: DiscountWebsiteQRProps) => {
   // A "marked as supplier" business appears on the regional discount website.
   // QR points at <DISCOUNT_URL>businessId=<id>.
   const website = {
-    name: t("discount_website"),
+    name: t("supplier_website"),
     url: `${DISCOUNT_URL}businessId=`,
     logo: "",
   };
@@ -103,14 +103,6 @@ const DiscountWebsiteQR = ({ businessId }: DiscountWebsiteQRProps) => {
                       )}
                     />
                   </div>
-                  <span
-                    className={clsx(
-                      "font-medium text-sm truncate text-left flex-1",
-                      isDark ? "text-gray-200" : "text-gray-800",
-                    )}
-                  >
-                    {website.name}
-                  </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div
