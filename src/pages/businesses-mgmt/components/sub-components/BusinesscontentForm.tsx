@@ -53,7 +53,6 @@ export const BusinessContentForm = ({
     associatedWebsiteIds: string[];
     slug: string;
   } | null>(null);
-  console.log("🚀 ~ BusinessContentForm ~ checkResponse:", checkResponse);
 
   // Get correct field name based on current global language
   const getFieldName = (baseField: string): string => {
