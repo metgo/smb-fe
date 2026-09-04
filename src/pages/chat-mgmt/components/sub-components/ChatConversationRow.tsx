@@ -39,6 +39,7 @@ export const ChatConversationRow: React.FC<ChatConversationRowProps> = ({
     textTertiary,
     borderColor,
     hoverBg,
+    language,
   } = useThemeClasses();
 
   const roleBadgeClasses = getRoleBadgeClasses(isDark);
@@ -59,7 +60,13 @@ export const ChatConversationRow: React.FC<ChatConversationRowProps> = ({
   const formatTime = (isoString?: string) => {
     if (!isoString) return "";
     const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleString(language, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (

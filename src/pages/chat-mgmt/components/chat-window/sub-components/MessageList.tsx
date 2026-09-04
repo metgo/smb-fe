@@ -1,9 +1,9 @@
 import clsx from "clsx";
-import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { MessageBubble } from "./MessageBubble";
 import { NewDmEmptyState } from "./NewDmEmptyState";
+import { useTranslation } from "react-i18next";
 
 interface MessageListProps {
   messages: IMessage[];
@@ -53,7 +53,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   handleScroll,
 }) => {
   const { t } = useTranslation("chat");
-  const { bgTertiary, textTertiary, borderColor } = useThemeClasses();
+  const { bgTertiary, textTertiary, borderColor, language } = useThemeClasses();
 
   // Group date separators (Story 11)
   const renderMessageList = () => {
@@ -62,7 +62,7 @@ export const MessageList: React.FC<MessageListProps> = ({
 
     messages.forEach((msg) => {
       const msgDate = new Date(msg.timestamp);
-      const dateStr = msgDate.toLocaleDateString([], {
+      const dateStr = msgDate.toLocaleDateString(language, {
         weekday: "long",
         year: "numeric",
         month: "long",
