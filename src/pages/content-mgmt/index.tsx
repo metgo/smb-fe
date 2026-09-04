@@ -415,6 +415,7 @@ export default function ContentMgmtPage() {
                         searchQuery={tabs.searchQuery}
                         setSearchQuery={tabs.setSearchQuery}
                         isLoading={data.activeIsLoading}
+                        isFetching={data.activeIsFetching}
                         loadMore={data.activeLoadMore}
                         hasMore={data.activeHasMore}
                         templateContents={template.templateContents}

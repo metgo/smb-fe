@@ -109,30 +109,40 @@ export function useContentData({
       : skipToken,
   );
 
-  // ── Reset all on website change ─────────────────────────────────────────────
+  // ── Accumulator "reset keys" ───────────────────────────────────────────────
+  // Everything that defines a *new* result set (i.e. everything sent to the API
+  // except the page number). When the key changes we start a fresh accumulator
+  // from page 1; otherwise incoming pages are appended. Deriving the reset from
+  // a serialized key — instead of a separate effect that clears state — removes
+  // the ordering race where a late `viewId` change wiped an already-populated
+  // list and the populate effect never re-ran (cached query, same data ref).
+  const businessResetKey = useMemo(() => {
+    const { page: _page, ...rest } = businessParams;
+    void _page;
+    return JSON.stringify(rest);
+  }, [businessParams]);
+
+  const productResetKey = useMemo(() => {
+    const { page: _page, ...rest } = productParams;
+    void _page;
+    return JSON.stringify(rest);
+  }, [productParams]);
+
+  // Reset page + accumulator whenever the result set changes.
+  // `businessResetKey` already encodes externalApiId (it is part of the params).
+  useEffect(() => {
+    setPage(1);
+    setCombinedBusinesses([]);
+    if (externalApiId) setIsApiIdChanging(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessResetKey]);
 
   useEffect(() => {
-    if (!externalApiId) return;
-    setIsApiIdChanging(true);
-    setPage(1);
     setProductPage(1);
-    setCombinedBusinesses([]);
     setCombinedProducts([]);
-  }, [externalApiId]);
+  }, [productResetKey]);
 
   // ── Businesses pagination ───────────────────────────────────────────────────
-
-  useEffect(() => {
-    setPage(1);
-    setCombinedBusinesses([]);
-  }, [
-    businessTab.searchQuery,
-    businessTab.filters,
-    dmoId,
-    authorityId,
-    externalApiId,
-    viewId,
-  ]);
 
   useEffect(() => {
     if (!businessData?.data) return;
@@ -148,14 +158,11 @@ export function useContentData({
         ];
       });
     }
-  }, [businessData?.data, page]);
+    // businessResetKey is included so a cached page-1 response is re-applied
+    // after the accumulator was reset (same data reference, new key).
+  }, [businessData?.data, page, businessResetKey]);
 
   // ── Products pagination ─────────────────────────────────────────────────────
-
-  useEffect(() => {
-    setProductPage(1);
-    setCombinedProducts([]);
-  }, [productTab.searchQuery, productTab.filters, dmoId, authorityId, viewId]);
 
   useEffect(() => {
     if (!productData?.data) return;
@@ -170,7 +177,7 @@ export function useContentData({
         ];
       });
     }
-  }, [productData?.data, productPage]);
+  }, [productData?.data, productPage, productResetKey]);
 
   // ── Load-more callbacks ─────────────────────────────────────────────────────
 
@@ -191,6 +198,7 @@ export function useContentData({
     {
       rawData: any;
       isLoading: boolean;
+      isFetching: boolean;
       loadMore?: () => void;
       hasMore?: boolean;
     }
@@ -198,14 +206,20 @@ export function useContentData({
     Businesses: {
       rawData: combinedBusinesses,
       isLoading,
+      isFetching,
       loadMore: fetchNextPage,
-      hasMore: businessData?.meta?.hasNextPage,
+      // Only advertise "more" once page 1 is actually rendered. While the first
+      // page is (re)fetching, combinedBusinesses is empty and InfiniteScroll
+      // would otherwise render only its loader and get stuck there.
+      hasMore:
+        !!businessData?.meta?.hasNextPage && combinedBusinesses.length > 0,
     },
     Products: {
       rawData: combinedProducts,
       isLoading: isLoadingProduct,
+      isFetching: isFetchingProduct,
       loadMore: fetchNextProductPage,
-      hasMore: productData?.meta?.hasNextPage,
+      hasMore: !!productData?.meta?.hasNextPage && combinedProducts.length > 0,
     },
   };
 
@@ -246,6 +260,7 @@ export function useContentData({
     totalData,
 
     activeIsLoading: active?.isLoading,
+    activeIsFetching: active?.isFetching,
     activeLoadMore: active?.loadMore,
     activeHasMore: active?.hasMore,
 

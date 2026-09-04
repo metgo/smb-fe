@@ -32,6 +32,7 @@ interface ContentsProps {
   selected: string | null;
   setSelected: (v: string) => void;
   isLoading: boolean;
+  isFetching?: boolean;
   isExpanded: boolean;
   viewMode: TViewMode;
   combinedBusinesses: any[];
@@ -103,6 +104,7 @@ const FILTER_ICONS: Record<string, React.ReactNode> = {
 };
 const Contents = ({
   isLoading,
+  isFetching = false,
   isExpanded,
   viewMode,
   setViewMode,
@@ -311,14 +313,14 @@ const Contents = ({
   };
 
   return (
-    <div className="flex-1 min-w-0 pt-6">
+    <div className="flex-1 min-w-0">
       <div
         className={clsx(
-          "border p-2 rounded-md",
+          "border px-2 py-1 rounded-md",
           isDark ? "border-gray-500" : "border-gray-200",
         )}
       >
-        <div className="flex flex-wrap items-center gap-2 mb-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h2
             className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
           >
@@ -403,7 +405,7 @@ const Contents = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-2">
           <div className="flex-1 relative">
             <SearchInput
               placeholder={t("search_businesses_placeholder")}
@@ -421,7 +423,7 @@ const Contents = ({
         </div>
 
         {/* ── "Already in view" filter switch ── */}
-        <div className="flex items-center gap-1 mb-4">
+        <div className="flex items-center gap-1">
           <div
             className={clsx(
               "inline-flex items-center rounded-lg border p-0.5",
@@ -691,22 +693,35 @@ const Contents = ({
         onClick={handleContainerClick}
       >
         <Spinner isLoading={isLoading} />
+
+        {/* Empty list: show a loading hint while a fetch is in flight,
+            otherwise a "no results" message. Without this the panel renders
+            blank during any refetch (filter / search / website change), since
+            RTK's `isLoading` is false on refetches. */}
+        {(filteredItems?.length ?? 0) === 0 && !isLoading ? (
+          <p className={clsx("text-center mt-8", textTertiary)}>
+            {isFetching ? t("loading_items") : t("no_results_found")}
+          </p>
+        ) : null}
+
         <InfiniteScroll
-          dataLength={combinedBusinesses?.length ?? 0}
+          dataLength={filteredItems?.length ?? 0}
           next={() => loadMore?.()}
-          hasMore={!!hasMore}
+          hasMore={!!hasMore && (filteredItems?.length ?? 0) > 0}
           scrollableTarget="scrollableDiv"
           loader={
-            <p className={clsx("text-center mt-4", textTertiary)}>
-              {tc("loading_text")}
-            </p>
+            (filteredItems?.length ?? 0) > 0 ? (
+              <p className={clsx("text-center mt-4", textTertiary)}>
+                {tc("loading_text")}
+              </p>
+            ) : null
           }
           endMessage={
-            hasMore === false && (
+            hasMore === false && (filteredItems?.length ?? 0) > 0 ? (
               <p className={clsx("text-center mt-4", textTertiary)}>
                 {tc("loading_end_text")}
               </p>
-            )
+            ) : null
           }
         >
           <div className={clsx("grid grid-cols-12 gap-2")}>
