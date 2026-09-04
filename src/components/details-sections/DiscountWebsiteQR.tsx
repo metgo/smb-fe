@@ -79,30 +79,28 @@ const DiscountWebsiteQR = ({ businessId }: DiscountWebsiteQRProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-5">
+          <div>
             <div
               className={clsx(
-                "flex flex-col items-center text-center rounded-xl border p-0 md:px-2 transition-all duration-200",
+                "inline-flex w-fit items-center rounded-xl border px-3 transition-all duration-200",
                 isDark
                   ? "bg-gray-900/50 border-amber-700/50 hover:border-amber-600"
                   : "bg-white border-amber-200 hover:border-amber-300 hover:shadow-amber-100/60",
               )}
             >
-              <div className="flex w-full items-center justify-between gap-3 py-2">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div
+              <div className="flex items-center gap-3 py-2">
+                <div
+                  className={clsx(
+                    "p-2 rounded-lg shrink-0",
+                    isDark ? "bg-gray-800" : "bg-gray-100",
+                  )}
+                >
+                  <BadgePercent
                     className={clsx(
-                      "p-2 rounded-lg shrink-0",
-                      isDark ? "bg-gray-800" : "bg-gray-100",
+                      "w-6 h-6",
+                      isDark ? "text-amber-400" : "text-amber-600",
                     )}
-                  >
-                    <BadgePercent
-                      className={clsx(
-                        "w-6 h-6",
-                        isDark ? "text-amber-400" : "text-amber-600",
-                      )}
-                    />
-                  </div>
+                  />
                 </div>
                 <div className="flex items-center gap-3">
                   <div
