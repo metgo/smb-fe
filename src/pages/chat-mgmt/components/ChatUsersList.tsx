@@ -116,9 +116,11 @@ export const ChatUsersList: React.FC<ChatUsersListProps> = ({
       debouncedSearchQuery.trim().length >= 2
         ? debouncedSearchQuery.trim()
         : undefined,
-    dmoId: chatUsersFilters.dmoId || undefined,
+    dmoId: chatUsersFilters.authorityId
+      ? undefined
+      : chatUsersFilters.dmoId || undefined,
     authorityId: chatUsersFilters.authorityId || undefined,
-    role: chatUsersFilters.role ? [chatUsersFilters.role] : undefined,
+    role: chatUsersFilters.role ? chatUsersFilters.role : undefined,
   });
 
   useEffect(() => {

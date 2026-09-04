@@ -37,7 +37,7 @@ export const ChatConversationsSection: React.FC<
     <>
       <p
         className={clsx(
-          "sticky top-0 z-10 py-2 text-[11px] font-semibold uppercase tracking-wider",
+          "sticky top-0 z-10 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider",
           textTertiary,
           bgPrimary,
         )}
@@ -72,7 +72,7 @@ export const ChatConversationsSection: React.FC<
           );
         })
       ) : (
-        <div className="flex flex-col items-center justify-center h-48 px-4 text-center">
+        <div className="flex flex-col items-center justify-center h-48 text-center">
           <MessageSquare className={clsx("w-10 h-10 mb-2", textTertiary)} />
           <p className={clsx("text-sm font-medium", textSecondary)}>
             {t("no_conversations_yet")}

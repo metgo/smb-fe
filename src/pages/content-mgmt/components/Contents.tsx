@@ -32,6 +32,7 @@ interface ContentsProps {
   selected: string | null;
   setSelected: (v: string) => void;
   isLoading: boolean;
+  isFetching?: boolean;
   isExpanded: boolean;
   viewMode: TViewMode;
   combinedBusinesses: any[];
@@ -58,15 +59,15 @@ const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
   Products: "product",
 };
 
-type TInViewFilter = "all" | "included" | "unincluded";
+type TInViewFilter = "all" | "assigned" | "unassigned";
 
 const IN_VIEW_FILTER_OPTIONS: {
   value: TInViewFilter;
   labelKey: string;
 }[] = [
   { value: "all", labelKey: "in_view_filter_all" },
-  { value: "included", labelKey: "in_view_filter_included" },
-  { value: "unincluded", labelKey: "in_view_filter_unincluded" },
+  { value: "assigned", labelKey: "in_view_filter_included" },
+  { value: "unassigned", labelKey: "in_view_filter_unincluded" },
 ];
 
 const FILTER_ICONS: Record<string, React.ReactNode> = {
@@ -103,6 +104,7 @@ const FILTER_ICONS: Record<string, React.ReactNode> = {
 };
 const Contents = ({
   isLoading,
+  isFetching = false,
   isExpanded,
   viewMode,
   setViewMode,
@@ -133,7 +135,12 @@ const Contents = ({
   const { categories: categoryFilter } = useCommon();
 
   const [showFilters, setShowFilters] = useState(false);
-  const [inViewFilter, setInViewFilter] = useState<TInViewFilter>("all");
+  // "In view / Not in view" toggle — backed by the shared `assignmentStatus`
+  // filter so it is applied server-side via useContentData.
+  const inViewFilter: TInViewFilter =
+    (filters.assignmentStatus as TInViewFilter) || "all";
+  const setInViewFilter = (value: TInViewFilter) =>
+    setFilters({ ...filters, assignmentStatus: value, viewCategory: "all" });
   const [selectedItems, setSelectedItems] = useState<Map<string, any>>(
     new Map(),
   );
@@ -233,16 +240,6 @@ const Contents = ({
   const filteredItems = useMemo(() => {
     let items = combinedBusinesses ?? [];
 
-    // NOTE: assignmentStatus and viewCategory are now filtered server-side
-    // via useContentData → backend handlers. Only client-side sort applied here.
-
-    // Client-side "already in view" filter (switch above the list).
-    if (inViewFilter === "included") {
-      items = items.filter((it: any) => inViewIds.has(it._id?.toString()));
-    } else if (inViewFilter === "unincluded") {
-      items = items.filter((it: any) => !inViewIds.has(it._id?.toString()));
-    }
-
     if (filters.sortOrder === "alpha") {
       items = [...items].sort((a, b) => {
         const nameA = (a.name || a.nameHe || "").toLowerCase();
@@ -259,7 +256,7 @@ const Contents = ({
     }
 
     return items;
-  }, [combinedBusinesses, filters.sortOrder, inViewFilter, inViewIds]);
+  }, [combinedBusinesses, filters.sortOrder]);
 
   // ─── Selection handler ────────────────────────────────────────────────────
   const handleSelect = useCallback(
@@ -316,14 +313,14 @@ const Contents = ({
   };
 
   return (
-    <div className="flex-1 min-w-0 pt-6">
+    <div className="flex-1 min-w-0">
       <div
         className={clsx(
-          "border p-2 rounded-md",
+          "border px-2 py-1 rounded-md",
           isDark ? "border-gray-500" : "border-gray-200",
         )}
       >
-        <div className="flex flex-wrap items-center gap-2 mb-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h2
             className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
           >
@@ -408,7 +405,7 @@ const Contents = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-2">
           <div className="flex-1 relative">
             <SearchInput
               placeholder={t("search_businesses_placeholder")}
@@ -426,7 +423,7 @@ const Contents = ({
         </div>
 
         {/* ── "Already in view" filter switch ── */}
-        <div className="flex items-center gap-1 mb-4">
+        <div className="flex items-center gap-1">
           <div
             className={clsx(
               "inline-flex items-center rounded-lg border p-0.5",
@@ -451,10 +448,10 @@ const Contents = ({
                         : "text-gray-500 hover:text-gray-700",
                   )}
                 >
-                  {opt.value === "included" && (
+                  {opt.value === "assigned" && (
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   )}
-                  {opt.value === "unincluded" && (
+                  {opt.value === "unassigned" && (
                     <Circle className="w-3.5 h-3.5" />
                   )}
                   {t(opt.labelKey)}
@@ -551,32 +548,11 @@ const Contents = ({
                   </div>
                 )} */}
 
-                {/* ── Assignment status filter (Businesses only - Products disabled for TRAVELLER) ── */}
+                {/* ── View-category filter (Businesses only - Products disabled for TRAVELLER).
+                    "In view / Not in view" itself is the chip toggle above the list,
+                    backed by filters.assignmentStatus. ── */}
                 {currentTab === "Businesses" && (
                   <>
-                    <div className="flex flex-col sm:col-span-4">
-                      <label
-                        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                      >
-                        Assignment Status
-                      </label>
-                      <select
-                        value={filters.assignmentStatus}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            assignmentStatus: e.target.value,
-                            viewCategory: "all",
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                      >
-                        <option value="all">All</option>
-                        <option value="assigned">Assigned to category</option>
-                        <option value="unassigned">Unassigned</option>
-                      </select>
-                    </div>
-
                     {filters.assignmentStatus !== "unassigned" &&
                       viewCategories.length > 0 && (
                         <div className="flex flex-col sm:col-span-4">
@@ -717,22 +693,35 @@ const Contents = ({
         onClick={handleContainerClick}
       >
         <Spinner isLoading={isLoading} />
+
+        {/* Empty list: show a loading hint while a fetch is in flight,
+            otherwise a "no results" message. Without this the panel renders
+            blank during any refetch (filter / search / website change), since
+            RTK's `isLoading` is false on refetches. */}
+        {(filteredItems?.length ?? 0) === 0 && !isLoading ? (
+          <p className={clsx("text-center mt-8", textTertiary)}>
+            {isFetching ? t("loading_items") : t("no_results_found")}
+          </p>
+        ) : null}
+
         <InfiniteScroll
-          dataLength={combinedBusinesses?.length ?? 0}
+          dataLength={filteredItems?.length ?? 0}
           next={() => loadMore?.()}
-          hasMore={!!hasMore}
+          hasMore={!!hasMore && (filteredItems?.length ?? 0) > 0}
           scrollableTarget="scrollableDiv"
           loader={
-            <p className={clsx("text-center mt-4", textTertiary)}>
-              {tc("loading_text")}
-            </p>
+            (filteredItems?.length ?? 0) > 0 ? (
+              <p className={clsx("text-center mt-4", textTertiary)}>
+                {tc("loading_text")}
+              </p>
+            ) : null
           }
           endMessage={
-            hasMore === false && (
+            hasMore === false && (filteredItems?.length ?? 0) > 0 ? (
               <p className={clsx("text-center mt-4", textTertiary)}>
                 {tc("loading_end_text")}
               </p>
-            )
+            ) : null
           }
         >
           <div className={clsx("grid grid-cols-12 gap-2")}>

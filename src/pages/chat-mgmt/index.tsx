@@ -416,12 +416,6 @@ export default function ChatPage() {
         currentUser={currentUser}
         onBroadcastCreated={handleBroadcastCreated}
       />
-      {/* <SilenceUserModal
-        isOpen={modalOpen.silence}
-        onClose={() => setModalOpen({ ...modalOpen, silence: false })}
-        onSilence={handleSilenceUser}
-        chatUsers={chatUsersList}
-      /> */}
     </div>
   );
 }

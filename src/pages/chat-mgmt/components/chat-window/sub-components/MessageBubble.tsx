@@ -48,6 +48,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     borderColor,
     hoverBg,
     bgTertiary,
+    language,
   } = useThemeClasses();
 
   if (msg.isSystem) {
@@ -195,7 +196,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           )}
         >
           <span>
-            {new Date(msg.timestamp).toLocaleTimeString([], {
+            {new Date(msg.timestamp).toLocaleString(language, {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             })}

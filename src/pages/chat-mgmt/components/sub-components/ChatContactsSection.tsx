@@ -25,7 +25,7 @@ export const ChatContactsSection: React.FC<ChatContactsSectionProps> = ({
   onOpenProfile,
 }) => {
   const { t } = useTranslation("chat");
-  const { isDark, textTertiary, borderColor } = useThemeClasses();
+  const { isDark, textTertiary, borderColor, bgPrimary } = useThemeClasses();
 
   if (!visible) return null;
 
@@ -54,11 +54,12 @@ export const ChatContactsSection: React.FC<ChatContactsSectionProps> = ({
   if (usersWithoutConversation.length === 0) return null;
 
   return (
-    <div className={clsx("border-t pt-2 pb-1", borderColor)}>
+    <div className={clsx("border-t pb-1", borderColor)}>
       <p
         className={clsx(
-          "sticky top-0 z-10 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider",
+          "sticky top-0 z-20 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider",
           textTertiary,
+          bgPrimary,
         )}
       >
         {t("contacts_count", { count: usersWithoutConversation.length })}

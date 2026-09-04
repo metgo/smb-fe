@@ -39,6 +39,7 @@ export const ChatConversationRow: React.FC<ChatConversationRowProps> = ({
     textTertiary,
     borderColor,
     hoverBg,
+    language,
   } = useThemeClasses();
 
   const roleBadgeClasses = getRoleBadgeClasses(isDark);
@@ -59,7 +60,13 @@ export const ChatConversationRow: React.FC<ChatConversationRowProps> = ({
   const formatTime = (isoString?: string) => {
     if (!isoString) return "";
     const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleString(language, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
@@ -68,7 +75,7 @@ export const ChatConversationRow: React.FC<ChatConversationRowProps> = ({
         conv.type !== "broadcast" && onContextMenu(e, conv.id)
       }
       className={clsx(
-        "relative px-4 py-3 flex items-center gap-3 transition-all duration-200 select-none cursor-pointer hover:scale-[1.01] active:scale-[0.99]",
+        "relative px-0.5 py-3 flex items-center gap-3 transition-all duration-200 select-none cursor-pointer hover:scale-[1.01] active:scale-[0.99]",
         active
           ? clsx(
               isDark

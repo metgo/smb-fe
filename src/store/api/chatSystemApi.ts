@@ -6,7 +6,7 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 interface ChatUsersProps {
   search?: string;
   email?: string;
-  role?: TUserRole[];
+  role?: TUserRole;
   dmoId?: string;
   authorityId?: string;
   businessTagsId?: string;

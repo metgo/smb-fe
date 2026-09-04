@@ -6,9 +6,10 @@ import {
   Copy,
   Edit,
   ExternalLink,
-  Eye,
-  EyeOff,
+  // Eye,
+  // EyeOff,
   Globe,
+  ScanEye,
   Trash2,
 } from "lucide-react";
 
@@ -18,13 +19,15 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface Props {
   website: IWebsiteListRes;
   onToggleActive: () => void;
+  onPreview: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
 export default function WebsiteCard({
   website,
-  onToggleActive,
+  // onToggleActive,
+  onPreview,
   onEdit,
   onDelete,
 }: Props) {
@@ -204,7 +207,7 @@ export default function WebsiteCard({
 
       {/* Action buttons */}
       <div className="absolute right-3 top-3 flex flex-col gap-1.5">
-        <ActionBtn
+        {/* <ActionBtn
           title={website.isActive ? "Deactivate" : "Activate"}
           colorClass={
             website.isActive
@@ -214,7 +217,17 @@ export default function WebsiteCard({
           onClick={onToggleActive}
         >
           {website.isActive ? <Eye size={14} /> : <EyeOff size={14} />}
-        </ActionBtn>
+        </ActionBtn> */}
+
+        <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-150 delay-[20ms]">
+          <ActionBtn
+            title="Preview details"
+            colorClass="text-teal-400 bg-teal-500/10 hover:bg-teal-500/20"
+            onClick={onPreview}
+          >
+            <ScanEye size={14} />
+          </ActionBtn>
+        </div>
 
         <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-150 delay-[40ms]">
           <ActionBtn

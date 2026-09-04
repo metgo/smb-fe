@@ -129,7 +129,7 @@ interface IWebsiteListRes {
   url: string;
   score: number;
   identifierId: string;
-  purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
+  purpose: "MARKETPLACE" | "TRAVELING" | "DISCOUNT" | "OTHER";
   isActive: boolean;
   primaryColor: string;
   secondaryColor: string;
@@ -147,7 +147,6 @@ interface ISiteSettingsFormData {
   identifierId: string;
   purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
   isActive: boolean;
-  gaPropertyId: string;
   platformCharge: number;
 
   /* Step 2 – Branding & Media */
@@ -211,7 +210,9 @@ interface ISiteSettingsFormData {
 
   /* Step 8 – Analytics & Tracking */
   googleAnalyticsId: string;
-  googleTagManagerId: string;
+  googleAdsConvTrackId: string;
+  enableWidgetId: string;
+  hotjarId: string;
   facebookPixelId: string;
   headerScripts: string;
   footerScripts: string;
@@ -251,7 +252,6 @@ interface IWebsiteConfigRes {
   websiteUrl: string;
   purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
   identifierId: string;
-  gaPropertyId: string;
   platformCharge: number;
 
   logoUrl: string;
@@ -318,7 +318,9 @@ interface IWebsiteConfigRes {
   sitemapUrl: string;
 
   googleAnalyticsId: string;
-  googleTagManagerId: string;
+  googleAdsConvTrackId: string;
+  enableWidgetId: string;
+  hotjarId: string;
   facebookPixelId: string;
 
   headerScripts: string;
