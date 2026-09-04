@@ -1,12 +1,9 @@
-import { useEffect, useRef, useCallback, type FC } from "react";
-import { BadgePercent, Globe } from "lucide-react";
+import { useEffect, useRef, type FC } from "react";
+import { BadgePercent, Store } from "lucide-react";
 
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import {
-  DmoAuthorityWebsiteIdsSelector,
-  ImageWithFallback,
-} from "@/components/shared";
+import { DmoAuthorityWebsiteIdsSelector } from "@/components/shared";
 import { BusinessContentForm } from "./BusinesscontentForm";
 
 interface BusinessFormData {
@@ -29,7 +26,7 @@ interface BusinessFormData {
   providesDiscount?: boolean;
   minDiscount?: number | string;
   maxDiscount?: number | string;
-  associatedDiscountWebsiteIds?: string[];
+  markedAsSupplier?: boolean;
 }
 
 interface FormErrors {
@@ -54,8 +51,6 @@ interface BusinessBasicInfosProps {
   markDirty: (step: number) => void;
   websiteVisibilityIds: string[];
   setWebsiteVisibilityIds: React.Dispatch<React.SetStateAction<string[]>>;
-  discountWebsites?: IWebsite[];
-  isDiscountWebsitesLoading?: boolean;
   isEditMode?: boolean;
   onAvailabilityStatusChange?: (
     status: "available" | "unavailable" | null,
@@ -76,8 +71,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setBusinessId,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
-  discountWebsites = [],
-  isDiscountWebsitesLoading = false,
   isEditMode = false,
   onAvailabilityStatusChange,
 }) => {
@@ -93,53 +86,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   const handleChange = (updates: Partial<BusinessFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   };
-
-  // ─── Discount websites — "mark as supplier" (superadmin only) ──────────────────
-  // Independent of the vendor's "provides discount" flag: a superadmin can mark a
-  // business as a discount supplier whether or not the business offers a discount.
-  // The list itself is fetched once by the wizard and passed in via props.
-  const showDiscountWebsites = isSuperadmin;
-  const selectedDiscountWebsiteIds =
-    formData.associatedDiscountWebsiteIds ?? [];
-
-  const toggleDiscountWebsite = useCallback(
-    (id: string) => {
-      setFormData((prev: any) => {
-        const current: string[] = Array.isArray(
-          prev.associatedDiscountWebsiteIds,
-        )
-          ? prev.associatedDiscountWebsiteIds
-          : [];
-        return {
-          ...prev,
-          associatedDiscountWebsiteIds: current.includes(id)
-            ? current.filter((x) => x !== id)
-            : [...current, id],
-        };
-      });
-    },
-    [setFormData],
-  );
-
-  const toggleAllDiscountWebsites = useCallback(
-    (allIds: string[]) => {
-      setFormData((prev: any) => {
-        const current: string[] = Array.isArray(
-          prev.associatedDiscountWebsiteIds,
-        )
-          ? prev.associatedDiscountWebsiteIds
-          : [];
-        const allSelected = allIds.every((id) => current.includes(id));
-        return {
-          ...prev,
-          associatedDiscountWebsiteIds: allSelected
-            ? current.filter((id) => !allIds.includes(id))
-            : Array.from(new Set([...current, ...allIds])),
-        };
-      });
-    },
-    [setFormData],
-  );
 
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
@@ -168,86 +114,78 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         dmoSectionRef={dmoSectionRef}
       />
 
-      {/* Discount websites — mark this business as a supplier (superadmin only) */}
-      {showDiscountWebsites &&
-        isDiscountWebsitesLoading &&
-        discountWebsites.length === 0 && (
-          <p
-            className={`text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}
+      {/* Mark as supplier — superadmin only, independent of the vendor's
+          "provides discount" flag */}
+      {isSuperadmin && (
+        <div
+          className={`rounded-xl border p-4 transition-colors ${
+            formData.markedAsSupplier
+              ? isDark
+                ? "border-teal-700/60 bg-teal-950/20"
+                : "border-teal-300 bg-teal-50/60"
+              : isDark
+                ? "border-gray-700 bg-gray-800/40"
+                : "border-gray-200 bg-gray-50"
+          }`}
+        >
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!formData.markedAsSupplier}
+            onClick={() =>
+              setFormData((prev: any) => ({
+                ...prev,
+                markedAsSupplier: !prev.markedAsSupplier,
+              }))
+            }
+            className="flex w-full items-start justify-between gap-3 text-start focus:outline-none"
           >
-            {t("mark_as_supplier_loading")}
-          </p>
-        )}
-
-      {showDiscountWebsites && discountWebsites.length > 0 && (
-        <div>
-          <label
-            className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("mark_as_supplier")}
-          </label>
-          <p
-            className={`text-xs mb-2 ${isDark ? "text-gray-500" : "text-gray-500"}`}
-          >
-            {t("mark_as_supplier_desc")}
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            <label
-              className={`flex items-center gap-2 cursor-pointer border rounded p-2 ${
-                isDark
-                  ? "border-gray-700 bg-gray-900 text-gray-300"
-                  : "border-gray-300 bg-white text-gray-700"
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={
-                  discountWebsites.length > 0 &&
-                  discountWebsites.every((w) =>
-                    selectedDiscountWebsiteIds.includes(w._id),
-                  )
-                }
-                onChange={() =>
-                  toggleAllDiscountWebsites(discountWebsites.map((w) => w._id))
-                }
-                className={
+            <span className="flex items-start gap-3">
+              <span
+                className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
                   isDark
-                    ? "rounded bg-gray-900 border-gray-700 accent-teal-500"
-                    : "rounded bg-white border-gray-300 accent-teal-600"
-                }
-              />
-              <Globe className="h-6 w-6" />
-              <span>{t("all")}</span>
-            </label>
-
-            {discountWebsites.map((site) => (
-              <label
-                key={site._id}
-                className={`flex items-center gap-2 cursor-pointer border rounded p-2 ${
-                  isDark
-                    ? "border-gray-700 bg-gray-900 text-gray-300"
-                    : "border-gray-300 bg-white text-gray-700"
+                    ? "bg-teal-900/40 text-teal-300"
+                    : "bg-teal-100 text-teal-700"
                 }`}
               >
-                <input
-                  type="checkbox"
-                  checked={selectedDiscountWebsiteIds.includes(site._id)}
-                  onChange={() => toggleDiscountWebsite(site._id)}
-                  className={
-                    isDark
-                      ? "rounded bg-gray-900 border-gray-700 accent-teal-500"
-                      : "rounded bg-white border-gray-300 accent-teal-600"
-                  }
-                />
-                <ImageWithFallback
-                  src={site?.logo}
-                  alt={site?.name}
-                  className="w-8 h-8 object-contain"
-                />
-                <span>{site.name}</span>
-              </label>
-            ))}
-          </div>
+                <Store className="h-5 w-5" />
+              </span>
+              <span className="block">
+                <span
+                  className={`block text-sm font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}
+                >
+                  {t("mark_as_supplier")}
+                </span>
+                <span
+                  className={`mt-0.5 block text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                >
+                  {t("mark_as_supplier_desc")}
+                </span>
+              </span>
+            </span>
+
+            <span
+              className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors ${
+                formData.markedAsSupplier
+                  ? "bg-teal-600"
+                  : isDark
+                    ? "bg-gray-600"
+                    : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                  formData.markedAsSupplier
+                    ? isRTL
+                      ? "right-0.5"
+                      : "left-[22px]"
+                    : isRTL
+                      ? "right-[22px]"
+                      : "left-0.5"
+                }`}
+              />
+            </span>
+          </button>
         </div>
       )}
 

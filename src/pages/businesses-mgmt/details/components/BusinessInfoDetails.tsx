@@ -45,7 +45,9 @@ interface Business {
   associatedWebsiteIds: string[];
   _id?: string;
   providesDiscount?: boolean;
-  // Populated to full website objects on the by-id detail route
+  // Superadmin-only flag marking this business as a regional discount supplier
+  markedAsSupplier?: boolean;
+  // Populated to full website objects on the by-id detail route (when available)
   associatedDiscountWebsiteIds?: {
     _id: string;
     name: string;
@@ -122,7 +124,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
 
       {/* Regional discount website QR — shown whenever the business is marked as
           a supplier, independent of the vendor's providesDiscount flag */}
-      {(business?.associatedDiscountWebsiteIds?.length ?? 0) > 0 && (
+      {business?.markedAsSupplier && (
         <DiscountWebsiteQR
           businessId={business?._id}
           discountWebsites={business?.associatedDiscountWebsiteIds}

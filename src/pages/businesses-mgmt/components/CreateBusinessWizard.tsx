@@ -23,7 +23,6 @@ import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
-import { useGetDiscountWebsitesQuery } from "@/store/api/masterDataApi";
 
 import {
   BusinessBasicInfos,
@@ -198,14 +197,6 @@ function CreateBusinessWizardInner({
     (state) => state.auth,
   );
 
-  // Fetch the "mark as supplier" list once when the wizard opens (superadmin
-  // only) and hand it to BusinessBasicInfos, so step 1 doesn't block on this
-  // request every time it's rendered.
-  const { data: discountWebsites = [], isFetching: isDiscountWebsitesLoading } =
-    useGetDiscountWebsitesQuery(undefined, {
-      skip: userRole !== "superadmin",
-    });
-
   const { allWebsites } = useCommon();
   const hasAssociatedWebsites = useMemo(
     () =>
@@ -237,7 +228,7 @@ function CreateBusinessWizardInner({
     providesDiscount: false,
     minDiscount: "" as number | string,
     maxDiscount: "" as number | string,
-    associatedDiscountWebsiteIds: [] as string[],
+    markedAsSupplier: false,
 
     // Step 2
     email: "",
@@ -535,11 +526,7 @@ function CreateBusinessWizardInner({
         providesDiscount: editData?.providesDiscount ?? false,
         minDiscount: editData?.minDiscount ?? "",
         maxDiscount: editData?.maxDiscount ?? "",
-        // Detail route populates this to IWebsite[]; the list route returns raw
-        // ids. Normalise to ids for the form state either way.
-        associatedDiscountWebsiteIds: (
-          editData?.associatedDiscountWebsiteIds || []
-        ).map((w: any) => (typeof w === "string" ? w : w?._id)),
+        markedAsSupplier: editData?.markedAsSupplier ?? false,
         slug: editData?.slug || "",
         //images
         logo: opMode === IOpMode.EDIT ? editData?.logo?.image : "",
@@ -692,11 +679,8 @@ function CreateBusinessWizardInner({
     maxDiscount: formData.providesDiscount
       ? Number(formData.maxDiscount) || 0
       : null,
-    // "Mark as supplier" is a superadmin action independent of providesDiscount,
-    // so always persist the selected ids as-is.
-    associatedDiscountWebsiteIds: (
-      formData.associatedDiscountWebsiteIds ?? []
-    ).map((w: any) => (typeof w === "string" ? w : w?._id)),
+    // "Mark as supplier" is a superadmin toggle, independent of providesDiscount.
+    markedAsSupplier: !!formData.markedAsSupplier,
 
     // step 2
     busiEmail: formData.email,
@@ -1049,8 +1033,6 @@ function CreateBusinessWizardInner({
             setSelectAuthorityId={setSelectAuthorityId}
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-            discountWebsites={discountWebsites}
-            isDiscountWebsitesLoading={isDiscountWebsitesLoading}
             isEditMode={opMode === IOpMode.EDIT}
             onAvailabilityStatusChange={setAvailabilityStatus}
           />
