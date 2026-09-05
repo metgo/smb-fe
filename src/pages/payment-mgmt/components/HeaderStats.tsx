@@ -165,23 +165,38 @@ const STATUS_LABEL_KEY: Record<StatusKey, string> = {
   canceled: "canceled",
 };
 
-function StatusInline({ status, n }: { status: StatusKey; n: number }) {
+function StatusInline({
+  status,
+  n,
+  isReconciliation,
+}: {
+  status: StatusKey;
+  n: number;
+  isReconciliation?: boolean;
+}) {
   const { t } = useTranslation("reconciliation");
   const { isDark } = useThemeClasses();
 
   // Hide zero-count statuses entirely.
   if (!n) return null;
 
+  // Reconciliation `pending` is the default/unset state (no dispute, not yet
+  // finalized) - label it "No Dispute" and drop the warning-yellow dot so it
+  // doesn't read as an action item.
+  const reconPending = isReconciliation && status === "pending";
+  const labelKey = reconPending ? "no_dispute" : STATUS_LABEL_KEY[status];
+  const dot = reconPending ? "bg-slate-400" : STATUS_DOT[status];
+
   return (
     <span className="inline-flex items-center gap-1.5 text-xs">
-      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
       <span
         className={`font-semibold ${isDark ? "text-gray-100" : "text-gray-900"}`}
       >
         {n}
       </span>
       <span className={isDark ? "text-gray-400" : "text-gray-500"}>
-        {t(STATUS_LABEL_KEY[status])}
+        {t(labelKey)}
       </span>
     </span>
   );
@@ -207,14 +222,21 @@ const RECONCILIATION_STATUS_ORDER: StatusKey[] = [
 function StatusBreakdown({
   order,
   counts,
+  isReconciliation,
 }: {
   order: StatusKey[];
   counts: Partial<Record<StatusKey, number>>;
+  isReconciliation?: boolean;
 }) {
   return (
     <span className="flex flex-wrap gap-x-3 gap-y-1">
       {order.map((status) => (
-        <StatusInline key={status} status={status} n={counts[status] ?? 0} />
+        <StatusInline
+          key={status}
+          status={status}
+          n={counts[status] ?? 0}
+          isReconciliation={isReconciliation}
+        />
       ))}
     </span>
   );
@@ -351,6 +373,7 @@ const HeaderStats = ({
             <StatusBreakdown
               order={RECONCILIATION_STATUS_ORDER}
               counts={stats.statusOverview}
+              isReconciliation
             />
           }
         />

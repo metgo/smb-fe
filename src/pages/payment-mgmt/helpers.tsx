@@ -176,17 +176,32 @@ export function getStatusBadge(
   status: string,
   isDark: boolean,
   t: (key: string) => string,
+  // "reconciliation" relabels the default `pending`/unset state as "No Dispute".
+  // Reconciliation status stays `pending` for every order-product until Finalize
+  // Payouts runs - it does NOT mean a dispute is pending or that the row needs
+  // action, which is how "Pending" was being read. Order (delivery) status is
+  // left untouched.
+  context?: "reconciliation",
 ) {
+  const isRecon = context === "reconciliation";
+
   const badges: Record<
     string,
     { bg: string; text: string; icon: any; label: string }
   > = {
-    pending: {
-      bg: isDark ? "bg-yellow-900/20" : "bg-yellow-100",
-      text: isDark ? "text-yellow-400" : "text-yellow-800",
-      icon: Clock,
-      label: t("pending"),
-    },
+    pending: isRecon
+      ? {
+          bg: isDark ? "bg-slate-800" : "bg-slate-100",
+          text: isDark ? "text-slate-300" : "text-slate-600",
+          icon: CheckCircle,
+          label: t("no_dispute"),
+        }
+      : {
+          bg: isDark ? "bg-yellow-900/20" : "bg-yellow-100",
+          text: isDark ? "text-yellow-400" : "text-yellow-800",
+          icon: Clock,
+          label: t("pending"),
+        },
     processing: {
       bg: isDark ? "bg-yellow-900/20" : "bg-yellow-100",
       text: isDark ? "text-yellow-400" : "text-yellow-800",
@@ -388,7 +403,7 @@ export function buildOrderColumns({
       sortable: false,
       label: t("reconciliation_status"),
       render: (order: IMonthlyOrder) =>
-        getStatusBadge(order.reconciliationStatus, isDark, t),
+        getStatusBadge(order.reconciliationStatus, isDark, t, "reconciliation"),
     },
     {
       key: "externalApiId",
