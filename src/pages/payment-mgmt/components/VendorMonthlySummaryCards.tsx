@@ -140,8 +140,11 @@ const VendorMonthlySummaryCards = ({
   const reconcillationStats = [
     {
       key: "pendingCount",
-      label: t("pending"),
-      icon: Clock,
+      // Reconciliation `pending` = default/unset (no dispute, not yet finalized),
+      // not an action item - shown as "No Dispute" to match the status column.
+      label: t("no_dispute"),
+      // icon: Clock,
+      icon: CheckCircle2,
       status: "pending",
     },
     {
