@@ -383,7 +383,7 @@ export const PaymentMgmtPage = () => {
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               >
                 <option value="all">{t("all_statuses")}</option>
-                <option value="pending">{t("pending")}</option>
+                <option value="pending">{t("no_dispute")}</option>
                 <option value="approved">{t("approved")}</option>
                 <option value="disputed">{t("disputed")}</option>
                 <option value="rejected">{t("rejected")}</option>

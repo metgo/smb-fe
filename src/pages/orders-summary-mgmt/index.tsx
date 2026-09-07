@@ -42,6 +42,16 @@ import { ORDER_SUMMARY_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
 
+// Show a ₪ amount with at most 2 decimals, floored - never round a money value
+// up (10,476.568 -> ₪10,476.56). The backend already floors these; this is the
+// display-side guard so a bare toLocaleString() can't leak a 3rd decimal again.
+const formatMoney = (value: unknown) => {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n === 0) return "-";
+  const floored = Math.floor(n * 100 + 1e-6) / 100;
+  return `₪${floored.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+};
+
 const { defaultColumns, columnDefinitions } = ORDER_SUMMARY_COLUMNS;
 
 type SummaryColumnVisibility = typeof defaultColumns;
@@ -333,15 +343,11 @@ export default function OrdersSummaryMgmtPage() {
       key: "totalAmount",
       label: t("total_amount"),
       sortable: true,
-      render: (row: any) => {
-        const total = row.totalAmount || 0;
-
-        return (
-          <div className="text-sm font-medium">
-            {total ? `₪${total.toLocaleString()}` : "-"}
-          </div>
-        );
-      },
+      render: (row: any) => (
+        <div className="text-sm font-medium">
+          {formatMoney(row.totalAmount)}
+        </div>
+      ),
     },
 
     {
@@ -350,9 +356,7 @@ export default function OrdersSummaryMgmtPage() {
       sortable: true,
       render: (row: any) => (
         <div className="text-sm font-medium">
-          {row.totalAmountPaidByCreditCard
-            ? `₪${row.totalAmountPaidByCreditCard.toLocaleString()}`
-            : "-"}
+          {formatMoney(row.totalAmountPaidByCreditCard)}
         </div>
       ),
     },

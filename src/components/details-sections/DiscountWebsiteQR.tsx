@@ -21,10 +21,10 @@ const DiscountWebsiteQR = ({ businessId }: DiscountWebsiteQRProps) => {
   if (!businessId) return null;
 
   // A "marked as supplier" business appears on the regional discount website.
-  // QR points at <DISCOUNT_URL>businessId=<id>.
+  // QR points at <DISCOUNT_URL><id>.
   const website = {
     name: t("supplier_website"),
-    url: `${DISCOUNT_URL}businessId=`,
+    url: DISCOUNT_URL,
     logo: "",
   };
   const fullUrl = `${website.url}${businessId}`;
