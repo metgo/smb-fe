@@ -11,40 +11,40 @@ export class PromotionalItem {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BussCategory' }],
     required: false,
   })
-    categoryIds: mongoose.Types.ObjectId[];
+  categoryIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BussSubCategory' }],
     required: false,
   })
-    subCategoryIds: mongoose.Types.ObjectId[];
+  subCategoryIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'GroupType' }],
     required: false,
   })
-    groupTypesId: mongoose.Types.ObjectId[];
+  groupTypesId: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Accessibility' }],
     required: false,
   })
-    accesibilitiesId: mongoose.Types.ObjectId[];
+  accesibilitiesId: mongoose.Types.ObjectId[];
 
   @Prop({ type: Boolean, default: false })
-    isAll: boolean;
+  isAll: boolean;
 }
 
 @Schema()
 export class MediaItem {
-  @Prop({ default: '' })
-    url: string;
+  @Prop()
+  url: string;
 
-  @Prop({ default: '' })
-    name: string;
+  @Prop()
+  name: string;
 
   @Prop({ default: false })
-    isActive: boolean;
+  isActive: boolean;
 }
 
 export const MediaItemSchema = SchemaFactory.createForClass(MediaItem);
@@ -52,258 +52,258 @@ export const MediaItemSchema = SchemaFactory.createForClass(MediaItem);
 @Schema()
 export class ExternalApi extends AuditableSchema {
   @Prop({ default: null })
-    name: string;
-
-  @Prop({ default: null })
-    ipAddress: string;
-
-  @Prop({ default: null })
-    gaPropertyId: string;
+  name: string;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: Theme.name,
     required: false,
   })
-    themeId: mongoose.Types.ObjectId;
+  themeId: mongoose.Types.ObjectId;
 
   @Prop({ type: PromotionalItem, required: false })
-    promotionalBusinesses: PromotionalItem;
+  promotionalBusinesses: PromotionalItem;
 
   @Prop({ type: PromotionalItem, required: false })
-    promotionalEvents: PromotionalItem;
+  promotionalEvents: PromotionalItem;
 
   @Prop({ type: PromotionalItem, required: false })
-    promotionalTrips: PromotionalItem;
+  promotionalTrips: PromotionalItem;
 
   @Prop({ default: 0 })
-    score: number;
+  score: number;
 
   /* Step 1 – General Config */
   @Prop({ unique: true, type: String, required: true })
-    identifierId: string;
+  identifierId: string;
 
-  @Prop({ default: '' })
-    platformCharge: number;
+  @Prop()
+  platformCharge: number;
 
-  @Prop({ default: '' })
-    websiteNameEn: string;
+  @Prop()
+  websiteNameEn: string;
 
-  @Prop({ default: '' })
-    websiteNameHe: string;
+  @Prop()
+  websiteNameHe: string;
 
-  @Prop({ default: '' })
-    websiteNameAr: string;
+  @Prop()
+  websiteNameAr: string;
 
-  @Prop({ default: '' })
-    sloganEn: string;
+  @Prop()
+  sloganEn: string;
 
-  @Prop({ default: '' })
-    sloganHe: string;
+  @Prop()
+  sloganHe: string;
 
-  @Prop({ default: '' })
-    sloganAr: string;
+  @Prop()
+  sloganAr: string;
 
-  @Prop({ default: '' })
-    websiteUrl: string;
+  @Prop()
+  websiteUrl: string;
 
   @Prop({ default: ExternalApiPurpose.MARKETPLACE })
-    purpose: ExternalApiPurpose;
+  purpose: ExternalApiPurpose;
 
   @Prop({ default: true })
-    isActive: boolean;
+  isActive: boolean;
 
   /* Step 2 - Campaign Selection */
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' }],
     required: false,
   })
-    campIds: mongoose.Types.ObjectId[];
+  campIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' }],
     required: false,
   })
-    primaryCampIds: mongoose.Types.ObjectId[];
+  primaryCampIds: mongoose.Types.ObjectId[];
 
   /* Step 2 – Branding & Media */
-  @Prop({ default: '' })
-    logoUrl: string;
+  @Prop()
+  logoUrl: string;
 
-  @Prop({ default: '' })
-    faviconUrl: string;
+  @Prop()
+  faviconUrl: string;
 
-  @Prop({ default: '' })
-    specialSymbolUrl: string;
+  @Prop()
+  specialSymbolUrl: string;
 
-  @Prop({ default: '' })
-    bgImageUrl: string;
+  @Prop()
+  bgImageUrl: string;
 
   /* Step 3 – Home Page Videos */
   @Prop({ type: [MediaItemSchema], default: [] })
-    desktopVideos: MediaItem[];
+  desktopVideos: MediaItem[];
 
   @Prop({ type: [MediaItemSchema], default: [] })
-    mobileVideos: MediaItem[];
+  mobileVideos: MediaItem[];
 
   @Prop({ type: [MediaItemSchema], default: [] })
-    desktopVideoThumbnails: MediaItem[];
+  desktopVideoThumbnails: MediaItem[];
 
   @Prop({ type: [MediaItemSchema], default: [] })
-    mobileVideoThumbnails: MediaItem[];
+  mobileVideoThumbnails: MediaItem[];
 
   /* Step 4 – Theme & Appearance */
   @Prop({ default: '#0d9488' })
-    primaryColor: string;
+  primaryColor: string;
 
   @Prop({ default: '#6366f1' })
-    secondaryColor: string;
+  secondaryColor: string;
 
   @Prop({ default: '#ffffff' })
-    backgroundColor: string;
+  backgroundColor: string;
 
   @Prop({ default: 'Inter' })
-    fontFamily: string;
+  fontFamily: string;
 
-  @Prop({ default: '' })
-    fontSourceUrl: string;
+  @Prop()
+  fontSourceUrl: string;
 
   @Prop({ default: 'rounded' })
-    buttonStyle: string;
+  buttonStyle: string;
 
   @Prop({ default: '8' })
-    buttonRadius: string;
+  buttonRadius: string;
 
   @Prop({ default: false })
-    darkModeEnabled: boolean;
+  darkModeEnabled: boolean;
 
   /* Step 5 – Social Media */
-  @Prop({ default: '' })
-    facebookUrl: string;
+  @Prop()
+  facebookUrl: string;
 
-  @Prop({ default: '' })
-    instagramUrl: string;
+  @Prop()
+  instagramUrl: string;
 
-  @Prop({ default: '' })
-    twitterUrl: string;
+  @Prop()
+  twitterUrl: string;
 
-  @Prop({ default: '' })
-    youtubeUrl: string;
+  @Prop()
+  youtubeUrl: string;
 
-  @Prop({ default: '' })
-    linkedinUrl: string;
+  @Prop()
+  linkedinUrl: string;
 
-  @Prop({ default: '' })
-    tiktokUrl: string;
-
-  @Prop({ default: true })
-    showSocialIcons: boolean;
+  @Prop()
+  tiktokUrl: string;
 
   @Prop({ default: true })
-    socialLinksNewTab: boolean;
+  showSocialIcons: boolean;
+
+  @Prop({ default: true })
+  socialLinksNewTab: boolean;
 
   /* Step 6 – Contact Details */
-  @Prop({ default: '' })
-    phoneNumber: string;
+  @Prop()
+  phoneNumber: string;
 
-  @Prop({ default: '' })
-    whatsappNumber: string;
+  @Prop()
+  whatsappNumber: string;
 
-  @Prop({ default: '' })
-    whatsappMessageEn: string;
+  @Prop()
+  whatsappMessageEn: string;
 
-  @Prop({ default: '' })
-    whatsappMessageHe: string;
+  @Prop()
+  whatsappMessageHe: string;
 
-  @Prop({ default: '' })
-    whatsappMessageAr: string;
+  @Prop()
+  whatsappMessageAr: string;
 
-  @Prop({ default: '' })
-    email: string;
+  @Prop()
+  email: string;
 
-  @Prop({ default: '' })
-    supportEmail: string;
+  @Prop()
+  supportEmail: string;
 
-  @Prop({ default: '' })
-    physicalAddress: string;
+  @Prop()
+  physicalAddress: string;
 
-  @Prop({ default: '' })
-    googleMapsEmbed: string;
+  @Prop()
+  googleMapsEmbed: string;
 
   @Prop({ default: true })
-    enableClickToCall: boolean;
+  enableClickToCall: boolean;
 
   @Prop({ default: false })
-    enableWhatsappChat: boolean;
+  enableWhatsappChat: boolean;
 
   /* Step 7 – SEO & Meta */
-  @Prop({ default: '' })
-    metaTitle: string;
+  @Prop()
+  metaTitle: string;
 
-  @Prop({ default: '' })
-    metaDescription: string;
+  @Prop()
+  metaDescription: string;
 
-  @Prop({ default: '' })
-    metaKeywords: string;
+  @Prop()
+  metaKeywords: string;
 
-  @Prop({ default: '' })
-    ogTitle: string;
+  @Prop()
+  ogTitle: string;
 
-  @Prop({ default: '' })
-    ogDescription: string;
+  @Prop()
+  ogDescription: string;
 
-  @Prop({ default: '' })
-    ogImageUrl: string;
+  @Prop()
+  ogImageUrl: string;
 
-  @Prop({ default: '' })
-    twitterCardTitle: string;
+  @Prop()
+  twitterCardTitle: string;
 
-  @Prop({ default: '' })
-    twitterCardDescription: string;
+  @Prop()
+  twitterCardDescription: string;
 
-  @Prop({ default: '' })
-    twitterCardImageUrl: string;
+  @Prop()
+  twitterCardImageUrl: string;
 
-  @Prop({ default: '' })
-    canonicalUrl: string;
+  @Prop()
+  canonicalUrl: string;
 
   @Prop({ default: 'User-agent: *\nAllow: /' })
-    robotsTxt: string;
+  robotsTxt: string;
 
-  @Prop({ default: '' })
-    sitemapUrl: string;
+  @Prop()
+  sitemapUrl: string;
 
   /* Step 8 – Analytics & Tracking */
-  @Prop({ default: '' })
-    googleAnalyticsId: string;
+  @Prop()
+  googleAnalyticsId: string;
 
-  @Prop({ default: '' })
-    googleTagManagerId: string;
+  @Prop()
+  googleAdsConvTrackId: string;
 
-  @Prop({ default: '' })
-    facebookPixelId: string;
+  @Prop()
+  enableWidgetId: string;
 
-  @Prop({ default: '' })
-    headerScripts: string;
+  @Prop()
+  hotjarId: string;
 
-  @Prop({ default: '' })
-    footerScripts: string;
+  @Prop()
+  facebookPixelId: string;
+
+  @Prop()
+  headerScripts: string;
+
+  @Prop()
+  footerScripts: string;
 
   /* Step 9 – Localization */
   @Prop({ default: 'English' })
-    defaultLanguage: string;
+  defaultLanguage: string;
 
   @Prop({ default: false })
-    multiLanguageEnabled: boolean;
+  multiLanguageEnabled: boolean;
 
   @Prop({ default: 'UTC' })
-    timezone: string;
+  timezone: string;
 
   @Prop({ default: 'USD' })
-    currency: string;
+  currency: string;
 
-  @Prop({ default: '' })
-    dateFormat: string;
+  @Prop()
+  dateFormat: string;
 }
 
 export type ExternalApiDocument = HydratedDocument<ExternalApi>;

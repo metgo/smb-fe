@@ -48,7 +48,9 @@ const IDENTITY_THEME_FIELDS = {
 
   // Analytics
   googleAnalyticsId: 1,
-  googleTagManagerId: 1,
+  googleAdsConvTrackId: 1,
+  enableWidgetId: 1,
+  hotjarId: 1,
   facebookPixelId: 1,
   headerScripts: 1,
   footerScripts: 1,

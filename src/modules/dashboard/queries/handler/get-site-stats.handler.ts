@@ -66,9 +66,9 @@ export class GetSiteStatsHandler implements IQueryHandler<GetSiteStatsQuery> {
         transferredToBusinessTotal,
       ] = await Promise.all([
         // 1. GA visitors in last 30 days via the site's gaPropertyId
-        externalApi.gaPropertyId
+        externalApi.googleAnalyticsId
           ? this.googleAnalyticsService.activeUsersLastMonth(
-            externalApi.gaPropertyId,
+            externalApi.googleAnalyticsId,
           )
           : Promise.resolve(0),
 
