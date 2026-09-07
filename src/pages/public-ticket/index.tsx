@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "sonner";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,8 +14,6 @@ import {
   AlertCircle,
   Ticket,
 } from "lucide-react";
-
-import { toast } from "sonner";
 
 import { useGetPublicEventTicketQuery } from "@/store/api/eventQueryApi";
 import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi";
@@ -82,7 +81,7 @@ const statusConfig: Record<
 };
 
 const orderStatusConfig: Record<string, { color: string; labelKey: string }> = {
-  completed: { color: "bg-green-500 text-white", labelKey: "completed" },
+  attended: { color: "bg-green-500 text-white", labelKey: "attended" },
   canceled: { color: "bg-red-500 text-white", labelKey: "canceled" },
   pending: { color: "bg-yellow-500 text-white", labelKey: "purchased" },
 };
@@ -126,9 +125,9 @@ export default function PublicTicketPage() {
     try {
       await updateStatus({
         orderId: ticket._id,
-        status: "completed",
+        status: "attended",
       }).unwrap();
-      toast.success(t("order_status_updated", { status: t("completed") }));
+      toast.success(t("order_status_updated", { status: t("attended") }));
       refetch();
     } catch {
       toast.error(t("failed_to_update_order_status"));
@@ -177,7 +176,7 @@ export default function PublicTicketPage() {
 
   const fullName = `${ticket.firstName} ${ticket.lastName ?? ""}`.trim();
 
-  const isCompleted = ticket.status?.toLowerCase() === "completed";
+  const isAttended = ticket.status?.toLowerCase() === "attended";
   const isCanceled = ticket.status?.toLowerCase() === "canceled";
 
   const isExpired = (() => {
@@ -220,14 +219,14 @@ export default function PublicTicketPage() {
           )}
 
           {/* Scanned banner */}
-          {isCompleted && !isCanceled && (
+          {isAttended && !isCanceled && (
             <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
               {t("ticket_scanned")}
             </div>
           )}
 
           {/* Expired banner */}
-          {isExpired && !isCompleted && !isCanceled && (
+          {isExpired && !isAttended && !isCanceled && (
             <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
               {t("ticket_expired")}
             </div>
@@ -459,14 +458,14 @@ export default function PublicTicketPage() {
             {/* Mark as Completed */}
             <button
               onClick={handleMarkCompleted}
-              disabled={isCompleted || isCanceled || isUpdating}
+              disabled={isAttended || isCanceled || isUpdating}
               className="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-teal-600 hover:bg-teal-700 text-white"
             >
               {isUpdating
                 ? t("updating")
                 : isCanceled
                   ? t("ticket_canceled")
-                  : isCompleted
+                  : isAttended
                     ? t("completed_checkmark")
                     : t("mark_as_completed")}
             </button>
