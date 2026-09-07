@@ -323,6 +323,8 @@
   "upload_image_info": "قم برفع الصور لإنشاء معرض صور للحدث",
 
   "completed": "مكتمل",
+  "attended": "حضر",
+  "failure": "فشل",
   "processing": "قيد المعالجة",
 
   "cancel_order": "إلغاء الطلب",

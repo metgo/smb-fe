@@ -121,7 +121,7 @@ export default function PublicTicketPage() {
     useUpdateEventTicketStatusMutation();
 
   const handleMarkCompleted = async () => {
-    if (!ticket) return;
+    if (!ticket || isTicketExpired()) return;
     try {
       await updateStatus({
         orderId: ticket._id,
@@ -179,7 +179,7 @@ export default function PublicTicketPage() {
   const isAttended = ticket.status?.toLowerCase() === "attended";
   const isCanceled = ticket.status?.toLowerCase() === "canceled";
 
-  const isExpired = (() => {
+  const isTicketExpired = () => {
     const days = ticket.ticketDayDescription?.length
       ? ticket.ticketDayDescription
       : ticket.eventDayDescription;
@@ -196,7 +196,9 @@ export default function PublicTicketPage() {
       return false;
     });
     return !hasActiveDay;
-  })();
+  };
+
+  const isExpired = isTicketExpired();
 
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 via-white to-teal-50">
@@ -458,7 +460,7 @@ export default function PublicTicketPage() {
             {/* Mark as Completed */}
             <button
               onClick={handleMarkCompleted}
-              disabled={isAttended || isCanceled || isUpdating}
+              disabled={isAttended || isCanceled || isExpired || isUpdating}
               className="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-teal-600 hover:bg-teal-700 text-white"
             >
               {isUpdating
@@ -467,7 +469,9 @@ export default function PublicTicketPage() {
                   ? t("ticket_canceled")
                   : isAttended
                     ? t("completed_checkmark")
-                    : t("mark_as_completed")}
+                    : isExpired
+                      ? t("ticket_expired")
+                      : t("mark_as_completed")}
             </button>
           </div>
         </div>

@@ -11,15 +11,14 @@ import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi
 import {
   useLazyGetEventTicketsQuery,
   useLazyGetEventTicketsExportXlsxQuery,
-  // useLazyGetEventTicketsExportCsvQuery,
-  // useLazyGetEventTicketsExportPdfQuery,
 } from "@/store/api/eventQueryApi";
 import TicketRegDetailModal from "./TicketRegDetailModal";
 import { formatDateTime } from "@/helpers/formatter";
 
 const STATUS_OPTIONS = [
-  { value: "completed", label: "Completed" },
-  { value: "canceled", label: "Cancelled" },
+  { value: "attended", label: "attended" },
+  { value: "completed", label: "completed" },
+  { value: "canceled", label: "cancelled" },
 ];
 
 const getStatusColor = (status: string, isDark: boolean) => {
@@ -190,7 +189,8 @@ const StatusCell: React.FC<StatusCellProps> = ({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleSelect = async (value: string) => {
+  const handleSelect = async (e: React.MouseEvent, value: string) => {
+    e.stopPropagation();
     setOpen(false);
     if (value === ticket.status) return;
     if (value === "canceled") {
@@ -224,9 +224,16 @@ const StatusCell: React.FC<StatusCellProps> = ({
 
   return (
     <>
-      <div ref={dropdownRef} className="relative inline-block">
+      <div
+        ref={dropdownRef}
+        className="relative inline-block"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
-          onClick={() => setOpen((v) => !v)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen((v) => !v);
+          }}
           disabled={isThisUpdating}
           className={clsx(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-opacity capitalize",
@@ -252,7 +259,7 @@ const StatusCell: React.FC<StatusCellProps> = ({
             {STATUS_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
-                onClick={() => handleSelect(opt.value)}
+                onClick={(e) => handleSelect(e, opt.value)}
                 className={clsx(
                   "w-full text-left px-3 py-2 text-xs transition-colors capitalize",
                   ticket.status === opt.value
@@ -274,12 +281,14 @@ const StatusCell: React.FC<StatusCellProps> = ({
       </div>
 
       {showCancelDialog && (
-        <CancelDialog
-          isDark={isDark}
-          isLoading={isThisUpdating}
-          onConfirm={handleCancelConfirm}
-          onCancel={() => setShowCancelDialog(false)}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <CancelDialog
+            isDark={isDark}
+            isLoading={isThisUpdating}
+            onConfirm={handleCancelConfirm}
+            onCancel={() => setShowCancelDialog(false)}
+          />
+        </div>
       )}
     </>
   );
@@ -384,19 +393,6 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
       toast.error(t("failed_to_export"));
     }
   };
-
-  // const exportToPDF = async () => {
-  //   if (!eventId) return;
-  //   try {
-  //     const blob = await fetchExportPdf({ eventId }).unwrap();
-  //     downloadBlob(
-  //       blob,
-  //       `${eventDetails?.name?.replace(/\s+/g, "_") ?? "event"}_registrants.pdf`,
-  //     );
-  //   } catch {
-  //     toast.error(t("failed_to_export"));
-  //   }
-  // };
 
   function handleTicketRegRowClick(ticket: IEventTicket) {
     setTicketDetails(ticket);
@@ -548,6 +544,21 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                       )}
                     >
                       {ticket.amount != null ? `₪${ticket.amount}` : "-"}
+                    </span>
+                  ),
+                },
+                {
+                  key: "quantity",
+                  label: t("quantity"),
+                  sortable: true,
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm font-medium",
+                        isDark ? "text-gray-100" : "text-gray-900",
+                      )}
+                    >
+                      {ticket.quantity}
                     </span>
                   ),
                 },

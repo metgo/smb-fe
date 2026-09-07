@@ -295,6 +295,8 @@
   "notification": "Notification",
 
   "completed": "Completed",
+  "attended": "Attended",
+  "failure": "Failed",
   "processing": "Purchased",
   "purchased": "Purchased",
 
