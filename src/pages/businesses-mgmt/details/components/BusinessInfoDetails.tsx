@@ -47,7 +47,6 @@ interface Business {
   providesDiscount?: boolean;
   // Superadmin-only flag marking this business as a regional discount supplier
   markedAsSupplier?: boolean;
- 
 }
 
 interface BusinessInfoDetailsProps {
@@ -118,9 +117,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       {/* Regional discount website QR — shown whenever the business is marked as
           a supplier, independent of the vendor's providesDiscount flag */}
       {business?.markedAsSupplier && (
-        <DiscountWebsiteQR
-          businessId={business?._id}
-        />
+        <DiscountWebsiteQR businessId={business?._id} />
       )}
 
       {/* Internal Notes */}
