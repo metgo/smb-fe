@@ -570,3 +570,20 @@ export const getApiErrorMessage = (
   if (typeof message === "string") return message;
   return fallback;
 };
+
+// A refunded order reads as "Refunded" on the Orders screens. Covers the
+// backend REFUND_SUCCESS written on cancel of a paid order, plus legacy rows
+// where a cancelled paid order was left as SUCCESS. Display mapping only -
+// reconciliation / revenue logic is untouched.
+export const displayPaymentStatus = (
+  paymentStatus?: string | null,
+  orderStatus?: string | null,
+): string => {
+  if (
+    paymentStatus === "REFUND_SUCCESS" ||
+    (paymentStatus === "SUCCESS" && orderStatus?.toLowerCase() === "canceled")
+  ) {
+    return "REFUNDED";
+  }
+  return paymentStatus ?? "-";
+};

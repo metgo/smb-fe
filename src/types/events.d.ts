@@ -361,6 +361,8 @@ interface IEventTicket {
   amount?: number;
   quantity?: number;
   paymentStatus?: string;
+  attended?: boolean;
+  attendedAt?: string | null;
 }
 
 interface IEventTicketQuestionAnswer {
