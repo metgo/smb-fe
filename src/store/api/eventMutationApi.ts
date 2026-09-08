@@ -93,6 +93,30 @@ export const eventMutationApi = createApi({
       }),
     }),
 
+    // Check-in toggle (Registrations tab). Separate from order-status because
+    // attendance must not overwrite `status` - reconciliation/payout key off it.
+    setEventTicketAttendance: builder.mutation<
+      any,
+      { orderId: string; attended: boolean }
+    >({
+      query: ({ orderId, attended }) => ({
+        url: `${endpoints.eventTickets}/attendance`,
+        method: "PATCH",
+        params: { orderId, attended },
+      }),
+    }),
+
+    // Public QR-scan check-in - no auth token required
+    markPublicTicketAttendance: builder.mutation<
+      any,
+      { eventId: string; ticketId: string }
+    >({
+      query: ({ eventId, ticketId }) => ({
+        url: `${endpoints.publicEventTicket}/${eventId}/${ticketId}/attendance`,
+        method: "PATCH",
+      }),
+    }),
+
     createSession: builder.mutation<
       { data: EventSession },
       CreateSessionPayload
@@ -137,6 +161,8 @@ export const {
   useCreateTicketMutation,
   useDeleteEventMutation,
   useUpdateEventTicketStatusMutation,
+  useSetEventTicketAttendanceMutation,
+  useMarkPublicTicketAttendanceMutation,
   useUpdateTicketReorderMutation,
   useResendTicketEmailToCustomerMutation,
   useNotifyTicketCustomerByEmailSmsMutation,
