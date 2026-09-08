@@ -247,11 +247,11 @@ interface ITargetAudience {
 
 // Send notification payload
 interface ISendNotificationPayload {
-  type: "email" | "sms";
-  recipientType: "all" | "custom";
+  types: Array<"email" | "sms">;
+  recipientType: "all";
   subject?: string;
   message: string;
-  recipients?: string[];
+  scheduleDateTime?: string;
 }
 
 interface INotificationHistoryResponse {

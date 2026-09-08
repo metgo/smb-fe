@@ -1,6 +1,7 @@
 import clsx from "clsx";
-import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
+import { Send } from "lucide-react";
 
+import { AField } from "@/components/form-fields";
 import { ModalWrapper } from "@/components/wrapper";
 import { RichTextEditor } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -20,17 +21,56 @@ interface CreateNotificationWizardProps {
 
 const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
   t,
-  capacity,
   notifications,
   setEditingNotification,
   editingNotification,
   setShowNotificationForm,
   setNotifications,
 }) => {
-  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
+  const { textPrimary, borderColor, hoverBg, bgPrimary, isDark, inputClasses } =
     useThemeClasses();
 
   if (!editingNotification) return;
+
+  const INPUT = clsx(
+    "w-full px-3 py-2.5 text-sm rounded-[9px] transition-[border-color,box-shadow] focus:outline-none focus:ring-2 border",
+    inputClasses,
+    isDark
+      ? "focus:border-blue-400 focus:ring-blue-400/10 [color-scheme:dark]"
+      : "focus:border-blue-500 focus:ring-blue-500/10",
+  );
+
+  const channelBtn = (active: boolean) =>
+    clsx(
+      "text-start px-3.5 py-2.5 rounded-[11px] border-[1.5px] flex flex-col gap-0.5 transition-colors",
+      active
+        ? isDark
+          ? "border-blue-400 bg-blue-950/50"
+          : "border-blue-600 bg-blue-50"
+        : isDark
+          ? "border-gray-700 bg-gray-800"
+          : "border-gray-200 bg-white",
+    );
+
+  const toggleChannel = (channel: "email" | "sms") =>
+    setEditingNotification({
+      ...editingNotification,
+      channels: {
+        ...editingNotification.channels,
+        [channel]: !editingNotification.channels[channel],
+      },
+    });
+
+  const { channels } = editingNotification;
+  const hasChannel = channels.email || channels.sms;
+  const messageIsEmpty = !editingNotification.message
+    .replace(/<[^>]*>/g, "")
+    .trim();
+  const isFormValid =
+    hasChannel &&
+    !!editingNotification.scheduleDateTime &&
+    !!editingNotification.subject.trim() &&
+    !messageIsEmpty;
 
   return (
     <ModalWrapper
@@ -38,9 +78,10 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
         setShowNotificationForm(false);
         setEditingNotification(null);
       }}
-      maxWidth="max-w-3xl h-max"
+      maxWidth="max-w-3xl"
+      height="h-max"
     >
-      <div className=" p-4">
+      <div className={clsx("p-4", bgPrimary)}>
         <h4 className={`text-lg mb-4 ${textPrimary}`}>
           {t("configure_notification")}
         </h4>
@@ -49,216 +90,92 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
           className={clsx(
             `px-6 py-8 space-y-3 max-h-[73vh] overflow-y-auto rounded-lg border`,
             borderColor,
+            bgPrimary,
           )}
         >
-          <div className="flex items-center gap-4">
-            {/* Timing */}
-            <div className="flex-1">
-              <label className={`block text-sm mb-2 ${textSecondary}`}>
-                {t("send_hours_before_event")}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={editingNotification?.hoursBeforeEvent}
-                onChange={(e) =>
-                  setEditingNotification({
-                    ...editingNotification,
-                    hoursBeforeEvent: parseInt(e.target.value) || 1,
-                  })
-                }
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-100"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-              />
-            </div>
-
-            {/* Channels */}
-            <div className="flex-1">
-              <label className={`block text-sm ${textSecondary}`}>
-                {t("channels")} <span className="text-red-500">*</span>
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editingNotification.channels.email}
-                    onChange={(e) =>
-                      setEditingNotification({
-                        ...editingNotification,
-                        channels: {
-                          ...editingNotification.channels,
-                          email: e.target.checked,
-                        },
-                      })
-                    }
-                    className="rounded"
-                  />
-                  <Mail className="w-4 h-4" />
-                  <span className={textSecondary}>{t("email")}</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editingNotification.channels.sms}
-                    onChange={(e) =>
-                      setEditingNotification({
-                        ...editingNotification,
-                        channels: {
-                          ...editingNotification.channels,
-                          sms: e.target.checked,
-                        },
-                      })
-                    }
-                    className="rounded"
-                  />
-                  <MessageSquare className="w-4 h-4" />
-                  <span className={textSecondary}>{t("sms")}</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editingNotification.channels.whatsapp}
-                    onChange={(e) =>
-                      setEditingNotification({
-                        ...editingNotification,
-                        channels: {
-                          ...editingNotification.channels,
-                          whatsapp: e.target.checked,
-                        },
-                      })
-                    }
-                    className="rounded"
-                  />
-                  <Smartphone className="w-4 h-4" />
-                  <span className={textSecondary}>{t("whatsapp")}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Language */}
-            <div className="flex-1">
-              <label className={`block text-sm mb-2 ${textSecondary}`}>
-                {t("language")}
-              </label>
-              <select
-                value={editingNotification.language}
-                onChange={(e) =>
-                  setEditingNotification({
-                    ...editingNotification,
-                    language: e.target.value as "en" | "he" | "ar",
-                  })
-                }
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-100"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-              >
-                <option value="en">{t("english")}</option>
-                <option value="he">{t("hebrew")}</option>
-                <option value="ar">{t("arebic")}</option>
-              </select>
-            </div>
-
-            {/* Template */}
-            <div className="flex-1">
-              <label className={`block text-sm mb-2 ${textSecondary}`}>
-                {t("template")}
-              </label>
-              <select
-                value={editingNotification.template}
-                onChange={(e) =>
-                  setEditingNotification({
-                    ...editingNotification,
-                    template: e.target.value,
-                  })
-                }
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-100"
-                    : "bg-white border-gray-300 text-gray-900"
-                }`}
-              >
-                <option value="24h-reminder">{t("template_24h")}</option>
-                <option value="same-day">{t("template_same_day")}</option>
-                <option value="starting-soon">
-                  {t("template_starting_soon")}
-                </option>
-                <option value="custom">{t("custom")}</option>
-              </select>
-            </div>
-          </div>
-
-          {editingNotification.template === "custom" && (
-            <>
-              {/* Subject */}
-              <div className="">
-                <label className={`block text-sm mb-2 ${textSecondary}`}>
-                  {t("subject")}
-                </label>
+          {/* Fields  */}
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AField label={t("channel_field")} isRequired>
+                <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5 mb-3.5">
+                  <button
+                    type="button"
+                    aria-pressed={editingNotification.channels.email}
+                    className={channelBtn(editingNotification.channels.email)}
+                    onClick={() => toggleChannel("email")}
+                  >
+                    <strong className={clsx("text-sm", textPrimary)}>
+                      {t("channel_email_label")}
+                    </strong>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={editingNotification.channels.sms}
+                    className={channelBtn(editingNotification.channels.sms)}
+                    onClick={() => toggleChannel("sms")}
+                  >
+                    <strong className={clsx("text-sm", textPrimary)}>
+                      {t("channel_sms_label")}
+                    </strong>
+                  </button>
+                </div>
+              </AField>
+              <AField label={t("schedule_date_time_field")} isRequired>
                 <input
-                  type="text"
-                  value={editingNotification.subject}
+                  required
+                  type="datetime-local"
+                  className={INPUT}
+                  value={editingNotification.scheduleDateTime ?? ""}
                   onChange={(e) =>
                     setEditingNotification({
                       ...editingNotification,
-                      subject: e.target.value,
+                      scheduleDateTime: e.target.value,
                     })
                   }
-                  placeholder="Reminder: {{Event Name}} tomorrow at {{Event Time}}"
-                  className={`w-full px-4 py-2 rounded-lg border ${
-                    isDark
-                      ? "bg-gray-800 border-gray-700 text-gray-100"
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
                 />
-              </div>
+              </AField>
+            </div>
 
-              {/* Message Content */}
-              <div className="">
-                <label className={`block text-sm mb-2 ${textSecondary}`}>
-                  {t("message_content")}
-                </label>
+            <AField label={t("subject_field")} isRequired>
+              <input
+                className={INPUT}
+                required
+                value={editingNotification.subject}
+                onChange={(e) =>
+                  setEditingNotification({
+                    ...editingNotification,
+                    subject: e.target.value,
+                  })
+                }
+                placeholder={t("subject_placeholder")}
+              />
+            </AField>
 
-                <RichTextEditor
-                  value={formatFromBackendTemplate(editingNotification.message)}
-                  onChange={(v) =>
-                    setEditingNotification({
-                      ...editingNotification,
-                      message: v,
-                    })
-                  }
-                  variables={[
-                    { label: "Event Name", value: "{EVENT_NAME}" },
-                    { label: "Event Date", value: "{EVENT_DATE}" },
-                    { label: "Event Time", value: "{EVENT_TIME}" },
-                    { label: "Venue", value: "{VENUE}" },
-                    { label: "First Name", value: "{FIRST_NAME}" },
-                    { label: "Ticket QR", value: "{QR}" },
-                  ]}
-                />
-              </div>
+            <label className="flex flex-col gap-1.5 mb-1 last:mb-0">
+              <span className={clsx("text-[12.5px] font-bold", textPrimary)}>
+                {t("content_field")}
+                <span className="text-red-500"> *</span>
+              </span>
+            </label>
 
-              <div
-                className={`p-4 rounded-lg border mb-4 ${
-                  isDark
-                    ? "border-gray-700 bg-gray-900/50"
-                    : "border-gray-200 bg-white"
-                }`}
-              >
-                <div className={`text-xs ${textTertiary} mt-2`}>
-                  {t("recipient_count")}: {capacity || 100}{" "}
-                  {t("ticket_holders")}
-                </div>
-              </div>
-            </>
-          )}
+            <RichTextEditor
+              value={formatFromBackendTemplate(editingNotification.message)}
+              onChange={(v) =>
+                setEditingNotification({
+                  ...editingNotification,
+                  message: v,
+                })
+              }
+              variables={[
+                { label: t("var_event_name"), value: "{EVENT_NAME}" },
+                { label: t("var_event_date"), value: "{EVENT_DATE}" },
+                { label: t("var_event_time"), value: "{EVENT_TIME}" },
+                { label: t("var_venue"), value: "{VENUE}" },
+                { label: t("var_first_name"), value: "{FIRST_NAME}" },
+                { label: t("var_ticket_qr"), value: "{QR}" },
+              ]}
+            />
+          </div>
         </div>
 
         {/* Actions */}
@@ -268,23 +185,19 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
               setShowNotificationForm(false);
               setEditingNotification(null);
             }}
-            className={`px-4 py-2 rounded-lg border transition-colors ${
-              isDark
-                ? "border-gray-700 hover:bg-gray-800"
-                : "border-gray-300 hover:bg-gray-100"
-            }`}
+            className={clsx(
+              "px-4 py-2 rounded-lg border transition-colors cursor-pointer",
+              borderColor,
+              hoverBg,
+              textPrimary,
+            )}
           >
             {t("cancel")}
           </button>
           <button
+            disabled={!isFormValid}
             onClick={() => {
-              if (
-                !editingNotification.channels.email &&
-                !editingNotification.channels.sms &&
-                !editingNotification.channels.whatsapp
-              ) {
-                return;
-              }
+              if (!isFormValid) return;
               const existingIndex = notifications.findIndex(
                 (n) => n._id === editingNotification._id,
               );
@@ -298,7 +211,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
               setShowNotificationForm(false);
               setEditingNotification(null);
             }}
-            className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-2"
+            className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:pointer-events-none"
           >
             <Send className="w-4 h-4" />
             {t("save_notification")}

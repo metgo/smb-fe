@@ -364,25 +364,15 @@ export function useEventWizardState({
       scheduledNotifications: notifications.map((item) => {
         const base = {
           ...(!item.index ? { _id: item._id } : {}),
-          sendHoursBefore: item.hoursBeforeEvent,
           channels: [
             item.channels?.email && "EMAIL",
             item.channels?.sms && "SMS",
-            item.channels?.whatsapp && "WHATSAPP",
           ].filter(Boolean) as ("EMAIL" | "SMS" | "WHATSAPP")[],
-          language: item.language,
-          template: item.template,
           status: item.enabled ? "ACTIVE" : "INACTIVE",
+          subject: item.subject,
+          scheduleDateTime: item.scheduleDateTime,
+          body: formatToBackendTemplate(item.message),
         };
-        if (item.template === "custom") {
-          return {
-            ...base,
-            customTemplate: {
-              subject: item.subject,
-              body: formatToBackendTemplate(item.message),
-            },
-          };
-        }
         return base;
       }),
     }),

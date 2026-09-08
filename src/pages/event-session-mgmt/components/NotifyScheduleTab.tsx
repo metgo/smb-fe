@@ -3,30 +3,21 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Eye, Loader, RotateCw } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 import { AField } from "./AField";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { ModalWrapper } from "@/components/wrapper";
 import {
-  useEventSessionTargetAudienceQuery,
   useGetSendNotificationHistoryDetailsQuery,
   useGetSendNotificationHistoryQuery,
   useSendSessionNotificationMutation,
   useReSendSessionNotificationMutation,
 } from "@/store/api/eventSessionApi";
-import ReactMultiSelect, {
-  type MultiSelectOption,
-} from "@/components/form-fields/ReactMultiSelect";
 import { RichTextEditor } from "@/components/shared";
+import { formatDateTime } from "@/helpers/formatter";
 
-interface AudienceSelection {
-  isAll: boolean;
-  users: ITargetAudience[];
-}
-
-const ALL_VALUE = "all";
 const HISTORY_LIMIT = 10;
 const HISTORY_SKELETON_ROWS = 4;
 
@@ -36,13 +27,15 @@ interface NotifyScheduleTabProps {
 
 export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
   const { t } = useTranslation("event_session");
-  const { isDark, textTertiary, inputClasses, cardClasses, borderColor } =
-    useThemeClasses();
-
-  const { data } = useEventSessionTargetAudienceQuery(
-    wrapperId ? { wrapperId, limit: 10, page: 1 } : skipToken,
-  );
-  const audienceUsers = useMemo(() => data?.data?.users ?? [], [data]);
+  const {
+    isDark,
+    textPrimary,
+    textTertiary,
+    inputClasses,
+    cardClasses,
+    borderColor,
+    language,
+  } = useThemeClasses();
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
@@ -61,7 +54,7 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
 
   const channelBtn = (active: boolean) =>
     clsx(
-      "text-start px-3.5 py-3.5 rounded-[11px] border-[1.5px] flex flex-col gap-0.5 transition-colors",
+      "text-start px-3.5 py-2.5 rounded-[11px] border-[1.5px] flex flex-col gap-0.5 transition-colors",
       active
         ? isDark
           ? "border-blue-400 bg-blue-950/50"
@@ -75,18 +68,10 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     useSendSessionNotificationMutation();
   const [reSendSessionNotification] = useReSendSessionNotificationMutation();
 
-  const [audience, setAudience] = useState<AudienceSelection>({
-    isAll: true,
-    users: [],
-  });
   const [channels, setChannels] = useState<Array<"EMAIL" | "SMS">>(["EMAIL"]);
   const [scheduledAt, setScheduledAt] = useState("");
-  const [template, setTemplate] = useState<
-    "24h-reminder" | "same-day" | "starting-soon" | "custom"
-  >("custom");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  console.log("🚀 ~ NotifyScheduleTab ~ body:", body);
 
   const [historyPage, setHistoryPage] = useState(1);
   const [history, setHistory] = useState<INotificationHistoryItem[]>([]);
@@ -157,63 +142,39 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     }
   }
 
-  const audienceOptions: MultiSelectOption[] = useMemo(
-    () => [
-      { label: t("all_registrants"), value: ALL_VALUE },
-      ...audienceUsers.map((u) => ({ label: u.name, value: u.email })),
-    ],
-    [audienceUsers, t],
-  );
-  const audienceSelectedValues = audience.isAll
-    ? [ALL_VALUE]
-    : audience.users.map((u) => u.email);
-
-  function handleAudienceChange(values: string[]) {
-    if (values.length === 0) {
-      setAudience({ isAll: false, users: [] });
-      return;
-    }
-    if (values.length === 1 && values[0] === ALL_VALUE) {
-      setAudience({ isAll: true, users: [] });
-      return;
-    }
-    const selectedEmails = values.filter((v) => v !== ALL_VALUE);
-    setAudience({
-      isAll: false,
-      users: audienceUsers.filter((u) => selectedEmails.includes(u.email)),
-    });
-  }
-
-  const recipients = audience.isAll ? audienceUsers : audience.users;
-  const count = new Set(recipients.map((r) => r.email)).size;
-
   function toggleChannel(value: "EMAIL" | "SMS") {
     setChannels((prev) =>
       prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value],
     );
   }
 
+  const bodyIsEmpty = !body.replace(/<[^>]*>/g, "").trim();
+  const isFormValid =
+    !!wrapperId &&
+    channels.length > 0 &&
+    !!scheduledAt &&
+    !!subject.trim() &&
+    !bodyIsEmpty;
+
   async function send() {
-    if (!subject.trim() || !count || !wrapperId || !channels.length) return;
+    if (!isFormValid) {
+      toast.error(t("toast_notification_send_error"));
+      return;
+    }
     try {
-      await Promise.all(
-        channels.map((c) =>
-          sendSessionNotification({
-            wrapperId,
-            data: {
-              type: c === "EMAIL" ? "email" : "sms",
-              recipientType: audience.isAll ? "all" : "custom",
-              subject,
-              message: body,
-              recipients: audience.isAll
-                ? undefined
-                : audience.users.map((u) => u.email),
-            },
-          }).unwrap(),
-        ),
-      );
+      await sendSessionNotification({
+        wrapperId: wrapperId!,
+        data: {
+          types: channels.map((c) => (c === "EMAIL" ? "email" : "sms")),
+          recipientType: "all",
+          subject,
+          message: body,
+          scheduleDateTime: new Date(scheduledAt).toISOString(),
+        },
+      }).unwrap();
       setSubject("");
       setBody("");
+      setScheduledAt("");
       setHistoryPage(1);
       toast.success(t("toast_notification_sent"));
     } catch {
@@ -246,113 +207,80 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
 
           {/* Fields  */}
           <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-            <AField label={t("audience_field")}>
-              <ReactMultiSelect
-                options={audienceOptions}
-                value={audienceSelectedValues}
-                onChange={handleAudienceChange}
-                placeholder={t("audience_field")}
-              />
-            </AField>
-
-            <AField label={t("channel_field")}>
-              <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5 mb-3.5">
-                <button
-                  type="button"
-                  aria-pressed={channels.includes("EMAIL")}
-                  className={channelBtn(channels.includes("EMAIL"))}
-                  onClick={() => toggleChannel("EMAIL")}
-                >
-                  <strong className="text-sm">
-                    {t("channel_email_label")}
-                  </strong>
-                  <span className={clsx("text-[12.5px]", textTertiary)}>
-                    {t("channel_email_desc")}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={channels.includes("SMS")}
-                  className={channelBtn(channels.includes("SMS"))}
-                  onClick={() => toggleChannel("SMS")}
-                >
-                  <strong className="text-sm">{t("channel_sms_label")}</strong>
-                  <span className={clsx("text-[12.5px]", textTertiary)}>
-                    {t("channel_sms_desc")}
-                  </span>
-                </button>
-              </div>
-            </AField>
-
-            <div className="grid grid-cols-2 gap-4">
-              <AField label={t("schedule_date_time_field")}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AField label={t("channel_field")} isRequired>
+                <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5 mb-3.5">
+                  <button
+                    type="button"
+                    aria-pressed={channels.includes("EMAIL")}
+                    className={channelBtn(channels.includes("EMAIL"))}
+                    onClick={() => toggleChannel("EMAIL")}
+                  >
+                    <strong className="text-sm">
+                      {t("channel_email_label")}
+                    </strong>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={channels.includes("SMS")}
+                    className={channelBtn(channels.includes("SMS"))}
+                    onClick={() => toggleChannel("SMS")}
+                  >
+                    <strong className="text-sm">
+                      {t("channel_sms_label")}
+                    </strong>
+                  </button>
+                </div>
+              </AField>
+              <AField label={t("schedule_date_time_field")} isRequired>
                 <input
                   type="datetime-local"
+                  required
                   className={INPUT}
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
                 />
               </AField>
-
-              <AField label={t("template_field")}>
-                <select
-                  value={template}
-                  onChange={(e) =>
-                    setTemplate(e.target.value as typeof template)
-                  }
-                  className={INPUT}
-                >
-                  <option value="24h-reminder">{t("template_24h")}</option>
-                  <option value="same-day">{t("template_same_day")}</option>
-                  <option value="starting-soon">
-                    {t("template_starting_soon")}
-                  </option>
-                  <option value="custom">{t("custom")}</option>
-                </select>
-              </AField>
             </div>
 
-            {template === "custom" && (
-              <>
-                <AField label={t("subject_field")}>
-                  <input
-                    className={INPUT}
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder={t("subject_placeholder")}
-                  />
-                </AField>
+            <AField label={t("subject_field")} isRequired>
+              <input
+                className={INPUT}
+                required
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder={t("subject_placeholder")}
+              />
+            </AField>
 
-                <AField label={t("content_field")}>
-                  <RichTextEditor
-                    value={body}
-                    onChange={(v) => setBody(v)}
-                    variables={[
-                      { label: "Session Name", value: `{SESSION_NAME}` },
-                      { label: "Session Date", value: `{SESSION_DATE}` },
-                      { label: "Session Time", value: `{SESSION_TIME}` },
-                      { label: "Venue", value: `{VENUE}` },
-                      { label: "First Name", value: `{FIRST_NAME}` },
-                      { label: "Ref. CODE", value: `{REF_CODE}` },
-                      { label: "QR", value: `{{QR}}` },
-                    ]}
-                  />
-                </AField>
-              </>
-            )}
+            <label className="flex flex-col gap-1.5 mb-1 last:mb-0">
+              <span className={clsx("text-[12.5px] font-bold", textPrimary)}>
+                {t("content_field")}
+                <span className="text-red-500">*</span>
+              </span>
+            </label>
+
+            <RichTextEditor
+              value={body}
+              onChange={(v) => setBody(v)}
+              variables={[
+                { label: "Session Name", value: `{SESSION_NAME}` },
+                { label: "Session Date", value: `{SESSION_DATE}` },
+                { label: "Session Time", value: `{SESSION_TIME}` },
+                { label: "Venue", value: `{VENUE}` },
+                { label: "First Name", value: `{FIRST_NAME}` },
+                { label: "Ref. CODE", value: `{REF_CODE}` },
+                { label: "QR", value: `{{QR}}` },
+              ]}
+            />
 
             <div className="flex items-center justify-between gap-3 mt-1.5">
-              <span className={clsx("text-sm", textTertiary)}>
-                {t("send_to_count", { count })}
-              </span>
               <button
                 className={clsx(
                   "px-3.75 py-2.25 text-[13.5px] rounded-[9px] font-bold text-white hover:brightness-110 transition-[transform,filter] active:translate-y-px disabled:opacity-60 flex items-center gap-1.5",
                   isDark ? "bg-blue-500" : "bg-blue-600",
                 )}
-                disabled={
-                  !subject.trim() || !count || !channels.length || isSending
-                }
+                disabled={!isFormValid || isSending}
                 onClick={send}
               >
                 {isSending && <Loader className="w-4 h-4 animate-spin" />}
@@ -426,12 +354,7 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
                   {history.map((h) => (
                     <tr key={h._id}>
                       <td className={TD}>
-                        {new Date(h.sentAt).toLocaleString("he-IL", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {formatDateTime(h.sentAt, language)}
                       </td>
                       <td className={TD}>
                         {h.type === "email"

@@ -100,7 +100,12 @@ export const formatDate = (dateStr: string, language: string) => {
   return `${day} ${monthNames[lang][month]} ${year}`;
 };
 
-export const formatDateTime = (dateStr: string, language: string) => {
+export const formatDateTime = (
+  dateStr: string | undefined,
+  language: string,
+) => {
+  if (!dateStr) return "";
+
   const d = new Date(dateStr);
 
   // Always use UTC to avoid timezone shift

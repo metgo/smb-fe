@@ -89,16 +89,13 @@ interface TicketData {
 interface NotificationData {
   _id?: string;
   index: number;
-  hoursBeforeEvent: number;
   channels: {
     email: boolean;
     sms: boolean;
-    whatsapp: boolean;
   };
-  language: "en" | "he" | "ar";
-  template: string;
   subject: string;
   message: string;
+  scheduleDateTime?: string;
   enabled: boolean;
 }
 
