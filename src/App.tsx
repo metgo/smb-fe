@@ -14,6 +14,7 @@ import { saveUserInfo } from "@/lib/storage";
 import DashboardPage from "@/pages/dashboard";
 import RootLayout from "@/components/RootLayout";
 import {
+  ChatPage,
   AuthPage,
   BusinessesMgmtPage,
   PendingApprovalsPage,
@@ -49,6 +50,8 @@ import {
   TripsMgmtPage,
   TripDetailsPage,
   StatsSummaryPage,
+  PaymentMgmtPage,
+  PaymentTransactionsPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -68,7 +71,6 @@ import {
 } from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
-import { VendorReconciliationMgmt } from "./pages/vendor-reconcilation-mgmt";
 import DocumentsManagement from "./pages/documents-mgmt";
 import PublicTicketPage from "./pages/public-ticket";
 import PublicSessionPage from "./pages/public-session";
@@ -540,6 +542,7 @@ function App() {
               path: routes.analyticsDashboard,
               element: <AnalyticsDashboardPage />,
             },
+            { path: routes.chat, element: <ChatPage /> },
             {
               path: routes.statsSummary,
               element: <StatsSummaryPage />,
@@ -556,7 +559,11 @@ function App() {
             { path: routes.articleDetails, element: <ArticleDetails /> },
             {
               path: routes.vendorReconciliationMgmt,
-              element: <VendorReconciliationMgmt />,
+              element: <PaymentMgmtPage />,
+            },
+            {
+              path: routes.paymentTransactions,
+              element: <PaymentTransactionsPage />,
             },
             { path: routes.articleMgmt, element: <ArticlesManagement /> },
             { path: routes.articleDetails, element: <ArticleDetails /> },

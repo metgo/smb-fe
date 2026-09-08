@@ -1,16 +1,31 @@
 import clsx from "clsx";
 import { type FC } from "react";
 import { AlignLeft, FileText } from "lucide-react";
-import { UserRole } from "@/enums/user.types";
-import { useAppSelector } from "@/hooks/hooks";
+// import { UserRole } from "@/enums/user.types";
+// import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
-import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
+import {
+  ConnectedDmoAuthorityWebsites,
+  LocationDetailsclosed,
+} from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface Business {
   slug: string;
+  geoLocation: {
+    lat: string | number;
+    long: string | number;
+  };
+  location?: {
+    coordinates?: [number, number] | number[];
+  };
+  address: {
+    location: string;
+    city: string;
+    country: string;
+  };
   shortDescription: string;
   shortDescriptionAr: string;
   shortDescriptionHe: string;
@@ -38,7 +53,7 @@ interface BusinessInfoDetailsProps {
 
 const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
   const { isDark, language } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
+  // const { userRole } = useAppSelector((state) => state.auth);
 
   return (
     <div className="space-y-6">
@@ -53,10 +68,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         )}
         icon={
           <FileText
-            className={clsx(
-              "w-5 h-5",
-              isDark ? "text-blue-400" : "text-blue-600",
-            )}
+            className={clsx(isDark ? "text-blue-400" : "text-blue-600")}
           />
         }
         iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
@@ -73,10 +85,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         )}
         icon={
           <AlignLeft
-            className={clsx(
-              "w-5 h-5",
-              isDark ? "text-purple-400" : "text-purple-600",
-            )}
+            className={clsx(isDark ? "text-purple-400" : "text-purple-600")}
           />
         }
         iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
@@ -84,6 +93,15 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         preWrap={true} // preserves line breaks
       />
 
+      {/* Location details */}
+      <LocationDetailsclosed
+        purpose="Business"
+        address={business?.address}
+        lat={business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]}
+        long={
+          business?.geoLocation?.long ?? business?.location?.coordinates?.[1]
+        }
+      />
       <ConnectedDmoAuthorityWebsites
         dmoId={business?.dmoId}
         authorityId={business?.authorityId}
@@ -91,7 +109,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         pathname={clientSitePath.businessDetails + "/" + business?.slug}
       />
       {/* Internal Notes */}
-      {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
+      {/* {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
         <div
           className={`p-4 rounded-lg ${isDark ? "bg-yellow-900/20 border border-yellow-800" : "bg-yellow-50 border border-yellow-200"}`}
         >
@@ -104,7 +122,8 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
             {business?.internalNotes}
           </p>
         </div>
-      )}
+      )} */}
+
       {/* Rejection Note */}
       {business?.status === "rejected" && business?.rejectionNote && (
         <div

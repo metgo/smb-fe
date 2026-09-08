@@ -32,6 +32,7 @@ interface EventBasicInformationProps {
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
   errors: Record<string, string>;
+  setErrors?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   selectedBusinessId: string;
@@ -58,6 +59,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
   errors,
+  setErrors,
   selectAssociatedWebsiteIds,
   setSelectAssociatedWebsiteIds,
   selectedBusinessId,
@@ -162,6 +164,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       </FormFieldWrapper>
       <DmoAuthorityWebsiteIdsSelector
         errors={errors}
+        setErrors={setErrors}
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}

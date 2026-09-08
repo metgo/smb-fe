@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect, useMemo, useRef } from "react";
 import * as XLSX from "xlsx";
@@ -11,11 +12,12 @@ import {
   Truck,
   XCircle,
   Building2,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageHeader, PageStats, ShowColumns } from "@/components/shared";
+import { ShowColumns } from "@/components/shared";
 import {
   FilterSelect,
   MonthFilter,
@@ -27,6 +29,8 @@ import {
 } from "@/store/api/orderQueryApi";
 import { FilterButton } from "@/components/btns";
 import SearchInput from "@/components/shared/SearchInput";
+import AmountFilter from "@/components/shared/AmountFilter";
+import StatsMarquee from "@/components/shared/StatsMarquee";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import { getLngWiseStr } from "@/helpers";
 import { routes } from "@/lib/routes";
@@ -37,6 +41,16 @@ import { setDmo, setAuthority } from "@/features/authSlice";
 import { ORDER_SUMMARY_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
+
+// Show a ₪ amount with at most 2 decimals, floored - never round a money value
+// up (10,476.568 -> ₪10,476.56). The backend already floors these; this is the
+// display-side guard so a bare toLocaleString() can't leak a 3rd decimal again.
+const formatMoney = (value: unknown) => {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n === 0) return "-";
+  const floored = Math.floor(n * 100 + 1e-6) / 100;
+  return `₪${floored.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+};
 
 const { defaultColumns, columnDefinitions } = ORDER_SUMMARY_COLUMNS;
 
@@ -54,6 +68,8 @@ export default function OrdersSummaryMgmtPage() {
   const [searchTermSummary, setSearchTermSummary] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
+  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
+  const [_isScrolled, setIsScrolled] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
   const [pageSummary, setPageSummary] = useState(1);
@@ -65,6 +81,7 @@ export default function OrdersSummaryMgmtPage() {
     month: "all",
     dmoId: dmoId || "all",
     authorityId: authorityId || "all",
+    amount: "",
   });
 
   const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
@@ -76,6 +93,7 @@ export default function OrdersSummaryMgmtPage() {
     limit: number;
     businessId?: string;
     detailedView: boolean;
+    [key: string]: any;
   } | null>(null);
 
   const orderSummaryQueryParams = useMemo(() => {
@@ -93,6 +111,10 @@ export default function OrdersSummaryMgmtPage() {
 
     if (summaryFilters.status !== "all") {
       params.status = summaryFilters.status;
+    }
+
+    if (summaryFilters.amount !== "") {
+      params.amount = summaryFilters.amount;
     }
 
     // Month filter
@@ -145,9 +167,13 @@ export default function OrdersSummaryMgmtPage() {
   const businessOrdersSummariess = businessOrderSummaries?.data ?? [];
   const [combinedOrdersSummary, setCombinedOrdersSummary] = useState<any[]>([]);
 
-  const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
-    orderSummaryQueryParams,
-  );
+  const orderStatsParams = useMemo(() => {
+    const { page: _page, limit: _limit, ...rest } = orderSummaryQueryParams;
+    return rest;
+  }, [orderSummaryQueryParams]);
+
+  const { data: orderStat, isLoading: isStatsLoading } =
+    useGetOrderStatsQuery(orderStatsParams);
 
   const hasMoreSummary = orderSummaries?.meta?.hasNextPage;
   const totalDataSummary = orderSummaries?.totalData;
@@ -181,6 +207,7 @@ export default function OrdersSummaryMgmtPage() {
     month: "all",
     dmoId: "all",
     authorityId: "all",
+    amount: "",
   };
 
   const [columnVisibility, setColumnVisibility] =
@@ -316,15 +343,11 @@ export default function OrdersSummaryMgmtPage() {
       key: "totalAmount",
       label: t("total_amount"),
       sortable: true,
-      render: (row: any) => {
-        const total = row.totalAmount || 0;
-
-        return (
-          <div className="text-sm font-medium">
-            {total ? `₪${total.toLocaleString()}` : "-"}
-          </div>
-        );
-      },
+      render: (row: any) => (
+        <div className="text-sm font-medium">
+          {formatMoney(row.totalAmount)}
+        </div>
+      ),
     },
 
     {
@@ -333,9 +356,7 @@ export default function OrdersSummaryMgmtPage() {
       sortable: true,
       render: (row: any) => (
         <div className="text-sm font-medium">
-          {row.totalAmountPaidByCreditCard
-            ? `₪${row.totalAmountPaidByCreditCard.toLocaleString()}`
-            : "-"}
+          {formatMoney(row.totalAmountPaidByCreditCard)}
         </div>
       ),
     },
@@ -351,6 +372,7 @@ export default function OrdersSummaryMgmtPage() {
               e.stopPropagation();
 
               setBusinessOrderParams({
+                ...orderSummaryQueryParams,
                 page: 1,
                 limit: 10,
                 businessId: row._id,
@@ -381,6 +403,7 @@ export default function OrdersSummaryMgmtPage() {
               e.stopPropagation();
 
               setBusinessOrderParams({
+                ...orderSummaryQueryParams,
                 page: 1,
                 limit: 10,
                 businessId: row._id,
@@ -421,6 +444,30 @@ export default function OrdersSummaryMgmtPage() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // ─── Collapse the controls drawer on scroll ────────────────────────────
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (
+        (target && target.scrollTop && target.scrollTop > 20) ||
+        window.scrollY > 20
+      ) {
+        setIsScrolled(true);
+        setShowControlsDrawer(false);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, {
+      capture: true,
+      passive: true,
+    });
+    return () =>
+      window.removeEventListener("scroll", handleScroll, {
+        capture: true,
+      } as any);
   }, []);
 
   const orderStats = [
@@ -475,144 +522,252 @@ export default function OrdersSummaryMgmtPage() {
     });
   };
 
-  return (
-    <div
-      className={`h-[calc(100vh-7rem)] pt-10 md:pt-0 flex flex-col overflow-hidden ${isDark ? "bg-gray-950" : "bg-gray-50"}`}
+  // ─── Active filter count (search term + any non-default filter values) ──
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchTermSummary?.trim()) count += 1;
+    if (summaryFilters.status !== "all") count += 1;
+    if (summaryFilters.month !== "all") count += 1;
+    if (summaryFilters.dmoId !== "all") count += 1;
+    if (summaryFilters.authorityId !== "all") count += 1;
+    if (summaryFilters.amount !== "") count += 1;
+    return count;
+  }, [searchTermSummary, summaryFilters]);
+
+  // ─── Reusable icon-only filter toggle button ──────────────────────────
+  const filterToggleButton = (
+    <button
+      onClick={() => setShowControlsDrawer((prev) => !prev)}
+      className={clsx(
+        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
+        showControlsDrawer
+          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
+          : isDark
+            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
+      )}
+      title={
+        showControlsDrawer
+          ? (tc("close_options") ?? "Close Options")
+          : (tc("search_and_filters") ?? "Search & Filters")
+      }
     >
-      {/* Page Header */}
-      <div className="shrink-0">
-        <div
-          className={`flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 ${isRTL ? "sm:flex-row-reverse" : ""}`}
+      <SlidersHorizontal className="w-4 h-4" />
+      {activeFilterCount > 0 && (
+        <span
+          className={clsx(
+            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+            showControlsDrawer
+              ? "bg-white text-teal-600"
+              : "bg-teal-500 text-white",
+          )}
         >
+          {activeFilterCount > 9 ? "9+" : activeFilterCount}
+        </span>
+      )}
+    </button>
+  );
+
+  return (
+    <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
+      {/* Sticky Top Header Bar (Title + Count + Filter Toggle + Stats) */}
+      <div
+        className={clsx(
+          "shrink-0 sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
+          isDark
+            ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
+            : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900",
+          isRTL && "xl:flex-row-reverse",
+        )}
+      >
+        {/* Left: Title + Business Count (Top), Description (Below) */}
+        <div className="flex flex-col items-start gap-1 shrink-0 min-w-0">
           <div
-            className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-5 min-w-0`}
+            className={clsx(
+              "flex items-center w-full justify-between gap-2",
+              isRTL && "flex-row-reverse",
+            )}
           >
-            <PageHeader
-              title={t("online_orders_summary_management")}
-              description={`${t("businesses_list")} ${totalDataSummary ? totalDataSummary : ""}`}
-              h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-              totalCount={orderSummaries?.data?.length}
-            />
+            <div
+              className={clsx(
+                "flex items-center gap-1",
+                isRTL && "flex-row-reverse",
+              )}
+            >
+              <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
+                {t("online_orders_summary_management")}
+              </h1>
+            </div>
+
+            <div className="block xl:hidden shrink-0">{filterToggleButton}</div>
           </div>
+          <p
+            className={clsx(
+              "text-xs whitespace-nowrap",
+              isDark ? "text-gray-500" : "text-gray-500",
+            )}
+          >
+            {`${t("businesses_list")} ${totalDataSummary ? totalDataSummary : ""}`}
+          </p>
         </div>
 
-        <PageStats
-          stats={orderStats}
-          isLoading={isStatsLoading}
-          className="sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4"
-          wrapperClassName="mb-3"
-        />
+        {/* Right: Horizontal Scrollable Stats Cards Row */}
+        <div
+          dir="ltr"
+          className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
+        >
+          <StatsMarquee
+            stats={orderStats}
+            isLoading={isStatsLoading}
+            className="flex-1 min-w-0"
+          />
+        </div>
 
-        {/* Search and Filters */}
-        <div className="mb-3 mt-1">
-          <div className="flex flex-col gap-2">
-            <div className="flex-1 relative">
-              <SearchInput
-                placeholder={t("search_orders")}
-                searchTerm={searchTermSummary}
-                setSearchTerm={setSearchTermSummary}
-                storageKey="orderSummarySearchTerm"
-              />
-            </div>
+        {/* Filters Toggle Button Next to Stats (desktop) */}
+        <div className="hidden xl:flex items-center gap-2 shrink-0">
+          {filterToggleButton}
+        </div>
+      </div>
 
-            <div className={`flex items-center gap-2 justify-between w-full`}>
-              <div className="flex items-center gap-2">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-                <ShowColumns
-                  t={t}
-                  viewMode="list"
-                  columnDefinitions={columnDefinitions}
-                  columnVisibility={columnVisibility}
-                  showColumnSettings={showColumnSettings}
-                  setShowColumnSettings={setShowColumnSettings}
-                  setColumnVisibility={setColumnVisibility}
-                  resetToDefault={() =>
-                    setColumnVisibility(ORDER_SUMMARY_COLUMNS.defaultColumns)
-                  }
-                />
-                <ExportOrdersButton
-                  orders={[]}
-                  selectedOrders={new Set()}
-                  columnVisibility={columnVisibility as any}
-                  websiteMap={{}}
-                  isSummaryMode={true}
-                  summaryData={combinedOrdersSummary}
-                  t={t}
-                  tc={tc}
-                />
-              </div>
-            </div>
+      {/* Search bar (always visible) + collapsible controls on the same row */}
+      <div
+        className={clsx(
+          "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+          isDark
+            ? "bg-gray-900/90 border-gray-800/90"
+            : "bg-white border-gray-200",
+        )}
+      >
+        <div
+          className={clsx(
+            "flex flex-col lg:flex-row lg:items-center gap-3",
+            isRTL && "lg:flex-row-reverse",
+          )}
+        >
+          <div className="flex-1 min-w-0 relative" data-tour="search">
+            <SearchInput
+              placeholder={t("search_orders")}
+              searchTerm={searchTermSummary}
+              setSearchTerm={setSearchTermSummary}
+              storageKey="orderSummarySearchTerm"
+            />
           </div>
 
-          {showFilters && (
-            <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="min-w-45">
-                <FilterSelect
-                  label={t("status")}
-                  value={summaryFilters.status}
-                  onChange={(value) =>
-                    setSummaryFilters((prev) => ({
-                      ...prev,
-                      status: value,
-                    }))
-                  }
-                  options={[
-                    { value: "all", label: t("all") },
-                    { value: "pending", label: t("pending") },
-                    { value: "processing", label: t("processing") },
-                    { value: "completed", label: t("completed") },
-                    { value: "shipped", label: t("shipped") },
-                    { value: "canceled", label: t("canceled") },
-                  ]}
-                />
-              </div>
-
-              <div className="min-w-55">
-                <MonthFilter
-                  label={t("month")}
-                  value={summaryFilters.month}
-                  onChange={(value) =>
-                    setSummaryFilters((prev) => ({
-                      ...prev,
-                      month: value,
-                    }))
-                  }
-                  dateFrom={summaryFilters.startDate}
-                  dateTo={summaryFilters.endDate}
-                  onDateFromChange={(value) =>
-                    setSummaryFilters((prev) => ({
-                      ...prev,
-                      startDate: value,
-                    }))
-                  }
-                  onDateToChange={(value) =>
-                    setSummaryFilters((prev) => ({
-                      ...prev,
-                      endDate: value,
-                    }))
-                  }
-                  t={t}
-                />
-              </div>
-
-              {(summaryFilters.status !== "all" ||
-                summaryFilters.month !== "all") && (
-                <div className="min-w-55 mt-10">
-                  <button
-                    onClick={() => {
-                      setSummaryFilters(defaultSummaryFilters);
-                      dispatch(setDmo(""));
-                      dispatch(setAuthority(""));
-                    }}
-                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                  >
-                    {t("clear_all")}
-                  </button>
-                </div>
+          {showControlsDrawer && (
+            <div
+              className={clsx(
+                "flex items-center gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2",
+                isRTL && "flex-row-reverse",
               )}
+            >
+              <FilterButton value={showFilters} onChange={setShowFilters} />
+              <ShowColumns
+                t={t}
+                viewMode="list"
+                columnDefinitions={columnDefinitions}
+                columnVisibility={columnVisibility}
+                showColumnSettings={showColumnSettings}
+                setShowColumnSettings={setShowColumnSettings}
+                setColumnVisibility={setColumnVisibility}
+                resetToDefault={() =>
+                  setColumnVisibility(ORDER_SUMMARY_COLUMNS.defaultColumns)
+                }
+              />
+              <ExportOrdersButton
+                orders={[]}
+                selectedOrders={new Set()}
+                columnVisibility={columnVisibility as any}
+                websiteMap={{}}
+                isSummaryMode={true}
+                summaryData={combinedOrdersSummary}
+                t={t}
+                tc={tc}
+                monthFilter={summaryFilters.month}
+                customDateFrom={summaryFilters.startDate}
+                customDateTo={summaryFilters.endDate}
+              />
             </div>
           )}
         </div>
+
+        {showControlsDrawer && showFilters && (
+          <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="min-w-45">
+              <FilterSelect
+                label={t("status")}
+                value={summaryFilters.status}
+                onChange={(value) =>
+                  setSummaryFilters((prev) => ({
+                    ...prev,
+                    status: value,
+                  }))
+                }
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "pending", label: t("pending") },
+                  { value: "processing", label: t("processing") },
+                  { value: "completed", label: t("completed") },
+                  { value: "shipped", label: t("shipped") },
+                  { value: "canceled", label: t("canceled") },
+                ]}
+              />
+            </div>
+
+            <div className="min-w-55">
+              <MonthFilter
+                label={t("month")}
+                value={summaryFilters.month}
+                onChange={(value) =>
+                  setSummaryFilters((prev) => ({
+                    ...prev,
+                    month: value,
+                  }))
+                }
+                dateFrom={summaryFilters.startDate}
+                dateTo={summaryFilters.endDate}
+                onDateFromChange={(value) =>
+                  setSummaryFilters((prev) => ({
+                    ...prev,
+                    startDate: value,
+                  }))
+                }
+                onDateToChange={(value) =>
+                  setSummaryFilters((prev) => ({
+                    ...prev,
+                    endDate: value,
+                  }))
+                }
+                t={t}
+              />
+            </div>
+
+            <div className="min-w-45">
+              <AmountFilter
+                value={summaryFilters.amount}
+                onChange={(amount) =>
+                  setSummaryFilters((prev) => ({ ...prev, amount }))
+                }
+              />
+            </div>
+
+            {(summaryFilters.status !== "all" ||
+              summaryFilters.month !== "all" ||
+              summaryFilters.amount !== "") && (
+              <div className="min-w-55 mt-10">
+                <button
+                  onClick={() => {
+                    setSummaryFilters(defaultSummaryFilters);
+                    dispatch(setDmo(""));
+                    dispatch(setAuthority(""));
+                  }}
+                  className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                >
+                  {t("clear_all")}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Orders Summary Table */}

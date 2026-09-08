@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
@@ -17,7 +18,7 @@ import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import { detectLanguage } from "@/helpers";
+import { detectLanguage, type ParsedAddressParts } from "@/helpers";
 
 interface UseEventWizardStateProps {
   isOpen: boolean;
@@ -63,6 +64,18 @@ export function useEventWizardState({
     string[]
   >([]);
 
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
+  );
+
   // ─── Step 1: Basic Information ───────────────────────────────────────
   const [eventName, setEventName] = useState("");
   const [eventNameHe, setEventNameHe] = useState("");
@@ -104,6 +117,11 @@ export function useEventWizardState({
     "physical" | "online" | "hybrid"
   >("physical");
   const [address, setAddress] = useState("");
+  const [addressParts, setAddressParts] = useState<ParsedAddressParts>({
+    location: "",
+    city: "",
+    country: "",
+  });
   const [onlineLink, setOnlineLink] = useState("");
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [isRecurring, setIsRecurring] = useState(false);
@@ -296,9 +314,9 @@ export function useEventWizardState({
       },
       eventType: eventFormat?.toUpperCase(),
       address: {
-        country: "",
-        city: "",
-        location: address,
+        country: addressParts.country,
+        city: addressParts.city,
+        location: addressParts.location,
         additional_information: "",
       },
       onlineLink,
@@ -319,7 +337,7 @@ export function useEventWizardState({
       recurrenceEndCount,
       recurrenceEndDate,
       eventFormat,
-      address,
+      addressParts,
       onlineLink,
     ],
   );
@@ -331,7 +349,12 @@ export function useEventWizardState({
         noOfPeople: capacity,
         isUnlimited: capacityType === "unlimited",
       },
-      customQuestions,
+      customQuestions: customQuestions
+        .filter((q) => q.label.trim() !== "")
+        .map((q) => ({
+          question: q.label,
+          isRequired: q.required,
+        })),
     }),
     [registrationRequired, capacity, capacityType, customQuestions],
   );
@@ -369,10 +392,9 @@ export function useEventWizardState({
   const stepPayloadMap = useMemo(
     () => ({
       1: buildBasicInfoPayload,
-      2: buildBasicInfoPayload,
-      3: buildDateTimePayload,
-      4: buildRegistrationPayload,
-      6: buildMessagingPayload,
+      2: buildDateTimePayload,
+      3: buildRegistrationPayload,
+      4: buildMessagingPayload,
       5: () => ({ images: eventImages }),
     }),
     [
@@ -454,6 +476,7 @@ export function useEventWizardState({
     ]);
     setEventFormat("physical");
     setAddress("");
+    setAddressParts({ location: "", city: "", country: "" });
     setOnlineLink("");
     setGeo({ lat: "", long: "" });
     setIsRecurring(false);
@@ -518,7 +541,20 @@ export function useEventWizardState({
     );
     setRecurrenceEndDate(editData.recurringEventRuleId?.endDate ?? "");
     setRecurrenceEndCount(editData.recurringEventRuleId?.occurrenceLimit ?? 10);
-    setAddress(editData.address?.location ?? "");
+    setAddress(
+      [
+        editData.address?.location,
+        editData.address?.city,
+        editData.address?.country,
+      ]
+        .filter(Boolean)
+        .join(", "),
+    );
+    setAddressParts({
+      location: editData.address?.location || "",
+      city: editData.address?.city || "",
+      country: editData.address?.country || "",
+    });
     setOnlineLink(editData.onlineLink ?? "");
 
     setRegistrationRequired(editData.registration?.isRegistration ?? true);
@@ -526,7 +562,14 @@ export function useEventWizardState({
     setCapacityType(
       editData.registration?.isUnlimited ? "unlimited" : "limited",
     );
-    setCustomQuestions(editData.customQuestions ?? []);
+    setCustomQuestions(
+      (editData.customQuestions ?? []).map((q: any, index: number) => ({
+        id: q._id ?? q.id ?? `${Date.now()}-${index}`,
+        label: q.question ?? q.label ?? "",
+        type: "text" as const,
+        required: q.isRequired ?? q.required ?? false,
+      })),
+    );
     setSelectAssociatedWebsiteIds(editData?.associatedWebsiteIds);
     setEventImages(editData.images ?? []);
 
@@ -570,6 +613,8 @@ export function useEventWizardState({
             !shortDescriptionAr?.trim()
           )
             newErrors.shortDescription = tc("required_field");
+          if (hasAssociatedWebsites && !selectAssociatedWebsiteIds?.length)
+            newErrors.websiteVisibilityIds = tc("website_visibility_required");
           break;
         case 2:
           if (!isMultiDay && !startDate)
@@ -592,6 +637,9 @@ export function useEventWizardState({
     },
     [
       selectedDmoId,
+      selectedAuthorityId,
+      selectAssociatedWebsiteIds,
+      hasAssociatedWebsites,
       eventName,
       eventNameHe,
       eventNameAr,
@@ -691,6 +739,15 @@ export function useEventWizardState({
       toast.error(tc("name_required"));
       return;
     }
+    if (hasAssociatedWebsites && !selectAssociatedWebsiteIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     refetch?.();
@@ -699,6 +756,8 @@ export function useEventWizardState({
     eventName,
     eventNameHe,
     eventNameAr,
+    hasAssociatedWebsites,
+    selectAssociatedWebsiteIds,
     tc,
     saveDraft,
     buildWebsiteAccessPayload,
@@ -823,11 +882,18 @@ export function useEventWizardState({
   }, []);
 
   const addCustomQuestion = useCallback(() => {
+    // Side effects (toast) must stay out of the setState updater below -
+    // StrictMode double-invokes functional updaters in dev, which would
+    // fire the toast twice for a single click.
+    if (customQuestions.some((q) => !q.label.trim())) {
+      toast.error(tc("complete_question_before_adding"));
+      return;
+    }
     setCustomQuestions((prev) => [
-      ...prev,
       { id: Date.now().toString(), label: "", type: "text", required: false },
+      ...prev,
     ]);
-  }, []);
+  }, [customQuestions, tc]);
 
   return {
     // Navigation
@@ -842,6 +908,7 @@ export function useEventWizardState({
     isPublishing,
     lastSaved,
     errors,
+    setErrors,
     isPublishBtnClicked,
 
     // Loading
@@ -893,6 +960,8 @@ export function useEventWizardState({
     setEventFormat,
     address,
     setAddress,
+    addressParts,
+    setAddressParts,
     onlineLink,
     setOnlineLink,
     geo,

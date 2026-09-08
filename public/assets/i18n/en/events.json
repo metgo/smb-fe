@@ -61,7 +61,7 @@
   "template_starting_soon": "Event Starting Soon",
 
   "english": "English",
-  "heberw": "Heberw",
+  "hebrew": "Hebrew",
   "arebic": "Arabic",
   "active": "Active",
   "disabled": "Disabled",
@@ -145,6 +145,9 @@
   "limited": "Limited",
   "maximum_attendees": "Maximum Attendees",
   "custom_questions": "Custom Questions",
+  "general_info": "General Info",
+  "registration_answers": "Questions & Answers",
+  "no_registration_answers": "No registration answers submitted",
   "add_question": "Add Question",
   "question_label": "Question Label",
   "text": "Text",
@@ -292,6 +295,8 @@
   "notification": "Notification",
 
   "completed": "Completed",
+  "attended": "Attended",
+  "failure": "Failed",
   "processing": "Purchased",
   "purchased": "Purchased",
 
@@ -305,6 +310,9 @@
   "ticket_id_label": "Ticket ID",
   "ticket_scanned": "This ticket has been scanned",
   "ticket_expired": "This ticket has expired",
+  "ticket_canceled": "This ticket has been canceled",
+  "cancelled_reason_label": "Cancellation Reason",
+  "additional_information_label": "Additional Info",
   "mark_as_completed": "Mark as Completed",
   "completed_checkmark": "Completed ✓",
   "payment_successful": "Payment Successful",
@@ -318,6 +326,7 @@
   "confirm_cancel": "Confirm Cancel",
   "order_status_updated": "Order status updated to {{status}}",
   "failed_to_update_order_status": "Failed to update order status",
+  "failed_to_export": "Failed to export file",
 
   "actions": "Actions",
   "create_session": "Create Session",
@@ -351,5 +360,10 @@
   "payment_mode": "Payment Mode",
   "payment_date": "Payment Date",
   "order_product_id": "Order Product ID",
-  "resend_email_to_customer": "Resend Email to Customer"
+  "order_id": "Order ID",
+  "resend_email_to_customer": "Resend Email to Customer",
+  "notify_customer_by": "Notify customer by",
+  "save_order": "Save Order",
+  "order_saved_successfully": "Ticket order saved successfully",
+  "reorder_failed": "Failed to save ticket order"
 }

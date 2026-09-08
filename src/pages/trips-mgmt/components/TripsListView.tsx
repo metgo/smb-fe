@@ -151,21 +151,19 @@ export default function TripsListView({
   }
 
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(100vh-400px)]">
-      <div className="sticky">
-        <ReordableDataTable
-          rowKey="_id"
-          data={trips}
-          isDataLoading={isLoading}
-          selectedItems={selectedTrips}
-          onSelectionChange={setSelectedTrips}
-          storageKey="tripsTableColumnOrder"
-          columns={columns}
-          hasMore={hasMore}
-          next={next}
-          t={t}
-        />
-      </div>
+    <div className="sticky">
+      <ReordableDataTable
+        rowKey="_id"
+        data={trips}
+        isDataLoading={isLoading}
+        selectedItems={selectedTrips}
+        onSelectionChange={setSelectedTrips}
+        storageKey="tripsTableColumnOrder"
+        columns={columns}
+        hasMore={hasMore}
+        next={next}
+        t={t}
+      />
     </div>
   );
 }

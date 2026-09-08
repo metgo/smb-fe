@@ -9,15 +9,16 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
+import CancelledInfo from "./sub-components/CancelledInfo";
 import {
   useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
+import { envKeys } from "@/lib/envKeys";
+import { getPlainTextFromRichText } from "@/helpers";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
-import { envKeys } from "@/lib/envKeys";
 import { useGetOrderByIdQuery } from "@/store/api/orderQueryApi";
-import { getPlainTextFromRichText } from "@/helpers";
 
 interface OrderDetailsModalProps {
   orderId: string;
@@ -42,7 +43,7 @@ function OrderDetailsModal({
     isLoading,
     isFetching,
   } = useGetOrderByIdQuery({ orderId: orderId ?? null }, { skip: !orderId });
-  const [selectedProduct, setSelectedProduct] = useState<ProductDto | null>(
+  const [selectedProduct, setSelectedProduct] = useState<IProductDto | null>(
     null,
   );
 
@@ -58,7 +59,7 @@ function OrderDetailsModal({
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
-  const [itemToCancel, setItemToCancel] = useState<ProductDto | null>(null);
+  const [itemToCancel, setItemToCancel] = useState<IProductDto | null>(null);
 
   const handleResendNotification = async (recipient: "VENDOR" | "CUSTOMER") => {
     setSendingTarget(recipient);
@@ -110,6 +111,16 @@ function OrderDetailsModal({
   };
 
   async function handleCancleConfirm(reason: string, additionalInfo: string) {
+    if (
+      cancelType === "item" &&
+      (itemToCancel?.cancelled || itemToCancel?.status === "canceled")
+    ) {
+      toast.error(t("item_already_cancelled"));
+      setShowCancelDialog(false);
+      setItemToCancel(null);
+      return;
+    }
+
     setIsCancelling(true);
 
     try {
@@ -128,7 +139,7 @@ function OrderDetailsModal({
       } else {
         await updateOrderStatus({
           orderId: orderDetails?._id,
-          orderProductId: itemToCancel?._id,
+          orderProductId: itemToCancel?.orderedProductId,
           status: "canceled",
           cancelReason: t(reason),
           additionalInfo,
@@ -152,12 +163,7 @@ function OrderDetailsModal({
 
   return (
     <ModalWrapper onClose={onClose} showSpinner={isLoading || isFetching}>
-      <div
-        className={`flex items-center justify-between 
-              ${isRTL ? "flex-row-reverse" : ""} 
-              p-4 md:p-6 
-              mb-4`}
-      >
+      <div className={`flex items-center justify-between p-4 md:p-6 mb-4`}>
         <div>
           <h2 className={`text-2xl font-semibold ${textPrimary}`}>
             {t("order_details")}
@@ -239,7 +245,7 @@ function OrderDetailsModal({
           >
             {orderDetails?.products?.map((product, idx) => (
               <div
-                key={product?._id}
+                key={product?.orderedProductId ?? product?._id}
                 className={`p-4 ${idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.status === "canceled" ? "opacity-50" : ""}`}
               >
                 <div className="flex items-start gap-4">
@@ -296,10 +302,12 @@ function OrderDetailsModal({
                       </p>
                     </div>
 
-                    {orderDetails?.products?.length > 1 &&
-                      orderDetails?.status !== "canceled" &&
-                      orderDetails?.status !== "completed" &&
-                      orderDetails?.status !== "shipped" && (
+                    {orderDetails?.status !== "canceled" &&
+                      product?.status !== "canceled" &&
+                      !product?.cancelled &&
+                      (product?.itemType === "TICKET" ||
+                        (orderDetails?.status !== "completed" &&
+                          orderDetails?.status !== "shipped")) && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -314,13 +322,19 @@ function OrderDetailsModal({
                         </button>
                       )}
 
-                    {product?.status === "canceled" && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+                    {(product?.status === "canceled" || product?.cancelled) && (
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${isDark ? "bg-red-900/30 text-red-400" : "bg-red-100 text-red-800"}`}
+                      >
                         {t("cancelled")}
                       </span>
                     )}
                   </div>
                 </div>
+
+                {product?.cancelled && (
+                  <CancelledInfo cancelled={product.cancelled} />
+                )}
               </div>
             ))}
           </div>

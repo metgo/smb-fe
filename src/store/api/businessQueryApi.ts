@@ -30,6 +30,7 @@ interface BusinessListParams {
   primaryCategoryId?: string;
   assignmentStatus?: string;
   viewCategory?: string;
+  viewId?: string;
 }
 
 interface BusinessesForProductParams {

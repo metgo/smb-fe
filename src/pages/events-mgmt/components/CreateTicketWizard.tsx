@@ -86,6 +86,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
     handleDeleteImage,
   } = useFilesUpload({
     initialImages: editData?.imageUrl ? [{ image: editData.imageUrl }] : [],
+    skipRemoteDelete: opMode === IOpMode.DUPLICATE,
   });
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
@@ -199,6 +200,10 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
       return;
     }
 
+    const isUpdate = !!editData._id && opMode !== IOpMode.DUPLICATE;
+    const initial = editData?.quantity?.initial ?? 0;
+    const isUnlimited = editData.quantity?.isUnlimited ?? false;
+
     const payload: ITicketPayload = {
       eventId,
       name: editData.name.trim(),
@@ -210,12 +215,21 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
         discountPercent: editData.price?.discountPercent ?? 0,
         discountAmount: editData.price?.discountAmount ?? 0,
       },
+      // `sold` / `remaining` are server-owned. On update the backend ignores
+      // whatever we send and re-derives `remaining` from the live sold count,
+      // so we pass the current values through unchanged rather than recomputing
+      // `initial - sold` from a possibly-stale form snapshot. On create the
+      // ticket starts empty.
       quantity: {
-        initial: editData.quantity?.initial ?? 0,
-        sold: 0,
-        remaining: editData.quantity?.initial ?? 0,
-        isUnlimited: editData.quantity?.isUnlimited ?? false,
+        initial,
+        isUnlimited,
         perUserLimit: editData.quantity?.perUserLimit ?? 0,
+        sold: isUpdate ? (editData.quantity?.sold ?? 0) : 0,
+        remaining: isUpdate
+          ? (editData.quantity?.remaining ?? 0)
+          : isUnlimited
+            ? 0
+            : initial,
       },
       dayDescription: ticketDateTime.map(({ date, startTime, endTime }) => ({
         date,
@@ -228,13 +242,12 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
     };
 
     try {
-      const res =
-        editData._id && opMode !== IOpMode.DUPLICATE
-          ? await updateTicket({
-              body: payload,
-              ticketId: editData._id,
-            }).unwrap()
-          : await createTicket(payload).unwrap();
+      const res = isUpdate
+        ? await updateTicket({
+            body: payload,
+            ticketId: editData._id || "",
+          }).unwrap()
+        : await createTicket(payload).unwrap();
 
       if (hasExternalTicket) {
         await updateEvent({
@@ -807,7 +820,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDeleteImage(images[0], 0)}
-                    className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>

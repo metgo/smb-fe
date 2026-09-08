@@ -2,7 +2,14 @@ import clsx from "clsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Globe, LayoutGrid, Layers, MapPin, ShoppingBag } from "lucide-react";
+import {
+  Globe,
+  LayoutGrid,
+  Layers,
+  MapPin,
+  ShoppingBag,
+  BadgePercent,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { routes } from "@/lib/routes";
@@ -10,6 +17,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
 import { ConfirmDialog, PageHeader } from "@/components/shared";
 import WebsiteCard from "./components/WebsiteCard";
+import WebsitePreviewModal from "./components/WebsitePreviewModal";
 import {
   useUpdateWebsiteSettingMutation,
   useDeleteWebsiteMutation,
@@ -52,11 +60,15 @@ export default function WebsiteMgmtPage() {
   const [deactivateTarget, setDeactivateTarget] =
     useState<IWebsiteListRes | null>(null);
   const [isDeactivating, setIsDeactivating] = useState(false);
+  const [previewTarget, setPreviewTarget] = useState<IWebsiteListRes | null>(
+    null,
+  );
 
   const purposeTabs: PurposeTab[] = [
     { id: "ALL", label: tc("all"), Icon: LayoutGrid },
     { id: "MARKETPLACE", label: t("purpose_marketplace"), Icon: ShoppingBag },
     { id: "TRAVELING", label: t("purpose_traveling"), Icon: MapPin },
+    { id: "DISCOUNT", label: t("purpose_discount"), Icon: BadgePercent },
     { id: "OTHER", label: t("purpose_other"), Icon: Layers },
   ];
 
@@ -212,6 +224,7 @@ export default function WebsiteMgmtPage() {
                           ? setDeactivateTarget(website)
                           : handleToggleActive(website._id, true)
                       }
+                      onPreview={() => setPreviewTarget(website)}
                       onEdit={() => handleConfigure(website)}
                       onDelete={() => setDeleteTarget(website)}
                     />
@@ -221,6 +234,15 @@ export default function WebsiteMgmtPage() {
             </div>
           )}
         </>
+      )}
+
+      {previewTarget && (
+        <WebsitePreviewModal
+          websiteId={previewTarget._id}
+          websiteName={previewTarget.websiteName}
+          websiteLogo={previewTarget.logo}
+          onClose={() => setPreviewTarget(null)}
+        />
       )}
 
       <ConfirmDialog

@@ -181,7 +181,7 @@ const BlogListView = ({
   }[];
 
   return (
-    <div className="flex flex-col overflow-hidden h-[85vh]">
+    <div className="stikcy">
       <ReordableDataTable
         rowKey="_id"
         data={blogs}

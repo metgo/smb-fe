@@ -43,6 +43,7 @@
   "purpose": "الغرض",
   "purpose_marketplace": "سوق",
   "purpose_traveling": "سفر",
+  "purpose_discount": "خصم",
   "purpose_other": "أخرى",
   "identifier_id": "معرّف المُعرِّف",
   "identifier_id_placeholder": "أدخل معرّف المُعرِّف",
@@ -251,5 +252,9 @@
   "migrate_website_to_prod": "النقل إلى الإنتاج",
   "migrate_website_to_prod_confirm": "هل أنت متأكد من رغبتك في نقل هذا الموقع إلى الإنتاج؟",
   "migrate_to_prod": "نقل",
-  "completeness": "اكتمال"
+  "completeness": "اكتمال",
+  "please_wait_loading": "الرجاء الانتظار، لا يزال يتم تحميل الإعدادات",
+  "google_ads_conversion_tracking_id": "معرّف تتبع التحويلات في Google Ads",
+  "enable_widget_id": "معرّف Enable Widget",
+  "hotjar_id": "معرّف موقع Hotjar"
 }

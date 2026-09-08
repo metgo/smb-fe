@@ -157,6 +157,9 @@
   "limited": "מוגבל",
   "maximum_attendees": "כמות משתתפים מקסימלית",
   "custom_questions": "שאלות מותאמות אישית",
+  "general_info": "מידע כללי",
+  "registration_answers": "שאלות ותשובות",
+  "no_registration_answers": "לא הוגשו תשובות לשאלות ההרשמה",
   "add_question": "הוסף שאלה",
   "question_label": "תווית שאלה",
   "text": "טקסט",
@@ -321,6 +324,8 @@
   "upload_image_info": "העלה תמונות כדי ליצור גלריית אירוע",
 
   "completed": "הושלם",
+  "attended": "נכח",
+  "failure": "נכשל",
   "processing": "נרכש",
   "purchased": "נרכש",
 
@@ -334,6 +339,9 @@
   "ticket_id_label": "מזהה כרטיס",
   "ticket_scanned": "הכרטיס כבר נסרק",
   "ticket_expired": "הכרטיס פג תוקף",
+  "ticket_canceled": "הכרטיס בוטל",
+  "cancelled_reason_label": "סיבת ביטול",
+  "additional_information_label": "מידע נוסף",
   "mark_as_completed": "סמן כהושלם",
   "completed_checkmark": "הושלם ✓",
   "payment_successful": "ההזמנה הצליחה",
@@ -347,6 +355,7 @@
   "confirm_cancel": "אשר ביטול",
   "order_status_updated": "סטטוס ההזמנה עודכן ל-{{status}}",
   "failed_to_update_order_status": "עדכון סטטוס ההזמנה נכשל",
+  "failed_to_export": "ייצוא הקובץ נכשל",
 
   "actions": "פעולות",
   "create_session": "צור סשן",
@@ -380,5 +389,10 @@
   "payment_mode": "אמצעי תשלום",
   "payment_date": "תאריך תשלום",
   "order_product_id": "מזהה מוצר בהזמנה",
-  "resend_email_to_customer": "שלח שוב אימייל ללקוח"
+  "order_id": "מזהה הזמנה",
+  "resend_email_to_customer": "שלח שוב אימייל ללקוח",
+  "notify_customer_by": "הודע ללקוח דרך",
+  "save_order": "שמור סדר",
+  "order_saved_successfully": "סדר הכרטיסים נשמר בהצלחה",
+  "reorder_failed": "שמירת סדר הכרטיסים נכשלה"
 }

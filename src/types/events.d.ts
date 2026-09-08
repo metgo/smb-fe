@@ -281,6 +281,8 @@ interface ITicketPayload {
   };
   quantity: {
     initial: number;
+    // server-owned counters — the backend ignores these on update and
+    // re-derives remaining from the live sold count
     sold: number;
     remaining: number;
     isUnlimited: boolean;
@@ -291,6 +293,11 @@ interface ITicketPayload {
   status: string;
   type: string;
   wrapperId?: string;
+}
+
+interface ITicketReorderPayload {
+  eventId: string;
+  ticketIds: string[];
 }
 
 interface IEventListRes {
@@ -347,12 +354,38 @@ interface IEventTicket {
   lastName: string | null;
   paymentMode: string[];
   paymentDate: string | null;
+  ticketId: string;
   ticketName: string;
   ticketImage: { image: string }[];
   orderProductId?: string;
   amount?: number;
   quantity?: number;
   paymentStatus?: string;
+}
+
+interface IEventTicketQuestionAnswer {
+  _id: string;
+  questionId: string;
+  question: string;
+  answer: string;
+}
+
+interface IEventTicketAnswerRecord {
+  _id: string;
+  eventInfo: {
+    eventId: string;
+    ticketIds: string[];
+  };
+  purchaserInfo: {
+    email: string;
+    phone: string;
+  };
+  questionAnswer: IEventTicketQuestionAnswer[];
+}
+
+interface IEventTicketAnswersResponse {
+  message: string;
+  data: IEventTicketAnswerRecord[];
 }
 
 interface IEventColumnVisibility {

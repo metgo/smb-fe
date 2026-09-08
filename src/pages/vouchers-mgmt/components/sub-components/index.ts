@@ -1,13 +1,13 @@
 import VoucherConfigure from "./VoucherConfigure";
+import VoucherGreeting from "./VoucherGreeting";
 import VoucherInformation from "./VoucherInformation";
 import VoucherReview from "./VoucherReview";
 import VoucherSuccess from "./VoucherSuccess";
-import VoucherType from "./VoucherType";
 
 export {
   VoucherConfigure,
+  VoucherGreeting,
   VoucherInformation,
   VoucherReview,
   VoucherSuccess,
-  VoucherType,
 };

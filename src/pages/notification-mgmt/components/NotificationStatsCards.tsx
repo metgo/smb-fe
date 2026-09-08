@@ -92,14 +92,23 @@ const NotificationStatsCards = ({ stats }: { stats: INotificationStats }) => {
   };
 
   const getIconColor = (color: string) => {
-    const colors = {
-      blue: "text-blue-600 dark:text-blue-400",
-      purple: "text-purple-600 dark:text-purple-400",
-      amber: "text-amber-600 dark:text-amber-400",
-      orange: "text-orange-600 dark:text-orange-400",
-      yellow: "text-yellow-600 dark:text-yellow-400",
-      red: "text-red-600 dark:text-red-400",
-    };
+    const colors = isDark
+      ? {
+          blue: "text-blue-400",
+          purple: "text-purple-400",
+          amber: "text-amber-400",
+          orange: "text-orange-400",
+          yellow: "text-yellow-400",
+          red: "text-red-400",
+        }
+      : {
+          blue: "text-blue-600",
+          purple: "text-purple-600",
+          amber: "text-amber-600",
+          orange: "text-orange-600",
+          yellow: "text-yellow-600",
+          red: "text-red-600",
+        };
     return colors[color as keyof typeof colors];
   };
 

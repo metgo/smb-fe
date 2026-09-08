@@ -3,9 +3,6 @@ import { skipToken } from "@reduxjs/toolkit/query";
 
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
-import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
-// import { useGetContentManagementEventsQuery } from "@/store/api/eventQueryApi"; // Events disabled for TRAVELLER purpose
-import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 import type { TabState } from "./useContentTabs";
 
 const PAGE_LIMIT = 20;
@@ -18,6 +15,7 @@ interface UseContentDataParams {
   authorityId: string;
   language: string;
   isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
+  viewId?: string | null;
 }
 
 export function useContentData({
@@ -28,23 +26,17 @@ export function useContentData({
   authorityId,
   language,
   isMarketplace = false,
+  viewId = null,
 }: UseContentDataParams) {
   const [page, setPage] = useState(1);
   const [productPage, setProductPage] = useState(1);
-  const [poiPage, setPoiPage] = useState(1);
-  // const [eventPage, setEventPage] = useState(1); // Events disabled for TRAVELLER purpose
   const [isApiIdChanging, setIsApiIdChanging] = useState(false);
 
   const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
-  const [combinedPOIs, setCombinedPOIs] = useState<any[]>([]);
-  // const [combinedEvents, setCombinedEvents] = useState<any[]>([]); // Events disabled for TRAVELLER purpose
 
   const businessTab = tabState["Businesses"];
   const productTab = tabState["Products"];
-  const tripTab = tabState["Trips"];
-  // const eventTab = tabState["Events"]; // Events disabled for TRAVELLER purpose
-  const poiTab = tabState["POI"];
 
   // ── Query params ────────────────────────────────────────────────────────────
 
@@ -64,12 +56,16 @@ export function useContentData({
       params.hasProductFilter = filters.hasProductFilter === "yes";
     if (filters.primaryCategory !== "all")
       params.primaryCategoryId = filters.primaryCategory;
+    const hasAssignmentFilter =
+      (filters.assignmentStatus && filters.assignmentStatus !== "all") ||
+      (filters.viewCategory && filters.viewCategory !== "all");
     if (filters.assignmentStatus && filters.assignmentStatus !== "all")
       params.assignmentStatus = filters.assignmentStatus;
     if (filters.viewCategory && filters.viewCategory !== "all")
       params.viewCategory = filters.viewCategory;
+    if (hasAssignmentFilter && viewId) params.viewId = viewId;
     return params;
-  }, [businessTab, dmoId, authorityId, language, page, externalApiId]);
+  }, [businessTab, dmoId, authorityId, language, page, externalApiId, viewId]);
 
   const productParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Products"];
@@ -83,56 +79,16 @@ export function useContentData({
     };
     if (filters.businessId) params.businessId = filters.businessId;
     if (searchQuery) params.search = searchQuery;
+    const hasAssignmentFilter =
+      (filters.assignmentStatus && filters.assignmentStatus !== "all") ||
+      (filters.viewCategory && filters.viewCategory !== "all");
     if (filters.assignmentStatus && filters.assignmentStatus !== "all")
       params.assignmentStatus = filters.assignmentStatus;
     if (filters.viewCategory && filters.viewCategory !== "all")
       params.viewCategory = filters.viewCategory;
+    if (hasAssignmentFilter && viewId) params.viewId = viewId;
     return params;
-  }, [productTab, dmoId, authorityId, externalApiId, productPage]);
-
-  const tripParams = useMemo(() => {
-    const { searchQuery, filters } = tabState["Trips"];
-    const params: any = { dmoId, authorityId, limit: PAGE_LIMIT };
-    if (filters.isTrip !== "all") params.isTrip = filters.isTrip;
-    if (searchQuery) params.search = searchQuery;
-    return params;
-  }, [tripTab, authorityId, dmoId]);
-
-  // const eventParams = useMemo(() => { // Events disabled for TRAVELLER purpose
-  //   // Events disabled for TRAVELLER purpose - commented out
-  //   // const { searchQuery, filters } = tabState["Events"];
-  //   // const params: any = {
-  //   //   status: "APPROVED",
-  //   //   dmoId,
-  //   //   authorityId,
-  //   //   externalApiId,
-  //   //   limit: PAGE_LIMIT,
-  //   //   page: eventPage,
-  //   // };
-  //   // if (searchQuery) params.search = searchQuery;
-  //   // if (filters.registrationFilter !== "all")
-  //   //   params.isRegistration = filters.registrationFilter;
-  //   // if (filters.dateRangeFilter.start)
-  //   //   params.startDate = filters.dateRangeFilter.start;
-  //   // if (filters.dateRangeFilter.end)
-  //   //   params.endDate = filters.dateRangeFilter.end;
-  //   // return params;
-  //   return null; // Events disabled
-  // }, []); // Removed dependencies since events are disabled
-
-  const poiParams = useMemo(() => {
-    const { searchQuery } = tabState["POI"];
-    const params: any = {
-      dmoId,
-      authorityId,
-      limit: PAGE_LIMIT,
-      status: "APPROVED",
-      externalApiId,
-      page: poiPage,
-    };
-    if (searchQuery) params.search = searchQuery;
-    return params;
-  }, [poiTab, dmoId, authorityId, externalApiId, poiPage]);
+  }, [productTab, dmoId, authorityId, externalApiId, productPage, viewId]);
 
   // ── Queries ─────────────────────────────────────────────────────────────────
 
@@ -147,58 +103,46 @@ export function useContentData({
     isLoading: isLoadingProduct,
     isFetching: isFetchingProduct,
   } = useGetContentManagementProductsQuery(
-    // Products disabled for TRAVELLER purpose
+    // Products only available for MARKETPLACE purpose
     selected === "Products" && externalApiId && isMarketplace
       ? productParams
       : skipToken,
   );
 
-  const { data: tripData, isLoading: isLoadingTrip } = useGetAllTripsQuery(
-    selected === "Trips" ? tripParams : skipToken,
-  );
+  // ── Accumulator "reset keys" ───────────────────────────────────────────────
+  // Everything that defines a *new* result set (i.e. everything sent to the API
+  // except the page number). When the key changes we start a fresh accumulator
+  // from page 1; otherwise incoming pages are appended. Deriving the reset from
+  // a serialized key — instead of a separate effect that clears state — removes
+  // the ordering race where a late `viewId` change wiped an already-populated
+  // list and the populate effect never re-ran (cached query, same data ref).
+  const businessResetKey = useMemo(() => {
+    const { page: _page, ...rest } = businessParams;
+    void _page;
+    return JSON.stringify(rest);
+  }, [businessParams]);
 
-  // Events disabled for TRAVELLER purpose - commented out
-  // const {
-  //   data: eventData,
-  //   isLoading: isLoadingEvent,
-  //   isFetching: isFetchingEvent,
-  // } = useGetContentManagementEventsQuery(
-  //   selected === "Events" ? eventParams : skipToken,
-  // );
+  const productResetKey = useMemo(() => {
+    const { page: _page, ...rest } = productParams;
+    void _page;
+    return JSON.stringify(rest);
+  }, [productParams]);
 
-  const {
-    data: poiData,
-    isLoading: isLoadingPOI,
-    isFetching: isFetchingPOI,
-  } = useGetAllPOIQuery(selected === "POI" ? poiParams : skipToken);
-
-  // ── Reset all on website change ─────────────────────────────────────────────
+  // Reset page + accumulator whenever the result set changes.
+  // `businessResetKey` already encodes externalApiId (it is part of the params).
+  useEffect(() => {
+    setPage(1);
+    setCombinedBusinesses([]);
+    if (externalApiId) setIsApiIdChanging(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessResetKey]);
 
   useEffect(() => {
-    if (!externalApiId) return;
-    setIsApiIdChanging(true);
-    setPage(1);
     setProductPage(1);
-    // setEventPage(1); // Events disabled for TRAVELLER purpose
-    setPoiPage(1);
-    setCombinedBusinesses([]);
     setCombinedProducts([]);
-    // setCombinedEvents([]); // Events disabled for TRAVELLER purpose
-    setCombinedPOIs([]);
-  }, [externalApiId]);
+  }, [productResetKey]);
 
   // ── Businesses pagination ───────────────────────────────────────────────────
-
-  useEffect(() => {
-    setPage(1);
-    setCombinedBusinesses([]);
-  }, [
-    businessTab.searchQuery,
-    businessTab.filters,
-    dmoId,
-    authorityId,
-    externalApiId,
-  ]);
 
   useEffect(() => {
     if (!businessData?.data) return;
@@ -214,14 +158,11 @@ export function useContentData({
         ];
       });
     }
-  }, [businessData?.data, page]);
+    // businessResetKey is included so a cached page-1 response is re-applied
+    // after the accumulator was reset (same data reference, new key).
+  }, [businessData?.data, page, businessResetKey]);
 
   // ── Products pagination ─────────────────────────────────────────────────────
-
-  useEffect(() => {
-    setProductPage(1);
-    setCombinedProducts([]);
-  }, [productTab.searchQuery, productTab.filters, dmoId, authorityId]);
 
   useEffect(() => {
     if (!productData?.data) return;
@@ -236,51 +177,7 @@ export function useContentData({
         ];
       });
     }
-  }, [productData?.data, productPage]);
-
-  // ── Events pagination ───────────────────────────────────────────────────────
-  // Events disabled for TRAVELLER purpose - commented out
-  // useEffect(() => {
-  //   setEventPage(1);
-  //   setCombinedEvents([]);
-  // }, [eventTab.searchQuery, eventTab.filters]);
-
-  // useEffect(() => {
-  //   if (!eventData?.data) return;
-  //   if (eventPage === 1) {
-  //     setCombinedEvents(eventData.data);
-  //   } else {
-  //     setCombinedEvents((prev) => {
-  //       const existingIds = new Set(prev.map((e: any) => e._id));
-  //       return [
-  //         ...prev,
-  //         ...eventData.data.filter((e: any) => !existingIds.has(e._id)),
-  //       ];
-  //     });
-  //   }
-  // }, [eventData?.data, eventPage]);
-
-  // ── POI pagination ──────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    setPoiPage(1);
-    setCombinedPOIs([]);
-  }, [poiTab.searchQuery, poiTab.filters, dmoId, authorityId, externalApiId]);
-
-  useEffect(() => {
-    if (!poiData?.data) return;
-    if (poiPage === 1) {
-      setCombinedPOIs(poiData.data);
-    } else {
-      setCombinedPOIs((prev) => {
-        const existingIds = new Set(prev.map((p: any) => p._id));
-        return [
-          ...prev,
-          ...poiData.data.filter((p: any) => !existingIds.has(p._id)),
-        ];
-      });
-    }
-  }, [poiData?.data, poiPage]);
+  }, [productData?.data, productPage, productResetKey]);
 
   // ── Load-more callbacks ─────────────────────────────────────────────────────
 
@@ -294,16 +191,6 @@ export function useContentData({
     setProductPage((prev) => prev + 1);
   };
 
-  // const fetchNextEventPage = () => {
-  //   // Events disabled for TRAVELLER purpose - no-op
-  //   return;
-  // };
-
-  const fetchNextPoiPage = () => {
-    if (!poiData?.meta?.hasNextPage || isFetchingPOI) return;
-    setPoiPage((prev) => prev + 1);
-  };
-
   // ── Data map (aggregates everything per tab) ────────────────────────────────
 
   const dataMap: Record<
@@ -311,6 +198,7 @@ export function useContentData({
     {
       rawData: any;
       isLoading: boolean;
+      isFetching: boolean;
       loadMore?: () => void;
       hasMore?: boolean;
     }
@@ -318,32 +206,20 @@ export function useContentData({
     Businesses: {
       rawData: combinedBusinesses,
       isLoading,
+      isFetching,
       loadMore: fetchNextPage,
-      hasMore: businessData?.meta?.hasNextPage,
+      // Only advertise "more" once page 1 is actually rendered. While the first
+      // page is (re)fetching, combinedBusinesses is empty and InfiniteScroll
+      // would otherwise render only its loader and get stuck there.
+      hasMore:
+        !!businessData?.meta?.hasNextPage && combinedBusinesses.length > 0,
     },
     Products: {
       rawData: combinedProducts,
       isLoading: isLoadingProduct,
+      isFetching: isFetchingProduct,
       loadMore: fetchNextProductPage,
-      hasMore: productData?.meta?.hasNextPage,
-    },
-    Trips: { rawData: tripData, isLoading: isLoadingTrip },
-    Events: {
-      // Events disabled for TRAVELLER purpose - commented out
-      // rawData: combinedEvents,
-      // isLoading: isLoadingEvent,
-      // loadMore: fetchNextEventPage,
-      // hasMore: eventData?.meta?.hasNextPage,
-      rawData: [],
-      isLoading: false,
-      loadMore: undefined,
-      hasMore: false,
-    },
-    POI: {
-      rawData: combinedPOIs,
-      isLoading: isLoadingPOI,
-      loadMore: fetchNextPoiPage,
-      hasMore: poiData?.meta?.hasNextPage,
+      hasMore: !!productData?.meta?.hasNextPage && combinedProducts.length > 0,
     },
   };
 
@@ -351,13 +227,7 @@ export function useContentData({
 
   const getItems = (rawData: any, tab: string | null) => {
     if (!rawData) return [];
-    if (
-      tab === "Businesses" ||
-      tab === "Products" ||
-      tab === "POI" ||
-      tab === "Events"
-    )
-      return rawData;
+    if (tab === "Businesses" || tab === "Products") return rawData;
     return rawData?.data ?? [];
   };
 
@@ -366,17 +236,11 @@ export function useContentData({
   const tabCounts = {
     Businesses: businessData?.totalData ?? 0,
     Products: productData?.totalData ?? 0,
-    Trips: 0,
-    Events: 0, // Events disabled for TRAVELLER purpose
-    POI: poiData?.totalData ?? combinedPOIs.length,
   };
 
   const tabLoadings = {
     Businesses: isLoading || isApiIdChanging,
     Products: isLoadingProduct || isApiIdChanging,
-    Trips: isLoadingTrip,
-    Events: false, // Events disabled for TRAVELLER purpose
-    POI: isLoadingPOI,
   };
 
   const totalData =
@@ -396,6 +260,7 @@ export function useContentData({
     totalData,
 
     activeIsLoading: active?.isLoading,
+    activeIsFetching: active?.isFetching,
     activeLoadMore: active?.loadMore,
     activeHasMore: active?.hasMore,
 

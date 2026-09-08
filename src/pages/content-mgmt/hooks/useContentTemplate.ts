@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { useBlocker } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useState, useEffect, useRef } from "react";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 import {
   useGetContentByExternalIdQuery,
@@ -18,9 +18,6 @@ import type { Filters } from "./useContentTabs";
 const TYPE_TO_KEY: Record<string, string> = {
   business: "businessIds",
   product: "productIds",
-  trip: "tripIds",
-  event: "eventIds",
-  poi: "poiIds",
 };
 
 const initialTemplateContent: IContentTemplate[] = [
@@ -286,9 +283,6 @@ export function useContentTemplate({
         contents: [
           ...mapContents(item.businessIds, "business"),
           ...mapContents(item.productIds, "product"),
-          ...mapContents(item.tripIds, "trip"),
-          ...mapContents(item.eventIds, "event"),
-          ...mapContents(item.poiIds, "poi"),
         ],
       })),
     }));
@@ -423,9 +417,6 @@ export function useContentTemplate({
         contents: [
           ...mapContents(item.businessIds, "business"),
           ...mapContents(item.productIds, "product"),
-          ...mapContents(item.tripIds, "trip"),
-          ...mapContents(item.eventIds, "event"),
-          ...mapContents(item.poiIds, "poi"),
         ],
       })),
     }));
@@ -493,10 +484,6 @@ export function useContentTemplate({
                   colors: group.colors ?? [],
                   businessIds: idsByType.businessIds ?? [],
                   productIds: idsByType.productIds ?? [],
-                  tripIds: idsByType.tripIds ?? [],
-                  eventIds: idsByType.eventIds ?? [],
-                  poiIds: idsByType.poiIds ?? [],
-                  fundayIds: idsByType.fundayIds ?? [],
                   ...idsByType,
                 };
               });
@@ -600,10 +587,6 @@ export function useContentTemplate({
                   colors: group.colors ?? [],
                   businessIds: idsByType.businessIds ?? [],
                   productIds: idsByType.productIds ?? [],
-                  tripIds: idsByType.tripIds ?? [],
-                  eventIds: idsByType.eventIds ?? [],
-                  poiIds: idsByType.poiIds ?? [],
-                  fundayIds: idsByType.fundayIds ?? [],
                   ...idsByType,
                 };
               });

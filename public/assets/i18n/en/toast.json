@@ -8,6 +8,7 @@
   "draft_saved": "Draft Saved",
   "draft_failed": "Failed to save draft",
   "fill_all_fields": "Fill all required fields before proceeding",
+  "complete_question_before_adding": "Please fill in the current question before adding a new one",
   "name_required": "Please enter a name before saving",
   "short_description_required": "Please enter a short description before saving",
   "full_description_required": "Please enter a full description before saving",
@@ -66,6 +67,7 @@
   "promotion_group_publish_failed": "Failed to publish promotions",
 
   "website_select_info": "Please select the website first to specify where this content should be displayed.",
+  "website_visibility_required": "Please select at least one associated website",
   "empty_content_info": "Please add at least one category with businesses.",
 
   "unsaved_changes": "Unsaved Changes",
@@ -81,5 +83,11 @@
   "trip_create_failed": "Failed to create Trip",
 
   "ticket_email_resend_success": "Ticket email resent successfully",
-  "ticket_email_resend_failed": "Failed to resend ticket email"
+  "ticket_email_resend_failed": "Failed to resend ticket email",
+  "vendor_email_sent_success": "Email sent to vendor successfully",
+  "vendor_email_sent_failed": "Failed to send email to vendor",
+  "vendor_sms_sent_success": "SMS sent to vendor successfully",
+  "vendor_sms_sent_failed": "Failed to send SMS to vendor",
+  "ticket_sms_resend_success": "Ticket SMS resent successfully",
+  "ticket_sms_resend_faild": "Failed to resend ticket SMS"
 }

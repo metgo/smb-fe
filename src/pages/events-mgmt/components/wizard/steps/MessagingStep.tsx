@@ -53,7 +53,7 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
   >(null);
 
   useEffect(() => {
-    markDirty(6);
+    markDirty(4);
   }, [notifications, markDirty]);
 
   const openNewNotificationForm = () => {

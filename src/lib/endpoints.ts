@@ -62,6 +62,7 @@ export const endpoints = {
   approveOrderProduct: "/approve-order-product",
   openDispute: "/orders/dispute",
   respondDispute: "/disputes/respond",
+  reopenDispute: "/disputes/reopen",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",
@@ -72,10 +73,16 @@ export const endpoints = {
   updateOrderStatus: "/update-order-status",
   bulkApprove: "/orders/bulk-approve",
   reconciliationStats: "/orders/reconciliation-stats",
+  paymentSummary: "/payment-summary",
   bulkMarkAsComplete: "/orders/bulk-order-product-status",
   finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
   previewFinaliseApprovedOrders:
     "/admin/monthly-reports/finalize-closed-orders/preview",
+  exportBankTransferXlsx: "/monthly-reports/export/bank-transfer-xlsx",
+  exportVendorwiseXlsx: "/vendors/monthly-reports/export/xlsx",
+
+  // payments
+  paymentTransactions: "/payment/transactions",
 
   // public
   publicEventTicket: "/public/event-tickets",
@@ -87,7 +94,9 @@ export const endpoints = {
   upcomingEvents: "/upcoming-events",
   contentManagementEvents: "/content-management-events",
   tickets: "/tickets",
+  ticketsReorder: "/tickets/reorder",
   eventTickets: "/event-tickets",
+  eventTicketAnswers: "/event-ticket-answers/by-ticket",
   resendTicketEmailToCustomer: "/resend-order-emails",
 
   // event sessions
@@ -103,7 +112,8 @@ export const endpoints = {
   eventSessionSendNotification: "/event-sessions/send-notification",
   eventSessionSendHistory: "/event-sessions/send-history",
   eventSessionSendHistoryDetails: "/event-sessions/send-history-detail",
-  eventSessionResendNotification: "/event-sessions/resend-confirmation",
+  eventSessionResendNotification: "/event-sessions/resend-notification",
+  sendOrderNotification: "/send-order-notification",
 
   // users
   users: "/users",
@@ -111,6 +121,7 @@ export const endpoints = {
   userAdmin: "/users/admin",
   createUser: "/users/create",
   resetLoginAttempts: "/users/reset-login-attempts",
+  notifyUserByEmailSms: "vendors/notify-missing-bank-details",
 
   // Media
   mediaSignedUrl: "/media-signed-url",
@@ -186,8 +197,18 @@ export const endpoints = {
   businessSummary: "/business-summary",
   poiSummary: "/poi-summary",
 
+  // Chat System
+  chatUsers: "/chats/users",
+  chatMessages: "/chats/messages",
+  chatConversations: "/chats/conversations",
+  chatUnreadCount: "/chats/unread-count",
+  chatPresence: "/chats/presence",
+  chatGroups: "/chats/groups",
+  chatBroadcasts: "/chats/broadcasts",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
+  googleGeocode: "https://maps.googleapis.com/maps/api/geocode/json",
   googleMapRouteDirection:
     "https://routes.googleapis.com/directions/v2:computeRoutes",
 };

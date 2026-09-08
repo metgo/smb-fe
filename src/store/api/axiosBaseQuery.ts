@@ -18,17 +18,19 @@ export const axiosBaseQuery =
       method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
       data?: any;
       params?: Record<string, any>;
+      responseType?: "json" | "blob";
     },
     unknown,
     unknown
   > =>
-  async ({ url, method, data, params }) => {
+  async ({ url, method, data, params, responseType }) => {
     try {
       const result = await axiosInstance({
         url,
         method,
         data,
         params: cleanParams(params),
+        responseType,
       });
 
       return { data: result.data };

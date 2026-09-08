@@ -26,6 +26,7 @@ import ShowColumns from "./ShowColumns";
 import UploadZone from "./UploadZone";
 import DmoAuthorityWebsiteIdsSelector from "./DmoAuthorityWebsiteIdsSelector";
 import { CopyableId } from "./CopyableId";
+import RichTextEditorMinimal from "./RichTextEditorMinimal";
 
 export {
   Spinner,
@@ -52,6 +53,7 @@ export {
   RichTextEditor,
   ImageWithFallback,
   ConnectedWebsites,
+  RichTextEditorMinimal,
   ReordableDataTable,
   DmoAuthorityWebsiteIdsSelector,
   WizardStepper,

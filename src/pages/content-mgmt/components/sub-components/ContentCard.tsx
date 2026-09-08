@@ -1,6 +1,7 @@
 import { useDrag } from "react-dnd";
-import { MapPin, X, CalendarDays, Clock } from "lucide-react";
+import { MapPin, X, CalendarDays, Clock, CheckCircle2 } from "lucide-react";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 
 import { getPlainTextFromRichText } from "@/helpers";
 import { ImageWithFallback } from "@/components/shared";
@@ -30,6 +31,8 @@ interface ContentCardProps {
   viewMode?: TViewMode;
   isSelected?: boolean;
   isInCategory?: boolean;
+  /** Item is already included in the currently loaded / active view */
+  isInView?: boolean;
 
   // Map of all currently selected items (id → full business object).
   // Passed down from Contents so the drag item can carry ALL selected items.
@@ -53,6 +56,7 @@ const ContentCard = ({
   isFree,
   eventType,
   isInCategory,
+  isInView,
   isExpanded,
   viewMode = "grid",
   isSelected,
@@ -63,6 +67,7 @@ const ContentCard = ({
   handleContextMenu,
 }: ContentCardProps) => {
   const { isDark, bgTertiary } = useThemeClasses();
+  const { t } = useTranslation("content");
 
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.BUSINESS_CARD,
@@ -114,6 +119,9 @@ const ContentCard = ({
   const baseClasses = clsx(
     "cursor-grab active:cursor-grabbing transition-all border select-none",
     isDragging ? "opacity-40 scale-95" : "opacity-100",
+    !isSelected && isInView && !isInCategory
+      ? "ring-1 ring-teal-400/50"
+      : undefined,
     selectionClasses,
   );
 
@@ -135,6 +143,16 @@ const ContentCard = ({
               d="M5 13l4 4L19 7"
             />
           </svg>
+        </div>
+      )}
+
+      {/* "Already in the active view" indicator */}
+      {isInView && !isInCategory && (
+        <div
+          title={t("in_current_view")}
+          className="absolute top-1 right-1 z-10 flex items-center justify-center rounded-full bg-teal-500 p-0.5 shadow ring-2 ring-white dark:ring-gray-900"
+        >
+          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
         </div>
       )}
 

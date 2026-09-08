@@ -65,6 +65,16 @@ export const eventMutationApi = createApi({
       }),
     }),
 
+    updateTicketReorder: builder.mutation<any, { body: ITicketReorderPayload }>(
+      {
+        query: ({ body }) => ({
+          url: `${endpoints.ticketsReorder}`,
+          method: "PATCH",
+          data: body,
+        }),
+      },
+    ),
+
     deleteTicket: builder.mutation<any, { ticketId: string }>({
       query: ({ ticketId }) => ({
         url: `${endpoints.tickets}/${ticketId}`,
@@ -105,6 +115,17 @@ export const eventMutationApi = createApi({
         data: payload,
       }),
     }),
+
+    notifyTicketCustomerByEmailSms: builder.mutation<
+      any,
+      { ordersId: string[]; type: "email" | "sms"; emailRecipient: string }
+    >({
+      query: (payload) => ({
+        url: endpoints.sendOrderNotification,
+        method: "POST",
+        data: payload,
+      }),
+    }),
   }),
 });
 
@@ -116,6 +137,7 @@ export const {
   useCreateTicketMutation,
   useDeleteEventMutation,
   useUpdateEventTicketStatusMutation,
-
+  useUpdateTicketReorderMutation,
   useResendTicketEmailToCustomerMutation,
+  useNotifyTicketCustomerByEmailSmsMutation,
 } = eventMutationApi;

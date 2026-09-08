@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { CheckCircle2, Circle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import React, { useState, useCallback, useMemo } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -22,13 +23,6 @@ interface Filters {
   hasProductFilter: string;
   primaryCategory: string;
   businessId: string;
-  registrationFilter: string;
-  eventTypeFilter: string;
-  dateRangeFilter: {
-    start: string;
-    end: string;
-  };
-  isTrip: string;
   assignmentStatus: string; // 'all' | 'assigned' | 'unassigned'
   viewCategory: string; // category titleHe or 'all'
   sortOrder: string; // 'recent' | 'alpha'
@@ -38,6 +32,7 @@ interface ContentsProps {
   selected: string | null;
   setSelected: (v: string) => void;
   isLoading: boolean;
+  isFetching?: boolean;
   isExpanded: boolean;
   viewMode: TViewMode;
   combinedBusinesses: any[];
@@ -57,21 +52,23 @@ interface ContentsProps {
   hasMore?: boolean;
   hiddenTabs?: string[];
 }
-const ALL_FILTER_OPTIONS = [
-  "Businesses",
-  "Products",
-  // "Trips",
-  // "Events", // Events disabled for TRAVELLER purpose
-  "POI",
-];
+const ALL_FILTER_OPTIONS = ["Businesses", "Products"];
 
 const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
   Businesses: "business",
   Products: "product",
-  Trips: "trip",
-  // Events: "event", // Events disabled for TRAVELLER purpose
-  POI: "poi",
 };
+
+type TInViewFilter = "all" | "assigned" | "unassigned";
+
+const IN_VIEW_FILTER_OPTIONS: {
+  value: TInViewFilter;
+  labelKey: string;
+}[] = [
+  { value: "all", labelKey: "in_view_filter_all" },
+  { value: "assigned", labelKey: "in_view_filter_included" },
+  { value: "unassigned", labelKey: "in_view_filter_unincluded" },
+];
 
 const FILTER_ICONS: Record<string, React.ReactNode> = {
   Businesses: (
@@ -86,21 +83,6 @@ const FILTER_ICONS: Record<string, React.ReactNode> = {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-      />
-    </svg>
-  ),
-  Trips: (
-    <svg
-      className="w-3.5 h-3.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
       />
     </svg>
   ),
@@ -119,45 +101,10 @@ const FILTER_ICONS: Record<string, React.ReactNode> = {
       />
     </svg>
   ),
-  Events: (
-    <svg
-      className="w-3.5 h-3.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-      />
-    </svg>
-  ),
-  POI: (
-    <svg
-      className="w-3.5 h-3.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-      />
-    </svg>
-  ),
 };
 const Contents = ({
   isLoading,
+  isFetching = false,
   isExpanded,
   viewMode,
   setViewMode,
@@ -188,6 +135,12 @@ const Contents = ({
   const { categories: categoryFilter } = useCommon();
 
   const [showFilters, setShowFilters] = useState(false);
+  // "In view / Not in view" toggle — backed by the shared `assignmentStatus`
+  // filter so it is applied server-side via useContentData.
+  const inViewFilter: TInViewFilter =
+    (filters.assignmentStatus as TInViewFilter) || "all";
+  const setInViewFilter = (value: TInViewFilter) =>
+    setFilters({ ...filters, assignmentStatus: value, viewCategory: "all" });
   const [selectedItems, setSelectedItems] = useState<Map<string, any>>(
     new Map(),
   );
@@ -269,11 +222,23 @@ const Contents = ({
     return cats;
   }, [templateContents]);
 
+  // ─── IDs of items already included in the currently loaded view ───────────
+  // templateContents holds the view/template currently open in the composer.
+  const currentContentType = TAB_TO_CONTENT_TYPE[currentTab] ?? "business";
+  const inViewIds = useMemo(() => {
+    const ids = new Set<string>();
+    templateContents?.forEach((topic) =>
+      topic.groups?.forEach((group) =>
+        group.contents
+          ?.filter((c) => c.contentType === currentContentType)
+          .forEach((c) => c._id && ids.add(c._id.toString())),
+      ),
+    );
+    return ids;
+  }, [templateContents, currentContentType]);
+
   const filteredItems = useMemo(() => {
     let items = combinedBusinesses ?? [];
-
-    // NOTE: assignmentStatus and viewCategory are now filtered server-side
-    // via useContentData → backend handlers. Only client-side sort applied here.
 
     if (filters.sortOrder === "alpha") {
       items = [...items].sort((a, b) => {
@@ -348,14 +313,14 @@ const Contents = ({
   };
 
   return (
-    <div className="flex-1 min-w-0 pt-6">
+    <div className="flex-1 min-w-0">
       <div
         className={clsx(
-          "border p-2 rounded-md",
+          "border px-2 py-1 rounded-md",
           isDark ? "border-gray-500" : "border-gray-200",
         )}
       >
-        <div className="flex flex-wrap items-center gap-2 mb-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h2
             className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
           >
@@ -440,7 +405,7 @@ const Contents = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-2">
           <div className="flex-1 relative">
             <SearchInput
               placeholder={t("search_businesses_placeholder")}
@@ -449,14 +414,51 @@ const Contents = ({
               storageKey="contentSearchTerm"
             />
           </div>
-          {currentTab !== "POI" && (
-            <FilterButton value={showFilters} onChange={setShowFilters} />
-          )}
+          <FilterButton value={showFilters} onChange={setShowFilters} />
           <ViewModeToggle
             onChange={setViewMode}
             value={viewMode}
             tableName="contentViewMode"
           />
+        </div>
+
+        {/* ── "Already in view" filter switch ── */}
+        <div className="flex items-center gap-1">
+          <div
+            className={clsx(
+              "inline-flex items-center rounded-lg border p-0.5",
+              isDark
+                ? "border-gray-700 bg-gray-800"
+                : "border-gray-200 bg-gray-50",
+            )}
+          >
+            {IN_VIEW_FILTER_OPTIONS.map((opt) => {
+              const isActive = inViewFilter === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setInViewFilter(opt.value)}
+                  className={clsx(
+                    "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                    isActive
+                      ? "bg-teal-500/15 text-teal-600"
+                      : isDark
+                        ? "text-gray-400 hover:text-gray-200"
+                        : "text-gray-500 hover:text-gray-700",
+                  )}
+                >
+                  {opt.value === "assigned" && (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  {opt.value === "unassigned" && (
+                    <Circle className="w-3.5 h-3.5" />
+                  )}
+                  {t(opt.labelKey)}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Filters Panel */}
@@ -546,32 +548,11 @@ const Contents = ({
                   </div>
                 )} */}
 
-                {/* ── Assignment status filter (Businesses only - Products disabled for TRAVELLER) ── */}
+                {/* ── View-category filter (Businesses only - Products disabled for TRAVELLER).
+                    "In view / Not in view" itself is the chip toggle above the list,
+                    backed by filters.assignmentStatus. ── */}
                 {currentTab === "Businesses" && (
                   <>
-                    <div className="flex flex-col sm:col-span-4">
-                      <label
-                        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                      >
-                        Assignment Status
-                      </label>
-                      <select
-                        value={filters.assignmentStatus}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            assignmentStatus: e.target.value,
-                            viewCategory: "all",
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                      >
-                        <option value="all">All</option>
-                        <option value="assigned">Assigned to category</option>
-                        <option value="unassigned">Unassigned</option>
-                      </select>
-                    </div>
-
                     {filters.assignmentStatus !== "unassigned" &&
                       viewCategories.length > 0 && (
                         <div className="flex flex-col sm:col-span-4">
@@ -622,111 +603,12 @@ const Contents = ({
                     </select>
                   </div>
                 )}
-
-                {currentTab === "Trips" && (
-                  <div className="flex flex-col min-w-45">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("isTrip")}
-                    </label>
-                    <select
-                      value={filters.isTrip}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          isTrip: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="all">{tc("all")}</option>
-                      <option value="true">{tc("yes")}</option>
-                      <option value="false">{tc("no")}</option>
-                    </select>
-                  </div>
-                )}
-                {/* ── Event filters ── */}
-                {/* Events disabled for TRAVELLER purpose - commented out */}
-                {/* {currentTab === "Events" && (
-                  <div className="flex flex-col min-w-45">
-                    <label className={`block text-sm mb-2 `}>
-                      {t("registration")}
-                    </label>
-                    <select
-                      value={filters.registrationFilter}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          registrationFilter: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="all">{tc("all")}</option>
-                      <option value="true">{tc("required")}</option>
-                      <option value="false">{tc("not_required")}</option>
-                    </select>
-                    <label className={`block text-sm mb-2 `}>
-                      {t("date_range")}
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="date"
-                        value={filters?.dateRangeFilter.start}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            dateRangeFilter: {
-                              ...filters.dateRangeFilter,
-                              start: e.target.value,
-                            },
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                          isDark
-                            ? "bg-gray-900 border-gray-700 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                      />
-                      <input
-                        type="date"
-                        value={filters?.dateRangeFilter.end}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            dateRangeFilter: {
-                              ...filters.dateRangeFilter,
-                              end: e.target.value,
-                            },
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                          isDark
-                            ? "bg-gray-900 border-gray-700 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                      />
-                    </div>
-                  </div>
-                )} */}
               </div>
 
               {/* ── Active Filter Chips ── */}
-              {(currentTab === "Businesses" &&
-                (filters.hasProductFilter !== "all" ||
-                  filters.primaryCategory !== "all")) ||
-              /* Products disabled for TRAVELLER purpose - commented out */
-              /* Events disabled for TRAVELLER purpose - commented out */
-              false ? (
+              {currentTab === "Businesses" &&
+              (filters.hasProductFilter !== "all" ||
+                filters.primaryCategory !== "all") ? (
                 <div className="flex flex-col items-start gap-1">
                   <label
                     className={`block text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -743,25 +625,10 @@ const Contents = ({
                         // Only show chips relevant to current tab
                         if (currentTab === "Businesses" && key === "businessId")
                           return null;
-                        /* Products disabled for TRAVELLER purpose - commented out
-                        if (currentTab === "Products" && key !== "businessId")
-                          return null;
-                        */
-                        // Events disabled for TRAVELLER purpose - commented out
-                        // if (
-                        //   currentTab === "Events" &&
-                        //   key !== "registrationFilter"
-                        // )
-                        //   return null;
 
                         let displayValue = value;
                         if (key === "hasProductFilter")
                           displayValue = value === "yes" ? t("yes") : t("no");
-                        else if (key === "registrationFilter")
-                          displayValue =
-                            value === "true"
-                              ? tc("required")
-                              : tc("not_required");
                         else if (key === "primaryCategory") {
                           const found = categoryFilter?.find(
                             (item: any) => item._id === value,
@@ -788,20 +655,6 @@ const Contents = ({
                           />
                         );
                       })}
-                      {/* Events disabled for TRAVELLER purpose - commented out */}
-                      {/* {currentTab === "Events" &&
-                        (filters.dateRangeFilter.start ||
-                          filters.dateRangeFilter.end) && (
-                          <FilterChips
-                            label={`${filters.dateRangeFilter.start || "..."} → ${filters.dateRangeFilter.end || "..."}`}
-                            onRemove={() =>
-                              setFilters((prev: Filters) => ({
-                                ...prev,
-                                dateRangeFilter: { start: "", end: "" },
-                              }))
-                            }
-                          />
-                        )} */}
                     </div>
                     <button
                       onClick={clearFilter}
@@ -840,22 +693,35 @@ const Contents = ({
         onClick={handleContainerClick}
       >
         <Spinner isLoading={isLoading} />
+
+        {/* Empty list: show a loading hint while a fetch is in flight,
+            otherwise a "no results" message. Without this the panel renders
+            blank during any refetch (filter / search / website change), since
+            RTK's `isLoading` is false on refetches. */}
+        {(filteredItems?.length ?? 0) === 0 && !isLoading ? (
+          <p className={clsx("text-center mt-8", textTertiary)}>
+            {isFetching ? t("loading_items") : t("no_results_found")}
+          </p>
+        ) : null}
+
         <InfiniteScroll
-          dataLength={combinedBusinesses?.length ?? 0}
+          dataLength={filteredItems?.length ?? 0}
           next={() => loadMore?.()}
-          hasMore={!!hasMore}
+          hasMore={!!hasMore && (filteredItems?.length ?? 0) > 0}
           scrollableTarget="scrollableDiv"
           loader={
-            <p className={clsx("text-center mt-4", textTertiary)}>
-              {tc("loading_text")}
-            </p>
+            (filteredItems?.length ?? 0) > 0 ? (
+              <p className={clsx("text-center mt-4", textTertiary)}>
+                {tc("loading_text")}
+              </p>
+            ) : null
           }
           endMessage={
-            hasMore === false && (
+            hasMore === false && (filteredItems?.length ?? 0) > 0 ? (
               <p className={clsx("text-center mt-4", textTertiary)}>
                 {tc("loading_end_text")}
               </p>
-            )
+            ) : null
           }
         >
           <div className={clsx("grid grid-cols-12 gap-2")}>
@@ -875,8 +741,9 @@ const Contents = ({
                 viewMode={viewMode}
                 isExpanded={isExpanded}
                 isSelected={selectedItems.has(item._id)}
+                isInView={inViewIds.has(item._id?.toString())}
                 selectedItems={selectedItems}
-                contentType={TAB_TO_CONTENT_TYPE[currentTab] ?? "business"}
+                contentType={currentContentType}
                 handleClick={(e) => handleClick(e, item)}
                 handleContextMenu={() => handleContextMenu(item)}
               />

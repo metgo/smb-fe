@@ -128,6 +128,7 @@ export default function CreateEventWizardNew({
             internalNotes={wizard.internalNotes}
             setInternalNotes={wizard.setInternalNotes}
             errors={wizard.errors}
+            setErrors={wizard.setErrors}
             selectedDmoId={wizard.selectedDmoId}
             setSelectDmoId={wizard.setSelectDmoId}
             selectedAuthorityId={wizard.selectedAuthorityId}
@@ -170,6 +171,7 @@ export default function CreateEventWizardNew({
             setEventFormat={wizard.setEventFormat}
             address={wizard.address}
             setAddress={wizard.setAddress}
+            onAddressParts={wizard.setAddressParts}
             onlineLink={wizard.onlineLink}
             setOnlineLink={wizard.setOnlineLink}
             errors={wizard.errors}

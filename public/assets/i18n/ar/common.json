@@ -60,6 +60,7 @@
   "orders": "الطلبات",
   "order_summary": "ملخص الطلبات",
   "vendor_reconciliation": "تسوية الموردين",
+  "payment_transactions": "معاملات الدفع",
   "pois": "نقاط الاهتمام",
   "trips": "الرحلات",
   "fun_days": "أيام الترفيه",
@@ -74,6 +75,7 @@
   "promotions": "العروض الترويجية",
   "blog": "المدونة",
   "article": "مقال",
+  "chat": "دردشة",
   "news_feed": "تدفق الأخبار",
   "feed_settings": "إعدادات التدفق",
   "mini_site": "الموقع المصغر",
@@ -218,6 +220,7 @@
   "website_visibility": "رؤية الموقع",
   "select_associated_websites": "اختر المواقع المرتبطة",
   "select_unassociated_websites": "اختر المواقع غير المرتبطة",
+  "website_visibility_required": "يرجى اختيار موقع مرتبط واحد على الأقل",
 
   "download_pdf": "تحميل PDF",
   "download_csv": "تحميل CSV",
@@ -412,6 +415,16 @@
   "view_business_on": "عرض على",
   "contact_support_label": "أو اتصل بفريق الدعم لدينا",
   "selected_dmo_authority": "منظمة تسويق الوجهة والسلطة المحددة",
-  "connected_websites": "المواقع المرتبطة",
-  "no_connected_dmo_authority_websites": "لا توجد منظمة تسويق وجهة أو سلطة أو مواقع مرتبطة"
+  "no_connected_dmo_authority_websites": "لا توجد منظمة تسويق وجهة أو سلطة أو مواقع مرتبطة",
+  "stats": "الإحصائيات",
+  "hide_stats": "إخفاء الإحصائيات",
+  "show_stats": "إظهار الإحصائيات",
+  "stats_hidden": "الإحصائيات مخفية",
+  "key_metrics": "المقاييس الرئيسية",
+  "search_and_filters": "البحث والتصفية",
+  "close_options": "إغلاق الخيارات",
+  "options": "خيارات",
+  "hide_options": "إخفاء الخيارات",
+  "open_in_google_maps": "فتح في خرائط Google",
+  "open_in_waze": "فتح في Waze"
 }

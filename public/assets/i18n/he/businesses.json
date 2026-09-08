@@ -298,5 +298,14 @@
   "scanToVisit": "סרוק כדי לבקר",
   "last_active": "פעילות אחרונה",
   "member_since": "חבר מאז",
-  "tour": "סיור מודרך"
+  "tour": "סיור מודרך",
+  "stats": "סטטיסטיקות",
+  "hide_stats": "הסתר סטטיסטיקות",
+  "show_stats": "הצג סטטיסטיקות",
+  "stats_hidden": "סטטיסטיקות מוסתרות",
+  "key_metrics": "מדדי מפתח",
+  "search_and_filters": "חיפוש וסינון",
+  "close_options": "סגור אפשרויות",
+  "options": "אפשרויות",
+  "hide_options": "הסתר אפשרויות"
 }

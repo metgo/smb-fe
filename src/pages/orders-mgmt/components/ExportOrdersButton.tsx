@@ -2,6 +2,7 @@ import * as XLSX from "xlsx";
 import { useState, useRef, useEffect } from "react";
 import { Download, FileText, FileSpreadsheet } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { getLngWiseStr } from "@/helpers";
 
 type OrderColumnVisibility = {
   name: boolean;
@@ -27,6 +28,9 @@ interface ExportOrdersButtonProps {
   summaryData: any[];
   t: (key: string) => string;
   tc: (key: string) => string;
+  monthFilter?: string;
+  customDateFrom?: string;
+  customDateTo?: string;
 }
 
 export default function ExportOrdersButton({
@@ -38,8 +42,11 @@ export default function ExportOrdersButton({
   summaryData,
   t,
   tc,
+  monthFilter,
+  customDateFrom,
+  customDateTo,
 }: ExportOrdersButtonProps) {
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -113,7 +120,12 @@ export default function ExportOrdersButton({
 
   const buildSummaryRows = () =>
     summaryData.map((row) => ({
-      [t("business_name")]: row.businessName ?? "-",
+      [t("business_name")]: getLngWiseStr(
+        language,
+        row.businessName,
+        row.businessNameHe,
+        row.businessNameAr,
+      ),
       [t("business_address_city")]: row.businessAddressCity ?? "-",
       [t("business_address_location")]: row.businessAddressLocation ?? "-",
       [t("total_no_of_orders")]: row.totalNoOfOrders ?? "-",
@@ -124,6 +136,21 @@ export default function ExportOrdersButton({
         ? `₪${row.totalAmountPaidByCreditCard.toLocaleString()}`
         : "-",
     }));
+
+  const getFileBaseName = () => {
+    const suffix = isSummaryMode ? "summary" : "orders";
+    if (monthFilter === "custom" && (customDateFrom || customDateTo)) {
+      const dateStr =
+        customDateFrom && customDateTo
+          ? `${customDateFrom}_to_${customDateTo}`
+          : customDateFrom || customDateTo;
+      return `${dateStr}_${suffix}`;
+    }
+    if (monthFilter && monthFilter !== "all" && monthFilter !== "custom") {
+      return `${monthFilter}_${suffix}`;
+    }
+    return `${suffix}_export_${new Date().toISOString().slice(0, 10)}`;
+  };
 
   const handleExportCSV = () => {
     const rows = isSummaryMode ? buildSummaryRows() : buildOrderRows();
@@ -140,7 +167,7 @@ export default function ExportOrdersButton({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${isSummaryMode ? "summary" : "orders"}_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `${getFileBaseName()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     setOpen(false);
@@ -156,10 +183,7 @@ export default function ExportOrdersButton({
       worksheet,
       isSummaryMode ? "Summary" : "Orders",
     );
-    XLSX.writeFile(
-      workbook,
-      `${isSummaryMode ? "summary" : "orders"}_export_${new Date().toISOString().slice(0, 10)}.xlsx`,
-    );
+    XLSX.writeFile(workbook, `${getFileBaseName()}.xlsx`);
     setOpen(false);
   };
 

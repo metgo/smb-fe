@@ -32,14 +32,24 @@ const Step08Analytics = ({ formData, errors, onChange }: Props) => {
       hint: t("google_analytics_hint"),
     },
     {
-      field: "googleTagManagerId",
-      label: t("google_tag_manager_id"),
-      placeholder: "GTM-XXXXXXX",
+      field: "googleAdsConvTrackId",
+      label: t("google_ads_conversion_tracking_id"),
+      placeholder: "AW-XXXXXXX",
+    },
+    {
+      field: "enableWidgetId",
+      label: t("enable_widget_id"),
+      placeholder: "L51962c1rufewge6-1234-56789",
+    },
+    {
+      field: "hotjarId",
+      label: t("hotjar_id"),
+      placeholder: "1234567",
     },
     {
       field: "facebookPixelId",
       label: t("facebook_pixel_id"),
-      placeholder: "123456789012345",
+      placeholder: "12345678901234567",
     },
   ];
 
@@ -52,7 +62,7 @@ const Step08Analytics = ({ formData, errors, onChange }: Props) => {
         </h2>
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-2 gap-4">
         {fields.map(({ field, label, placeholder, hint }) => (
           <div key={field} className="flex flex-col gap-2">
             <label className={clsx("text-sm font-medium", textPrimary)}>

@@ -32,14 +32,20 @@ import WebsiteCrashDetailsPage from "./website-crashes/details";
 import EventSessionMgmtPage from "./event-session-mgmt";
 import TripsMgmtPage from "./trips-mgmt";
 import TripDetailsPage from "./trips-mgmt/details";
+import ChatPage from "./chat-mgmt";
 import StatsSummaryPage from "./stats-summary";
+import { PaymentMgmtPage } from "./payment-mgmt";
+import PaymentTransactionsPage from "./payment-transactions-mgmt";
 
 export {
+  ChatPage,
   AuthPage,
   ErrorUiPage,
   NoInternetPage,
   ProfilePage,
   DmosMgmtPage,
+  PaymentMgmtPage,
+  PaymentTransactionsPage,
   CampaignsMgmtPage,
   AuthoritiesMgmtPage,
   TripsMgmtPage,

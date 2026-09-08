@@ -1,6 +1,7 @@
 export const routes = {
   dashboard: "/",
   analyticsDashboard: "/analytics-dashboard",
+  chat: "/chat",
   home: "/home",
 
   businessMgmt: "/businesses-management",
@@ -25,6 +26,7 @@ export const routes = {
   voucherMgmt: "/voucher-management",
   voucherDetails: "/voucher-details",
   vendorReconciliationMgmt: "/vendor-reconciliation",
+  paymentTransactions: "/payment-transactions",
   pointOfInterest: "/point-of-interest",
   poiMgmt: "/poi-management",
   poiDetails: "/poi-details",
@@ -34,7 +36,6 @@ export const routes = {
 
   funDays: "/fun-days",
   vouchers: "/vouchers",
-  offlineVouchers: "/offline-vouchers",
   miniCampaign: "/mini-campaign",
   auth: "/authentication",
   noInternet: "/no-internet",

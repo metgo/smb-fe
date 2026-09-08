@@ -18,6 +18,7 @@ import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
@@ -45,8 +46,8 @@ import {
   detectLanguage,
   getLngWiseStr,
   modelTitle,
-  parseAddress,
   removeNulls,
+  type ParsedAddressParts,
 } from "@/helpers";
 import PublishButton from "@/components/btns/PublishButton";
 import {
@@ -55,6 +56,7 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
+import { getPlainText } from "@/components/shared/RichTextEditor";
 // import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
@@ -179,6 +181,11 @@ function CreateBusinessWizardInner({
   );
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
+  const [addressParts, setAddressParts] = useState<ParsedAddressParts>({
+    location: "",
+    city: "",
+    country: "",
+  });
 
   // Business Media States
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
@@ -188,6 +195,18 @@ function CreateBusinessWizardInner({
   );
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
+  );
+
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
   );
 
   // Form State
@@ -401,7 +420,7 @@ function CreateBusinessWizardInner({
     setDeleteTargetLogo(null);
   };
 
-  const addr = parseAddress(address);
+  const addr = addressParts;
 
   const totalSteps = 9;
 
@@ -591,6 +610,11 @@ function CreateBusinessWizardInner({
           .join(", ");
 
         setAddress(formatted);
+        setAddressParts({
+          location: editData.address.location || "",
+          city: editData.address.city || "",
+          country: editData.address.country || "",
+        });
       }
 
       if (editData?.geoLocation) {
@@ -819,6 +843,15 @@ function CreateBusinessWizardInner({
       toast.error(tt("full_description_required"));
       return;
     }
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     const resolvedBusinessId = await saveDraft(false);
     if (resolvedBusinessId) {
@@ -843,12 +876,22 @@ function CreateBusinessWizardInner({
       return;
     }
     if (
-      (formData.fullDescription || "").length > 500 ||
-      (formData.fullDescriptionHe || "").length > 500 ||
-      (formData.fullDescriptionAr || "").length > 500
+      getPlainText(formData.fullDescription || "").length > 500 ||
+      getPlainText(formData.fullDescriptionHe || "").length > 500 ||
+      getPlainText(formData.fullDescriptionAr || "").length > 500
     ) {
       setCurrentStep(1);
       toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
       return;
     }
 
@@ -944,7 +987,7 @@ function CreateBusinessWizardInner({
       //       formData={formData}
       //       onChange={handleChange}
       //     />
-      //   );
+      //   );p
 
       case 2:
         return <BusinessContactOwership {...commonProps} />;
@@ -956,6 +999,7 @@ function CreateBusinessWizardInner({
             setGeo={setGeo}
             address={address}
             setAddress={setAddress}
+            onAddressParts={setAddressParts}
           />
         );
 
@@ -1115,7 +1159,10 @@ function CreateBusinessWizardInner({
       )}
 
       {/* Content */}
-      <div data-tour="wizard-content" className="flex-1 overflow-y-auto p-6">
+      <div
+        data-tour="wizard-content"
+        className="flex-1 overflow-y-auto overflow-x-auto p-6"
+      >
         {renderStep()}
       </div>
 

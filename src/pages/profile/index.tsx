@@ -1,4 +1,4 @@
-import { Activity, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Mail,
@@ -11,6 +11,7 @@ import {
   Building2,
   User,
 } from "lucide-react";
+import clsx from "clsx";
 
 import { routes } from "@/lib/routes";
 import { useAppSelector } from "@/hooks/hooks";
@@ -20,18 +21,7 @@ import { useGetUserInfoQuery } from "@/store/api/userQueryApi";
 import { formatDate } from "@/helpers/formatter";
 import { Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
-
-export function getInitials(fullName: string): string {
-  if (!fullName) return "";
-
-  return fullName
-    .trim()
-    .split(/\s+/) // split by one or more spaces
-    .map((word) => word[0]) // take first letter
-    .join("")
-    .toUpperCase();
-}
+import { getInitials } from "@/helpers";
 
 export default function ProfilePage() {
   const { t } = useTranslation("profile");
@@ -59,7 +49,6 @@ export default function ProfilePage() {
     navigate(routes.auth, { replace: true });
     localStorage.clear();
     window.dispatchEvent(new Event("session:updated"));
-    // window.location.reload();
   };
 
   const bank = banks?.find(
@@ -302,7 +291,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <Activity mode={showBankModal ? "visible" : "hidden"}>
+      {showBankModal && (
         <AssignBankAccountModal
           isDark={isDark}
           banks={banks}
@@ -311,7 +300,7 @@ export default function ProfilePage() {
           setIsOpen={setShowBankModal}
           savedBankAccount={userInfo?.bankAccount}
         />
-      </Activity>
+      )}
     </>
   );
 }

@@ -5,6 +5,7 @@
   "draft_saved": "تم حفظ المسودة",
   "draft_failed": "فشل حفظ المسودة",
   "fill_all_fields": "يرجى ملء جميع الحقول المطلوبة قبل المتابعة",
+  "complete_question_before_adding": "يرجى ملء السؤال الحالي قبل إضافة سؤال جديد",
   "name_required": "يرجى إدخال اسم قبل الحفظ",
   "short_description_required": "يرجى إدخال وصف قصير قبل الحفظ",
   "full_description_required": "يرجى إدخال وصف كامل قبل الحفظ",
@@ -63,6 +64,7 @@
   "promotion_group_publish_failed": "فشل نشر العروض الترويجية",
 
   "website_select_info": "يرجى اختيار الموقع أولاً لتحديد المكان الذي سيتم عرض هذا المحتوى فيه.",
+  "website_visibility_required": "يرجى اختيار موقع مرتبط واحد على الأقل",
   "empty_content_info": "يرجى إضافة فئة واحدة على الأقل تحتوي على أعمال.",
   "unsaved_changes": "تغييرات غير محفوظة",
   "close_without_saving": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد الإغلاق بدون الحفظ؟",
@@ -77,5 +79,11 @@
   "trip_create_failed": "فشل إنشاء الرحلة",
 
   "ticket_email_resend_success": "تمت إعادة إرسال بريد التذكرة الإلكتروني بنجاح",
-  "ticket_email_resend_failed": "فشل في إعادة إرسال بريد التذكرة الإلكتروني"
+  "ticket_email_resend_failed": "فشل في إعادة إرسال بريد التذكرة الإلكتروني",
+  "vendor_email_sent_success": "تم إرسال البريد الإلكتروني إلى المورد بنجاح",
+  "vendor_email_sent_failed": "فشل إرسال البريد الإلكتروني إلى المورد",
+  "vendor_sms_sent_success": "تم إرسال الرسالة النصية إلى المورد بنجاح",
+  "vendor_sms_sent_failed": "فشل إرسال الرسالة النصية إلى المورد",
+  "ticket_sms_resend_success": "تمت إعادة إرسال رسالة التذكرة بنجاح",
+  "ticket_sms_resend_faild": "فشل في إعادة إرسال رسالة التذكرة"
 }

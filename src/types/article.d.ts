@@ -73,3 +73,41 @@ interface IArticleFormData {
   status:
     "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED" | "PENDING";
 }
+
+interface IBlogDetails {
+  _id: string;
+  status: string;
+  title: string;
+  titleHe: string;
+  titleAr: string;
+  shortDescription: string;
+  shortDescriptionHe: string;
+  shortDescriptionAr: string;
+  contentHe: string;
+  contentAr: string;
+  content: string;
+  summary: string;
+  summaryHe: string;
+  summaryAr: string;
+  slug: string;
+  metaTitle: string;
+  metaTitleHe: string;
+  metaTitleAr: string;
+  metaDescription: string;
+  metaDescriptionHe: string;
+  metaDescriptionAr: string;
+  tags: string[];
+  tagsHe: string[];
+  tagsAr: string[];
+  images: BlogImage[];
+  createdAt: string;
+  updatedAt: string | null;
+  createdBy: string;
+  updatedBy: string | null;
+  externalApiId: {
+    id: string;
+    name: string;
+    logo: string;
+    url: string;
+  };
+}

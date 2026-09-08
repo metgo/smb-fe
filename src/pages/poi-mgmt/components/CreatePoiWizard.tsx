@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 
 import {
   PoiBasicInfo,
@@ -31,7 +32,11 @@ import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { usePoiDraftSaver } from "../hooks/usePoiDraftSaver";
-import { detectLanguage, getLngWiseStr, parseAddress } from "@/helpers";
+import {
+  detectLanguage,
+  getLngWiseStr,
+  type ParsedAddressParts,
+} from "@/helpers";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
 import Attributes from "@/components/details-sections/Attributes";
@@ -69,6 +74,11 @@ export default function CreatePoiWizard({
   const [poiId, setPoiId] = useState<string>("");
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
+  const [addressParts, setAddressParts] = useState<ParsedAddressParts>({
+    location: "",
+    city: "",
+    country: "",
+  });
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState<string[]>(
     [],
@@ -108,6 +118,18 @@ export default function CreatePoiWizard({
 
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
+  );
+
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
   );
 
   const initialFormData = useRef(formData);
@@ -252,6 +274,11 @@ export default function CreatePoiWizard({
             .filter(Boolean)
             .join(", "),
         );
+        setAddressParts({
+          location: editData.address.location || "",
+          city: editData.address.city || "",
+          country: editData.address.country || "",
+        });
       }
       setSelectAuthorityId(editData?.authorityId || "");
       setSelectedDmoId(editData?.dmoId || "");
@@ -279,7 +306,7 @@ export default function CreatePoiWizard({
     { number: 6, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
-  const addr = parseAddress(address);
+  const addr = addressParts;
 
   const stepPayloadMap = {
     dmoId: selectedDmoId,
@@ -353,11 +380,13 @@ export default function CreatePoiWizard({
           newErrors.fullDescription = t("required_field");
         if (!selectedDmoId) newErrors.dmo = t("required_field");
         if (!selectedAuthorityId) newErrors.authority = t("required_field");
+        if (hasAssociatedWebsites && !websiteVisibilityIds?.length)
+          newErrors.websiteVisibilityIds = tc("website_visibility_required");
 
         break;
 
       case 5:
-        if (!addr.location) newErrors.address = t("required_field");
+        if (!address?.trim()) newErrors.address = t("required_field");
         break;
     }
     setErrors(newErrors);
@@ -381,6 +410,15 @@ export default function CreatePoiWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     const resolvedPoiId = await saveDraft(false);
     if (resolvedPoiId) {
@@ -498,6 +536,7 @@ export default function CreatePoiWizard({
       t,
       formData,
       errors,
+      setErrors,
       setFormData,
       address,
       geo,
@@ -585,6 +624,7 @@ export default function CreatePoiWizard({
             setGeo={setGeo}
             address={address}
             setAddress={setAddress}
+            onAddressParts={setAddressParts}
           />
         );
       case 6:

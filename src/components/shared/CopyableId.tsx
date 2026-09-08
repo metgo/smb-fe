@@ -4,9 +4,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface CopyableIdProps {
   id: string;
+  /** Show the full id instead of truncating it. */
+  full?: boolean;
 }
 
-export const CopyableId = ({ id }: CopyableIdProps) => {
+export const CopyableId = ({ id, full = false }: CopyableIdProps) => {
   const { isDark } = useThemeClasses();
   const [copied, setCopied] = useState(false);
 
@@ -26,8 +28,14 @@ export const CopyableId = ({ id }: CopyableIdProps) => {
       } ${copied ? (isDark ? "bg-emerald-900/30 text-emerald-400" : "bg-emerald-100 text-emerald-600") : ""}`}
       title={copied ? "Copied!" : "Click to copy ID"}
     >
-      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-      <span className="max-w-20 truncate">{id}</span>
+      {copied ? (
+        <Check className="w-3 h-3 shrink-0" />
+      ) : (
+        <Copy className="w-3 h-3 shrink-0" />
+      )}
+      <span className={full ? "whitespace-nowrap" : "max-w-20 truncate"}>
+        {id}
+      </span>
     </button>
   );
 };

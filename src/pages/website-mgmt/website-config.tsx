@@ -53,7 +53,6 @@ const DEFAULT_FORM: ISiteSettingsFormData = {
   websiteUrl: "",
   purpose: "MARKETPLACE",
   identifierId: "",
-  gaPropertyId: "",
   platformCharge: 0,
 
   /* Step 2 */
@@ -117,7 +116,9 @@ const DEFAULT_FORM: ISiteSettingsFormData = {
 
   /* Step 8 */
   googleAnalyticsId: "",
-  googleTagManagerId: "",
+  googleAdsConvTrackId: "",
+  enableWidgetId: "",
+  hotjarId: "",
   facebookPixelId: "",
   headerScripts: "",
   footerScripts: "",
@@ -149,7 +150,6 @@ const STEP_FIELDS: Record<number, (keyof ISiteSettingsFormData)[]> = {
     "sloganAr",
     "websiteUrl",
     "identifierId",
-    "gaPropertyId",
     "platformCharge",
   ],
   2: ["primaryCampIds", "campIds"],
@@ -195,7 +195,9 @@ const STEP_FIELDS: Record<number, (keyof ISiteSettingsFormData)[]> = {
   ],
   9: [
     "googleAnalyticsId",
-    "googleTagManagerId",
+    "googleAdsConvTrackId",
+    "enableWidgetId",
+    "hotjarId",
     "facebookPixelId",
     "headerScripts",
     "footerScripts",
@@ -231,7 +233,6 @@ const buildPayload = (data: ISiteSettingsFormData) => ({
   websiteUrl: data.websiteUrl,
   purpose: data.purpose,
   identifierId: data.identifierId,
-  gaPropertyId: data.gaPropertyId,
   platformCharge: data.platformCharge,
   logoUrl: data.logoUrl,
   faviconUrl: data.faviconUrl,
@@ -281,7 +282,9 @@ const buildPayload = (data: ISiteSettingsFormData) => ({
   robotsTxt: data.robotsTxt,
   sitemapUrl: data.sitemapUrl,
   googleAnalyticsId: data.googleAnalyticsId,
-  googleTagManagerId: data.googleTagManagerId,
+  googleAdsConvTrackId: data.googleAdsConvTrackId,
+  enableWidgetId: data.enableWidgetId,
+  hotjarId: data.hotjarId,
   facebookPixelId: data.facebookPixelId,
   headerScripts: data.headerScripts,
   footerScripts: data.footerScripts,
@@ -293,6 +296,33 @@ const buildPayload = (data: ISiteSettingsFormData) => ({
   primaryCampIds: data.primaryCampIds,
   campIds: data.campIds,
 });
+
+/**
+ * Build a PATCH body containing only the fields that actually changed since the
+ * form was hydrated from the server. Untouched fields — and fields this form
+ * doesn't know about — are never sent, so the backend can't null them out.
+ */
+const buildUpdatePayload = (
+  current: ISiteSettingsFormData,
+  original: ISiteSettingsFormData,
+): Partial<ReturnType<typeof buildPayload>> => {
+  const full = buildPayload(current);
+  const originalFull = buildPayload(original);
+  const diff: Record<string, unknown> = {};
+
+  for (const key of Object.keys(full) as (keyof typeof full)[]) {
+    const nextVal = full[key];
+    const prevVal = originalFull[key];
+    if (JSON.stringify(nextVal) !== JSON.stringify(prevVal)) {
+      diff[key] = nextVal;
+    }
+  }
+
+  // Always keep the completion score fresh even if nothing else changed.
+  diff.score = full.score;
+  diff.isActive = full.isActive;
+  return diff;
+};
 
 /* ------------------------------------------------------------------ */
 /*  Main Components                                                     */
@@ -322,6 +352,8 @@ export default function WebsiteConfigPage() {
   );
 
   const stepContentRef = useRef<HTMLDivElement>(null);
+  // Snapshot of the form exactly as hydrated from the server, used to diff on save.
+  const hydratedFormRef = useRef<ISiteSettingsFormData | null>(null);
 
   /* ---------------- API Hooks ---------------- */
 
@@ -340,6 +372,7 @@ export default function WebsiteConfigPage() {
 
   useEffect(() => {
     setFormData(DEFAULT_FORM);
+    hydratedFormRef.current = null;
     setUploadStates({});
     setErrors({});
   }, [websiteId]);
@@ -347,7 +380,7 @@ export default function WebsiteConfigPage() {
   useEffect(() => {
     if (!existingSettings) return;
     const d = existingSettings;
-    setFormData({
+    const hydrated: ISiteSettingsFormData = {
       isActive: true,
       websiteNameEn: d.websiteNameEn ?? "",
       websiteNameHe: d.websiteNameHe ?? "",
@@ -358,7 +391,6 @@ export default function WebsiteConfigPage() {
       sloganAr: d.sloganAr ?? "",
       purpose: d.purpose ?? "MARKETPLACE",
       identifierId: d.identifierId ?? "",
-      gaPropertyId: d.gaPropertyId ?? "",
       platformCharge: d.platformCharge ?? 0,
 
       logoUrl: d.logoUrl ?? "",
@@ -412,7 +444,9 @@ export default function WebsiteConfigPage() {
       robotsTxt: d.robotsTxt ?? "User-agent: *\nAllow: /",
       sitemapUrl: d.sitemapUrl ?? "",
       googleAnalyticsId: d.googleAnalyticsId ?? "",
-      googleTagManagerId: d.googleTagManagerId ?? "",
+      googleAdsConvTrackId: d.googleAdsConvTrackId ?? "",
+      enableWidgetId: d.enableWidgetId ?? "",
+      hotjarId: d.hotjarId ?? "",
       facebookPixelId: d.facebookPixelId ?? "",
       headerScripts: d.headerScripts ?? "",
       footerScripts: d.footerScripts ?? "",
@@ -423,7 +457,9 @@ export default function WebsiteConfigPage() {
       dateFormat: d.dateFormat ?? "",
       primaryCampIds: d.primaryCampIds ?? [],
       campIds: d.campIds ?? [],
-    });
+    };
+    hydratedFormRef.current = hydrated;
+    setFormData(hydrated);
     setUploadStates({});
   }, [existingSettings]);
 
@@ -707,16 +743,26 @@ export default function WebsiteConfigPage() {
   /* ---------------- Save / Publish ---------------- */
 
   const handlePublish = async () => {
+    // Guard: never send an update built from a form that hasn't finished
+    // hydrating from the server — that would overwrite every field with blanks.
+    if (websiteId && (isLoading || !hydratedFormRef.current)) {
+      toast.error(t("please_wait_loading"));
+      return;
+    }
+
     setIsPublishing(true);
     try {
-      const payload = buildPayload(formData);
-      if (existingSettings) {
-        await updateWebsiteSetting({
-          id: existingSettings._id,
-          body: payload,
-        }).unwrap();
+      if (existingSettings && hydratedFormRef.current) {
+        const body = buildUpdatePayload(formData, hydratedFormRef.current);
+        // Nothing changed beyond the always-sent score/isActive keys.
+        if (Object.keys(body).length > 2) {
+          await updateWebsiteSetting({
+            id: existingSettings._id,
+            body,
+          }).unwrap();
+        }
       } else {
-        await createWebsiteSetting(payload).unwrap();
+        await createWebsiteSetting(buildPayload(formData)).unwrap();
       }
       toast.success(t("settings_published"));
       refetch();
@@ -795,83 +841,86 @@ export default function WebsiteConfigPage() {
 
   return (
     <div className="flex flex-col gap-3 sm:gap-6 px-4 sm:px-6 lg:px-8 py-6 mx-auto w-full h-full">
-      <BackToListBtn navPath={routes.websiteMgmt} />
       {/* Page Header */}
-      <section className="flex items-center flex-wrap justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg flex items-center justify-center border border-teal-500">
-            {websiteLogo ? (
-              <ImageWithFallback
-                src={websiteLogo}
-                alt={websiteName || "Logo"}
-                className="object-contain w-10 h-10 sm:w-12 sm:h-12"
-              />
-            ) : (
-              <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
-            )}
-          </div>
-          <div className="min-w-0">
-            <h1
-              className={clsx(
-                "text-base sm:text-xl font-bold truncate",
-                textPrimary,
+
+      <div>
+        <BackToListBtn navPath={routes.websiteMgmt} />
+        <section className="flex items-center flex-wrap justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg flex items-center justify-center border border-teal-500">
+              {websiteLogo ? (
+                <ImageWithFallback
+                  src={websiteLogo}
+                  alt={websiteName || "Logo"}
+                  className="object-contain w-10 h-10 sm:w-12 sm:h-12"
+                />
+              ) : (
+                <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
               )}
-            >
-              {websiteName && websiteName + " - "} {t("page_title")}
-            </h1>
-            <p className={clsx("text-xs sm:text-sm", textSecondary)}>
-              {t("page_subtitle")}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-          {(() => {
-            const score = calculateCompletionScore(formData);
-            const color =
-              score >= 75
-                ? "text-teal-600 bg-teal-50 border-teal-200 dark:bg-teal-900/30 dark:border-teal-700"
-                : score >= 40
-                  ? "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700"
-                  : "text-red-500 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-700";
-            return (
-              <div
+            </div>
+            <div className="min-w-0">
+              <h1
                 className={clsx(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-semibold",
-                  color,
+                  "text-base sm:text-xl font-bold truncate",
+                  textPrimary,
                 )}
               >
-                <svg
-                  viewBox="0 0 32 32"
-                  className="w-5 h-5 -rotate-90"
-                  aria-hidden="true"
+                {websiteName && websiteName + " - "} {t("page_title")}
+              </h1>
+              <p className={clsx("text-xs sm:text-sm", textSecondary)}>
+                {t("page_subtitle")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            {(() => {
+              const score = calculateCompletionScore(formData);
+              const color =
+                score >= 75
+                  ? "text-teal-600 bg-teal-50 border-teal-200 dark:bg-teal-900/30 dark:border-teal-700"
+                  : score >= 40
+                    ? "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700"
+                    : "text-red-500 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-700";
+              return (
+                <div
+                  className={clsx(
+                    "flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-semibold",
+                    color,
+                  )}
                 >
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="12"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeOpacity="0.2"
-                    strokeWidth="3.5"
-                  />
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="12"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3.5"
-                    strokeDasharray={`${(score / 100) * 75.4} 75.4`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                {score}%
-              </div>
-            );
-          })()}
-          <PublishButton isLoading={isPublishing} onClick={handlePublish} />
-        </div>
-      </section>
+                  <svg
+                    viewBox="0 0 32 32"
+                    className="w-5 h-5 -rotate-90"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeOpacity="0.2"
+                      strokeWidth="3.5"
+                    />
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3.5"
+                      strokeDasharray={`${(score / 100) * 75.4} 75.4`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  {score}%
+                </div>
+              );
+            })()}
+            <PublishButton isLoading={isPublishing} onClick={handlePublish} />
+          </div>
+        </section>
+      </div>
 
       {/* Wizard — fills remaining height */}
       <div className="flex-1 min-h-0">

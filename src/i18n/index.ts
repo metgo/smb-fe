@@ -26,6 +26,7 @@ i18n
       "tour",
       "content",
       "reconciliation",
+      "payments",
     ],
     defaultNS: "common",
 
