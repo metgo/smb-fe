@@ -722,14 +722,22 @@ const RichTextEditor = ({
     if (sel && sel.rangeCount > 0) {
       const r = sel.getRangeAt(0);
       r.deleteContents();
-      const tn = document.createTextNode(val);
+      // Pad the token with spaces unless the adjacent character is already
+      // whitespace — back-to-back tokens like {A}{B} otherwise render as
+      // run-on text in the delivered email/SMS.
+      const prevChar =
+        r.startContainer.nodeType === Node.TEXT_NODE
+          ? (r.startContainer.textContent?.[r.startOffset - 1] ?? "")
+          : "";
+      const lead = prevChar && !/\s/.test(prevChar) ? " " : "";
+      const tn = document.createTextNode(`${lead}${val} `);
       r.insertNode(tn);
       r.setStartAfter(tn);
       r.setEndAfter(tn);
       sel.removeAllRanges();
       sel.addRange(r);
     } else {
-      editorRef.current.innerHTML += val;
+      editorRef.current.innerHTML += ` ${val} `;
     }
     handleInput();
   };

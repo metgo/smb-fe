@@ -10,13 +10,13 @@ import { formatFromBackendTemplate } from "@/helpers/formatter";
 interface CreateNotificationWizardProps {
   t: (key: string) => string;
   capacity?: number;
-  editingNotification: NotificationData | null;
-  notifications: NotificationData[];
+  editingNotification: INotificationData | null;
+  notifications: INotificationData[];
   setEditingNotification: React.Dispatch<
-    React.SetStateAction<NotificationData | null>
+    React.SetStateAction<INotificationData | null>
   >;
   setShowNotificationForm: React.Dispatch<React.SetStateAction<boolean>>;
-  setNotifications: React.Dispatch<React.SetStateAction<NotificationData[]>>;
+  setNotifications: React.Dispatch<React.SetStateAction<INotificationData[]>>;
 }
 
 const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
@@ -52,17 +52,16 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
           : "border-gray-200 bg-white",
     );
 
-  const toggleChannel = (channel: "email" | "sms") =>
+  const toggleChannel = (channel: "EMAIL" | "SMS") =>
     setEditingNotification({
       ...editingNotification,
-      channels: {
-        ...editingNotification.channels,
-        [channel]: !editingNotification.channels[channel],
-      },
+      channels: editingNotification.channels.includes(channel)
+        ? editingNotification.channels.filter((c) => c !== channel)
+        : [...editingNotification.channels, channel],
     });
 
   const { channels } = editingNotification;
-  const hasChannel = channels.email || channels.sms;
+  const hasChannel = channels.length > 0;
   const messageIsEmpty = !editingNotification.message
     .replace(/<[^>]*>/g, "")
     .trim();
@@ -100,9 +99,9 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                 <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5 mb-3.5">
                   <button
                     type="button"
-                    aria-pressed={editingNotification.channels.email}
-                    className={channelBtn(editingNotification.channels.email)}
-                    onClick={() => toggleChannel("email")}
+                    aria-pressed={channels.includes("EMAIL")}
+                    className={channelBtn(channels.includes("EMAIL"))}
+                    onClick={() => toggleChannel("EMAIL")}
                   >
                     <strong className={clsx("text-sm", textPrimary)}>
                       {t("channel_email_label")}
@@ -110,9 +109,9 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                   </button>
                   <button
                     type="button"
-                    aria-pressed={editingNotification.channels.sms}
-                    className={channelBtn(editingNotification.channels.sms)}
-                    onClick={() => toggleChannel("sms")}
+                    aria-pressed={channels.includes("SMS")}
+                    className={channelBtn(channels.includes("SMS"))}
+                    onClick={() => toggleChannel("SMS")}
                   >
                     <strong className={clsx("text-sm", textPrimary)}>
                       {t("channel_sms_label")}

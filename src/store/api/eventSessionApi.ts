@@ -260,7 +260,7 @@ export const eventSessionApi = createApi({
 
     resendSessionBookNotify: builder.mutation<any, string>({
       query: (sessionBookingId) => ({
-        url: `${endpoints.eventSessionResendNotification}/${sessionBookingId}`,
+        url: `${endpoints.resendConfirmSessionRegister}/${sessionBookingId}`,
         method: "POST",
       }),
       invalidatesTags: ["EventSession"],

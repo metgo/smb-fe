@@ -16,7 +16,6 @@ import {
   useReSendSessionNotificationMutation,
 } from "@/store/api/eventSessionApi";
 import { RichTextEditor } from "@/components/shared";
-import { formatDateTime } from "@/helpers/formatter";
 
 const HISTORY_LIMIT = 10;
 const HISTORY_SKELETON_ROWS = 4;
@@ -34,8 +33,26 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     inputClasses,
     cardClasses,
     borderColor,
-    language,
   } = useThemeClasses();
+
+  // "When" cell for a Send History row: SCHEDULED/PENDING show a status label,
+  // finished rows show the send time in the *viewer's* local timezone ("when did
+  // I send this" is about the person looking, not the event's clock).
+  const renderHistoryWhen = (h: INotificationHistoryItem) => {
+    if (h.status === "SCHEDULED") {
+      const at = h.scheduleDateTime
+        ? new Date(h.scheduleDateTime).toLocaleString(undefined, {
+            hour12: false,
+          })
+        : "";
+      return `${t("history_status_scheduled")}${at ? ` · ${at}` : ""}`;
+    }
+    if (h.status === "PENDING") return t("history_status_sending");
+    const when = h.sentAt ?? h.createdAt;
+    return when
+      ? new Date(when).toLocaleString(undefined, { hour12: false })
+      : "";
+  };
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
@@ -97,6 +114,11 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     wrapperId
       ? { wrapperId, page: historyPage, limit: HISTORY_LIMIT }
       : skipToken,
+    {
+      // A freshly sent/resent row comes back PENDING with no sentAt; keep
+      // refetching until it flips to SENT/FAILED so it updates without a reload.
+      pollingInterval: history.some((h) => h.status === "PENDING") ? 4000 : 0,
+    },
   );
 
   useEffect(() => {
@@ -184,13 +206,8 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5">
-        <div
-          className={clsx(
-            CARD,
-            "flex flex-col min-h-0 max-h-[calc(100vh-220px)]",
-          )}
-        >
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4.5">
+        <div className={clsx(CARD, "flex flex-col")}>
           <div className="flex items-center justify-between mb-3.5">
             <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
               {t("send_message_title")}
@@ -264,13 +281,13 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
               value={body}
               onChange={(v) => setBody(v)}
               variables={[
-                { label: "Session Name", value: `{SESSION_NAME}` },
-                { label: "Session Date", value: `{SESSION_DATE}` },
-                { label: "Session Time", value: `{SESSION_TIME}` },
-                { label: "Venue", value: `{VENUE}` },
-                { label: "First Name", value: `{FIRST_NAME}` },
-                { label: "Ref. CODE", value: `{REF_CODE}` },
-                { label: "QR", value: `{{QR}}` },
+                { label: t("var_session_name"), value: `{SESSION_NAME}` },
+                { label: t("var_session_date"), value: `{SESSION_DATE}` },
+                { label: t("var_session_time"), value: `{SESSION_TIME}` },
+                { label: t("var_venue"), value: `{VENUE}` },
+                { label: t("var_first_name"), value: `{FIRST_NAME}` },
+                { label: t("var_ref_code"), value: `{REF_CODE}` },
+                { label: t("var_qr"), value: `{{QR}}` },
               ]}
             />
 
@@ -293,7 +310,7 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
         <div className={CARD}>
           <div className="flex items-center justify-between mb-3.5">
             <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
-              {t("send_history_title")}
+              {t("notification_schedule_title")}
             </h3>
           </div>
           {isHistoryInitialLoading ? (
@@ -353,9 +370,7 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
                 <tbody>
                   {history.map((h) => (
                     <tr key={h._id}>
-                      <td className={TD}>
-                        {formatDateTime(h.sentAt, language)}
-                      </td>
+                      <td className={TD}>{renderHistoryWhen(h)}</td>
                       <td className={TD}>
                         {h.type === "email"
                           ? t("channel_email_label")
@@ -433,7 +448,7 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
         <ModalWrapper
           onClose={() => setViewHistoryId(null)}
           showSpinner={isHistoryDetailsFetching}
-          height="h-auto max-h-[85dvh]"
+          height=" min-h-[40vh] max-h-[85dvh]"
           maxWidth="max-w-2xl"
         >
           {historyDetails && (
@@ -480,12 +495,18 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
                     {t("detail_sent_at_label")}
                   </p>
                   <p className="m-0">
-                    {new Date(historyDetails.sentAt).toLocaleString("he-IL", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {historyDetails.sentAt
+                      ? new Date(historyDetails.sentAt).toLocaleString(
+                          undefined,
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          },
+                        )
+                      : "—"}
                   </p>
                 </div>
                 <div>
@@ -566,5 +587,3 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     </>
   );
 }
-
-// Hi & nbsp; { FIRST_NAME }, <br><br>I hope you are doing good. We are going to conduct the&nbsp;{SESSION_NAME} on&nbsp;{SESSION_DATE} at&nbsp;{SESSION_TIME}. It will be on&nbsp;{VENUE}.&nbsp;<br><br>Please consider it.&nbsp;<br>Code:&nbsp;{REF_CODE}<br>QR:&nbsp;{{ QR }}<br><br>Thank you.&nbsp;<br><br></br>

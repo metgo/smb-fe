@@ -32,7 +32,7 @@ interface EventTicketDetailsProps {
   eventId: string;
   refetch: () => void;
   tickets: ITicketPayload[];
-  eventDays: EventDay[];
+  eventDays: IEventDay[];
   hasExternalTicket: boolean;
   ticketBuyLink: string;
 }

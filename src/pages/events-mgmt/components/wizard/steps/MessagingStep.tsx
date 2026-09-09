@@ -12,17 +12,18 @@ import {
   Plus,
   PenBox,
 } from "lucide-react";
+
 import { ConfirmDialog } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import CreateNotificationWizard from "../../sub-components/CreateNotificationWizard";
-import { formatDateTime } from "@/helpers/formatter";
+import { formatLocalDateTime } from "@/helpers/formatter";
 
 interface MessagingStepProps {
-  notifications: NotificationData[];
-  setNotifications: React.Dispatch<React.SetStateAction<NotificationData[]>>;
-  editingNotification: NotificationData | null;
+  notifications: INotificationData[];
+  setNotifications: React.Dispatch<React.SetStateAction<INotificationData[]>>;
+  editingNotification: INotificationData | null;
   setEditingNotification: React.Dispatch<
-    React.SetStateAction<NotificationData | null>
+    React.SetStateAction<INotificationData | null>
   >;
   showNotificationForm: boolean;
   setShowNotificationForm: React.Dispatch<React.SetStateAction<boolean>>;
@@ -58,17 +59,19 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
   const openNewNotificationForm = () => {
     setEditingNotification({
       index: notifications.length,
-      channels: { email: true, sms: false },
+      channels: ["EMAIL"],
       scheduleDateTime: "",
+      scheduleDateTimeLocal: "",
       subject: "",
       message: "",
       enabled: true,
+      status: "ACTIVE",
     });
     setShowNotificationForm(true);
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6">
       {/* ── Section header ───────────────────────────────────────────── */}
       <div className="text-center mb-6">
         <Mail className="w-12 h-12 mx-auto mb-3 text-teal-500" />
@@ -111,7 +114,10 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
                   <div>
                     <p className={`font-xs ${textPrimary}`}>
                       {notification.subject} |{" "}
-                      {formatDateTime(notification.scheduleDateTime, language)}
+                      {formatLocalDateTime(
+                        notification.scheduleDateTime,
+                        language,
+                      )}
                     </p>
                     <div
                       className={clsx(
@@ -120,10 +126,10 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
                         isRTL && "flex-row-reverse",
                       )}
                     >
-                      {notification.channels.email && (
+                      {notification.channels.includes("EMAIL") && (
                         <Mail className="w-4 h-4" />
                       )}
-                      {notification.channels.sms && (
+                      {notification.channels.includes("SMS") && (
                         <MessageSquare className="w-4 h-4" />
                       )}
                       <span

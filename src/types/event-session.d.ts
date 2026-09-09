@@ -264,11 +264,13 @@ interface INotificationHistoryItem {
   recipientType: string;
   subject?: string;
   message: string;
-  status: "SENT" | "FAILED" | "PENDING";
+  status: "SENT" | "FAILED" | "PENDING" | "SCHEDULED" | "PARTIAL";
   successCount: number;
   failureCount: number;
   recipientCount: number;
-  sentAt: string;
+  sentAt: string | null;
+  createdAt: string;
+  scheduleDateTime?: string | null;
 }
 
 interface INotificationDetailResponse {
@@ -286,13 +288,14 @@ interface INotificationDetailResponse {
   subject?: string;
   message: string;
   language: string;
-  status: "SENT" | "FAILED" | "PENDING";
+  status: "SENT" | "FAILED" | "PENDING" | "SCHEDULED" | "PARTIAL";
   sentBy: string;
   successCount: number;
   failureCount: number;
   __v: number;
   errorSummary?: string;
-  sentAt: string;
+  sentAt: string | null;
+  createdAt?: string;
 }
 
 interface INotificationRecipient {

@@ -85,7 +85,7 @@ export default function EventDetailsPage() {
     }
   };
 
-  const [eventDays, setEventDays] = useState<EventDay[]>([
+  const [eventDays, setEventDays] = useState<IEventDay[]>([
     { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" },
   ]);
 
@@ -183,7 +183,7 @@ export default function EventDetailsPage() {
     {
       id: 5,
       title: t("event_type"),
-      value: t(findEventType(eventDetails?.eventType)),
+      value: t(findEventType(eventDetails?.eventType || "PHYSICAL")),
       icon: <Ticket className="w-8 h-8 text-purple-500" />,
     },
   ];
@@ -217,7 +217,7 @@ export default function EventDetailsPage() {
             refetch={ticketsRefetch}
             eventDays={eventDays}
             hasExternalTicket={hasExternalTicket}
-            ticketBuyLink={eventDetails?.ticketBuyLink}
+            ticketBuyLink={eventDetails?.ticketBuyLink || ""}
           />
         );
       case "schedual_notification":
@@ -264,7 +264,9 @@ export default function EventDetailsPage() {
             <>
               <StatusChangeBtn
                 handleStatusChange={onStatusChangeHandler}
-                status={eventDetails?.status}
+                status={
+                  (eventDetails?.status?.toLowerCase() as TStatus) || "pending"
+                }
               />
 
               <div className="relative" ref={dropdownRef}>

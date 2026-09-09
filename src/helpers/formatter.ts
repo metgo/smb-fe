@@ -124,6 +124,25 @@ export const formatDateTime = (
   return `${day} ${monthNames[lang][month]} ${year} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 };
 
+/**
+ * Formats a naive `datetime-local` string ("2026-10-01T21:49", no timezone)
+ * for display, reading its parts literally — no Date parsing, so no timezone
+ * shift. Use for scheduled-notification times, which the backend returns as
+ * the event's local wall-clock and are meant to be shown exactly as picked.
+ */
+export const formatLocalDateTime = (
+  value: string | undefined,
+  language: string,
+) => {
+  if (!value) return "";
+  const m = value.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+  if (!m) return value;
+  const [, year, month, day, hours, minutes] = m;
+  const lang = language === "ar" ? "ar" : language === "he" ? "he" : "en";
+  const monthIdx = parseInt(month, 10) - 1;
+  return `${parseInt(day, 10)} ${monthNames[lang][monthIdx]} ${year} ${hours}:${minutes}`;
+};
+
 export function formatToBackendTemplate(html: string) {
   return html.replace(/\{\{\s*([^}]+)\s*\}\}/g, (_, variable) => {
     // Convert to uppercase and replace spaces with underscore

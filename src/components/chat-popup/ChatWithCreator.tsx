@@ -13,7 +13,6 @@ interface RawCreator {
 }
 
 interface ChatWithCreatorProps {
-  /** The `creator` object returned alongside a business/product/event/trip/POI. */
   creator?: RawCreator | null;
 }
 

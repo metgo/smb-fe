@@ -1,11 +1,9 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import {
   Bell,
   Mail,
   MessageSquare,
   Clock,
-  Globe,
   CheckCircle2,
   AlertCircle,
   Calendar,
@@ -14,38 +12,20 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-interface ScheduledNotification {
-  _id: string;
-  sendHoursBefore: number;
-  channels: string[];
-  language: string;
-  template: string;
-  customTemplate?: {
-    subject: string;
-    body: string;
-  };
-  status: string;
-  createdAt: string;
-  updatedAt?: string | null;
-}
-
-interface EventScheduledNotificationDetailsProps {
-  scheduledNotificationId: ScheduledNotification[];
-}
+import { formatLocalDateTime } from "@/helpers/formatter";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const EventScheduledNotificationDetails: React.FC<
-  EventScheduledNotificationDetailsProps
+  Partial<IEventDetailsRes>
 > = ({ scheduledNotificationId }) => {
   const { t } = useTranslation("events");
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
 
   const getChannelIcon = (channel: string) => {
     switch (channel) {
       case "EMAIL":
         return <Mail className="w-4 h-4" />;
       case "SMS":
-        return <MessageSquare className="w-4 h-4" />;
-      case "WHATSAPP":
         return <MessageSquare className="w-4 h-4" />;
       default:
         return <Bell className="w-4 h-4" />;
@@ -62,29 +42,10 @@ const EventScheduledNotificationDetails: React.FC<
         return isDark
           ? "bg-green-500/20 text-green-400 border-green-800/50"
           : "bg-green-100 text-green-700 border-green-200";
-      case "WHATSAPP":
-        return isDark
-          ? "bg-emerald-500/20 text-emerald-400 border-emerald-800/50"
-          : "bg-emerald-100 text-emerald-700 border-emerald-200";
       default:
         return isDark
           ? "bg-gray-700 text-gray-300 border-gray-600"
           : "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
-
-  const formatTimeBeforeEvent = (hours: number) => {
-    if (hours < 1) {
-      return `${hours * 60} minutes before`;
-    } else if (hours === 1) {
-      return "1 hour before";
-    } else if (hours < 24) {
-      return `${hours} hours before`;
-    } else if (hours === 24) {
-      return "1 day before";
-    } else {
-      const days = Math.floor(hours / 24);
-      return `${days} ${days === 1 ? "day" : "days"} before`;
     }
   };
 
@@ -98,47 +59,14 @@ const EventScheduledNotificationDetails: React.FC<
     });
   };
 
-  // Sort notifications by sendHoursBefore (descending)
-  const notifications: ScheduledNotification[] = Array.isArray(
-    scheduledNotificationId,
-  )
-    ? scheduledNotificationId
-    : [];
-
-  const sortedNotifications = notifications.sort(
-    (a, b) => b.sendHoursBefore - a.sendHoursBefore,
-  );
+  if (!scheduledNotificationId) return null;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      {/* <div>
-        <h2
-          className={clsx(
-            "text-2xl font-bold",
-            isDark ? "text-white" : "text-gray-900",
-          )}
-        >
-          {t("event_notifications")}
-        </h2>
-        <p
-          className={clsx(
-            "text-sm mt-1",
-            isDark ? "text-gray-400" : "text-gray-600",
-          )}
-        >
-          {scheduledNotificationId?.length}{" "}
-          {scheduledNotificationId?.length === 1
-            ? "notification"
-            : "notifications"}{" "}
-          scheduled for this event
-        </p>
-      </div> */}
-
       {/* Notifications List */}
-      {sortedNotifications?.length > 0 ? (
+      {scheduledNotificationId?.length > 0 ? (
         <div className="space-y-4">
-          {sortedNotifications?.map((notification, index) => (
+          {scheduledNotificationId?.map((notification, index) => (
             <div
               key={notification._id}
               className={clsx(
@@ -178,7 +106,7 @@ const EventScheduledNotificationDetails: React.FC<
                           isDark ? "text-white" : "text-gray-900",
                         )}
                       >
-                        Notification #{index + 1}
+                        {t("notification_number", { number: index + 1 })}
                       </h3>
 
                       <span
@@ -196,12 +124,12 @@ const EventScheduledNotificationDetails: React.FC<
                         {notification.status === "ACTIVE" ? (
                           <span className="flex items-center gap-1">
                             <CheckCircle2 className="w-3 h-3" />
-                            Active
+                            {t("notification_active")}
                           </span>
                         ) : (
                           <span className="flex items-center gap-1">
                             <AlertCircle className="w-3 h-3" />
-                            Inactive
+                            {t("notification_inactive")}
                           </span>
                         )}
                       </span>
@@ -220,26 +148,15 @@ const EventScheduledNotificationDetails: React.FC<
                           isDark ? "text-gray-300" : "text-gray-700",
                         )}
                       >
-                        Sent{" "}
-                        {formatTimeBeforeEvent(notification.sendHoursBefore)}{" "}
-                        event
+                        {t("notification_trigger_at", {
+                          datetime: formatLocalDateTime(
+                            notification.scheduleDateTimeLocal,
+                            language,
+                          ),
+                        })}
                       </span>
                     </div>
                   </div>
-                </div>
-
-                {/* Template Type Badge */}
-                <div
-                  className={clsx(
-                    "px-3 py-1.5 rounded-lg text-xs font-medium",
-                    isDark
-                      ? "bg-gray-700 text-gray-300"
-                      : "bg-gray-100 text-gray-700",
-                  )}
-                >
-                  {notification?.template === "custom"
-                    ? "Custom Template"
-                    : "Default Template"}
                 </div>
               </div>
 
@@ -279,98 +196,73 @@ const EventScheduledNotificationDetails: React.FC<
                   </div>
                 </div>
 
-                {/* Language */}
-                <div className="flex items-center gap-3">
-                  <Globe
-                    className={clsx(
-                      "w-4 h-4",
-                      isDark ? "text-gray-400" : "text-gray-500",
-                    )}
-                  />
-                  <span
-                    className={clsx(
-                      "text-sm",
-                      isDark ? "text-gray-300" : "text-gray-700",
-                    )}
-                  >
-                    Language:{" "}
-                    <span className="font-medium uppercase">
-                      {notification?.language}
-                    </span>
-                  </span>
-                </div>
-
                 {/* Custom Template Content */}
-                {notification?.customTemplate && (
-                  <div
-                    className={clsx(
-                      "rounded-lg border p-4 space-y-3",
-                      isDark
-                        ? "bg-gray-900/50 border-gray-700"
-                        : "bg-gray-50 border-gray-200",
-                    )}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText
-                        className={clsx(
-                          "w-4 h-4",
-                          isDark ? "text-gray-400" : "text-gray-500",
-                        )}
-                      />
-                      <h4
-                        className={clsx(
-                          "text-sm font-semibold uppercase tracking-wide",
-                          isDark ? "text-gray-400" : "text-gray-600",
-                        )}
-                      >
-                        Message Template
-                      </h4>
-                    </div>
-
-                    {/* Subject */}
-                    <div>
-                      <label
-                        className={clsx(
-                          "text-xs font-medium uppercase tracking-wide mb-1 block",
-                          isDark ? "text-gray-500" : "text-gray-600",
-                        )}
-                      >
-                        Subject
-                      </label>
-                      <p
-                        className={clsx(
-                          "text-sm font-medium",
-                          isDark ? "text-gray-200" : "text-gray-800",
-                        )}
-                      >
-                        {notification?.customTemplate.subject}
-                      </p>
-                    </div>
-
-                    {/* Body */}
-                    <div>
-                      <label
-                        className={clsx(
-                          "text-xs font-medium uppercase tracking-wide mb-1 block",
-                          isDark ? "text-gray-500" : "text-gray-600",
-                        )}
-                      >
-                        Body
-                      </label>
-                      <div
-                        className={clsx(
-                          "text-sm leading-relaxed prose prose-sm max-w-none",
-                          isDark
-                            ? "prose-invert text-gray-300"
-                            : "text-gray-700",
-                        )}
-                        dangerouslySetInnerHTML={{
-                          __html: notification.customTemplate.body,
-                        }}
-                      />
-                    </div>
+                <div
+                  className={clsx(
+                    "rounded-lg border p-4 space-y-3",
+                    isDark
+                      ? "bg-gray-900/50 border-gray-700"
+                      : "bg-gray-50 border-gray-200",
+                  )}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText
+                      className={clsx(
+                        "w-4 h-4",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    />
+                    <h4
+                      className={clsx(
+                        "text-sm font-semibold uppercase tracking-wide",
+                        isDark ? "text-gray-400" : "text-gray-600",
+                      )}
+                    >
+                      {t("message_template")}
+                    </h4>
                   </div>
-                )}
+
+                  {/* Subject */}
+                  <div>
+                    <label
+                      className={clsx(
+                        "text-xs font-medium uppercase tracking-wide mb-1 block",
+                        isDark ? "text-gray-500" : "text-gray-600",
+                      )}
+                    >
+                      {t("notification_subject")}
+                    </label>
+                    <p
+                      className={clsx(
+                        "text-sm font-medium",
+                        isDark ? "text-gray-200" : "text-gray-800",
+                      )}
+                    >
+                      {notification?.subject}
+                    </p>
+                  </div>
+
+                  {/* Body */}
+                  <div>
+                    <label
+                      className={clsx(
+                        "text-xs font-medium uppercase tracking-wide mb-1 block",
+                        isDark ? "text-gray-500" : "text-gray-600",
+                      )}
+                    >
+                      {t("notification_body")}
+                    </label>
+                    <div
+                      className={clsx(
+                        "text-sm leading-relaxed prose prose-sm max-w-none",
+                        isDark ? "prose-invert text-gray-300" : "text-gray-700",
+                      )}
+                      dangerouslySetInnerHTML={{
+                        __html: notification.body || "",
+                      }}
+                    />
+                  </div>
+                </div>
 
                 {/* Metadata */}
                 <div
@@ -383,13 +275,22 @@ const EventScheduledNotificationDetails: React.FC<
                 >
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>Created: {formatDate(notification?.createdAt)}</span>
+                    <span>
+                      {t("notification_created", {
+                        datetime: formatLocalDateTime(
+                          notification?.createdAt,
+                          language,
+                        ),
+                      })}
+                    </span>
                   </div>
                   {notification?.updatedAt && (
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" />
                       <span>
-                        Updated: {formatDate(notification?.updatedAt)}
+                        {t("notification_updated", {
+                          datetime: formatDate(notification?.updatedAt),
+                        })}
                       </span>
                     </div>
                   )}

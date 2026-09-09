@@ -28,7 +28,7 @@ import ReviewStep from "./steps/ReviewStep";
 interface CreateEventWizardNewProps {
   isOpen: boolean;
   onClose: () => void;
-  editData?: any;
+  editData?: IEventDetailsRes;
   refetch?: () => void;
   eventDataRefetch?: () => void;
 }
@@ -52,6 +52,7 @@ export default function CreateEventWizardNew({
     refetch,
     eventDataRefetch,
   });
+  console.log("🚀 ~ CreateEventWizardNew ~ editData:", editData);
 
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
@@ -116,7 +117,7 @@ export default function CreateEventWizardNew({
       </div>
 
       {/* ── Step Content ──────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-8">
         {wizard.currentStep === 1 && (
           <EventBasicInformation
             formData={wizard.translationFormData}

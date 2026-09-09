@@ -23,7 +23,7 @@ import { detectLanguage, type ParsedAddressParts } from "@/helpers";
 interface UseEventWizardStateProps {
   isOpen: boolean;
   onClose: () => void;
-  editData?: any;
+  editData?: IEventDetailsRes;
   refetch?: () => void;
   eventDataRefetch?: () => void;
 }
@@ -54,6 +54,11 @@ export function useEventWizardState({
   const [errors, setErrors] = useState<Record<string, string>>({});
   // const [isNotSaved, setIsNotSaved] = useState(false)
   const initialImagesCountRef = useRef(0);
+  // Snapshot of the step payloads exactly as hydrated from the server, used to
+  // diff on save so only genuinely-changed fields are sent in edit mode.
+  const hydratedPayloadRef = useRef<Record<string, any> | null>(null);
+  const payloadSnapshotTakenRef = useRef(false);
+  const sawStaleBuildersRef = useRef(false);
 
   // ─── IDs ─────────────────────────────────────────────────────────────
   const [eventId, setEventId] = useState<string>(editId || "");
@@ -104,7 +109,7 @@ export function useEventWizardState({
   // ─── Step 3: Date & Time ─────────────────────────────────────────────
   const [isMultiDay, setIsMultiDay] = useState(false);
   const [startDate, setStartDate] = useState("");
-  const [eventDays, setEventDays] = useState<EventDay[]>([
+  const [eventDays, setEventDays] = useState<IEventDay[]>([
     {
       id: "1",
       date: "",
@@ -113,9 +118,7 @@ export function useEventWizardState({
       description: "",
     },
   ]);
-  const [eventFormat, setEventFormat] = useState<
-    "physical" | "online" | "hybrid"
-  >("physical");
+  const [eventFormat, setEventFormat] = useState<TEventFormat>("physical");
   const [address, setAddress] = useState("");
   const [addressParts, setAddressParts] = useState<ParsedAddressParts>({
     location: "",
@@ -148,10 +151,10 @@ export function useEventWizardState({
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
   // ─── Step 6: Messaging ───────────────────────────────────────────────
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [notifications, setNotifications] = useState<INotificationData[]>([]);
   const [showNotificationForm, setShowNotificationForm] = useState(false);
   const [editingNotification, setEditingNotification] =
-    useState<NotificationData | null>(null);
+    useState<INotificationData | null>(null);
 
   // ─── Step 8: Media ───────────────────────────────────────────────────
   const [eventImages, setEventImages] = useState<TImages>([]);
@@ -364,13 +367,15 @@ export function useEventWizardState({
       scheduledNotifications: notifications.map((item) => {
         const base = {
           ...(!item.index ? { _id: item._id } : {}),
-          channels: [
-            item.channels?.email && "EMAIL",
-            item.channels?.sms && "SMS",
-          ].filter(Boolean) as ("EMAIL" | "SMS" | "WHATSAPP")[],
+          channels: item.channels ?? [],
           status: item.enabled ? "ACTIVE" : "INACTIVE",
           subject: item.subject,
-          scheduleDateTime: item.scheduleDateTime,
+          // The picker holds a naive local datetime; convert in the browser
+          // (which knows the admin's timezone) so the pick means the admin's
+          // own wall-clock and the cron fires at that instant everywhere.
+          scheduleDateTime: item.scheduleDateTime
+            ? new Date(item.scheduleDateTime).toISOString()
+            : item.scheduleDateTime,
           body: formatToBackendTemplate(item.message),
         };
         return base;
@@ -396,6 +401,26 @@ export function useEventWizardState({
     ],
   );
 
+  // ─── Snapshot hydrated payloads for edit-mode field diffing ──────────
+  // The hydration effect above fires the state setters, but the builders in
+  // `stepPayloadMap` only see those values on the *next* render. So we skip
+  // the render that resets the flag and capture on the following pass, once
+  // the builders reflect the server data. That snapshot is what
+  // buildPayload() diffs against so unchanged fields are never sent.
+  useEffect(() => {
+    if (!editData || !editId || payloadSnapshotTakenRef.current) return;
+    if (!sawStaleBuildersRef.current) {
+      sawStaleBuildersRef.current = true;
+      return;
+    }
+    const snapshot: Record<string, any> = {};
+    Object.values(stepPayloadMap).forEach((builder) => {
+      Object.assign(snapshot, builder());
+    });
+    hydratedPayloadRef.current = snapshot;
+    payloadSnapshotTakenRef.current = true;
+  }, [editData, editId, stepPayloadMap]);
+
   // ─── Draft saver ─────────────────────────────────────────────────────
   const { markDirty, saveDraft } = useEventDraftSaver({
     currentStep,
@@ -404,6 +429,7 @@ export function useEventWizardState({
     initEventCreate,
     updateEvent,
     stepPayloadMap,
+    hydratedPayloadRef,
     businessId: selectedBusinessId,
   });
 
@@ -487,6 +513,9 @@ export function useEventWizardState({
     if (!editData || !editId) return;
 
     setHasFormChanges(false);
+    payloadSnapshotTakenRef.current = false;
+    sawStaleBuildersRef.current = false;
+    hydratedPayloadRef.current = null;
     initialImagesCountRef.current = editData?.images?.length ?? 0;
 
     setEventName(editData.name ?? "");
@@ -499,7 +528,7 @@ export function useEventWizardState({
     setFullDescriptionHe(editData.descriptionHe ?? "");
     setFullDescriptionAr(editData.descriptionAr ?? "");
     setSelectedBusinessId(editData.businessId?._id ?? "");
-    setEventStatus(editData.status?.toLowerCase() ?? "draft");
+    setEventStatus((editData.status?.toLowerCase() as EventStatus) ?? "draft");
     setAccessiblitiesId(editData.accessibilitiesId ?? []);
     setGroupTypesId(editData.groupTypesId ?? []);
     setSubCategoriesId(editData.subCategoriesId ?? []);
@@ -514,9 +543,12 @@ export function useEventWizardState({
       lat: editData.geoLocation?.lat ?? "",
       long: editData.geoLocation?.long ?? "",
     });
-    setEventFormat(editData.eventType?.toLowerCase() ?? "physical");
+    setEventFormat(
+      (editData.eventType?.toLowerCase() as TEventFormat) ?? "physical",
+    );
     setRecurrencePattern(
-      editData.recurringEventRuleId?.pattern?.toLowerCase() ?? "weekly",
+      (editData.recurringEventRuleId?.pattern?.toLowerCase() as RecurrencePattern) ??
+        "weekly",
     );
     setSelectedWeekdays(editData.recurringEventRuleId?.daysOfWeek ?? []);
     setMonthlyType(
@@ -563,22 +595,21 @@ export function useEventWizardState({
     setSelectAssociatedWebsiteIds(editData?.associatedWebsiteIds);
     setEventImages(editData.images ?? []);
 
-    const mappedNotifications: NotificationData[] = (
+    const mappedNotifications: INotificationData[] = (
       editData.scheduledNotificationId ?? []
     ).map((item: any, index: number) => ({
       _id: item?._id,
       index,
-      channels: {
-        email: item?.channels?.includes("EMAIL"),
-        sms: item?.channels?.includes("SMS"),
-        whatsapp: item?.channels?.includes("WHATSAPP"),
-      },
-      hoursBeforeEvent: item?.sendHoursBefore,
-      language: item?.language,
-      template: item?.template,
-      subject: item?.customTemplate?.subject ?? "",
-      message: item?.customTemplate?.body ?? "",
+      channels: item?.channels ?? [],
+      subject: item?.subject ?? "",
+      message: item?.body ?? "",
+      // Both feed <input type="datetime-local">, which renders blank for a
+      // UTC "…Z" string — use only the naive local form the backend returns
+      // for the picker (scheduleDateTimeLocal), never the "…Z" scheduleDateTime.
+      scheduleDateTime: item.scheduleDateTimeLocal ?? "",
+      scheduleDateTimeLocal: item.scheduleDateTimeLocal ?? "",
       enabled: item?.status === "ACTIVE",
+      status: item.status,
     }));
     setNotifications(mappedNotifications);
   }, [editData, editId]);

@@ -15,9 +15,9 @@ import {
   useResendSessionBookNotifyMutation,
 } from "@/store/api/eventSessionApi";
 
-const LIMIT = 10;
-const SKELETON_ROWS = 6;
-const SKELETON_COLS = 6;
+const LIMIT = 400;
+const SKELETON_ROWS = 12;
+const SKELETON_COLS = 7;
 
 interface RegistrationsTabProps {
   wrapperId: string | null;
@@ -75,10 +75,13 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
 
   const hasMore = !!data?.data.meta.hasNextPage;
 
+  const isFetchingRef = useRef(isFetching);
+  isFetchingRef.current = isFetching;
+
   const fetchNextPage = useCallback(() => {
-    if (!hasMore || isFetching) return;
+    if (isFetchingRef.current) return;
     setPage((prev) => prev + 1);
-  }, [hasMore, isFetching]);
+  }, []);
 
   useInfiniteScroll({
     ref: scrollRef,
@@ -113,16 +116,10 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
     <div>
       <div className="flex flex-col gap-4.5">
         <div className={clsx(cardClasses, "rounded-[14px] p-5")}>
-          <div className="flex items-center justify-between mb-3.5">
+          <div className=" mb-3.5">
             <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
-              {t("registrations_title")}
+              {t("registrations_title")}({data?.data.totalData})
             </h3>
-
-            {data && (
-              <div className={clsx("text-sm", textTertiary)}>
-                {data?.data?.totalData} {t("registrations")}
-              </div>
-            )}
           </div>
 
           <div className="flex items-center gap-3 mb-3.5">
@@ -137,49 +134,14 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
             <DatePicker value={selectedDate} onChange={setSelectedDate} />
           </div>
 
-          {isInitialLoading ? (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-[13.5px] [&>tbody>tr:last-child>td]:border-b-0">
-                <thead>
-                  <tr>
-                    <th className={TH}>{t("col_ref")}</th>
-                    <th className={TH}>{t("col_status")}</th>
-                    <th className={TH}>{t("col_name")}</th>
-                    <th className={TH}>{t("col_contact")}</th>
-                    <th className={TH}>{t("col_session")}</th>
-                    <th className={TH}>{t("col_when")}</th>
-                    <th className={TH}>{t("col_actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: SKELETON_ROWS }).map((_, row) => (
-                    <tr key={row} className="animate-pulse">
-                      {Array.from({ length: SKELETON_COLS + 1 }).map(
-                        (_, col) => (
-                          <td key={col} className={TD}>
-                            <div
-                              className={clsx(
-                                "h-4 rounded",
-                                isDark ? "bg-gray-700" : "bg-gray-200",
-                              )}
-                              style={{ width: `${55 + Math.random() * 35}%` }}
-                            />
-                          </td>
-                        ),
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : registrations?.length === 0 ? (
+          {!isInitialLoading && registrations?.length === 0 ? (
             <p className={clsx("text-sm leading-relaxed", textTertiary)}>
               {t("no_bookings_yet")}
             </p>
           ) : (
             <div
               ref={scrollRef}
-              className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-400px)]"
+              className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-480px)]"
             >
               <table className="w-full border-collapse text-[13.5px] [&>tbody>tr:last-child>td]:border-b-0">
                 <thead>
@@ -195,88 +157,115 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
                 </thead>
 
                 <tbody>
-                  {registrations.map((registration) => (
-                    <tr key={registration.bookingId}>
-                      <td
-                        className={clsx(
-                          TD,
-                          "font-[Space_Grotesk,monospace] font-semibold",
-                        )}
-                      >
-                        {registration.bookingReference}
-                      </td>
-
-                      <td className={TD}>
-                        <span
-                          className={clsx(
-                            "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold",
-                            registration.status === "ATTENDED"
-                              ? isDark
-                                ? "bg-green-900/60 text-green-300"
-                                : "bg-green-100 text-green-700"
-                              : isDark
-                                ? "bg-blue-900/60 text-blue-300"
-                                : "bg-blue-100 text-blue-700",
+                  {isInitialLoading
+                    ? Array.from({ length: SKELETON_ROWS }).map((_, row) => (
+                        <tr key={row} className="animate-pulse">
+                          {Array.from({ length: SKELETON_COLS + 1 }).map(
+                            (_, col) => (
+                              <td key={col} className={TD}>
+                                <div
+                                  className={clsx(
+                                    "h-4 rounded",
+                                    isDark ? "bg-gray-700" : "bg-gray-200",
+                                  )}
+                                  style={{
+                                    width: `${55 + Math.random() * 35}%`,
+                                  }}
+                                />
+                              </td>
+                            ),
                           )}
-                        >
-                          {registration.status === "ATTENDED"
-                            ? t("status_attended")
-                            : t("status_registered")}
-                        </span>
-                      </td>
+                        </tr>
+                      ))
+                    : registrations.map((registration) => (
+                        <tr key={registration.bookingId}>
+                          <td
+                            className={clsx(
+                              TD,
+                              "font-[Space_Grotesk,monospace] font-semibold",
+                            )}
+                          >
+                            {registration.bookingReference}
+                          </td>
 
-                      <td className={TD}>{registration.customerName}</td>
-
-                      <td
-                        className={clsx(
-                          TD,
-                          "flex flex-col gap-px text-[12.5px]",
-                          textTertiary,
-                        )}
-                      >
-                        <span>{registration.customerEmail}</span>
-                        <span>{registration.customerPhone}</span>
-                      </td>
-
-                      <td className={TD}>
-                        {registration.sessionName}
-                        {registration.room && (
-                          <span className={textTertiary}>
-                            {" "}
-                            · {registration.room}
-                          </span>
-                        )}
-                      </td>
-
-                      <td className={TD}>
-                        {fmtDate(registration.slotDate, undefined, "he-IL")} ·{" "}
-                        {fmtTime(registration.slotTime)}
-                      </td>
-
-                      <td className={TD}>
-                        <button
-                          type="button"
-                          title={t("resend_action")}
-                          aria-label={t("resend_action")}
-                          disabled={resendingId === registration.bookingId}
-                          onClick={() => handleResendNotify(registration)}
-                          className={clsx(
-                            "p-1.5 rounded-lg bg-green-100 hover:bg-green-300  text-green-400 hover:text-white disabled:opacity-50 cursor-pointer",
-                          )}
-                        >
-                          {resendingId === registration.bookingId ? (
-                            <Loader
+                          <td className={TD}>
+                            <span
                               className={clsx(
-                                "w-4 h-4 animate-spin text-green-600",
+                                "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold",
+                                registration.status === "ATTENDED"
+                                  ? isDark
+                                    ? "bg-green-900/60 text-green-300"
+                                    : "bg-green-100 text-green-700"
+                                  : isDark
+                                    ? "bg-blue-900/60 text-blue-300"
+                                    : "bg-blue-100 text-blue-700",
                               )}
-                            />
-                          ) : (
-                            <Mail className={clsx("w-4 h-4")} />
-                          )}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                            >
+                              {registration.status === "ATTENDED"
+                                ? t("status_attended")
+                                : t("status_registered")}
+                            </span>
+                          </td>
+
+                          <td className={TD}>{registration.customerName}</td>
+
+                          <td
+                            className={clsx(
+                              TD,
+                              "flex flex-col gap-px text-[12.5px]",
+                              textTertiary,
+                            )}
+                          >
+                            <span>{registration.customerEmail}</span>
+                            <span>{registration.customerPhone}</span>
+                          </td>
+
+                          <td className={TD}>
+                            {registration.sessionName}
+                            {registration.room && (
+                              <span className={textTertiary}>
+                                {" "}
+                                · {registration.room}
+                              </span>
+                            )}
+                          </td>
+
+                          <td className={TD}>
+                            {fmtDate(registration.slotDate, undefined, "he-IL")}{" "}
+                            · {fmtTime(registration.slotTime)}
+                          </td>
+
+                          <td className={TD}>
+                            <button
+                              type="button"
+                              title={t("resend_action")}
+                              aria-label={t("resend_action")}
+                              disabled={
+                                resendingId === registration.bookingId ||
+                                registration.status === "ATTENDED"
+                              }
+                              onClick={() => handleResendNotify(registration)}
+                              className={clsx(
+                                "p-1.5 rounded-lg bg-green-100 hover:bg-green-300  text-green-400 hover:text-white disabled:opacity-50",
+                                resendingId === registration.bookingId ||
+                                  registration.status === "ATTENDED"
+                                  ? "cursor-not-allowed"
+                                  : "cursor-pointer",
+                              )}
+                            >
+                              {resendingId === registration.bookingId ? (
+                                <Loader
+                                  className={clsx(
+                                    "w-4 h-4 animate-spin text-green-600",
+                                  )}
+                                />
+                              ) : (
+                                <Mail className={clsx("w-4 h-4")} />
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                 </tbody>
               </table>
 
@@ -287,6 +276,20 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
                   />
                 </div>
               )}
+
+              {!isInitialLoading &&
+                !isFetching &&
+                !hasMore &&
+                registrations.length > 0 && (
+                  <div
+                    className={clsx(
+                      "flex items-center justify-center py-4 text-xs",
+                      textTertiary,
+                    )}
+                  >
+                    {t("no_more_registrations")}
+                  </div>
+                )}
             </div>
           )}
         </div>
