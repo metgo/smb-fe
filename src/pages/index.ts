@@ -36,6 +36,7 @@ import ChatPage from "./chat-mgmt";
 import StatsSummaryPage from "./stats-summary";
 import { PaymentMgmtPage } from "./payment-mgmt";
 import PaymentTransactionsPage from "./payment-transactions-mgmt";
+import UtmBuilderPage from "./utm-builder";
 
 export {
   ChatPage,
@@ -76,4 +77,5 @@ export {
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
   StatsSummaryPage,
+  UtmBuilderPage,
 };

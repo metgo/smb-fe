@@ -51,6 +51,7 @@ export const routes = {
 
   dynamicPages: "/dynamic-pages",
   promotionMgmt: "/promotions-management",
+  utmBuilder: "/campaign-url-builder",
 
   users: "/users",
 

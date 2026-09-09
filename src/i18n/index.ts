@@ -27,6 +27,7 @@ i18n
       "content",
       "reconciliation",
       "payments",
+      "utm_campaign",
     ],
     defaultNS: "common",
 

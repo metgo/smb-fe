@@ -170,6 +170,9 @@ export const endpoints = {
   // cmpaings
   campaign: "/admin/campaign",
 
+  // UTM campaign builder
+  utmCampaigns: "/utm-campaigns",
+
   // Admin endpoints
   dynamicPage: "/settings",
 
