@@ -33,7 +33,9 @@ import { SmsService } from 'src/services/sms/sms.service';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const HOLD_TTL_MINUTES = 7;
-const INVITE_TTL_DAYS = 7; // Maximum token validity in days (fallback when no event date)
+const INVITE_TTL_DAYS = 7; // Fallback TTL when no event date is known; also the minimum floor
+const INVITE_EVENT_GRACE_DAYS = 1; // Keep the link usable through the event day + this grace
+const INVITE_MAX_TTL_DAYS = 400; // Defensive ceiling against a garbage far-future event date
 
 @Injectable()
 export class SessionBookingsService {
@@ -127,6 +129,132 @@ export class SessionBookingsService {
     }
   }
 
+  /**
+   * Decrypt an invite token, tolerating a past `exp` **only** while the event
+   * it points at is still upcoming (end of the last event day + grace).
+   *
+   * A token bakes its expiry in at generation time, so any token minted before
+   * the TTL fix (flat 7-day cap) can be dead weeks before its event. Rather
+   * than force every early buyer to "contact support", we re-check an expired
+   * token against the real event date and let it through if the event hasn't
+   * happened yet. Genuinely stale tokens — event over, or event date
+   * undeterminable — still fail with 410 Gone.
+   *
+   * Invalid / tampered tokens always fail with 400.
+   */
+  private async resolveInvitePayload(token: string): Promise<InvitePayload> {
+    try {
+      return decryptInviteToken(token);
+    } catch (err: any) {
+      if (!err?.message?.includes('expired')) {
+        throw new BadRequestException(
+          'קישור ההזמנה אינו תקין. אנא בדקו את הקישור שקיבלתם במייל.',
+        );
+      }
+    }
+
+    // Expired — decrypt again without the expiry gate, then decide from the
+    // real event date.
+    let payload: InvitePayload;
+    try {
+      payload = decryptInviteToken(token, { ignoreExpiry: true });
+    } catch {
+      throw new BadRequestException(
+        'קישור ההזמנה אינו תקין. אנא בדקו את הקישור שקיבלתם במייל.',
+      );
+    }
+
+    const eventLastDate = await this.resolveEventLastDate(payload);
+    if (eventLastDate) {
+      const cutoffMs
+        = new Date(eventLastDate).setHours(23, 59, 59, 999)
+        + INVITE_EVENT_GRACE_DAYS * 24 * 60 * 60 * 1000;
+      if (Date.now() <= cutoffMs) {
+        this.logger.info(
+          '[INVITE]: Expired token accepted — event still upcoming',
+          {
+            wrapperId: payload.wrapperId,
+            email: payload.email,
+            code: payload.code,
+            eventLastDate,
+          },
+        );
+        return payload;
+      }
+    }
+
+    throw new GoneException(
+      'פג תוקף קישור ההזמנה. אנא פנו לתמיכה.',
+    );
+  }
+
+  /**
+   * Best-effort lookup of the last event day for an invite — via
+   * wrapper → event, falling back to orderProduct → ticket. Returns null when
+   * neither path resolves a date (caller then treats the token as expired).
+   */
+  private async resolveEventLastDate(
+    payload: InvitePayload,
+  ): Promise<Date | null> {
+    const lastDay = (doc: any): Date | null => {
+      const days = doc?.dayDescription;
+      if (Array.isArray(days) && days.length && days[days.length - 1]?.date) {
+        return new Date(days[days.length - 1].date);
+      }
+      return null;
+    };
+
+    try {
+      if (payload.wrapperId) {
+        const wrapper = await this.connection
+          .collection('sessionwrappers')
+          .findOne(
+            { _id: new ObjectId(payload.wrapperId) },
+            { projection: { eventId: 1 } },
+          );
+        if (wrapper?.eventId) {
+          const event = await this.connection
+            .collection('events')
+            .findOne(
+              { _id: new ObjectId(String(wrapper.eventId)) },
+              { projection: { dayDescription: 1 } },
+            );
+          const d = lastDay(event);
+          if (d) return d;
+        }
+      }
+    } catch (err) {
+      this.logger.warn('[INVITE]: wrapper→event date lookup failed', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    try {
+      if (payload.orderProductId) {
+        const op = await this.orderProductModel
+          .findById(payload.orderProductId)
+          .select('itemId')
+          .lean();
+        if (op?.itemId) {
+          const ticket = await this.connection
+            .collection('tickets')
+            .findOne(
+              { _id: new ObjectId(String(op.itemId)) },
+              { projection: { dayDescription: 1 } },
+            );
+          const d = lastDay(ticket);
+          if (d) return d;
+        }
+      }
+    } catch (err) {
+      this.logger.warn('[INVITE]: orderProduct→ticket date lookup failed', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    return null;
+  }
+
   // ── Invite token ─────────────────────────────────────────────────────────────
 
   /**
@@ -155,37 +283,42 @@ export class SessionBookingsService {
     wrapperId: string;
     code?: string;
     /**
-     * The last session/event date. When provided, token expiry is capped to
-     * 1 day before this date so the link never outlives the event.
-     * Still capped at INVITE_TTL_DAYS (7) from now as an upper bound.
-     * Example: event on July 22, purchased July 10 → token expires July 21 (11 days)
-     * Example: event on July 14, purchased July 10 → token expires July 13 (3 days)
+     * The last session/event date. When provided, the token stays valid
+     * through the END of that day plus INVITE_EVENT_GRACE_DAYS, so the link
+     * never expires before the event it's for. INVITE_TTL_DAYS (7) is a floor
+     * for short-notice purchases, not a ceiling.
+     * Example: event July 22, purchased July 10 → token expires ~July 23
+     * Example: event July 14, purchased July 13 → token expires ~July 20 (7-day floor)
      */
     eventLastDate?: Date;
     /** The OrderProduct (ticket) this invite is for - lets the booking flow check the ticket hasn't been cancelled. */
     orderProductId?: string;
   }): { token: string; bookingLink: string; ttlDays: number } {
     const nowSec = Math.floor(Date.now() / 1000);
-    const maxTtlSec = INVITE_TTL_DAYS * 24 * 60 * 60;
+    const ONE_DAY_SEC = 24 * 60 * 60;
+    // Used verbatim when the event date is unknown, and as a lower bound so a
+    // short-notice buyer always gets at least a week.
+    const fallbackTtlSec = INVITE_TTL_DAYS * ONE_DAY_SEC;
+    const maxTtlSec = INVITE_MAX_TTL_DAYS * ONE_DAY_SEC;
 
-    let ttlSec = maxTtlSec;
+    let ttlSec = fallbackTtlSec;
 
     if (params.eventLastDate) {
-      // Expire 1 day before the last event date so the link is always valid during booking
-      const eventLastMs = new Date(params.eventLastDate).setHours(0, 0, 0, 0);
-      const oneDayMs = 24 * 60 * 60 * 1000;
-      const expiryFromEventMs = eventLastMs - oneDayMs;
-      const expiryFromEventSec = Math.floor(expiryFromEventMs / 1000);
-      const ttlFromEvent = expiryFromEventSec - nowSec;
+      // Keep the link alive through the END of the last event day, plus a
+      // grace period — booking must stay possible right up to (and during)
+      // the event, and must never expire days before it.
+      const eventEndMs = new Date(params.eventLastDate).setHours(23, 59, 59, 999);
+      const expirySec
+        = Math.floor(eventEndMs / 1000) + INVITE_EVENT_GRACE_DAYS * ONE_DAY_SEC;
+      const ttlFromEvent = expirySec - nowSec;
 
-      // Use whichever is shorter: 7 days from now OR 1 day before the event
-      // But always give at least 1 hour so the email is immediately usable
-      const ONE_HOUR_SEC = 60 * 60;
-      ttlSec = Math.max(ONE_HOUR_SEC, Math.min(maxTtlSec, ttlFromEvent));
+      // Whichever is LONGER: the 7-day floor, or through-the-event + grace.
+      // Clamped to a defensive ceiling in case the event date is garbage.
+      ttlSec = Math.min(maxTtlSec, Math.max(fallbackTtlSec, ttlFromEvent));
     }
 
     const exp = nowSec + ttlSec;
-    const ttlDays = Math.ceil(ttlSec / (24 * 60 * 60));
+    const ttlDays = Math.ceil(ttlSec / ONE_DAY_SEC);
 
     const payload: InvitePayload = {
       name: params.name,
@@ -251,20 +384,9 @@ export class SessionBookingsService {
       status: string;
     }>;
   }> {
-    // Decrypt and validate the token
-    let payload: InvitePayload;
-    try {
-      payload = decryptInviteToken(token);
-    } catch (err: any) {
-      if (err.message?.includes('expired')) {
-        throw new GoneException(
-          'This invite link has expired. Please contact support.',
-        );
-      }
-      throw new BadRequestException(
-        'Invalid invite link. Please check the link in your email.',
-      );
-    }
+    // Decrypt and validate the token. An expired token is still honoured while
+    // its event is upcoming — see resolveInvitePayload.
+    const payload = await this.resolveInvitePayload(token);
 
     await this.assertTicketNotCancelled(payload.orderProductId);
 
@@ -593,18 +715,9 @@ export class SessionBookingsService {
     }>,
   ): Promise<any> {
     // ── PRE-VALIDATION (BEFORE transaction) ──────────────────────────────────
-    // Decrypt token early to check for existing bookings before transaction
-    let payload: InvitePayload;
-    try {
-      payload = decryptInviteToken(token);
-    } catch (err: any) {
-      if (err.message?.includes('expired')) {
-        throw new GoneException(
-          'Your invite link has expired. Please contact support.',
-        );
-      }
-      throw new BadRequestException('Invalid or malformed invite token');
-    }
+    // Decrypt token early to check for existing bookings before transaction.
+    // Expired tokens are honoured while their event is still upcoming.
+    const payload = await this.resolveInvitePayload(token);
 
     if (!payload.name || !payload.email) {
       throw new BadRequestException('Token must contain name and email');
@@ -905,18 +1018,13 @@ export class SessionBookingsService {
         holdIds, token, comments, identifierId: dtoIdentifierId,
       } = dto;
 
-      // ── 1. Decrypt token ───────────────────────────────────────────────────
+      // ── 1. Decrypt token (expired ok while the event is upcoming) ──────────
       let payload: InvitePayload;
       try {
-        payload = decryptInviteToken(token);
-      } catch (err: any) {
+        payload = await this.resolveInvitePayload(token);
+      } catch (err) {
         await mongoSession.abortTransaction();
-        if (err.message?.includes('expired')) {
-          throw new GoneException(
-            'Your invite link has expired. Please contact support.',
-          );
-        }
-        throw new BadRequestException('Invalid invite token');
+        throw err;
       }
 
       try {

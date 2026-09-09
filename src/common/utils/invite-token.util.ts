@@ -130,7 +130,10 @@ export function encryptInviteToken(payload: InvitePayload): string {
  * Decrypt a base64url-encoded invite token back to InvitePayload.
  * Throws if: format wrong, auth tag mismatch (tampered/wrong key), or expired.
  */
-export function decryptInviteToken(token: string): InvitePayload {
+export function decryptInviteToken(
+  token: string,
+  opts: { ignoreExpiry?: boolean } = {},
+): InvitePayload {
   let packed: Buffer;
   try {
     packed = fromB64url(token);
@@ -169,8 +172,15 @@ export function decryptInviteToken(token: string): InvitePayload {
     throw new Error('Token payload is malformed');
   }
 
-  // Hard expiry check
-  if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+  // Hard expiry check — a token bakes its `exp` in at generation time, so
+  // callers that can re-validate against the real event date (see
+  // SessionBookingsService.resolveInvitePayload) may opt out and decide for
+  // themselves whether the link is still usable.
+  if (
+    !opts.ignoreExpiry
+    && payload.exp
+    && payload.exp < Math.floor(Date.now() / 1000)
+  ) {
     throw new Error('Token has expired');
   }
 
