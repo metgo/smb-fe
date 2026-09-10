@@ -39,6 +39,7 @@ import {
   CalendarArrowDown,
   ShoppingBag,
   BarChart3,
+  Link2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -258,6 +259,13 @@ export default function Sidebar() {
           path: routes.promotionMgmt,
           label: t("promotions") || "Promotions",
           icon: Megaphone,
+          isEnabled: true,
+        },
+        {
+          id: "utm-builder",
+          path: routes.utmBuilder,
+          label: t("campaign_url_builder") || "Campaign URL Builder",
+          icon: Link2,
           isEnabled: true,
         },
 
