@@ -11,7 +11,6 @@ import {
   X,
   Eye,
   Siren,
-  SlidersHorizontal,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -41,8 +40,10 @@ import { toast } from "sonner";
 import { useSocket } from "@/providers/SocketProvider";
 import { ViewChangesModal } from "@/components/change-tracking";
 import { useAppSelector } from "@/hooks/hooks";
+import { usePersistentState } from "@/hooks/usePersistentState";
 
 const SEARCH_STORAGE_KEY = "notificationSearchTerm";
+const FILTERS_STORAGE_KEY = "notification_mgmt_filters";
 
 export default function NotificationsMgmtPage() {
   const socket = useSocket();
@@ -58,14 +59,28 @@ export default function NotificationsMgmtPage() {
   const [updateProduct] = useUpdateProductMutation();
 
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = usePersistentState(
+    SEARCH_STORAGE_KEY,
+    "",
+  );
   const [showFilters, setShowFilters] = useState(false);
-  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
   const [allNotifications, setAllNotifications] = useState<INotification[]>([]);
 
-  const [readFilter, setReadFilter] = useState<TNotifStatus>("ALL");
-  const [typeFilter, setTypeFilter] = useState<TNotifType>("ALL");
-  const [itemTypeFilter, setItemTypeFilter] = useState<TItemType>("ALL");
+  const [notifFilters, setNotifFilters] = usePersistentState(
+    FILTERS_STORAGE_KEY,
+    {
+      readFilter: "ALL" as TNotifStatus,
+      typeFilter: "ALL" as TNotifType,
+      itemTypeFilter: "ALL" as TItemType,
+    },
+  );
+  const { readFilter, typeFilter, itemTypeFilter } = notifFilters;
+  const setReadFilter = (v: TNotifStatus) =>
+    setNotifFilters((p) => ({ ...p, readFilter: v }));
+  const setTypeFilter = (v: TNotifType) =>
+    setNotifFilters((p) => ({ ...p, typeFilter: v }));
+  const setItemTypeFilter = (v: TItemType) =>
+    setNotifFilters((p) => ({ ...p, itemTypeFilter: v }));
 
   const [selectedNotifications, setSelectedNotifications] = useState<
     Set<string>
@@ -170,19 +185,6 @@ export default function NotificationsMgmtPage() {
     setPage(1);
   }, [readFilter, typeFilter, itemTypeFilter]);
 
-  // ─── Close the drawer on scroll, same as the businesses page ──────────
-  useEffect(() => {
-    const scrollEl = document.getElementById("scrollableDiv");
-    if (!scrollEl) return;
-    const handleScroll = () => {
-      if (scrollEl.scrollTop > 20) {
-        setShowControlsDrawer(false);
-      }
-    };
-    scrollEl.addEventListener("scroll", handleScroll, { passive: true });
-    return () => scrollEl.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const fetchNextPage = () => {
     if (!hasMore || isFetching || isNotifError) return;
     setPage((prev) => prev + 1);
@@ -203,50 +205,6 @@ export default function NotificationsMgmtPage() {
         return <Siren className={`${iconClass} text-red-500`} />;
     }
   };
-
-  // ─── Active filter count for the toggle badge ──────────────────────────
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (searchQuery?.trim()) count += 1;
-    if (readFilter !== "ALL") count += 1;
-    if (typeFilter !== "ALL") count += 1;
-    if (itemTypeFilter !== "ALL") count += 1;
-    return count;
-  }, [searchQuery, readFilter, typeFilter, itemTypeFilter]);
-
-  // ─── Reusable icon-only filter toggle button (mirrors businesses page) ─
-  const filterToggleButton = (
-    <button
-      onClick={() => setShowControlsDrawer((prev) => !prev)}
-      className={clsx(
-        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
-        showControlsDrawer
-          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
-          : isDark
-            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
-      )}
-      title={
-        showControlsDrawer
-          ? (t("close_options") ?? "Close Options")
-          : (t("search_and_filters") ?? "Search & Filters")
-      }
-    >
-      <SlidersHorizontal className="w-4 h-4" />
-      {activeFilterCount > 0 && (
-        <span
-          className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
-            showControlsDrawer
-              ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white",
-          )}
-        >
-          {activeFilterCount > 9 ? "9+" : activeFilterCount}
-        </span>
-      )}
-    </button>
-  );
 
   if (isFetching && page === 1 && allNotifications.length === 0) {
     return (
@@ -285,10 +243,6 @@ export default function NotificationsMgmtPage() {
                   </span>
                 )}
               </div>
-
-              <div className="block xl:hidden items-center gap-2 shrink-0">
-                {filterToggleButton}
-              </div>
             </div>
             <p className={clsx("text-xs", textSecondary)}>
               {t("manage_notifications")}
@@ -301,11 +255,6 @@ export default function NotificationsMgmtPage() {
             className="flex-1 min-w-0 flex flex-row items-center gap-2 overflow-x-auto flex-nowrap py-0.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
           >
             {notifStats && <NotificationStatsCards stats={notifStats} />}
-          </div>
-
-          {/* Search & Filters Toggle Button next to stats (desktop) */}
-          <div className="hidden xl:flex items-center gap-2 shrink-0">
-            {filterToggleButton}
           </div>
         </div>
 
@@ -328,15 +277,13 @@ export default function NotificationsMgmtPage() {
               />
             </div>
 
-            {showControlsDrawer && (
-              <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-              </div>
-            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <FilterButton value={showFilters} onChange={setShowFilters} />
+            </div>
           </div>
 
           {/* Filters Panel */}
-          {showControlsDrawer && showFilters && (
+          {showFilters && (
             <div
               className={`p-4 rounded-xl border ${borderColor} ${bgTertiary}`}
             >
@@ -396,6 +343,28 @@ export default function NotificationsMgmtPage() {
                   </select>
                 </div>
               </div>
+
+              {/* Clear-all button at the end of the filter fields */}
+              {(searchQuery ||
+                readFilter !== "ALL" ||
+                typeFilter !== "ALL" ||
+                itemTypeFilter !== "ALL") && (
+                <div className="mt-4 flex items-center">
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setNotifFilters({
+                        readFilter: "ALL",
+                        typeFilter: "ALL",
+                        itemTypeFilter: "ALL",
+                      });
+                    }}
+                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                  >
+                    {t("clear_all")}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
