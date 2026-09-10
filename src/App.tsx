@@ -52,6 +52,7 @@ import {
   StatsSummaryPage,
   PaymentMgmtPage,
   PaymentTransactionsPage,
+  UtmBuilderPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -612,6 +613,7 @@ function App() {
             { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
             { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+            { path: routes.utmBuilder, element: <UtmBuilderPage /> },
             { path: routes.poiMgmt, element: <PoiMgmtPage /> },
             { path: routes.poiDetails, element: <PoiDetailsPage /> },
             { path: routes.users, element: <UsersMgmtPage /> },
