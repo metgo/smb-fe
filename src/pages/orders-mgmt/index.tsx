@@ -56,6 +56,7 @@ import OrderListView from "../products-mgmt/components/sub-components/OrderListV
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { formatDateTime, formatILS } from "@/helpers/formatter";
+import { displayPaymentStatus } from "@/helpers";
 import { ORDER_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
@@ -602,7 +603,13 @@ export default function OrdersMgmtPage() {
     columnVisibility.paymentStatus && {
       key: "paymentStatus",
       label: t("paymentStatus"),
-      render: (order: IOrder) => getPaymentStatusBadge(order.paymentStatus),
+      render: (order: IOrder) =>
+        getPaymentStatusBadge(
+          displayPaymentStatus(
+            order.paymentStatus,
+            order.status,
+          ) as TPaymentStatus,
+        ),
     },
     columnVisibility.paymentMethod && {
       key: "paymentMethod",
@@ -828,6 +835,11 @@ export default function OrdersMgmtPage() {
           bg: isDark ? "bg-blue-900/30" : "bg-blue-100",
           text: isDark ? "text-blue-400" : "text-blue-800",
           label: t("refunded"),
+        },
+        REFUND_IN_PROCESS: {
+          bg: isDark ? "bg-orange-900/30" : "bg-orange-100",
+          text: isDark ? "text-orange-400" : "text-orange-800",
+          label: t("refund_in_process"),
         },
         PARTIALLY_REFUNDED: {
           bg: isDark ? "bg-orange-900/30" : "bg-orange-100",

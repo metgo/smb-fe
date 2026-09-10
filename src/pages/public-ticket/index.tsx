@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import { useGetPublicEventTicketQuery } from "@/store/api/eventQueryApi";
-import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi";
+import { useMarkPublicTicketAttendanceMutation } from "@/store/api/eventMutationApi";
 
 interface TicketDay {
   date: string;
@@ -45,6 +45,8 @@ interface IPublicTicket {
   paymentMode: string[];
   paymentDate: string | null;
   status: string;
+  attended?: boolean;
+  attendedAt?: string | null;
   quantity: number;
   amount: number;
   cancelled?: {
@@ -117,16 +119,13 @@ export default function PublicTicketPage() {
   );
   const ticket = data as IPublicTicket | undefined;
 
-  const [updateStatus, { isLoading: isUpdating }] =
-    useUpdateEventTicketStatusMutation();
+  const [markAttendance, { isLoading: isUpdating }] =
+    useMarkPublicTicketAttendanceMutation();
 
   const handleMarkCompleted = async () => {
-    if (!ticket || isTicketExpired()) return;
+    if (!ticket || isTicketExpired() || !eventId || !ticketId) return;
     try {
-      await updateStatus({
-        orderId: ticket._id,
-        status: "attended",
-      }).unwrap();
+      await markAttendance({ eventId, ticketId }).unwrap();
       toast.success(t("order_status_updated", { status: t("attended") }));
       refetch();
     } catch {
@@ -169,15 +168,22 @@ export default function PublicTicketPage() {
     statusConfig[ticket.paymentStatus?.toUpperCase()] ??
     statusConfig["PENDING"];
 
-  const orderStatus = orderStatusConfig[ticket.status?.toLowerCase()] ?? {
+  const isCanceled = ticket.status?.toLowerCase() === "canceled";
+  const isAttended = ticket.attended === true;
+
+  // check-in state is shown ahead of the order status ("completed")
+  const derivedStatusKey = isCanceled
+    ? "canceled"
+    : isAttended
+      ? "attended"
+      : ticket.status?.toLowerCase();
+
+  const orderStatus = orderStatusConfig[derivedStatusKey] ?? {
     color: "bg-gray-500 text-white",
     labelKey: ticket.status,
   };
 
   const fullName = `${ticket.firstName} ${ticket.lastName ?? ""}`.trim();
-
-  const isAttended = ticket.status?.toLowerCase() === "attended";
-  const isCanceled = ticket.status?.toLowerCase() === "canceled";
 
   const isTicketExpired = () => {
     const days = ticket.ticketDayDescription?.length

@@ -2,6 +2,7 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+import { displayPaymentStatus } from "@/helpers";
 
 interface Order {
   id: string;
@@ -55,17 +56,21 @@ export const OrdersModal = ({
   };
 
   const getPaymentStatusBadge = (status: TPaymentStatus) => {
-    const styles: Record<TPaymentStatus, string> = {
+    const styles: Record<string, string> = {
       PAID: "bg-green-100 text-green-700",
       UNPAID: "bg-red-100 text-red-700",
       PARTIAL: "bg-yellow-100 text-yellow-700",
       REFUNDED: "bg-purple-100 text-purple-700",
+      REFUND_SUCCESS: "bg-purple-100 text-purple-700",
+      REFUND_IN_PROCESS: "bg-orange-100 text-orange-700",
       SUCCESS: "bg-green-100 text-green-700",
     };
 
     return (
       <span
-        className={`px-2 py-1 text-xs font-semibold rounded-full ${styles[status]}`}
+        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+          styles[status] ?? "bg-gray-100 text-gray-700"
+        }`}
       >
         {status}
       </span>
@@ -120,7 +125,12 @@ export const OrdersModal = ({
                       {getOrderStatusBadge(order?.status)}
                     </td>{" "}
                     <td className="p-2 border">
-                      {getPaymentStatusBadge(order?.paymentStatus)}
+                      {getPaymentStatusBadge(
+                        displayPaymentStatus(
+                          order?.paymentStatus,
+                          order?.status,
+                        ) as TPaymentStatus,
+                      )}
                     </td>
                     <td className="p-2 border">
                       {order?.firstName} {order?.lastName}
