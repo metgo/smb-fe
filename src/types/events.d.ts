@@ -95,6 +95,12 @@ interface INotificationData {
   message: string;
   body?: string;
   scheduleDateTime?: string;
+  scheduleDateTimeLocal?: string;
+
+  // Alternative to scheduleDateTime: send this many hours relative to the
+  // event start/end (e.g. 24, 10). Paired with sendTiming to say which side.
+  sendHoursOffset?: number;
+  sendTiming?: "PRE_EVENT" | "POST_EVENT";
   enabled: boolean;
   status: "ACTIVE" | "INACTIVE";
   createdAt?: string;

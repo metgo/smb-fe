@@ -252,6 +252,10 @@ interface ISendNotificationPayload {
   subject?: string;
   message: string;
   scheduleDateTime?: string;
+  // Alternative to scheduleDateTime: send this many hours relative to the
+  // event, with sendTiming saying which side.
+  sendHoursOffset?: number;
+  sendTiming?: "PRE_EVENT" | "POST_EVENT";
 }
 
 interface INotificationHistoryResponse {
@@ -271,6 +275,8 @@ interface INotificationHistoryItem {
   sentAt: string | null;
   createdAt: string;
   scheduleDateTime?: string | null;
+  sendHoursOffset?: number | null;
+  sendTiming?: "PRE_EVENT" | "POST_EVENT" | null;
 }
 
 interface INotificationDetailResponse {

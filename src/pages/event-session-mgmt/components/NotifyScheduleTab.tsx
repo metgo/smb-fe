@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { Eye, Loader, RotateCw } from "lucide-react";
+import { Eye, Loader, Mail, MessageSquare, RotateCw } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 
 import { AField } from "./AField";
@@ -40,11 +40,21 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
   // I send this" is about the person looking, not the event's clock).
   const renderHistoryWhen = (h: INotificationHistoryItem) => {
     if (h.status === "SCHEDULED") {
-      const at = h.scheduleDateTime
-        ? new Date(h.scheduleDateTime).toLocaleString(undefined, {
-            hour12: false,
-          })
-        : "";
+      // Offset-based schedule ("24 hours before event") takes precedence over a
+      // fixed wall-clock time when the backend sends one.
+      const at =
+        h.sendHoursOffset != null
+          ? t(
+              h.sendTiming === "POST_EVENT"
+                ? "send_offset_post_summary"
+                : "send_offset_pre_summary",
+              { count: h.sendHoursOffset },
+            )
+          : h.scheduleDateTime
+            ? new Date(h.scheduleDateTime).toLocaleString(undefined, {
+                hour12: false,
+              })
+            : "";
       return `${t("history_status_scheduled")}${at ? ` · ${at}` : ""}`;
     }
     if (h.status === "PENDING") return t("history_status_sending");
@@ -81,14 +91,57 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
           : "border-gray-200 bg-white",
     );
 
+  const segBtn = (active: boolean) =>
+    clsx(
+      "px-3 py-2 text-xs font-semibold rounded-[8px] transition-colors whitespace-nowrap",
+      active
+        ? isDark
+          ? "bg-blue-500 text-white"
+          : "bg-blue-600 text-white"
+        : isDark
+          ? "text-gray-300 hover:bg-gray-700/60"
+          : "text-gray-600 hover:bg-gray-200/70",
+    );
+
+  // Preset offsets (in hours) offered in the dropdown; the field also accepts
+  // a freely typed number for a custom offset.
+  const HOURS_OFFSET_PRESETS = [1, 3, 6, 12, 24, 48, 72];
+
+  // Earliest selectable value for <input type="datetime-local"> — now, in the
+  // admin's local wall-clock, so past times can't be scheduled.
+  const minDateTime = (() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+      d.getHours(),
+    )}:${pad(d.getMinutes())}`;
+  })();
+
   const [sendSessionNotification, { isLoading: isSending }] =
     useSendSessionNotificationMutation();
   const [reSendSessionNotification] = useReSendSessionNotificationMutation();
 
   const [channels, setChannels] = useState<Array<"EMAIL" | "SMS">>(["EMAIL"]);
   const [scheduledAt, setScheduledAt] = useState("");
+  const [hoursOffset, setHoursOffset] = useState<number | null>(null);
+  const [sendTiming, setSendTiming] = useState<"PRE_EVENT" | "POST_EVENT">(
+    "PRE_EVENT",
+  );
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+
+  // "offset" once an hours value is set, "exact" once a datetime is set.
+  const scheduleMode: "offset" | "exact" | null =
+    hoursOffset != null ? "offset" : scheduledAt ? "exact" : null;
+
+  const setOffset = (raw: string) => {
+    setHoursOffset(raw.trim() === "" ? null : Math.max(0, Number(raw)));
+    setScheduledAt("");
+  };
+  const pickExact = (value: string) => {
+    setScheduledAt(value);
+    setHoursOffset(null);
+  };
 
   const [historyPage, setHistoryPage] = useState(1);
   const [history, setHistory] = useState<INotificationHistoryItem[]>([]);
@@ -171,10 +224,16 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
   }
 
   const bodyIsEmpty = !body.replace(/<[^>]*>/g, "").trim();
+  const hasSchedule =
+    scheduleMode === "offset"
+      ? (hoursOffset ?? 0) > 0
+      : scheduleMode === "exact"
+        ? !!scheduledAt
+        : false;
   const isFormValid =
     !!wrapperId &&
     channels.length > 0 &&
-    !!scheduledAt &&
+    hasSchedule &&
     !!subject.trim() &&
     !bodyIsEmpty;
 
@@ -191,12 +250,18 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
           recipientType: "all",
           subject,
           message: body,
-          scheduleDateTime: new Date(scheduledAt).toISOString(),
+          // sendTiming (before/after the event) applies to either form.
+          sendTiming,
+          ...(scheduleMode === "offset"
+            ? { sendHoursOffset: hoursOffset ?? 0 }
+            : { scheduleDateTime: new Date(scheduledAt).toISOString() }),
         },
       }).unwrap();
       setSubject("");
       setBody("");
       setScheduledAt("");
+      setHoursOffset(null);
+      setSendTiming("PRE_EVENT");
       setHistoryPage(1);
       toast.success(t("toast_notification_sent"));
     } catch {
@@ -224,41 +289,121 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
 
           {/* Fields  */}
           <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AField label={t("channel_field")} isRequired>
-                <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5 mb-3.5">
-                  <button
-                    type="button"
-                    aria-pressed={channels.includes("EMAIL")}
-                    className={channelBtn(channels.includes("EMAIL"))}
-                    onClick={() => toggleChannel("EMAIL")}
-                  >
+            <AField label={t("channel_field")} isRequired>
+              <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5 mb-3.5">
+                <button
+                  type="button"
+                  aria-pressed={channels.includes("EMAIL")}
+                  className={channelBtn(channels.includes("EMAIL"))}
+                  onClick={() => toggleChannel("EMAIL")}
+                >
+                  <span className="flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
                     <strong className="text-sm">
                       {t("channel_email_label")}
                     </strong>
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={channels.includes("SMS")}
-                    className={channelBtn(channels.includes("SMS"))}
-                    onClick={() => toggleChannel("SMS")}
-                  >
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={channels.includes("SMS")}
+                  className={channelBtn(channels.includes("SMS"))}
+                  onClick={() => toggleChannel("SMS")}
+                >
+                  <span className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4" />
                     <strong className="text-sm">
                       {t("channel_sms_label")}
                     </strong>
+                  </span>
+                </button>
+              </div>
+            </AField>
+
+            <AField label={t("schedule_date_time_field")} isRequired>
+              <div className="flex flex-wrap items-stretch gap-2">
+                {/* Before / after the event — applies to either "when" */}
+                <div
+                  className={clsx(
+                    "flex gap-1 p-1 rounded-[10px] border shrink-0",
+                    isDark
+                      ? "border-gray-700 bg-gray-800/60"
+                      : "border-gray-200 bg-gray-100/70",
+                  )}
+                >
+                  <button
+                    type="button"
+                    className={segBtn(sendTiming === "PRE_EVENT")}
+                    onClick={() => setSendTiming("PRE_EVENT")}
+                  >
+                    {t("send_timing_pre_event")}
+                  </button>
+                  <button
+                    type="button"
+                    className={segBtn(sendTiming === "POST_EVENT")}
+                    onClick={() => setSendTiming("POST_EVENT")}
+                  >
+                    {t("send_timing_post_event")}
                   </button>
                 </div>
-              </AField>
-              <AField label={t("schedule_date_time_field")} isRequired>
+
+                {/* Hours offset: preset dropdown that also accepts a typed value */}
+                <div className="relative flex-1 min-w-35">
+                  <input
+                    type="number"
+                    min={1}
+                    list="session-notif-hours-offset-presets"
+                    className={clsx(
+                      INPUT,
+                      "pr-14",
+                      scheduleMode === "offset" &&
+                        (isDark ? "border-blue-400" : "border-blue-500"),
+                    )}
+                    placeholder={t("schedule_offset_custom_placeholder")}
+                    value={hoursOffset ?? ""}
+                    onChange={(e) => setOffset(e.target.value)}
+                  />
+                  <datalist id="session-notif-hours-offset-presets">
+                    {HOURS_OFFSET_PRESETS.map((h) => (
+                      <option key={h} value={h}>
+                        {t("hours_count", { count: h })}
+                      </option>
+                    ))}
+                  </datalist>
+                  <span
+                    className={clsx(
+                      "pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs",
+                      isDark ? "text-gray-500" : "text-gray-400",
+                    )}
+                  >
+                    {t("hours_unit")}
+                  </span>
+                </div>
+
+                <span
+                  className={clsx(
+                    "shrink-0 self-center text-[11px] uppercase tracking-wide font-semibold",
+                    isDark ? "text-gray-500" : "text-gray-400",
+                  )}
+                >
+                  {t("schedule_offset_or_exact")}
+                </span>
+
+                {/* Or an exact date & time */}
                 <input
                   type="datetime-local"
-                  required
-                  className={INPUT}
+                  min={minDateTime}
+                  className={clsx(
+                    INPUT,
+                    "flex-1 min-w-50",
+                    scheduleMode === "exact" &&
+                      (isDark ? "border-blue-400" : "border-blue-500"),
+                  )}
                   value={scheduledAt}
-                  onChange={(e) => setScheduledAt(e.target.value)}
+                  onChange={(e) => pickExact(e.target.value)}
                 />
-              </AField>
-            </div>
+              </div>
+            </AField>
 
             <AField label={t("subject_field")} isRequired>
               <input

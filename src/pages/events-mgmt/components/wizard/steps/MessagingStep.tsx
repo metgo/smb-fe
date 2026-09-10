@@ -112,10 +112,17 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
                   <div>
                     <p className={`font-xs ${textPrimary}`}>
                       {notification.subject} |{" "}
-                      {formatLocalDateTime(
-                        notification.scheduleDateTime,
-                        language,
-                      )}
+                      {notification.sendHoursOffset != null
+                        ? t(
+                            notification.sendTiming === "POST_EVENT"
+                              ? "send_offset_post_summary"
+                              : "send_offset_pre_summary",
+                            { count: notification.sendHoursOffset },
+                          )
+                        : formatLocalDateTime(
+                            notification.scheduleDateTime,
+                            language,
+                          )}
                     </p>
                     <div
                       className={clsx(

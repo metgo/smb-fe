@@ -52,7 +52,6 @@ export default function CreateEventWizardNew({
     refetch,
     eventDataRefetch,
   });
-  console.log("🚀 ~ CreateEventWizardNew ~ editData:", editData);
 
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },

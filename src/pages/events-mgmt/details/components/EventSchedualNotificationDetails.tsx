@@ -148,12 +148,19 @@ const EventScheduledNotificationDetails: React.FC<
                           isDark ? "text-gray-300" : "text-gray-700",
                         )}
                       >
-                        {t("notification_trigger_at", {
-                          datetime: formatLocalDateTime(
-                            notification.scheduleDateTime,
-                            language,
-                          ),
-                        })}
+                        {notification.sendHoursOffset != null
+                          ? t(
+                              notification.sendTiming === "POST_EVENT"
+                                ? "send_offset_post_summary"
+                                : "send_offset_pre_summary",
+                              { count: notification.sendHoursOffset },
+                            )
+                          : t("notification_trigger_at", {
+                              datetime: formatLocalDateTime(
+                                notification.scheduleDateTimeLocal,
+                                language,
+                              ),
+                            })}
                       </span>
                     </div>
                   </div>

@@ -374,6 +374,13 @@ export function useEventWizardState({
           // (which knows the admin's timezone) so the pick means the admin's
           // own wall-clock and the cron fires at that instant everywhere.
           scheduleDateTime: item.scheduleDateTime,
+          // Offset-based scheduling: send N hours before/after the event
+          // instead of at a fixed wall-clock time. sendTiming (before/after
+          // the event) applies to either form, so it's always sent.
+          ...(item.sendHoursOffset != null
+            ? { sendHoursOffset: item.sendHoursOffset }
+            : {}),
+          sendTiming: item.sendTiming ?? "PRE_EVENT",
           body: formatToBackendTemplate(item.message),
         };
         return base;
@@ -606,6 +613,8 @@ export function useEventWizardState({
       // for the picker (scheduleDateTimeLocal), never the "…Z" scheduleDateTime.
       scheduleDateTime: item.scheduleDateTimeLocal ?? "",
       scheduleDateTimeLocal: item.scheduleDateTimeLocal ?? "",
+      sendHoursOffset: item?.sendHoursOffset ?? undefined,
+      sendTiming: item?.sendTiming ?? undefined,
       enabled: item?.status === "ACTIVE",
       status: item.status,
     }));
