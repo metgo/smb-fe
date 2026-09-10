@@ -1,9 +1,8 @@
 import clsx from "clsx";
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { SlidersHorizontal } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FilterButton } from "@/components/btns";
@@ -53,7 +52,6 @@ const TripsMgmtPage = () => {
   } = useTripListData(filters, searchTerm);
 
   const [showFilters, setShowFilters] = useState(false);
-  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTrips, setSelectedTrips] = useState<Set<string>>(new Set());
@@ -68,37 +66,6 @@ const TripsMgmtPage = () => {
   const [bulkUpdateTripsStatus] = useBulkUpdateTripsStatusMutation();
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-
-  // Active filter count for badge on toggle button
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (searchTerm?.trim()) count += 1;
-    // Count non-default filter values if your filters object supports it
-    // Adjust based on actual filter shape from useTripListFilters
-    if (hasSavedFilters) count += 1;
-    return count;
-  }, [searchTerm, hasSavedFilters]);
-
-  // Collapse controls drawer on scroll (same as Events)
-  useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (
-        (target && target.scrollTop && target.scrollTop > 20) ||
-        window.scrollY > 20
-      ) {
-        setShowControlsDrawer(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll, {
-      capture: true,
-      passive: true,
-    });
-    return () =>
-      window.removeEventListener("scroll", handleScroll, {
-        capture: true,
-      } as any);
-  }, []);
 
   const handleEdit = (trip: ITrip) => {
     setSearchParams((prev) => {
@@ -205,40 +172,6 @@ const TripsMgmtPage = () => {
     setColumnVisibility(TRIP_COLUMNS.defaultColumns);
   }, []);
 
-  // Reusable filter toggle button (same style as Events)
-  const filterToggleButton = (
-    <button
-      onClick={() => setShowControlsDrawer((prev) => !prev)}
-      className={clsx(
-        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
-        showControlsDrawer
-          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
-          : isDark
-            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
-      )}
-      title={
-        showControlsDrawer
-          ? (tc("close_options") ?? "Close Options")
-          : (tc("search_and_filters") ?? "Search & Filters")
-      }
-    >
-      <SlidersHorizontal className="w-4 h-4" />
-      {activeFilterCount > 0 && (
-        <span
-          className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
-            showControlsDrawer
-              ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white",
-          )}
-        >
-          {activeFilterCount > 9 ? "9+" : activeFilterCount}
-        </span>
-      )}
-    </button>
-  );
-
   return (
     <>
       <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
@@ -257,7 +190,6 @@ const TripsMgmtPage = () => {
             count={combinedTrips.length}
             addLabel={t("add_trip")}
             onAdd={() => setIsCreateModalOpen(true)}
-            filterToggle={filterToggleButton}
           />
         </div>
 
@@ -279,23 +211,21 @@ const TripsMgmtPage = () => {
               />
             </div>
 
-            {showControlsDrawer && (
-              <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2">
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-                <ShowColumns
-                  t={t}
-                  columnDefinitions={columnDefinitions}
-                  columnVisibility={columnVisibility}
-                  showColumnSettings={showColumnSettings}
-                  setShowColumnSettings={setShowColumnSettings}
-                  setColumnVisibility={setColumnVisibility}
-                  resetToDefault={resetToDefault}
-                />
-              </div>
-            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <FilterButton value={showFilters} onChange={setShowFilters} />
+              <ShowColumns
+                t={t}
+                columnDefinitions={columnDefinitions}
+                columnVisibility={columnVisibility}
+                showColumnSettings={showColumnSettings}
+                setShowColumnSettings={setShowColumnSettings}
+                setColumnVisibility={setColumnVisibility}
+                resetToDefault={resetToDefault}
+              />
+            </div>
           </div>
 
-          {showControlsDrawer && (showFilters || hasSavedFilters) && (
+          {(showFilters || hasSavedFilters) && (
             <TripsFiltersPanel
               filters={filters}
               setFilters={setFilters}

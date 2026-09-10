@@ -1,7 +1,6 @@
 // components/shared/ListHeaderBar.tsx
 import clsx from "clsx";
 import { Plus } from "lucide-react";
-import type { ReactNode } from "react";
 import StatsMarquee, { type StatItem } from "./StatsMarquee";
 
 interface ListHeaderBarProps {
@@ -15,8 +14,6 @@ interface ListHeaderBarProps {
   onAdd?: () => void;
   stats?: StatItem[];
   isStatsLoading?: boolean;
-  /** The filter/search toggle button, rendered inline on mobile and beside stats on desktop */
-  filterToggle: ReactNode;
   dataTourHeader?: string;
   dataTourStats?: string;
 }
@@ -30,7 +27,6 @@ export default function ListHeaderBar({
   onAdd,
   stats: statsProp,
   isStatsLoading,
-  filterToggle,
   dataTourHeader,
   dataTourStats,
 }: ListHeaderBarProps) {
@@ -63,9 +59,9 @@ export default function ListHeaderBar({
             )}
           </div>
 
-          {/* Mobile: icon-only gradient add button, in front of the filter toggle */}
-          <div className="flex xl:hidden items-center gap-2 shrink-0">
-            {onAdd && (
+          {/* Mobile: icon-only gradient add button */}
+          {onAdd && (
+            <div className="flex xl:hidden items-center gap-2 shrink-0">
               <button
                 onClick={onAdd}
                 title={addLabel}
@@ -76,9 +72,8 @@ export default function ListHeaderBar({
               >
                 <Plus className="w-4 h-4" />
               </button>
-            )}
-            {filterToggle}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Desktop: full label+icon add button */}
@@ -110,10 +105,6 @@ export default function ListHeaderBar({
           />
         </div>
       )}
-
-      <div className="hidden xl:flex items-center gap-2 shrink-0">
-        {filterToggle}
-      </div>
     </>
   );
 }

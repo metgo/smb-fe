@@ -11,7 +11,6 @@ import {
   ArrowUpDown,
   ArrowUp,
   Compass,
-  SlidersHorizontal,
 } from "lucide-react";
 
 import { FilterButton } from "@/components/btns";
@@ -97,79 +96,9 @@ function ProductsMgmtPageInner() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
-  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
-  const [_isScrolled, setIsScrolled] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set(),
   );
-
-  // ─── Compute active filter count (search term + any non-empty filter values) ──
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-
-    if (searchTerm?.trim()) count += 1;
-    if (filters?.status && filters.status !== "all") count += 1;
-    if (filters?.businessId && filters.businessId !== "all") count += 1;
-
-    return count;
-  }, [filters, searchTerm]);
-
-  // ─── Reusable icon-only filter toggle button ──────────────────────────
-  const filterToggleButton = (
-    <button
-      onClick={() => setShowControlsDrawer((prev) => !prev)}
-      className={clsx(
-        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
-        showControlsDrawer
-          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
-          : isDark
-            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
-      )}
-      title={
-        showControlsDrawer
-          ? (t("close_options") ?? "Close Options")
-          : (t("search_and_filters") ?? "Search & Filters")
-      }
-    >
-      <SlidersHorizontal className="w-4 h-4" />
-      {activeFilterCount > 0 && (
-        <span
-          className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
-            showControlsDrawer
-              ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white",
-          )}
-        >
-          {activeFilterCount > 9 ? "9+" : activeFilterCount}
-        </span>
-      )}
-    </button>
-  );
-
-  useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (
-        (target && target.scrollTop && target.scrollTop > 20) ||
-        window.scrollY > 20
-      ) {
-        setIsScrolled(true);
-        setShowControlsDrawer(false);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll, {
-      capture: true,
-      passive: true,
-    });
-    return () =>
-      window.removeEventListener("scroll", handleScroll, {
-        capture: true,
-      } as any);
-  }, []);
 
   const [columnVisibility, setColumnVisibility] =
     useState<IProductColumnVisibility>(defaultColumns);
@@ -443,7 +372,6 @@ function ProductsMgmtPageInner() {
             onAdd={handleCreateNew}
             stats={salesStats}
             isStatsLoading={isStatsLoading}
-            filterToggle={filterToggleButton}
             dataTourHeader="page-header"
             dataTourStats="stats"
           />
@@ -467,84 +395,78 @@ function ProductsMgmtPageInner() {
               />
             </div>
 
-            {showControlsDrawer && (
-              <div
-                className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2"
-                data-tour="toolbar"
-              >
-                <div className="flex items-center gap-2 flex-wrap">
-                  <FilterButton value={showFilters} onChange={setShowFilters} />
-                  <ShowColumns
-                    t={t}
-                    viewMode={viewMode}
-                    columnDefinitions={columnDefinitions}
-                    columnVisibility={columnVisibility}
-                    showColumnSettings={showColumnSettings}
-                    setShowColumnSettings={setShowColumnSettings}
-                    setColumnVisibility={setColumnVisibility}
-                    resetToDefault={resetToDefault}
-                  />
-                  <ExportProductsButton
-                    products={combinedProducts}
-                    selectedProducts={selectedProducts}
-                    columnVisibility={columnVisibility}
-                    t={t}
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => startTour(buildSteps())}
-                    title={tt("start_tour")}
-                    className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
-                      isDark
-                        ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
-                        : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
-                    }`}
-                  >
-                    <Compass className="w-4 h-4" />
-                    <span className="hidden sm:inline text-sm font-medium">
-                      {t("tour") ?? tt("start_tour")}
-                    </span>
-                  </button>
-                  <ViewModeToggle
-                    onChange={setViewMode}
-                    value={viewMode}
-                    tableName="productViewMode"
-                  />
-                </div>
+            <div
+              className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap"
+              data-tour="toolbar"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
+                <ShowColumns
+                  t={t}
+                  viewMode={viewMode}
+                  columnDefinitions={columnDefinitions}
+                  columnVisibility={columnVisibility}
+                  showColumnSettings={showColumnSettings}
+                  setShowColumnSettings={setShowColumnSettings}
+                  setColumnVisibility={setColumnVisibility}
+                  resetToDefault={resetToDefault}
+                />
+                <ExportProductsButton
+                  products={combinedProducts}
+                  selectedProducts={selectedProducts}
+                  columnVisibility={columnVisibility}
+                  t={t}
+                />
               </div>
-            )}
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => startTour(buildSteps())}
+                  title={tt("start_tour")}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+                  }`}
+                >
+                  <Compass className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {t("tour") ?? tt("start_tour")}
+                  </span>
+                </button>
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="productViewMode"
+                />
+              </div>
+            </div>
           </div>
 
-          {showControlsDrawer && (
-            <>
-              {/* Filters Panel */}
-              {(showFilters || urlBusinessId || hasSavedFilters) && (
-                <ProductFiltersPanel
-                  filters={filters}
-                  setFilters={setFilters}
-                  hasSavedFilters={hasSavedFilters}
-                  clearFilter={clearFilter}
-                  urlBusinessId={urlBusinessId}
-                  urlBusinessName={urlBusinessName}
-                  urlBusinessNameProduct={urlBusinessNameProduct}
-                  removeQueryParams={removeQueryParams}
-                  businesses={businesses ?? []}
-                  searchBusiness={searchBusiness}
-                  isSearching={isSearching}
-                  isBusinessesLoading={isBusinessesLoading}
-                />
-              )}
-
-              <BulkActionBar
-                selectedItemCount={selectedProducts.size}
-                handleBulkStatusChange={handleBulkStatusChange}
-                handleBulkDelete={promptBulkDelete}
-                hancleClearSelection={() => setSelectedProducts(new Set())}
-              />
-            </>
+          {/* Filters Panel */}
+          {(showFilters || urlBusinessId || hasSavedFilters) && (
+            <ProductFiltersPanel
+              filters={filters}
+              setFilters={setFilters}
+              hasSavedFilters={hasSavedFilters}
+              clearFilter={clearFilter}
+              urlBusinessId={urlBusinessId}
+              urlBusinessName={urlBusinessName}
+              urlBusinessNameProduct={urlBusinessNameProduct}
+              removeQueryParams={removeQueryParams}
+              businesses={businesses ?? []}
+              searchBusiness={searchBusiness}
+              isSearching={isSearching}
+              isBusinessesLoading={isBusinessesLoading}
+            />
           )}
+
+          <BulkActionBar
+            selectedItemCount={selectedProducts.size}
+            handleBulkStatusChange={handleBulkStatusChange}
+            handleBulkDelete={promptBulkDelete}
+            hancleClearSelection={() => setSelectedProducts(new Set())}
+          />
         </div>
 
         {/* Content Area (product list/grid rendered naturally) */}
