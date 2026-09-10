@@ -101,7 +101,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
       ...editingNotification,
       scheduleDateTime: value,
       sendHoursOffset: undefined,
-      sendTiming: timing,
+      sendTiming: undefined,
     });
 
   const segBtn = (active: boolean) =>

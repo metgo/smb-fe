@@ -281,8 +281,8 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
           recipientType: "all",
           subject,
           message: body,
-          // sendTiming (before/after the event) applies to either form.
-          sendTiming,
+          // sendTiming (before/after the event) only applies to relative mode.
+          ...(scheduleMode === "offset" && { sendTiming }),
           ...(scheduleMode === "offset"
             ? { sendHoursOffset: hoursOffset ?? HOURS_MIN }
             : // Send the picker's naive wall-clock string as-is — the backend
