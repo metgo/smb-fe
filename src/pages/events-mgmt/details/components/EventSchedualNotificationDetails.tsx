@@ -150,7 +150,7 @@ const EventScheduledNotificationDetails: React.FC<
                       >
                         {t("notification_trigger_at", {
                           datetime: formatLocalDateTime(
-                            notification.scheduleDateTimeLocal,
+                            notification.scheduleDateTime,
                             language,
                           ),
                         })}
