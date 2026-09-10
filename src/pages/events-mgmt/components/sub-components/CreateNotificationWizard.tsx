@@ -40,6 +40,19 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
       : "focus:border-blue-500 focus:ring-blue-500/10",
   );
 
+  // <input type="datetime-local"> speaks wall-clock local time with no zone.
+  // Store it the same way NotifyScheduleTab does: convert to a real instant
+  // (ISO/UTC) on write, and back to a local wall-clock string for display.
+  // const toLocalInputValue = (iso?: string) => {
+  //   if (!iso) return "";
+  //   const d = new Date(iso);
+  //   if (Number.isNaN(d.getTime())) return iso;
+  //   const pad = (n: number) => String(n).padStart(2, "0");
+  //   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+  //     d.getHours(),
+  //   )}:${pad(d.getMinutes())}`;
+  // };
+
   const channelBtn = (active: boolean) =>
     clsx(
       "text-start px-3.5 py-2.5 rounded-[11px] border-[1.5px] flex flex-col gap-0.5 transition-colors",
@@ -124,11 +137,11 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                   required
                   type="datetime-local"
                   className={INPUT}
-                  value={editingNotification.scheduleDateTime ?? ""}
+                  value={editingNotification.scheduleDateTime}
                   onChange={(e) =>
                     setEditingNotification({
                       ...editingNotification,
-                      scheduleDateTime: e.target.value,
+                      scheduleDateTime: e.target.value ? e.target.value : "",
                     })
                   }
                 />

@@ -58,15 +58,35 @@ export function useEventDraftSaver({
     return payload;
   }, [dirtySteps, currentStep, stepPayloadMap, t]);
 
+  // Localized fields (name/description in He/Ar) that must never be sent as an
+  // empty string — an untouched non-active language would otherwise wipe the
+  // stored translation on the backend.
+  const OPTIONAL_LOCALIZED_FIELDS = [
+    "nameHe",
+    "nameAr",
+    "descriptionHe",
+    "descriptionAr",
+    "shortDescriptionHe",
+    "shortDescriptionAr",
+  ];
+
   // 🔹 Edit mode: drop any field that still equals its server snapshot value,
   // so untouched fields on a dirty step aren't re-sent.
   const stripUnchangedFields = useCallback(
     (payload: Record<string, any>) => {
       const snapshot = hydratedPayloadRef?.current;
-      if (!snapshot) return payload;
       const diffed: Record<string, any> = {};
       for (const key of Object.keys(payload)) {
+        // Never send an empty localized field: if the user didn't type a
+        // translation, omit it rather than clearing the server value.
         if (
+          OPTIONAL_LOCALIZED_FIELDS.includes(key) &&
+          (payload[key] == null || payload[key] === "")
+        ) {
+          continue;
+        }
+        if (
+          snapshot &&
           key in snapshot &&
           JSON.stringify(payload[key]) === JSON.stringify(snapshot[key])
         ) {

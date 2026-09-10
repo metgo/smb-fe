@@ -377,6 +377,9 @@
   "customer_information": "معلومات العميل",
 
   "payment_status": "حالة الدفع",
+  "order_status": "حالة الطلب",
+  "exact_status": "الحالة الدقيقة",
+  "cancelled": "ملغي",
   "payment_information": "معلومات الدفع",
   "payment_date": "تاريخ الدفع",
   "order_product_id": "معرّف منتج الطلب",

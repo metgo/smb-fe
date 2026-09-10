@@ -95,7 +95,6 @@ interface INotificationData {
   message: string;
   body?: string;
   scheduleDateTime?: string;
-  scheduleDateTimeLocal: string;
   enabled: boolean;
   status: "ACTIVE" | "INACTIVE";
   createdAt?: string;

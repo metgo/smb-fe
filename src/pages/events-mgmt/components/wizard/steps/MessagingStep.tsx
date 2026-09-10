@@ -42,7 +42,6 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
   setShowNotificationForm,
   capacity,
 }) => {
-  console.log("🚀 ~ MessagingStep ~ notifications:", notifications);
   const { t } = useTranslation("events");
   const { textPrimary, textTertiary, isDark, isRTL, language } =
     useThemeClasses();
@@ -61,7 +60,6 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
       index: notifications.length,
       channels: ["EMAIL"],
       scheduleDateTime: "",
-      scheduleDateTimeLocal: "",
       subject: "",
       message: "",
       enabled: true,

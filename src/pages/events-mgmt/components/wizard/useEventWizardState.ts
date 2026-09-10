@@ -373,9 +373,7 @@ export function useEventWizardState({
           // The picker holds a naive local datetime; convert in the browser
           // (which knows the admin's timezone) so the pick means the admin's
           // own wall-clock and the cron fires at that instant everywhere.
-          scheduleDateTime: item.scheduleDateTime
-            ? new Date(item.scheduleDateTime).toISOString()
-            : item.scheduleDateTime,
+          scheduleDateTime: item.scheduleDateTime,
           body: formatToBackendTemplate(item.message),
         };
         return base;

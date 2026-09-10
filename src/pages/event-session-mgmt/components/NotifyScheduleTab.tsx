@@ -17,8 +17,8 @@ import {
 } from "@/store/api/eventSessionApi";
 import { RichTextEditor } from "@/components/shared";
 
-const HISTORY_LIMIT = 10;
-const HISTORY_SKELETON_ROWS = 4;
+const HISTORY_LIMIT = 100;
+const HISTORY_SKELETON_ROWS = 12;
 
 interface NotifyScheduleTabProps {
   wrapperId: string | null;
@@ -287,7 +287,7 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
                 { label: t("var_venue"), value: `{VENUE}` },
                 { label: t("var_first_name"), value: `{FIRST_NAME}` },
                 { label: t("var_ref_code"), value: `{REF_CODE}` },
-                { label: t("var_qr"), value: `{{QR}}` },
+                { label: t("var_qr"), value: `{QR}` },
               ]}
             />
 

@@ -629,6 +629,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
         <TicketRegDetailModal
           setIsOpen={setIsTicketDetailModalOpen}
           ticketDetails={ticketDetails}
+          onStatusUpdated={() => load(debouncedSearch)}
         />
       )}
     </div>
