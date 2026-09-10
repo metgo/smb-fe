@@ -20,6 +20,48 @@ import { RichTextEditor } from "@/components/shared";
 const HISTORY_LIMIT = 100;
 const HISTORY_SKELETON_ROWS = 12;
 
+// The schedule picker is expressed in the EVENT's timezone (Israel), not the
+// admin's browser zone — so "8:45 PM" fires at 8:45 PM Israel wherever the admin
+// sits, matching the event wizard and the relative (hours-from-event) option.
+// `<input type="datetime-local">` speaks naive wall-clock, so we send its value
+// as-is (the backend reads it as Asia/Jerusalem) and render stored instants back
+// in the same zone.
+const EVENT_TZ = "Asia/Jerusalem";
+const HOURS_MIN = 1;
+const HOURS_MAX = 8760;
+
+const israelNaiveNow = () =>
+  new Intl.DateTimeFormat("sv-SE", {
+    timeZone: EVENT_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date())
+    .replace(" ", "T");
+
+const formatInEventTz = (value: string) =>
+  new Date(value).toLocaleString("en-GB", {
+    timeZone: EVENT_TZ,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+// Empty → null; otherwise a whole number clamped to the backend's 1–8760 range.
+const clampHours = (raw: string): number | null => {
+  if (raw.trim() === "") return null;
+  const n = Math.round(Number(raw));
+  if (!Number.isFinite(n)) return null;
+  return Math.min(HOURS_MAX, Math.max(HOURS_MIN, n));
+};
+
 interface NotifyScheduleTabProps {
   wrapperId: string | null;
 }
@@ -35,9 +77,8 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     borderColor,
   } = useThemeClasses();
 
-  // "When" cell for a Send History row: SCHEDULED/PENDING show a status label,
-  // finished rows show the send time in the *viewer's* local timezone ("when did
-  // I send this" is about the person looking, not the event's clock).
+  // "When" cell for a Send History row. Times are shown in the event's timezone
+  // (Israel) so they match what the admin picked.
   const renderHistoryWhen = (h: INotificationHistoryItem) => {
     if (h.status === "SCHEDULED") {
       // Offset-based schedule ("24 hours before event") takes precedence over a
@@ -51,17 +92,13 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
               { count: h.sendHoursOffset },
             )
           : h.scheduleDateTime
-            ? new Date(h.scheduleDateTime).toLocaleString(undefined, {
-                hour12: false,
-              })
+            ? formatInEventTz(h.scheduleDateTime)
             : "";
       return `${t("history_status_scheduled")}${at ? ` · ${at}` : ""}`;
     }
     if (h.status === "PENDING") return t("history_status_sending");
     const when = h.sentAt ?? h.createdAt;
-    return when
-      ? new Date(when).toLocaleString(undefined, { hour12: false })
-      : "";
+    return when ? formatInEventTz(when) : "";
   };
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
@@ -107,15 +144,9 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
   // a freely typed number for a custom offset.
   const HOURS_OFFSET_PRESETS = [1, 3, 6, 12, 24, 48, 72];
 
-  // Earliest selectable value for <input type="datetime-local"> — now, in the
-  // admin's local wall-clock, so past times can't be scheduled.
-  const minDateTime = (() => {
-    const d = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-      d.getHours(),
-    )}:${pad(d.getMinutes())}`;
-  })();
+  // Earliest selectable value for <input type="datetime-local"> — "now" in the
+  // event's timezone (Israel), since the picker is read as Israel wall-clock.
+  const minDateTime = israelNaiveNow();
 
   const [sendSessionNotification, { isLoading: isSending }] =
     useSendSessionNotificationMutation();
@@ -135,7 +166,7 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
     hoursOffset != null ? "offset" : scheduledAt ? "exact" : null;
 
   const setOffset = (raw: string) => {
-    setHoursOffset(raw.trim() === "" ? null : Math.max(0, Number(raw)));
+    setHoursOffset(clampHours(raw));
     setScheduledAt("");
   };
   const pickExact = (value: string) => {
@@ -253,8 +284,10 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
           // sendTiming (before/after the event) applies to either form.
           sendTiming,
           ...(scheduleMode === "offset"
-            ? { sendHoursOffset: hoursOffset ?? 0 }
-            : { scheduleDateTime: new Date(scheduledAt).toISOString() }),
+            ? { sendHoursOffset: hoursOffset ?? HOURS_MIN }
+            : // Send the picker's naive wall-clock string as-is — the backend
+              // reads it as the event's timezone (Israel). Do NOT toISOString().
+              { scheduleDateTime: scheduledAt }),
         },
       }).unwrap();
       setSubject("");
@@ -351,7 +384,9 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
                 <div className="relative flex-1 min-w-35">
                   <input
                     type="number"
-                    min={1}
+                    min={HOURS_MIN}
+                    max={HOURS_MAX}
+                    step={1}
                     list="session-notif-hours-offset-presets"
                     className={clsx(
                       INPUT,
@@ -403,6 +438,17 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
                   onChange={(e) => pickExact(e.target.value)}
                 />
               </div>
+              <span
+                className={clsx(
+                  "text-[11px] font-medium",
+                  isDark ? "text-gray-500" : "text-gray-400",
+                )}
+              >
+                {t(
+                  "schedule_timezone_hint",
+                  "Times are in Israel time (Asia/Jerusalem) — the event's timezone.",
+                )}
+              </span>
             </AField>
 
             <AField label={t("subject_field")} isRequired>
@@ -641,16 +687,7 @@ export function NotifyScheduleTab({ wrapperId }: NotifyScheduleTabProps) {
                   </p>
                   <p className="m-0">
                     {historyDetails.sentAt
-                      ? new Date(historyDetails.sentAt).toLocaleString(
-                          undefined,
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          },
-                        )
+                      ? formatInEventTz(historyDetails.sentAt)
                       : "—"}
                   </p>
                 </div>
