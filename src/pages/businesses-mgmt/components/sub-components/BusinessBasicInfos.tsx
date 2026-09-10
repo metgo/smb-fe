@@ -1,8 +1,8 @@
 import { useEffect, useRef, type FC } from "react";
 
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { DmoAuthorityWebsiteSelector } from "@/components/shared";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { DmoAuthorityWebsiteIdsSelector } from "@/components/shared";
 import { BusinessContentForm } from "./BusinesscontentForm";
 
 interface BusinessFormData {
@@ -35,15 +35,20 @@ interface BusinessBasicInfosProps {
   ) => void;
   errors: FormErrors;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  selectedDmoId: string;
-  setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
+
   businessId: string;
+  setBusinessId?: (id: string) => void;
   selectedAuthorityId: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
+  selectedDmoId: string;
+  setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
-  websiteVisibilityIds: IWebsiteVisibilityIds;
-  setWebsiteVisibilityIds: (v: any) => void;
-  businessAssociatedWebsites?: IAssociatedWebsiteIds[];
+  websiteVisibilityIds: string[];
+  setWebsiteVisibilityIds: React.Dispatch<React.SetStateAction<string[]>>;
+  isEditMode?: boolean;
+  onAvailabilityStatusChange?: (
+    status: "available" | "unavailable" | null,
+  ) => void;
 }
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
@@ -57,10 +62,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setSelectDmoId,
   selectedAuthorityId,
   setSelectAuthorityId,
-  businessId,
+  setBusinessId,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
-  businessAssociatedWebsites = [],
+  isEditMode = false,
+  onAvailabilityStatusChange,
 }) => {
   const { isSuperadmin } = useUserRoles();
   const { borderColor, isDark } = useThemeClasses();
@@ -83,22 +89,28 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         </h3>
       </div>
 
-      <DmoAuthorityWebsiteSelector
+      <DmoAuthorityWebsiteIdsSelector
         errors={errors}
         setErrors={setErrors}
-        isEdit={!!businessId}
-        keyId="externalApiId"
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
         setSelectAuthorityId={setSelectAuthorityId}
+        selectedWebsiteIds={websiteVisibilityIds}
+        setSelectWebsiteIds={setWebsiteVisibilityIds}
         dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={websiteVisibilityIds}
-        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-        itemAssociatedWebsites={businessAssociatedWebsites}
       />
 
-      <BusinessContentForm formData={formData} onChange={handleChange} />
+      <BusinessContentForm
+        formData={formData}
+        onChange={handleChange}
+        onBusinessCreated={setBusinessId}
+        dmoId={selectedDmoId}
+        authorityId={selectedAuthorityId}
+        isBusinessContext={true}
+        isEditMode={isEditMode}
+        onAvailabilityStatusChange={onAvailabilityStatusChange}
+      />
 
       {/* Internal Notes */}
       {isSuperadmin && (

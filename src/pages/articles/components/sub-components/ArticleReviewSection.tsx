@@ -183,6 +183,7 @@ export default function ArticleReviewSection({
             label={t("short_description")}
             value={formData[`shortDescription${suffix}`]}
             dir={dir}
+            isHtml
             {...fieldProps}
           />
           <FieldRow

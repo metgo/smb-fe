@@ -14,7 +14,6 @@ import {
   Trash2,
   Ticket,
   Calendar,
-  Clock,
   DollarSign,
   Users,
   Tag,
@@ -22,6 +21,7 @@ import {
   Package,
   LayoutList,
   ExternalLink,
+  Plus,
 } from "lucide-react";
 import TicketSummaryCard from "./TicketSummaryCard";
 import { ActionIconButtons } from "@/components/btns";
@@ -32,7 +32,7 @@ interface EventTicketDetailsProps {
   eventId: string;
   refetch: () => void;
   tickets: ITicketPayload[];
-  eventDays: EventDay[];
+  eventDays: IEventDay[];
   hasExternalTicket: boolean;
   ticketBuyLink: string;
 }
@@ -40,6 +40,28 @@ const safe = (n: any) => (Number.isFinite(n) ? n : 0);
 
 const sum = (arr: any[], fn: (t: any) => number) =>
   arr?.reduce((s, x) => s + safe(fn(x)), 0) ?? 0;
+
+// Blank template used when opening the wizard in CREATE mode
+const emptyTicketTemplate: any = {
+  name: "",
+  description: "",
+  type: "PAID",
+  status: "active",
+  price: {
+    markedPrice: 0,
+    sellingPrice: 0,
+  },
+  quantity: {
+    initial: 0,
+    sold: 0,
+    remaining: 0,
+    isUnlimited: false,
+    perUserLimit: 1,
+  },
+  dayDescription: [],
+  images: [],
+  imageUrl: "",
+};
 
 const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   tickets,
@@ -73,6 +95,13 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
     } catch {
       toast.error(t("ticket_delete_failed"));
     }
+  };
+
+  const handleCreateTicket = () => {
+    setEditingTicket({ ...emptyTicketTemplate });
+    setTicketDateTime([]);
+    setOpMode("CREATE");
+    setIsEditModalOpen(true);
   };
 
   const calculateTotalRevenue = (ticket: ITicketPayload) => {
@@ -138,35 +167,66 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
 
   if (!tickets?.length) {
     return (
-      <div
-        className={clsx(
-          "flex flex-col items-center justify-center py-12 rounded-xl border",
-          isDark ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200",
+      <>
+        <div
+          className={clsx(
+            "flex flex-col items-center justify-center py-12 rounded-xl border",
+            isDark
+              ? "bg-gray-800 border-gray-700"
+              : "bg-gray-50 border-gray-200",
+          )}
+        >
+          <Ticket
+            className={clsx(
+              "w-12 h-12 mb-3",
+              isDark ? "text-gray-600" : "text-gray-400",
+            )}
+          />
+          <h3
+            className={clsx(
+              "text-base font-semibold mb-1",
+              isDark ? "text-gray-300" : "text-gray-700",
+            )}
+          >
+            No Tickets Available
+          </h3>
+          <p
+            className={clsx(
+              "text-sm mb-4",
+              isDark ? "text-gray-400" : "text-gray-500",
+            )}
+          >
+            No tickets have been created for this event yet
+          </p>
+          <button
+            type="button"
+            onClick={handleCreateTicket}
+            className={clsx(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
+              isDark
+                ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                : "bg-blue-600 text-white hover:bg-blue-700",
+            )}
+          >
+            <Plus className="w-4 h-4" />
+            {t("create_ticket")}
+          </button>
+        </div>
+
+        {isEditModalOpen && editingTicket && (
+          <CreateTicketWizard
+            eventId={eventId}
+            refetch={refetch}
+            opMode={opMode}
+            eventDays={eventDays}
+            setIsOpen={setIsEditModalOpen}
+            editData={editingTicket!}
+            setEditData={setEditingTicket}
+            ticketDateTime={ticketDateTime}
+            setTicketDateTime={setTicketDateTime}
+          />
         )}
-      >
-        <Ticket
-          className={clsx(
-            "w-12 h-12 mb-3",
-            isDark ? "text-gray-600" : "text-gray-400",
-          )}
-        />
-        <h3
-          className={clsx(
-            "text-base font-semibold mb-1",
-            isDark ? "text-gray-300" : "text-gray-700",
-          )}
-        >
-          No Tickets Available
-        </h3>
-        <p
-          className={clsx(
-            "text-sm",
-            isDark ? "text-gray-400" : "text-gray-500",
-          )}
-        >
-          No tickets have been created for this event yet
-        </p>
-      </div>
+      </>
     );
   }
 
@@ -214,8 +274,32 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
           />
         </div>
 
-        {/* Tickets List */}
-        <div className="space-y-4">
+        {/* Tickets List Header + Create Button */}
+        <div className="flex items-center justify-between">
+          <h3
+            className={clsx(
+              "text-lg font-semibold",
+              isDark ? "text-white" : "text-gray-900",
+            )}
+          >
+            {t("tickets")}
+          </h3>
+          <button
+            type="button"
+            onClick={handleCreateTicket}
+            className={clsx(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
+              isDark
+                ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                : "bg-blue-600 text-white hover:bg-blue-700",
+            )}
+          >
+            <Plus className="w-4 h-4" />
+            {t("create_ticket")}
+          </button>
+        </div>
+
+        <div className="space-y-3">
           {tickets.map((ticket) => {
             const image = ticket.images?.[0]?.image;
             const isFree =
@@ -226,43 +310,53 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
             const soldPercentage = ticket?.quantity?.isUnlimited
               ? 0
               : (ticket?.quantity?.sold / ticket?.quantity?.initial || 0) * 100;
+            const isUnlimited = ticket?.quantity?.isUnlimited;
+
+            const stats = [
+              {
+                icon: Package,
+                label: t("total"),
+                value: isUnlimited ? "∞" : ticket?.quantity?.initial,
+              },
+              {
+                icon: Tag,
+                label: t("sold"),
+                value: ticket?.quantity?.sold,
+              },
+              {
+                icon: Ticket,
+                label: t("remaining"),
+                value: isUnlimited ? "∞" : ticket?.quantity?.remaining,
+              },
+              {
+                icon: Users,
+                label: t("per_user"),
+                value: `${ticket?.quantity?.perUserLimit}`,
+              },
+            ];
 
             return (
               <div
                 key={ticket._id}
                 className={clsx(
-                  "rounded-xl border transition-all duration-200 overflow-hidden",
+                  "rounded-xl border transition-colors duration-200 overflow-hidden",
                   isDark
                     ? "bg-gray-800 border-gray-700 hover:border-gray-600"
                     : "bg-white border-gray-200 hover:border-gray-300",
                 )}
               >
-                <div className="flex flex-col lg:flex-row">
-                  {/* Image Section */}
-                  <div className="relative lg:w-80 h-64 lg:h-auto overflow-hidden group">
+                <div className="flex flex-col sm:flex-row">
+                  {/* Thumbnail */}
+                  <div className="relative w-full sm:w-40 h-32 sm:h-auto shrink-0 overflow-hidden">
                     <ImageWithFallback
                       src={image}
                       alt={ticket.name}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      className="h-full w-full object-cover"
                     />
-
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-
-                    {/* Free Badge */}
-                    {isFree && (
-                      <div className="absolute top-3 left-3">
-                        <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500 text-white shadow-lg">
-                          FREE
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Status Badge */}
-                    <div className="absolute bottom-3 left-3">
+                    <div className="absolute bottom-1.5 left-1.5">
                       <span
                         className={clsx(
-                          "px-3 py-1.5 rounded-lg text-xs font-semibold backdrop-blur-sm capitalize",
+                          "px-2 py-0.5 rounded text-[10px] font-semibold backdrop-blur-sm capitalize",
                           ticket.status === "active"
                             ? "bg-green-500/90 text-white"
                             : "bg-gray-500/90 text-white",
@@ -273,48 +367,78 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                     </div>
                   </div>
 
-                  {/* Content Section */}
-                  <div className="flex-1 p-6 space-y-4">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex gap-2 items-center">
+                  {/* Body */}
+                  <div className="flex-1 min-w-0 p-4 space-y-3">
+                    {/* Header row */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3
                             className={clsx(
-                              "text-xl font-bold mb-2",
+                              "text-base font-bold truncate",
                               isDark ? "text-white" : "text-gray-900",
                             )}
                           >
                             {ticket.name}
                           </h3>
-                          {/* Type Badge */}
                           <span
                             className={clsx(
-                              "px-2 rounded-lg text-sm font-semibold border whitespace-nowrap",
+                              "px-1.5 py-0.5 rounded text-[10px] font-semibold border whitespace-nowrap uppercase",
                               getTypeColor(ticket.type),
                             )}
                           >
                             {ticket.type}
                           </span>
                         </div>
-
-                        <div
-                          className={clsx(
-                            "text-sm leading-relaxed line-clamp-2",
-                            isDark ? "text-gray-400" : "text-gray-600",
-                          )}
-                          dangerouslySetInnerHTML={{
-                            __html: ticket?.description || "",
-                          }}
-                        />
+                        {ticket?.description && (
+                          <div
+                            className={clsx(
+                              "text-xs leading-relaxed line-clamp-1 mt-0.5",
+                              isDark ? "text-gray-400" : "text-gray-600",
+                            )}
+                            dangerouslySetInnerHTML={{
+                              __html: ticket.description,
+                            }}
+                          />
+                        )}
                       </div>
 
-                      {/* Action Icons */}
-                      <div
-                        className={clsx(
-                          " flex gap-2 rounded-lg p-1.5 backdrop-blur-sm",
-                        )}
-                      >
+                      {/* Price + actions */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="text-right">
+                          <div className="flex items-baseline gap-1.5 justify-end">
+                            {hasDiscount && !isFree && (
+                              <span
+                                className={clsx(
+                                  "line-through text-xs",
+                                  isDark ? "text-gray-500" : "text-gray-400",
+                                )}
+                              >
+                                ₪{ticket.price.markedPrice}
+                              </span>
+                            )}
+                            <span
+                              className={clsx(
+                                "font-bold text-lg leading-none",
+                                isFree
+                                  ? "text-green-500"
+                                  : isDark
+                                    ? "text-white"
+                                    : "text-gray-900",
+                              )}
+                            >
+                              {isFree
+                                ? "FREE"
+                                : `₪${ticket.price.sellingPrice}`}
+                            </span>
+                          </div>
+                          {hasDiscount && !isFree && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-500 mt-0.5">
+                              <TrendingDown className="w-3 h-3" />₪
+                              {calculateDiscountAmount(ticket)} off
+                            </span>
+                          )}
+                        </div>
                         <ActionIconButtons
                           isDark={isDark}
                           actions={[
@@ -375,210 +499,43 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                       </div>
                     </div>
 
-                    {/* Price Section */}
-
-                    {/* Quantity Section */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div
-                        className={clsx(
-                          "rounded-lg p-4",
-                          isDark ? "bg-gray-900/50" : "bg-gray-50",
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <DollarSign
-                              className={clsx(
-                                "w-5 h-5",
-                                isDark ? "text-gray-400" : "text-gray-500",
-                              )}
-                            />
-                            <div>
-                              <p
-                                className={clsx(
-                                  "text-xs font-medium uppercase tracking-wide mb-1",
-                                  isDark ? "text-gray-400" : "text-gray-600",
-                                )}
-                              >
-                                {t("price")}
-                              </p>
-                              <div className="flex items-center gap-2">
-                                {hasDiscount && !isFree && (
-                                  <span
-                                    className={clsx(
-                                      "line-through text-sm",
-                                      isDark
-                                        ? "text-gray-500"
-                                        : "text-gray-400",
-                                    )}
-                                  >
-                                    ₪{ticket.price.markedPrice}
-                                  </span>
-                                )}
-                                <span
-                                  className={clsx(
-                                    "font-bold text-2xl",
-                                    isFree
-                                      ? "text-green-500"
-                                      : isDark
-                                        ? "text-white"
-                                        : "text-gray-900",
-                                  )}
-                                >
-                                  {isFree
-                                    ? "FREE"
-                                    : `₪${ticket.price.sellingPrice}`}
-                                </span>
-                              </div>
-                            </div>
+                    {/* Stats + progress */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {stats.map(({ icon: Icon, label, value }) => (
+                        <div
+                          key={label}
+                          className={clsx(
+                            "rounded-lg px-2.5 py-1.5",
+                            isDark ? "bg-gray-900/50" : "bg-gray-50",
+                          )}
+                        >
+                          <div
+                            className={clsx(
+                              "flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide",
+                              isDark ? "text-gray-500" : "text-gray-500",
+                            )}
+                          >
+                            <Icon className="w-3 h-3" />
+                            {label}
                           </div>
-
-                          {/* Discount Badge */}
-                          {hasDiscount && !isFree && (
-                            <div
-                              className={clsx(
-                                "px-3 py-1.5 rounded-lg flex items-center gap-1.5",
-                                isDark
-                                  ? "bg-red-500/20 text-red-400"
-                                  : "bg-red-100 text-red-700",
-                              )}
-                            >
-                              <TrendingDown className="w-4 h-4" />
-                              <span className="text-sm font-semibold">
-                                ₪{calculateDiscountAmount(ticket)} off
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      {/* Initial */}
-                      <div
-                        className={clsx(
-                          "rounded-lg p-3",
-                          isDark ? "bg-gray-900/50" : "bg-gray-50",
-                        )}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Package
+                          <p
                             className={clsx(
-                              "w-4 h-4",
-                              isDark ? "text-gray-400" : "text-gray-500",
-                            )}
-                          />
-                          <span
-                            className={clsx(
-                              "text-xs font-medium uppercase tracking-wide",
-                              isDark ? "text-gray-400" : "text-gray-600",
+                              "text-sm font-bold mt-0.5",
+                              isDark ? "text-white" : "text-gray-900",
                             )}
                           >
-                            {t("total")}
-                          </span>
+                            {value}
+                          </p>
                         </div>
-                        <p
-                          className={clsx(
-                            "text-lg font-bold",
-                            isDark ? "text-white" : "text-gray-900",
-                          )}
-                        >
-                          {ticket?.quantity?.isUnlimited
-                            ? "∞"
-                            : ticket?.quantity?.initial}
-                        </p>
-                      </div>
-
-                      {/* Sold */}
-                      <div
-                        className={clsx(
-                          "rounded-lg p-3",
-                          isDark ? "bg-gray-900/50" : "bg-gray-50",
-                        )}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Tag
-                            className={clsx(
-                              "w-4 h-4",
-                              isDark ? "text-gray-400" : "text-gray-500",
-                            )}
-                          />
-                          <span
-                            className={clsx(
-                              "text-xs font-medium uppercase tracking-wide",
-                              isDark ? "text-gray-400" : "text-gray-600",
-                            )}
-                          >
-                            {t("sold")}
-                          </span>
-                        </div>
-                        <p
-                          className={clsx(
-                            "text-lg font-bold",
-                            isDark ? "text-white" : "text-gray-900",
-                          )}
-                        >
-                          {ticket?.quantity?.sold}
-                        </p>
-                      </div>
-
-                      {/* Remaining */}
-                      <div
-                        className={clsx(
-                          "rounded-lg p-3",
-                          isDark ? "bg-gray-900/50" : "bg-gray-50",
-                        )}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Ticket
-                            className={clsx(
-                              "w-4 h-4",
-                              isDark ? "text-gray-400" : "text-gray-500",
-                            )}
-                          />
-                          <span
-                            className={clsx(
-                              "text-xs font-medium uppercase tracking-wide",
-                              isDark ? "text-gray-400" : "text-gray-600",
-                            )}
-                          >
-                            {t("remaining")}
-                          </span>
-                        </div>
-                        <p
-                          className={clsx(
-                            "text-lg font-bold",
-                            isDark ? "text-white" : "text-gray-900",
-                          )}
-                        >
-                          {ticket?.quantity?.isUnlimited
-                            ? "∞"
-                            : ticket?.quantity?.remaining}
-                        </p>
-                      </div>
+                      ))}
                     </div>
 
-                    {/* Sales Progress */}
-                    {!ticket?.quantity?.isUnlimited && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span
-                            className={clsx(
-                              "text-xs font-medium",
-                              isDark ? "text-gray-400" : "text-gray-600",
-                            )}
-                          >
-                            {t("sales_progress")}
-                          </span>
-                          <span
-                            className={clsx(
-                              "text-xs font-semibold",
-                              isDark ? "text-gray-300" : "text-gray-700",
-                            )}
-                          >
-                            {soldPercentage?.toFixed(1)}%
-                          </span>
-                        </div>
+                    {/* Sales progress */}
+                    {!isUnlimited && (
+                      <div className="flex items-center gap-3">
                         <div
                           className={clsx(
-                            "h-2 rounded-full overflow-hidden",
+                            "flex-1 h-1.5 rounded-full overflow-hidden",
                             isDark ? "bg-gray-700" : "bg-gray-200",
                           )}
                         >
@@ -594,118 +551,55 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                             style={{ width: `${soldPercentage}%` }}
                           />
                         </div>
+                        <span
+                          className={clsx(
+                            "text-[11px] font-semibold whitespace-nowrap",
+                            isDark ? "text-gray-300" : "text-gray-700",
+                          )}
+                        >
+                          {soldPercentage?.toFixed(0)}% {t("sold")}
+                        </span>
+                        {ticket?.quantity?.sold > 0 && (
+                          <span
+                            className={clsx(
+                              "text-[11px] whitespace-nowrap",
+                              isDark ? "text-gray-400" : "text-gray-500",
+                            )}
+                          >
+                            ₪{calculateTotalRevenue(ticket).toLocaleString()}{" "}
+                            {t("revenue")}
+                          </span>
+                        )}
                       </div>
                     )}
 
-                    {/* Additional Info */}
-                    <div className="flex flex-wrap items-center gap-4 text-xs">
-                      {/* Per User Limit */}
-                      <div className="flex items-center gap-1.5">
-                        <Users
+                    {/* Event dates */}
+                    {ticket?.dayDescription?.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
+                        <Calendar
                           className={clsx(
-                            "w-4 h-4",
-                            isDark ? "text-gray-400" : "text-gray-500",
+                            "w-3.5 h-3.5 shrink-0",
+                            isDark ? "text-gray-500" : "text-gray-400",
                           )}
                         />
-                        <span
-                          className={clsx(
-                            isDark ? "text-gray-400" : "text-gray-600",
-                          )}
-                        >
-                          Max {ticket?.quantity?.perUserLimit} per user
-                        </span>
-                      </div>
-
-                      {/* Revenue */}
-                      {ticket?.quantity?.sold > 0 && (
-                        <div className="flex items-center gap-1.5">
-                          <DollarSign
-                            className={clsx(
-                              "w-4 h-4",
-                              isDark ? "text-gray-400" : "text-gray-500",
-                            )}
-                          />
+                        {ticket?.dayDescription?.map((day, index) => (
                           <span
+                            key={index}
                             className={clsx(
-                              isDark ? "text-gray-400" : "text-gray-600",
+                              "inline-flex items-center gap-1 text-[11px] border rounded px-1.5 py-0.5",
+                              borderColor,
+                              isDark ? "text-gray-300" : "text-gray-600",
                             )}
                           >
-                            Revenue: ₪
-                            {calculateTotalRevenue(ticket).toLocaleString()}
+                            <span className="font-medium">
+                              {formatDate(day.date, language)}
+                            </span>
+                            <span className="opacity-50">·</span>
+                            <span>
+                              {day.startTime}–{day.endTime}
+                            </span>
                           </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Event Dates */}
-                    {ticket?.dayDescription?.length > 0 && (
-                      <div
-                        className={clsx(
-                          "rounded-lg p-4 border-t",
-                          isDark
-                            ? "border-gray-700 bg-gray-900/30"
-                            : "border-gray-200 bg-gray-50/50",
-                        )}
-                      >
-                        <div className="flex items-center gap-2 mb-3">
-                          <Calendar
-                            className={clsx(
-                              "w-4 h-4",
-                              isDark ? "text-gray-400" : "text-gray-500",
-                            )}
-                          />
-                          <h4
-                            className={clsx(
-                              "text-xs font-semibold uppercase tracking-wide",
-                              isDark ? "text-gray-400" : "text-gray-600",
-                            )}
-                          >
-                            Valid for {ticket?.dayDescription?.length}{" "}
-                            {ticket?.dayDescription?.length === 1
-                              ? "date"
-                              : "dates"}
-                          </h4>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {ticket?.dayDescription?.map((day, index) => (
-                            <div
-                              key={index}
-                              className={clsx(
-                                "flex items-center gap-2 text-sm border rounded-md px-2 py-1",
-                                borderColor,
-                              )}
-                            >
-                              <Clock
-                                className={clsx(
-                                  "w-3.5 h-3.5",
-                                  isDark ? "text-gray-500" : "text-gray-400",
-                                )}
-                              />
-                              <span
-                                className={clsx(
-                                  "font-medium",
-                                  isDark ? "text-gray-300" : "text-gray-700",
-                                )}
-                              >
-                                {formatDate(day.date, language)}
-                              </span>
-                              <span
-                                className={clsx(
-                                  isDark ? "text-gray-500" : "text-gray-400",
-                                )}
-                              >
-                                •
-                              </span>
-                              <span
-                                className={clsx(
-                                  isDark ? "text-gray-400" : "text-gray-600",
-                                )}
-                              >
-                                {day.startTime} – {day.endTime}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                        ))}
                       </div>
                     )}
                   </div>

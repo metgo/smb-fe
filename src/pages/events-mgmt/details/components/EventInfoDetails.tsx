@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 import {
   FileText,
   AlignLeft,
@@ -10,8 +11,11 @@ import {
 import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
-import DmoAuthDetails from "@/components/details-sections/DmoAuthDetails";
-import { useTranslation } from "react-i18next";
+import {
+  ConnectedDmoAuthorityWebsites,
+  LocationDetailsclosed,
+} from "@/components/details-sections";
+import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface EventInfoDetailsProps {
   t: (key: string) => string;
@@ -86,10 +90,18 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
         preWrap={true} // preserves line breaks
       />
 
-      <DmoAuthDetails
+      <LocationDetailsclosed
+        purpose="Event"
+        address={eventDetails?.address}
+        lat={eventDetails?.geoLocation?.lat}
+        long={eventDetails?.geoLocation?.long}
+      />
+
+      <ConnectedDmoAuthorityWebsites
         dmoId={eventDetails?.dmoId}
         authorityId={eventDetails?.authorityId}
-        associatedWebsiteIds={eventDetails?.associatedWebsiteIds}
+        websiteIds={eventDetails?.associatedWebsiteIds}
+        pathname={clientSitePath.eventDetails + "/" + eventDetails?.slug}
       />
 
       {/* Internal Notes */}

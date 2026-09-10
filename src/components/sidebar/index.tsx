@@ -7,7 +7,6 @@ import {
   Calendar,
   MapPin,
   Map,
-  Sparkles,
   Wallet,
   Globe,
   Settings,
@@ -19,9 +18,9 @@ import {
   Receipt,
   Megaphone,
   FileText,
-  Rss,
-  SlidersHorizontal,
-  Layout,
+  // Rss,
+  // SlidersHorizontal,
+  // Layout,
   Users,
   File,
   UserCircle,
@@ -36,6 +35,11 @@ import {
   ChevronLeft,
   CheckSquare,
   AlertTriangle,
+  MessageCircle,
+  CalendarArrowDown,
+  ShoppingBag,
+  BarChart3,
+  Link2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -54,6 +58,22 @@ interface MenuItem {
   subItems?: MenuItem[];
 }
 
+// Detail pages live at their own sibling route (e.g. "/business-details")
+// rather than nested under their list page ("/businesses-management/:id"),
+// so a plain startsWith check against the list route never matches them.
+// This maps each list route to the detail route(s) that should still count
+// as "active" for it.
+const RELATED_ACTIVE_ROUTES: Record<string, string[]> = {
+  [routes.businessMgmt]: [routes.businessDetails],
+  [routes.productsMgmt]: [routes.productDetails],
+  [routes.eventsMgmt]: [routes.eventDetails],
+  [routes.poiMgmt]: [routes.poiDetails],
+  [routes.articleMgmt]: [routes.articleDetails],
+  [routes.tripsMgmt]: [routes.tripDetails],
+  [routes.voucherMgmt]: [routes.voucherDetails],
+  [routes.ordersMgmt]: [routes.orderDetails],
+};
+
 export default function Sidebar() {
   const { t } = useTranslation("common");
   const navigate = useNavigate();
@@ -67,16 +87,14 @@ export default function Sidebar() {
   const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelector(
     (state) => state.ui,
   );
+
   const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
 
-  // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin, siteManager)
-  const isAdminRole = [
-    "superadmin",
-    "authorityAdmin",
-    "dmo",
-    "dmoadmin",
-    "siteManager",
-  ].includes(userRole);
+  const isVendorReconciliation = ["superadmin", "traveller"].includes(userRole);
+
+  // Orders endpoints currently only allow superadmin/traveller (backend @Roles) —
+  // dmo/dmoadmin/authority/authorityAdmin would only hit 403s, so hide the whole group.
+  const isDmoOrAuthorityRole = ["dmo", "authority"].includes(userRole);
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -105,10 +123,37 @@ export default function Sidebar() {
     },
     {
       id: "orders",
-      path: routes.ordersMgmt,
+      path: "#orders",
       label: t("orders") || "Orders",
       icon: ShoppingCart,
       isEnabled: true,
+      subItems: [
+        {
+          id: "all-orders",
+          path: routes.ordersMgmt,
+          label: t("orders") || "All Orders",
+          icon: ShoppingBag,
+          isEnabled: true,
+        },
+        {
+          id: "all-orders-summary",
+          path: routes.ordersSummaryMgmt,
+          label: t("order_summary") || "Orders Summary",
+          icon: CalendarArrowDown,
+          isEnabled: true,
+        },
+        ...(isVendorReconciliation
+          ? [
+              {
+                id: "vendor-reconciliation",
+                path: routes.vendorReconciliationMgmt,
+                label: t("vendor_reconciliation") || "Vendor Reconciliation",
+                icon: Receipt,
+                isEnabled: true,
+              },
+            ]
+          : []),
+      ],
     },
     {
       id: "events",
@@ -118,6 +163,14 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
+      id: "notifications",
+      path: routes.notificationMgmt,
+      label: t("notifications") || "Notifications",
+      icon: BellIcon,
+      isEnabled: true,
+    },
+
+    {
       id: "poi",
       path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
@@ -125,13 +178,20 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "notifications",
-      path: routes.notificationMgmt,
-      label: t("notifications") || "Notifications",
-      icon: BellIcon,
+      id: "chat",
+      path: routes.chat,
+      label: t("chat") || "Chat",
+      icon: MessageCircle,
       isEnabled: true,
     },
-    ...(isAdminRole
+    {
+      id: "article",
+      path: routes.articleMgmt,
+      label: t("article") || "Article",
+      icon: FileText,
+      isEnabled: true,
+    },
+    ...(isSuperadmin
       ? [
           {
             id: "pending-approvals",
@@ -150,13 +210,6 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "fun-days",
-      path: routes.funDays,
-      label: t("fun_days") || "Fun Days",
-      icon: Sparkles,
-      isEnabled: false,
-    },
-    {
       id: "local-economy",
       path: "#local_economy",
       label: t("local_economy") || "Local Economy",
@@ -169,13 +222,6 @@ export default function Sidebar() {
           label: t("vouchers") || "Vouchers",
           icon: Ticket,
           isEnabled: true,
-        },
-        {
-          id: "offline-vouchers",
-          path: routes.offlineVouchers,
-          label: t("offline_vouchers") || "Offline Vouchers Purchases",
-          icon: Receipt,
-          isEnabled: false,
         },
         {
           id: "mini-campaign",
@@ -216,33 +262,19 @@ export default function Sidebar() {
           isEnabled: true,
         },
         {
-          id: "article",
-          path: routes.articleMgmt,
-          label: t("article") || "Article",
-          icon: FileText,
+          id: "utm-builder",
+          path: routes.utmBuilder,
+          label: t("campaign_url_builder") || "Campaign URL Builder",
+          icon: Link2,
           isEnabled: true,
         },
-        {
-          id: "news-feed",
-          path: routes.dashboard,
-          label: t("news_feed") || "News Feed",
-          icon: Rss,
-          isEnabled: false,
-        },
-        {
-          id: "feed-settings",
-          path: routes.dashboard,
-          label: t("feed_settings") || "Feed Settings",
-          icon: SlidersHorizontal,
-          isEnabled: false,
-        },
-        {
-          id: "mini-site",
-          path: routes.miniSiteMgmt,
-          label: t("mini_site") || "Mini-site",
-          icon: Layout,
-          isEnabled: true,
-        },
+        // {
+        //   id: "mini-site",
+        //   path: routes.miniSiteMgmt,
+        //   label: t("mini_site") || "Mini-site",
+        //   icon: Layout,
+        //   isEnabled: true,
+        // },
       ],
     },
     {
@@ -320,10 +352,24 @@ export default function Sidebar() {
         ...(isSuperadmin
           ? [
               {
+                id: "payment-transactions",
+                path: routes.paymentTransactions,
+                label: t("payment_transactions") || "Payment Transactions",
+                icon: Wallet,
+                isEnabled: true,
+              },
+              {
                 id: "website-crashes",
                 path: routes.websiteCrashes,
                 label: "Website Crashes",
                 icon: AlertTriangle,
+                isEnabled: true,
+              },
+              {
+                id: "stats-summary",
+                path: routes.statsSummary,
+                label: t("stats_summary") || "Stats Summary",
+                icon: BarChart3,
                 isEnabled: true,
               },
             ]
@@ -365,7 +411,13 @@ export default function Sidebar() {
   };
 
   const isItemActive = (path: string) =>
-    location.pathname.slice(0, 5) === path.slice(0, 5);
+    location.pathname === path ||
+    location.pathname.startsWith(path + "/") ||
+    (RELATED_ACTIVE_ROUTES[path] ?? []).some(
+      (related) =>
+        location.pathname === related ||
+        location.pathname.startsWith(related + "/"),
+    );
 
   const isExpanded = (path: string) => expandedItems.includes(path);
 
@@ -442,7 +494,7 @@ export default function Sidebar() {
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] lg:hidden"
           onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}
@@ -458,7 +510,7 @@ export default function Sidebar() {
           transition-all duration-300
           flex flex-col
           border-r
-          z-40
+          z-[45]
           ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}
           ${isRTL ? "right-0" : "left-0"}
           ${
@@ -517,12 +569,14 @@ export default function Sidebar() {
                   (item.id === "local-economy" || item.id === "site-management")
                 ),
             )
+            ?.filter((item) => !(isDmoOrAuthorityRole && item.id === "orders"))
             ?.map((item) => ({
               ...item,
               subItems: item.subItems?.filter(
                 (sub) =>
                   !(isTraveller && sub.id === "content-mgmt") &&
                   !(isTraveller && sub.id === "users") &&
+                  !(isTraveller && sub.id === "all-orders-summary") &&
                   !(sub.id === "dynamic-pages" && !isSuperadmin),
               ),
             }))

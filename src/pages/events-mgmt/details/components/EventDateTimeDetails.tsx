@@ -11,34 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-interface DayDescription {
-  date: string;
-  startTime: string;
-  endTime: string;
-  _id: string;
-}
-
-interface RecurringEventRule {
-  _id: string;
-  pattern: string;
-  daysOfWeek?: string[];
-  monthlyType?: string;
-  specificDate?: number;
-  relativeDate?: number;
-  relativeDay?: string;
-  customInterval?: number;
-  customUnit?: string;
-  endType?: string;
-  occurrenceLimit?: number;
-  endDate?: string | null;
-}
-
-interface EventDateTimeDetailsProps {
-  dayDescription: DayDescription[];
-  recurringEventRuleId?: RecurringEventRule | null;
-}
-
-const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
+const EventDateTimeDetails: React.FC<Partial<IEventDetailsRes>> = ({
   dayDescription,
   recurringEventRuleId,
 }) => {

@@ -1,13 +1,13 @@
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Calendar, DollarSign, Edit, Eye, MapPin, Users } from "lucide-react";
-import clsx from "clsx";
 
 import { routes } from "@/lib/routes";
-import { ImageWithFallback } from "@/components/shared";
-import { extractCenterAddressText, extractEventDates } from "@/helpers";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
+import { ImageWithFallback } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { extractCenterAddressText, extractEventDates } from "@/helpers";
 
 interface QuickSnapEventDetailsProps {
   selectedEvent: any | null;

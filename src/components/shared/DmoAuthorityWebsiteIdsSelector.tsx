@@ -78,24 +78,35 @@ export default function DmoAuthorityWebsiteIdsSelector({
         result.unAssociatedWebsites.push(site);
       }
     }
-
     return result;
   }, [allWebsites, selectedDmoId, selectedAuthorityId]);
 
   /* ----------------------------
    Helpers
   -----------------------------*/
+  const clearWebsiteError = useCallback(() => {
+    if (!setErrors) return;
+    setErrors((prev) => {
+      if (!prev.websiteVisibilityIds) return prev;
+      const updated = { ...prev };
+      delete updated.websiteVisibilityIds;
+      return updated;
+    });
+  }, [setErrors]);
+
   const toggleId = useCallback(
     (id: string) => {
       setSelectWebsiteIds((prev) => {
         // Ensure prev is always an array
         const currentIds = Array.isArray(prev) ? prev : [];
-        return currentIds.includes(id)
+        const next = currentIds.includes(id)
           ? currentIds.filter((x) => x !== id)
           : [...currentIds, id];
+        if (next.length > 0) clearWebsiteError();
+        return next;
       });
     },
-    [setSelectWebsiteIds],
+    [setSelectWebsiteIds, clearWebsiteError],
   );
 
   const toggleAll = useCallback(
@@ -104,12 +115,14 @@ export default function DmoAuthorityWebsiteIdsSelector({
         // Ensure prev is always an array
         const currentIds = Array.isArray(prev) ? prev : [];
         const isAllSelected = allIds.every((id) => currentIds.includes(id));
-        return isAllSelected
+        const next = isAllSelected
           ? currentIds.filter((id) => !allIds.includes(id))
           : Array.from(new Set([...currentIds, ...allIds]));
+        if (next.length > 0) clearWebsiteError();
+        return next;
       });
     },
-    [setSelectWebsiteIds],
+    [setSelectWebsiteIds, clearWebsiteError],
   );
 
   /* ----------------------------

@@ -94,10 +94,11 @@ export default function PublicSessionPage() {
     sessionBookingId: string;
   }>();
 
-  const { data, isLoading, isError, refetch } = useGetPublicSessionTicketQuery(
-    { wrapperId: wrapperId!, sessionBookingId: sessionBookingId! },
-    { skip: !wrapperId || !sessionBookingId },
-  );
+  const { data, isLoading, isError, error, refetch } =
+    useGetPublicSessionTicketQuery(
+      { wrapperId: wrapperId!, sessionBookingId: sessionBookingId! },
+      { skip: !wrapperId || !sessionBookingId },
+    );
   const session = data as IPublicSessionTicket | undefined;
 
   const [markAttended, { isLoading: isMarkingAttended }] =
@@ -126,6 +127,12 @@ export default function PublicSessionPage() {
   }
 
   if (isError || !session) {
+    // Backend messages are English/internal - never shown directly. Only
+    // the stable TICKET_CANCELLED marker gets a specific Hebrew message.
+    const backendMessage = (error as any)?.data?.message as string | undefined;
+    const displayMessage = backendMessage?.startsWith("TICKET_CANCELLED:")
+      ? "הכרטיס שלכם בוטל ואינו זכאי יותר לצפייה או צ'ק-אין למפגש זה"
+      : "הקישור אינו תקין או שפג תוקפו";
     return (
       <div className="min-h-screen bg-linear-to-br from-teal-50 to-teal-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full text-center">
@@ -133,7 +140,7 @@ export default function PublicSessionPage() {
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             ההזמנה לא נמצאה
           </h2>
-          <p className="text-gray-500 text-sm">הקישור אינו תקין או שפג תוקפו</p>
+          <p className="text-gray-500 text-sm">{displayMessage}</p>
         </div>
       </div>
     );

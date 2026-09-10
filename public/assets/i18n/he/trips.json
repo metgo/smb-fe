@@ -6,6 +6,7 @@
   "trip_name": "שם הטיול",
   "short_description": "תיאור קצר",
   "estimated_duration": "משך משוער",
+  "hours": "שעות",
   "total_distance_covered": "מרחק כולל",
   "edit": "ערוך",
   "contact_details": "פרטי קשר",
@@ -65,6 +66,6 @@
   "website_visibility_required": "יש לבחור לפחות אתר אחד להצגה",
   "short_description_length_exceeded": "התיאור הקצר חייב להכיל עד 150 תווים",
   "description_length_exceeded": "התיאור חייב להכיל עד 500 תווים",
-  "stationsTooltip": "יש לבחור לפחות תחנה אחת",
+  "stationsTooltip": "יש לבחור לפחות שתי תחנות",
   "imagesTooltip": "יש להעלות לפחות תמונה אחת"
 }

@@ -10,17 +10,7 @@ interface Business {
   website: string;
   logo: string;
   images: string[];
-  status:
-    | "draft"
-    | "pending"
-    | "approved"
-    | "rejected"
-    | "archived"
-    | "DRAFT"
-    | "PENDING"
-    | "APPROVED"
-    | "REJECTED"
-    | "ARCHIVED";
+  status: TStatus;
   authority: string;
   dmo: string;
   categories: string[];
@@ -98,9 +88,53 @@ interface IBusinessColumnVisibility {
   phoneNumber: boolean;
   productCount: boolean;
   status: boolean;
-  lifetimeSales: boolean;
-  tripCount: boolean;
   associatedWebsites: boolean;
   contactPhone: boolean;
   categories: boolean;
+}
+
+interface IBusinessesList {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+
+  address: {
+    country: string;
+    city: string;
+    location: string;
+  };
+
+  phoneNumber: string;
+  busiEmail: string;
+  status: TStatus;
+
+  contactDetails: {
+    name: string;
+    phone: string;
+    email: string;
+  };
+
+  authorityId: string;
+  dmoId: string;
+  slug: string;
+  impact: number;
+
+  logo: {
+    image: string;
+  };
+
+  associatedWebsiteIds: string[];
+  productCount: number;
+
+  name: string;
+  nameHe: string;
+  nameAr: string;
+
+  images: string[];
+
+  shortDescription: string;
+}
+
+interface IBusinessesRes extends IPagination {
+  data: Array<IBusinessesList>;
 }

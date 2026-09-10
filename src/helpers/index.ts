@@ -1,4 +1,88 @@
+import DOMPurify from "dompurify";
+
 import { formatDateRange } from "@/helpers/formatter";
+
+// format from the Date's own local year/month/day, not toISOString() -
+// that converts to UTC first, which silently shifts the date back a day
+// for any timezone ahead of UTC (midnight local time is still "yesterday
+// evening" in UTC)
+const formatLocalDate = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+const MONTH_FILTER_LOCALE_MAP: Record<Language, string> = {
+  en: "en-US",
+  ar: "ar",
+  he: "he",
+};
+
+export function getMonthFilterLocale(language: Language): string {
+  return MONTH_FILTER_LOCALE_MAP[language] ?? "en-US";
+}
+
+export function getCurrentMonthFilterValue(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = now.getFullYear();
+  return `${month}-${year}`;
+}
+
+// Renders a MonthFilter value ("MM-YYYY") as "M/YYYY - MonthName" in the
+// given locale, e.g. "8/2026 - August".
+export function formatMonthFilterLabel(month: string, locale: string): string {
+  const [m, year] = month.split("-");
+  const date = new Date(Number(year), Number(m) - 1, 1);
+  const monthName = date.toLocaleDateString(locale, { month: "long" });
+  return `${Number(m)}/${year} - ${monthName}`;
+}
+
+// Resolves a MonthFilter value ("MM-YYYY", "all", or "custom") plus its
+// optional custom date range to the {year, month} pair exports send the
+// backend, defaulting to the current calendar month.
+export function getYearMonthFromFilter(
+  month: string,
+  customDateFrom?: string,
+  customDateTo?: string,
+): { year: number; month: number } {
+  if (month === "custom" && (customDateFrom || customDateTo)) {
+    const date = new Date(customDateFrom || customDateTo || "");
+    return { year: date.getFullYear(), month: date.getMonth() + 1 };
+  }
+  if (month && month !== "all" && month !== "custom") {
+    const [m, year] = month.split("-").map(Number);
+    return { year, month: m };
+  }
+  const now = new Date();
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
+// Shared by the orders table and the vendor payment summary cards so both
+// scope to the same calendar month/range for a given MonthFilter value.
+export function buildDateScopeParams(
+  month: string,
+  startDate: string,
+  endDate: string,
+) {
+  const params: { startDate?: string; endDate?: string } = {};
+
+  if (month !== "all" && month !== "custom") {
+    const [m, year] = month.split("-");
+    const firstDay = new Date(Number(year), Number(m) - 1, 1);
+    const lastDay = new Date(Number(year), Number(m), 0);
+    params.startDate = formatLocalDate(firstDay);
+    params.endDate = formatLocalDate(lastDay);
+  }
+
+  if (month === "custom") {
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+  }
+
+  return params;
+}
 
 export function uploadWithProgress(
   file: File,
@@ -114,13 +198,51 @@ export function extractEventDates(
   return formatDateRange(startStr, endStr, true);
 }
 
-export const parseAddress = (address: any) => {
-  const parts = address.split(",");
+export interface GoogleAddressComponent {
+  text: string;
+  types: string[];
+}
+
+export interface ParsedAddressParts {
+  location: string;
+  city: string;
+  country: string;
+}
+
+const pickAddressComponent = (
+  components: GoogleAddressComponent[],
+  types: string[],
+): string => {
+  for (const type of types) {
+    const match = components.find((c) => c.types.includes(type));
+    if (match) return match.text;
+  }
+  return "";
+};
+
+// Google's plus_code/plusCode compound code is formatted as "<local code> <locality>, <region>"
+// (e.g. "6FV4+W2 Ohad, Israel") - the local code is the first whitespace-separated token.
+export const getPlusCodeLocalCode = (compoundCode?: string): string =>
+  compoundCode?.split(" ")[0] ?? "";
+
+// Maps Google's typed address_components/addressComponents to city/country
+// independently, so a component that's missing for a given address (e.g. no
+// locality) is left blank instead of being backfilled from an unrelated field.
+// `plusCode` is used as the location fallback for addresses with no route/street_number
+// (e.g. rural areas), where Google identifies the place by Plus Code instead.
+export const extractAddressParts = (
+  components: GoogleAddressComponent[],
+  plusCode?: string,
+): ParsedAddressParts => {
+  const streetNumber = pickAddressComponent(components, ["street_number"]);
+  const route = pickAddressComponent(components, ["route"]);
+  const streetLocation = [route, streetNumber].filter(Boolean).join(" ").trim();
 
   return {
-    location: parts[0]?.trim(), // David HaMelech St 35
-    city: parts[1]?.trim(), // Be'er Sheva
-    country: parts[2]?.trim(), // Israel
+    location: streetLocation || plusCode || "",
+    // "postal_town" is Google's equivalent of "locality" for regions (e.g. UK) that don't use locality
+    city: pickAddressComponent(components, ["locality", "postal_town"]),
+    country: pickAddressComponent(components, ["country"]),
   };
 };
 
@@ -132,6 +254,95 @@ export function getPlainTextFromRichText(html: string): string {
 
   return temp.textContent?.trim() || "";
 }
+
+// Shared sanitizer for RichTextEditor-authored HTML sent as chat/broadcast
+// message content, keeping only the formatting tags/attrs CKEditor emits.
+export const sanitizeMessageHtml = (html: string): string =>
+  DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "u",
+      "s",
+      "a",
+      "ul",
+      "ol",
+      "li",
+      "blockquote",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "hr",
+      "code",
+      "span",
+    ],
+    // "style" is allowed so the sender's rich-text formatting (color,
+    // background, font size, alignment, etc. set via RichTextEditor) is
+    // preserved exactly when rendered on either side of the conversation.
+    ALLOWED_ATTR: ["href", "target", "rel", "style"],
+  });
+
+// Turns a scheme-less href like "example.com" into "https://example.com" so
+// the browser doesn't resolve it against the current origin (which is why
+// bare links were opening as http://localhost:5173/example.com). Absolute
+// URLs, mail/tel links, in-page anchors and root-relative paths are left as-is.
+const toAbsoluteHref = (raw: string): string => {
+  const url = (raw || "").trim();
+  if (!url) return url;
+  if (/^(https?:\/\/|mailto:|tel:|#|\/)/i.test(url)) return url;
+  return `https://${url}`;
+};
+
+// Sanitizes RichTextEditor-authored HTML for display and normalizes every
+// link so it points at an absolute URL and opens in a new tab.
+export const sanitizeRichTextHtml = (html: string): string => {
+  if (!html) return "";
+
+  const clean = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "hr",
+      "strong",
+      "b",
+      "em",
+      "i",
+      "u",
+      "s",
+      "strike",
+      "a",
+      "ul",
+      "ol",
+      "li",
+      "blockquote",
+      "pre",
+      "code",
+      "span",
+      "div",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "img",
+    ],
+    ALLOWED_ATTR: ["href", "target", "rel", "style", "src", "alt"],
+  });
+
+  const doc = new DOMParser().parseFromString(clean, "text/html");
+  doc.querySelectorAll("a[href]").forEach((a) => {
+    a.setAttribute("href", toAbsoluteHref(a.getAttribute("href") || ""));
+    a.setAttribute("target", "_blank");
+    a.setAttribute("rel", "noopener noreferrer");
+  });
+
+  return doc.body.innerHTML;
+};
 
 export function getMatchedItems(originalList: any, selectedIds?: string[]) {
   if (!originalList?.length || !selectedIds?.length) return [];
@@ -336,3 +547,43 @@ export function formatLastLogin(iso: string): string {
     minute: "2-digit",
   });
 }
+
+export const getInitials = (name?: string) => {
+  if (!name) return "UN";
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
+};
+
+// Backend error bodies shape `message` as a plain string for business-rule
+// failures, or an array of strings for request-shape validation failures.
+export const getApiErrorMessage = (
+  error: unknown,
+  fallback: string,
+): string => {
+  const data = (error as { data?: { message?: string | string[] } })?.data;
+  const message = data?.message;
+  if (Array.isArray(message)) return message[0] || fallback;
+  if (typeof message === "string") return message;
+  return fallback;
+};
+
+// A refunded order reads as "Refunded" on the Orders screens. Covers the
+// backend REFUND_SUCCESS written on cancel of a paid order, plus legacy rows
+// where a cancelled paid order was left as SUCCESS. Display mapping only -
+// reconciliation / revenue logic is untouched.
+export const displayPaymentStatus = (
+  paymentStatus?: string | null,
+  orderStatus?: string | null,
+): string => {
+  if (
+    paymentStatus === "REFUND_SUCCESS" ||
+    (paymentStatus === "SUCCESS" && orderStatus?.toLowerCase() === "canceled")
+  ) {
+    return "REFUNDED";
+  }
+  return paymentStatus ?? "-";
+};

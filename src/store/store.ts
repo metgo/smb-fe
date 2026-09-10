@@ -1,5 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { isPlainObject } from "redux";
 import uiReducer from "@/features/uiSlice";
+import chatPopupReducer from "@/features/chatPopupSlice";
 import authReducer from "@/features/authSlice";
 import settingsReducer from "@/features/settingsSlice";
 import notificationSlice from "@/features/notificationSlice";
@@ -46,11 +48,16 @@ import { websiteCrashApi } from "./api/websiteCrashApi";
 import { campaignApi } from "./api/campaignApi";
 import { sessionQueryApi } from "./api/sessionQueryApi";
 import { sessionMutationApi } from "./api/sessionMutationApi";
+import { reconciliationQueryApi } from "./api/reconciliationQueryApi";
+import { paymentQueryApi } from "./api/paymentQueryApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
+import { chatSystemApi } from "./api/chatSystemApi";
+import { utmCampaignApi } from "./api/utmCampaignApi";
 
 export const store = configureStore({
   reducer: {
     ui: uiReducer,
+    chatPopup: chatPopupReducer,
     auth: authReducer,
     settings: settingsReducer,
     filters: filterReducer,
@@ -103,10 +110,32 @@ export const store = configureStore({
     [campaignApi.reducerPath]: campaignApi.reducer,
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
+    [reconciliationQueryApi.reducerPath]: reconciliationQueryApi.reducer,
+    [paymentQueryApi.reducerPath]: paymentQueryApi.reducer,
+    [chatSystemApi.reducerPath]: chatSystemApi.reducer,
+    [utmCampaignApi.reducerPath]: utmCampaignApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
+    getDefaultMiddleware({
+      // several RTK Query endpoints intentionally return raw Blob payloads
+      // (xlsx/csv/pdf export downloads) - those aren't meant to be
+      // serializable, so allow Blob on top of RTK's default isPlain check
+      serializableCheck: {
+        isSerializable: (value: unknown) => {
+          if (value instanceof Blob) return true;
+          const type = typeof value;
+          return (
+            value == null ||
+            type === "string" ||
+            type === "boolean" ||
+            type === "number" ||
+            Array.isArray(value) ||
+            isPlainObject(value)
+          );
+        },
+      },
+    }).concat(
       authApi.middleware,
       analyticsApi.middleware,
       itemStatsApi.middleware,
@@ -146,6 +175,10 @@ export const store = configureStore({
       campaignApi.middleware,
       sessionQueryApi.middleware,
       sessionMutationApi.middleware,
+      reconciliationQueryApi.middleware,
+      paymentQueryApi.middleware,
+      chatSystemApi.middleware,
+      utmCampaignApi.middleware,
       nprogressMiddleware,
     ),
 });

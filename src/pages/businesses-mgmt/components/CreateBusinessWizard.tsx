@@ -18,6 +18,7 @@ import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
@@ -45,10 +46,9 @@ import {
   detectLanguage,
   getLngWiseStr,
   modelTitle,
-  parseAddress,
   removeNulls,
+  type ParsedAddressParts,
 } from "@/helpers";
-import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import {
   Attributes,
@@ -56,6 +56,7 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
+import { getPlainText } from "@/components/shared/RichTextEditor";
 // import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
@@ -133,11 +134,13 @@ function CreateBusinessWizardInner({
     [],
   );
 
-  const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
+  const [availabilityStatus, setAvailabilityStatus] = useState<
+    "available" | "unavailable" | null
+  >(null);
 
   // When opened from email link with missingFields, start on the step of the first missing field
   const getStepForField = (field: string): number => {
@@ -178,18 +181,32 @@ function CreateBusinessWizardInner({
   );
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
+  const [addressParts, setAddressParts] = useState<ParsedAddressParts>({
+    location: "",
+    city: "",
+    country: "",
+  });
 
   // Business Media States
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
-  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
-    allBlacklistIds: [] as string[],
-    selectedBlacklistIds: [] as string[],
-    allWhitelistIds: [] as string[],
-    selectedWhitelistIds: [] as string[],
-  });
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState<string[]>(
+    [],
+  );
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
+  );
+
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
   );
 
   // Form State
@@ -403,7 +420,7 @@ function CreateBusinessWizardInner({
     setDeleteTargetLogo(null);
   };
 
-  const addr = parseAddress(address);
+  const addr = addressParts;
 
   const totalSteps = 9;
 
@@ -593,6 +610,11 @@ function CreateBusinessWizardInner({
           .join(", ");
 
         setAddress(formatted);
+        setAddressParts({
+          location: editData.address.location || "",
+          city: editData.address.city || "",
+          country: editData.address.country || "",
+        });
       }
 
       if (editData?.geoLocation) {
@@ -601,8 +623,9 @@ function CreateBusinessWizardInner({
           long: String(editData.geoLocation.long),
         });
       }
-      setSelectAuthorityId(editData?.authorityId?._id || "");
-      setSelectedDmoId(editData?.dmoId?._id || "");
+      setSelectAuthorityId(editData?.authorityId || "");
+      setSelectedDmoId(editData?.dmoId || "");
+      setWebsiteVisibilityIds(editData?.associatedWebsiteIds || []);
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images);
@@ -630,6 +653,7 @@ function CreateBusinessWizardInner({
     // step 1:
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
+    associatedWebsiteIds: websiteVisibilityIds,
     name: formData.name,
     nameAr: formData.nameAr,
     nameHe: formData.nameHe,
@@ -719,64 +743,64 @@ function CreateBusinessWizardInner({
     stepPayloadMap,
   });
 
-  const validateStep = (step: number): boolean => {
-    const newErrors: Record<string, string> = {};
+  // const validateStep = (step: number): boolean => {
+  //   const newErrors: Record<string, string> = {};
 
-    switch (step) {
-      case 1:
-        if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
-        if (!selectedAuthorityId?.trim())
-          newErrors.authorityId = t("required_field");
-        if (
-          !formData.name?.trim() &&
-          !formData.nameAr?.trim() &&
-          !formData.nameHe?.trim()
-        )
-          newErrors.name = t("required_field");
-        if (
-          !formData.shortDescription?.trim() &&
-          !formData.shortDescriptionAr?.trim() &&
-          !formData.shortDescriptionHe?.trim()
-        )
-          newErrors.shortDescription = t("required_field");
-        if (
-          !formData.fullDescription?.trim() &&
-          !formData.fullDescriptionAr?.trim() &&
-          !formData.fullDescriptionHe?.trim()
-        )
-          newErrors.fullDescription = t("required_field");
+  //   switch (step) {
+  //     case 1:
+  //       if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
+  //       if (!selectedAuthorityId?.trim())
+  //         newErrors.authorityId = t("required_field");
+  //       if (
+  //         !formData.name?.trim() &&
+  //         !formData.nameAr?.trim() &&
+  //         !formData.nameHe?.trim()
+  //       )
+  //         newErrors.name = t("required_field");
+  //       if (
+  //         !formData.shortDescription?.trim() &&
+  //         !formData.shortDescriptionAr?.trim() &&
+  //         !formData.shortDescriptionHe?.trim()
+  //       )
+  //         newErrors.shortDescription = t("required_field");
+  //       if (
+  //         !formData.fullDescription?.trim() &&
+  //         !formData.fullDescriptionAr?.trim() &&
+  //         !formData.fullDescriptionHe?.trim()
+  //       )
+  //         newErrors.fullDescription = t("required_field");
 
-        break;
-      case 2: {
-        if (formData.email?.trim() === "") {
-          newErrors.email = t("required_field");
-        }
+  //       break;
+  //     case 2: {
+  //       if (formData.email?.trim() === "") {
+  //         newErrors.email = t("required_field");
+  //       }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (formData.email && !emailRegex.test(formData.email.trim())) {
-          newErrors.email = t("invalid_email_format");
-        }
-        if (formData.phone?.trim() === "")
-          newErrors.phone = t("required_field");
-        break;
-      }
+  //       if (formData.email && !emailRegex.test(formData.email.trim())) {
+  //         newErrors.email = t("invalid_email_format");
+  //       }
+  //       if (formData.phone?.trim() === "")
+  //         newErrors.phone = t("required_field");
+  //       break;
+  //     }
 
-      case 3:
-        if (!addr.location) {
-          newErrors.address = t("required_field");
-        }
-        break;
+  //     case 3:
+  //       if (!addr.location) {
+  //         newErrors.address = t("required_field");
+  //       }
+  //       break;
 
-      case 4:
-        if (formData.primaryCategory?.trim() === "") {
-          newErrors.primaryCategory = t("primary_category_required");
-        }
-        break;
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  //     case 4:
+  //       if (formData.primaryCategory?.trim() === "") {
+  //         newErrors.primaryCategory = t("primary_category_required");
+  //       }
+  //       break;
+  //   }
+  //   setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // };
 
   const handleClose = () => {
     if (isFormDirty() && !isPublishBtnClicked && !isDraftBtnClicked) {
@@ -819,13 +843,18 @@ function CreateBusinessWizardInner({
       toast.error(tt("full_description_required"));
       return;
     }
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     const resolvedBusinessId = await saveDraft(false);
     if (resolvedBusinessId) {
-      await createWebsiteAccessItem({
-        body: websiteAccessItemPayload,
-        itemId: resolvedBusinessId,
-      });
       // Refetch after save draft completes
       // Don't await to prevent blocking the UI
       if (businessDataRefetch) {
@@ -847,38 +876,43 @@ function CreateBusinessWizardInner({
       return;
     }
     if (
-      (formData.fullDescription || "").length > 500 ||
-      (formData.fullDescriptionHe || "").length > 500 ||
-      (formData.fullDescriptionAr || "").length > 500
+      getPlainText(formData.fullDescription || "").length > 500 ||
+      getPlainText(formData.fullDescriptionHe || "").length > 500 ||
+      getPlainText(formData.fullDescriptionAr || "").length > 500
     ) {
       setCurrentStep(1);
       toast.error(tc("exceeds_char_limit", { limit: 500 }));
       return;
     }
 
-    // Validate all steps
-    let allValid = true;
-    for (let i = 1; i <= 5; i++) {
-      if (!validateStep(i)) {
-        allValid = false;
-        setCurrentStep(i);
-        break;
-      }
-    }
-    if (!allValid) {
-      toast.error(tt("fill_all_fields"));
+    if (hasAssociatedWebsites && !websiteVisibilityIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
       return;
     }
+
+    // // Validate all steps
+    // let allValid = true;
+    // for (let i = 1; i <= 5; i++) {
+    //   if (!validateStep(i)) {
+    //     allValid = false;
+    //     setCurrentStep(i);
+    //     break;
+    //   }
+    // }
+    // if (!allValid) {
+    //   toast.error(tt("fill_all_fields"));
+    //   return;
+    // }
 
     setIsPublishing(true);
     const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
     const resolvedBusinessId = await saveDraft(true, processedFormData);
     if (resolvedBusinessId) {
-      await createWebsiteAccessItem({
-        body: websiteAccessItemPayload,
-        itemId: resolvedBusinessId,
-      });
-
       await Promise.all([refetch?.(), businessDataRefetch?.()]);
     }
     setIsPublishing(false);
@@ -890,23 +924,6 @@ function CreateBusinessWizardInner({
     }
   }, [opMode, editData?._id, businessId]);
 
-  const websiteAccessItemPayload = {
-    blacklist: {
-      allItems: websiteVisibilityIds.allBlacklistIds,
-      // Send websites that are UNCHECKED (to add to blacklist/hide)
-      // In this section: CHECK = show, UNCHECK = hide
-      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
-        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
-      ),
-    },
-    whitelist: {
-      allItems: websiteVisibilityIds.allWhitelistIds,
-      // Send ONLY explicitly checked websites from unassociated section
-      // Associated section manages visibility via blacklist only
-      selectedItems: websiteVisibilityIds.selectedWhitelistIds,
-    },
-    purpose: "business",
-  };
   const renderStep = () => {
     const commonProps = {
       theme,
@@ -952,13 +969,15 @@ function CreateBusinessWizardInner({
           <BusinessBasicInfos
             {...commonProps}
             businessId={businessId}
+            setBusinessId={setBusinessId}
             selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
             selectedAuthorityId={selectedAuthorityId}
             setSelectAuthorityId={setSelectAuthorityId}
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-            businessAssociatedWebsites={editData?.associatedWebsites ?? []}
+            isEditMode={opMode === IOpMode.EDIT}
+            onAvailabilityStatusChange={setAvailabilityStatus}
           />
         );
 
@@ -968,7 +987,7 @@ function CreateBusinessWizardInner({
       //       formData={formData}
       //       onChange={handleChange}
       //     />
-      //   );
+      //   );p
 
       case 2:
         return <BusinessContactOwership {...commonProps} />;
@@ -980,6 +999,7 @@ function CreateBusinessWizardInner({
             setGeo={setGeo}
             address={address}
             setAddress={setAddress}
+            onAddressParts={setAddressParts}
           />
         );
 
@@ -1113,7 +1133,9 @@ function CreateBusinessWizardInner({
             >
               <Compass className="w-4 h-4" />
             </button>
-            <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+            {availabilityStatus !== "unavailable" && (
+              <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+            )}
           </div>
         </div>
 
@@ -1137,7 +1159,10 @@ function CreateBusinessWizardInner({
       )}
 
       {/* Content */}
-      <div data-tour="wizard-content" className="flex-1 overflow-y-auto p-6">
+      <div
+        data-tour="wizard-content"
+        className="flex-1 overflow-y-auto overflow-x-auto p-6"
+      >
         {renderStep()}
       </div>
 
@@ -1148,6 +1173,7 @@ function CreateBusinessWizardInner({
           totalSteps={totalSteps}
           isSaving={isSaving || isCreating}
           isPublishing={isPublishing}
+          isDisabled={availabilityStatus === "unavailable"}
           onPrevious={handlePrevious}
           onNext={handleNext}
           onSaveDraft={handleSaveDraft}

@@ -20,7 +20,6 @@ import {
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
 interface RichTextEditorProps {
   value: string;
   onChange: (html: string) => void;
@@ -257,7 +256,7 @@ function rgbToHex(rgb: string): string {
   );
 }
 
-function getPlainText(html: string): string {
+export function getPlainText(html: string): string {
   const d = document.createElement("div");
   d.innerHTML = html;
   return d.textContent ?? d.innerText ?? "";
@@ -332,6 +331,13 @@ function sanitizePastedHTML(html: string): string {
           }
         }
 
+        // Make every pasted link open in a new tab and stay underlined
+        if (el.tagName === "A" && el.getAttribute("href")) {
+          el.setAttribute("target", "_blank");
+          el.setAttribute("rel", "noopener noreferrer");
+          el.style.textDecoration = "underline";
+        }
+
         // Filter inline styles to only allowed properties
         if (el.style.cssText) {
           const kept: string[] = [];
@@ -372,6 +378,12 @@ const RichTextEditor = ({
   } = useThemeClasses();
 
   const editorRef = useRef<HTMLDivElement>(null);
+  // Tracks the last HTML this component emitted via onChange, so the external
+  // value sync below can tell "the parent echoed our own edit back" (skip —
+  // rewriting innerHTML here would kill the caret) from a genuine external
+  // change (apply). Starts as a sentinel (not `value`) so the very first sync
+  // always runs and populates the contentEditable div with the initial value.
+  const lastEmittedRef = useRef<string | null>(null);
   const savedRangeRef = useRef<Range | null>(null);
   const fontSizeDropRef = useRef<HTMLDivElement>(null);
   const textColorDropRef = useRef<HTMLDivElement>(null);
@@ -398,13 +410,27 @@ const RichTextEditor = ({
   const activeBg = isDark ? "bg-gray-700" : "bg-gray-200";
   const dropdownBg = isDark ? "bg-gray-900" : "bg-white";
 
-  // Sync external value
+  // Sync external value — only when it differs from both the DOM and the last
+  // value we emitted. Without the lastEmittedRef guard, the parent re-rendering
+  // with our own (browser-normalized) HTML would trip this and rewrite
+  // innerHTML on every keystroke, collapsing the caret so typing appears broken.
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value;
-      setCharacterCount(getPlainText(value).length);
+    const el = editorRef.current;
+    if (!el) return;
+    if (value === lastEmittedRef.current) return;
+    if (el.innerHTML === value) {
+      lastEmittedRef.current = value;
+      return;
     }
+    el.innerHTML = value;
+    lastEmittedRef.current = value;
+    setCharacterCount(getPlainText(value).length);
   }, [value]);
+
+  const emitChange = (html: string) => {
+    lastEmittedRef.current = html;
+    onChange(html);
+  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -488,7 +514,7 @@ const RichTextEditor = ({
     }
 
     setCharacterCount(plain.length);
-    onChange(el.innerHTML);
+    emitChange(el.innerHTML);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -573,7 +599,7 @@ const RichTextEditor = ({
     restoreSelection();
     applyFontSizeDOM(px, editorRef.current ?? undefined);
     setActiveFontSize(px.toString());
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    if (editorRef.current) emitChange(editorRef.current.innerHTML);
   };
 
   const applyCustomFontSize = () => {
@@ -611,9 +637,82 @@ const RichTextEditor = ({
     }
   };
 
+  // Returns the anchor the current selection sits inside, if any.
+  const getSelectionAnchor = (): HTMLAnchorElement | null => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return null;
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== editorRef.current) {
+      if (node instanceof HTMLAnchorElement) return node;
+      node = node.parentNode;
+    }
+    return null;
+  };
+
+  // Prepend a scheme to a bare host like "example.com" so the browser doesn't
+  // treat it as a relative path (which resolves against the current site URL).
+  // Absolute URLs, mail/tel links and in-page anchors are left untouched.
+  const normalizeUrl = (raw: string): string => {
+    const url = raw.trim();
+    if (!url) return "";
+    if (/^(https?:\/\/|mailto:|tel:|#)/i.test(url)) return url;
+    return `https://${url}`;
+  };
+
   const insertLink = () => {
-    const url = prompt("Enter URL:");
-    if (url) execCmd("createLink", url);
+    saveSelection();
+
+    // Cursor inside an existing link → remove it, keeping the text.
+    const existingAnchor = getSelectionAnchor();
+    if (existingAnchor) {
+      const parent = existingAnchor.parentNode;
+      if (parent) {
+        // Unwrap the <a> manually rather than via execCommand("unlink"): the
+        // browser's unlink leaves a <span style="text-decoration:underline">
+        // behind to preserve the look, so the word stays underlined.
+        const frag = document.createDocumentFragment();
+        while (existingAnchor.firstChild)
+          frag.appendChild(existingAnchor.firstChild);
+
+        // Drop the link underline the editor added, but leave real <u> spans
+        // (explicit underline formatting) alone.
+        frag.querySelectorAll<HTMLElement>("span[style]").forEach((span) => {
+          if (/underline/i.test(span.style.textDecoration || "")) {
+            span.style.textDecoration = "";
+          }
+          if (!span.getAttribute("style")) span.removeAttribute("style");
+        });
+
+        parent.replaceChild(frag, existingAnchor);
+        parent.normalize();
+      }
+      editorRef.current?.focus();
+      if (editorRef.current) emitChange(editorRef.current.innerHTML);
+      return;
+    }
+
+    const input = prompt("Enter URL:");
+    restoreSelection();
+    const url = normalizeUrl(input ?? "");
+    if (!url) return;
+
+    execCmd("createLink", url);
+
+    // execCommand("createLink") does not set a target, so links open in the
+    // same tab. Style any anchor that hasn't been handled yet.
+    const root = editorRef.current;
+    if (!root) return;
+
+    root
+      .querySelectorAll<HTMLAnchorElement>("a:not([data-rte-styled])")
+      .forEach((a) => {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+        a.setAttribute("data-rte-styled", "");
+        a.style.textDecoration = "underline";
+      });
+
+    emitChange(root.innerHTML);
   };
 
   const insertVariable = (val: string) => {
@@ -623,14 +722,22 @@ const RichTextEditor = ({
     if (sel && sel.rangeCount > 0) {
       const r = sel.getRangeAt(0);
       r.deleteContents();
-      const tn = document.createTextNode(val);
+      // Pad the token with spaces unless the adjacent character is already
+      // whitespace — back-to-back tokens like {A}{B} otherwise render as
+      // run-on text in the delivered email/SMS.
+      const prevChar =
+        r.startContainer.nodeType === Node.TEXT_NODE
+          ? (r.startContainer.textContent?.[r.startOffset - 1] ?? "")
+          : "";
+      const lead = prevChar && !/\s/.test(prevChar) ? " " : "";
+      const tn = document.createTextNode(`${lead}${val} `);
       r.insertNode(tn);
       r.setStartAfter(tn);
       r.setEndAfter(tn);
       sel.removeAllRanges();
       sel.addRange(r);
     } else {
-      editorRef.current.innerHTML += val;
+      editorRef.current.innerHTML += ` ${val} `;
     }
     handleInput();
   };
@@ -676,7 +783,7 @@ const RichTextEditor = ({
         {
           icon: LinkIcon,
           command: "link",
-          title: "Insert Link",
+          title: "Insert / Remove Link",
           onClick: insertLink,
         },
         {
@@ -792,7 +899,7 @@ const RichTextEditor = ({
               saveSelection();
               setFontSizeOpen((o) => !o);
             }}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded transition-colors ${hoverBg} ${textPrimary} min-w-[72px] justify-between`}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded transition-colors ${hoverBg} ${textPrimary} min-w-18 justify-between`}
           >
             <span className="text-sm">{parseInt(activeFontSize) / 16}rem</span>
             <ChevronDown className="w-3 h-3 shrink-0" />
@@ -800,7 +907,7 @@ const RichTextEditor = ({
 
           {fontSizeOpen && (
             <div
-              className={`absolute top-full left-0 mt-1 ${dropdownBg} border ${borderColor} rounded-lg shadow-lg z-20 min-w-[110px] max-h-60 overflow-y-auto`}
+              className={`absolute top-full left-0 mt-1 ${dropdownBg} border ${borderColor} rounded-lg shadow-lg z-20 min-w-27.5 max-h-60 overflow-y-auto`}
             >
               {DEFAULT_FONT_SIZES.map((size) => (
                 <button
@@ -960,7 +1067,7 @@ const RichTextEditor = ({
                     if (btn.onClick) btn.onClick();
                     else execCmd(btn.command, btn.value);
                   }}
-                  className={`p-2 rounded transition-colors ${isActive ? activeBg : hoverBg} ${textPrimary}`}
+                  className={`p-2 rounded cursor-pointer transition-colors ${isActive ? activeBg : hoverBg} ${textPrimary}`}
                 >
                   <Icon className="w-4 h-4" />
                 </button>
@@ -981,7 +1088,7 @@ const RichTextEditor = ({
                 type="button"
                 onClick={() => insertVariable(v.value)}
                 title={`Insert ${v.label}`}
-                className={`px-3 py-1.5 text-sm rounded border ${borderColor} ${hoverBg} ${VARIABLE_COLORS[i % VARIABLE_COLORS.length]} transition-colors font-medium`}
+                className={`px-2 py-1 text-sm rounded-xl border cursor-pointer ${borderColor} ${hoverBg} ${VARIABLE_COLORS[i % VARIABLE_COLORS.length]} transition-colors font-medium`}
               >
                 {v.label}
               </button>

@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
@@ -17,12 +18,12 @@ import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import { detectLanguage } from "@/helpers";
+import { detectLanguage, type ParsedAddressParts } from "@/helpers";
 
 interface UseEventWizardStateProps {
   isOpen: boolean;
   onClose: () => void;
-  editData?: any;
+  editData?: IEventDetailsRes;
   refetch?: () => void;
   eventDataRefetch?: () => void;
 }
@@ -53,6 +54,11 @@ export function useEventWizardState({
   const [errors, setErrors] = useState<Record<string, string>>({});
   // const [isNotSaved, setIsNotSaved] = useState(false)
   const initialImagesCountRef = useRef(0);
+  // Snapshot of the step payloads exactly as hydrated from the server, used to
+  // diff on save so only genuinely-changed fields are sent in edit mode.
+  const hydratedPayloadRef = useRef<Record<string, any> | null>(null);
+  const payloadSnapshotTakenRef = useRef(false);
+  const sawStaleBuildersRef = useRef(false);
 
   // ─── IDs ─────────────────────────────────────────────────────────────
   const [eventId, setEventId] = useState<string>(editId || "");
@@ -62,6 +68,18 @@ export function useEventWizardState({
   const [selectAssociatedWebsiteIds, setSelectAssociatedWebsiteIds] = useState<
     string[]
   >([]);
+
+  const { allWebsites } = useCommon();
+  const hasAssociatedWebsites = useMemo(
+    () =>
+      (allWebsites ?? []).some(
+        (site: IWebsite) =>
+          (selectedDmoId && site.dmoIds?.includes(selectedDmoId)) ||
+          (selectedAuthorityId &&
+            site.authorityIds?.includes(selectedAuthorityId)),
+      ),
+    [allWebsites, selectedDmoId, selectedAuthorityId],
+  );
 
   // ─── Step 1: Basic Information ───────────────────────────────────────
   const [eventName, setEventName] = useState("");
@@ -91,7 +109,7 @@ export function useEventWizardState({
   // ─── Step 3: Date & Time ─────────────────────────────────────────────
   const [isMultiDay, setIsMultiDay] = useState(false);
   const [startDate, setStartDate] = useState("");
-  const [eventDays, setEventDays] = useState<EventDay[]>([
+  const [eventDays, setEventDays] = useState<IEventDay[]>([
     {
       id: "1",
       date: "",
@@ -100,10 +118,13 @@ export function useEventWizardState({
       description: "",
     },
   ]);
-  const [eventFormat, setEventFormat] = useState<
-    "physical" | "online" | "hybrid"
-  >("physical");
+  const [eventFormat, setEventFormat] = useState<TEventFormat>("physical");
   const [address, setAddress] = useState("");
+  const [addressParts, setAddressParts] = useState<ParsedAddressParts>({
+    location: "",
+    city: "",
+    country: "",
+  });
   const [onlineLink, setOnlineLink] = useState("");
   const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [isRecurring, setIsRecurring] = useState(false);
@@ -130,10 +151,10 @@ export function useEventWizardState({
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
   // ─── Step 6: Messaging ───────────────────────────────────────────────
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [notifications, setNotifications] = useState<INotificationData[]>([]);
   const [showNotificationForm, setShowNotificationForm] = useState(false);
   const [editingNotification, setEditingNotification] =
-    useState<NotificationData | null>(null);
+    useState<INotificationData | null>(null);
 
   // ─── Step 8: Media ───────────────────────────────────────────────────
   const [eventImages, setEventImages] = useState<TImages>([]);
@@ -296,9 +317,9 @@ export function useEventWizardState({
       },
       eventType: eventFormat?.toUpperCase(),
       address: {
-        country: "",
-        city: "",
-        location: address,
+        country: addressParts.country,
+        city: addressParts.city,
+        location: addressParts.location,
         additional_information: "",
       },
       onlineLink,
@@ -319,7 +340,7 @@ export function useEventWizardState({
       recurrenceEndCount,
       recurrenceEndDate,
       eventFormat,
-      address,
+      addressParts,
       onlineLink,
     ],
   );
@@ -331,7 +352,12 @@ export function useEventWizardState({
         noOfPeople: capacity,
         isUnlimited: capacityType === "unlimited",
       },
-      customQuestions,
+      customQuestions: customQuestions
+        .filter((q) => q.label.trim() !== "")
+        .map((q) => ({
+          question: q.label,
+          isRequired: q.required,
+        })),
     }),
     [registrationRequired, capacity, capacityType, customQuestions],
   );
@@ -341,25 +367,22 @@ export function useEventWizardState({
       scheduledNotifications: notifications.map((item) => {
         const base = {
           ...(!item.index ? { _id: item._id } : {}),
-          sendHoursBefore: item.hoursBeforeEvent,
-          channels: [
-            item.channels?.email && "EMAIL",
-            item.channels?.sms && "SMS",
-            item.channels?.whatsapp && "WHATSAPP",
-          ].filter(Boolean) as ("EMAIL" | "SMS" | "WHATSAPP")[],
-          language: item.language,
-          template: item.template,
+          channels: item.channels ?? [],
           status: item.enabled ? "ACTIVE" : "INACTIVE",
+          subject: item.subject,
+          // The picker holds a naive local datetime; convert in the browser
+          // (which knows the admin's timezone) so the pick means the admin's
+          // own wall-clock and the cron fires at that instant everywhere.
+          scheduleDateTime: item.scheduleDateTime,
+          // Offset-based scheduling: send N hours before/after the event
+          // instead of at a fixed wall-clock time. sendTiming (before/after
+          // the event) applies to either form, so it's always sent.
+          ...(item.sendHoursOffset != null
+            ? { sendHoursOffset: item.sendHoursOffset }
+            : {}),
+          sendTiming: item.sendTiming ?? "PRE_EVENT",
+          body: formatToBackendTemplate(item.message),
         };
-        if (item.template === "custom") {
-          return {
-            ...base,
-            customTemplate: {
-              subject: item.subject,
-              body: formatToBackendTemplate(item.message),
-            },
-          };
-        }
         return base;
       }),
     }),
@@ -369,10 +392,9 @@ export function useEventWizardState({
   const stepPayloadMap = useMemo(
     () => ({
       1: buildBasicInfoPayload,
-      2: buildBasicInfoPayload,
-      3: buildDateTimePayload,
-      4: buildRegistrationPayload,
-      6: buildMessagingPayload,
+      2: buildDateTimePayload,
+      3: buildRegistrationPayload,
+      4: buildMessagingPayload,
       5: () => ({ images: eventImages }),
     }),
     [
@@ -384,6 +406,26 @@ export function useEventWizardState({
     ],
   );
 
+  // ─── Snapshot hydrated payloads for edit-mode field diffing ──────────
+  // The hydration effect above fires the state setters, but the builders in
+  // `stepPayloadMap` only see those values on the *next* render. So we skip
+  // the render that resets the flag and capture on the following pass, once
+  // the builders reflect the server data. That snapshot is what
+  // buildPayload() diffs against so unchanged fields are never sent.
+  useEffect(() => {
+    if (!editData || !editId || payloadSnapshotTakenRef.current) return;
+    if (!sawStaleBuildersRef.current) {
+      sawStaleBuildersRef.current = true;
+      return;
+    }
+    const snapshot: Record<string, any> = {};
+    Object.values(stepPayloadMap).forEach((builder) => {
+      Object.assign(snapshot, builder());
+    });
+    hydratedPayloadRef.current = snapshot;
+    payloadSnapshotTakenRef.current = true;
+  }, [editData, editId, stepPayloadMap]);
+
   // ─── Draft saver ─────────────────────────────────────────────────────
   const { markDirty, saveDraft } = useEventDraftSaver({
     currentStep,
@@ -392,6 +434,7 @@ export function useEventWizardState({
     initEventCreate,
     updateEvent,
     stepPayloadMap,
+    hydratedPayloadRef,
     businessId: selectedBusinessId,
   });
 
@@ -454,6 +497,7 @@ export function useEventWizardState({
     ]);
     setEventFormat("physical");
     setAddress("");
+    setAddressParts({ location: "", city: "", country: "" });
     setOnlineLink("");
     setGeo({ lat: "", long: "" });
     setIsRecurring(false);
@@ -474,6 +518,9 @@ export function useEventWizardState({
     if (!editData || !editId) return;
 
     setHasFormChanges(false);
+    payloadSnapshotTakenRef.current = false;
+    sawStaleBuildersRef.current = false;
+    hydratedPayloadRef.current = null;
     initialImagesCountRef.current = editData?.images?.length ?? 0;
 
     setEventName(editData.name ?? "");
@@ -486,7 +533,7 @@ export function useEventWizardState({
     setFullDescriptionHe(editData.descriptionHe ?? "");
     setFullDescriptionAr(editData.descriptionAr ?? "");
     setSelectedBusinessId(editData.businessId?._id ?? "");
-    setEventStatus(editData.status?.toLowerCase() ?? "draft");
+    setEventStatus((editData.status?.toLowerCase() as EventStatus) ?? "draft");
     setAccessiblitiesId(editData.accessibilitiesId ?? []);
     setGroupTypesId(editData.groupTypesId ?? []);
     setSubCategoriesId(editData.subCategoriesId ?? []);
@@ -501,9 +548,12 @@ export function useEventWizardState({
       lat: editData.geoLocation?.lat ?? "",
       long: editData.geoLocation?.long ?? "",
     });
-    setEventFormat(editData.eventType?.toLowerCase() ?? "physical");
+    setEventFormat(
+      (editData.eventType?.toLowerCase() as TEventFormat) ?? "physical",
+    );
     setRecurrencePattern(
-      editData.recurringEventRuleId?.pattern?.toLowerCase() ?? "weekly",
+      (editData.recurringEventRuleId?.pattern?.toLowerCase() as RecurrencePattern) ??
+        "weekly",
     );
     setSelectedWeekdays(editData.recurringEventRuleId?.daysOfWeek ?? []);
     setMonthlyType(
@@ -518,7 +568,20 @@ export function useEventWizardState({
     );
     setRecurrenceEndDate(editData.recurringEventRuleId?.endDate ?? "");
     setRecurrenceEndCount(editData.recurringEventRuleId?.occurrenceLimit ?? 10);
-    setAddress(editData.address?.location ?? "");
+    setAddress(
+      [
+        editData.address?.location,
+        editData.address?.city,
+        editData.address?.country,
+      ]
+        .filter(Boolean)
+        .join(", "),
+    );
+    setAddressParts({
+      location: editData.address?.location || "",
+      city: editData.address?.city || "",
+      country: editData.address?.country || "",
+    });
     setOnlineLink(editData.onlineLink ?? "");
 
     setRegistrationRequired(editData.registration?.isRegistration ?? true);
@@ -526,26 +589,34 @@ export function useEventWizardState({
     setCapacityType(
       editData.registration?.isUnlimited ? "unlimited" : "limited",
     );
-    setCustomQuestions(editData.customQuestions ?? []);
+    setCustomQuestions(
+      (editData.customQuestions ?? []).map((q: any, index: number) => ({
+        id: q._id ?? q.id ?? `${Date.now()}-${index}`,
+        label: q.question ?? q.label ?? "",
+        type: "text" as const,
+        required: q.isRequired ?? q.required ?? false,
+      })),
+    );
     setSelectAssociatedWebsiteIds(editData?.associatedWebsiteIds);
     setEventImages(editData.images ?? []);
 
-    const mappedNotifications: NotificationData[] = (
+    const mappedNotifications: INotificationData[] = (
       editData.scheduledNotificationId ?? []
     ).map((item: any, index: number) => ({
       _id: item?._id,
       index,
-      channels: {
-        email: item?.channels?.includes("EMAIL"),
-        sms: item?.channels?.includes("SMS"),
-        whatsapp: item?.channels?.includes("WHATSAPP"),
-      },
-      hoursBeforeEvent: item?.sendHoursBefore,
-      language: item?.language,
-      template: item?.template,
-      subject: item?.customTemplate?.subject ?? "",
-      message: item?.customTemplate?.body ?? "",
+      channels: item?.channels ?? [],
+      subject: item?.subject ?? "",
+      message: item?.body ?? "",
+      // Both feed <input type="datetime-local">, which renders blank for a
+      // UTC "…Z" string — use only the naive local form the backend returns
+      // for the picker (scheduleDateTimeLocal), never the "…Z" scheduleDateTime.
+      scheduleDateTime: item.scheduleDateTimeLocal ?? "",
+      scheduleDateTimeLocal: item.scheduleDateTimeLocal ?? "",
+      sendHoursOffset: item?.sendHoursOffset ?? undefined,
+      sendTiming: item?.sendTiming ?? undefined,
       enabled: item?.status === "ACTIVE",
+      status: item.status,
     }));
     setNotifications(mappedNotifications);
   }, [editData, editId]);
@@ -570,6 +641,8 @@ export function useEventWizardState({
             !shortDescriptionAr?.trim()
           )
             newErrors.shortDescription = tc("required_field");
+          if (hasAssociatedWebsites && !selectAssociatedWebsiteIds?.length)
+            newErrors.websiteVisibilityIds = tc("website_visibility_required");
           break;
         case 2:
           if (!isMultiDay && !startDate)
@@ -592,6 +665,9 @@ export function useEventWizardState({
     },
     [
       selectedDmoId,
+      selectedAuthorityId,
+      selectAssociatedWebsiteIds,
+      hasAssociatedWebsites,
       eventName,
       eventNameHe,
       eventNameAr,
@@ -691,6 +767,15 @@ export function useEventWizardState({
       toast.error(tc("name_required"));
       return;
     }
+    if (hasAssociatedWebsites && !selectAssociatedWebsiteIds?.length) {
+      setCurrentStep(1);
+      setErrors((prev) => ({
+        ...prev,
+        websiteVisibilityIds: tc("website_visibility_required"),
+      }));
+      toast.error(tc("website_visibility_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     refetch?.();
@@ -699,6 +784,8 @@ export function useEventWizardState({
     eventName,
     eventNameHe,
     eventNameAr,
+    hasAssociatedWebsites,
+    selectAssociatedWebsiteIds,
     tc,
     saveDraft,
     buildWebsiteAccessPayload,
@@ -823,11 +910,18 @@ export function useEventWizardState({
   }, []);
 
   const addCustomQuestion = useCallback(() => {
+    // Side effects (toast) must stay out of the setState updater below -
+    // StrictMode double-invokes functional updaters in dev, which would
+    // fire the toast twice for a single click.
+    if (customQuestions.some((q) => !q.label.trim())) {
+      toast.error(tc("complete_question_before_adding"));
+      return;
+    }
     setCustomQuestions((prev) => [
-      ...prev,
       { id: Date.now().toString(), label: "", type: "text", required: false },
+      ...prev,
     ]);
-  }, []);
+  }, [customQuestions, tc]);
 
   return {
     // Navigation
@@ -842,6 +936,7 @@ export function useEventWizardState({
     isPublishing,
     lastSaved,
     errors,
+    setErrors,
     isPublishBtnClicked,
 
     // Loading
@@ -893,6 +988,8 @@ export function useEventWizardState({
     setEventFormat,
     address,
     setAddress,
+    addressParts,
+    setAddressParts,
     onlineLink,
     setOnlineLink,
     geo,

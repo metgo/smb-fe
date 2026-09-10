@@ -10,7 +10,8 @@ import {
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
-import DmoAuthDetails from "@/components/details-sections/DmoAuthDetails";
+import { ConnectedDmoAuthorityWebsites } from "@/components/details-sections";
+import { clientSitePath } from "@/lib/clientSitePathnames";
 
 interface TripInfoDetailsProps {
   t: (key: string) => string;
@@ -150,10 +151,11 @@ const TripInfoDetails: React.FC<TripInfoDetailsProps> = ({ t, trip }) => {
         </div>
       </div>
 
-      <DmoAuthDetails
+      <ConnectedDmoAuthorityWebsites
         dmoId={trip?.dmoId}
         authorityId={trip?.authorityId}
-        associatedWebsiteIds={trip?.associatedWebsiteIds || undefined}
+        websiteIds={trip?.associatedWebsiteIds || []}
+        pathname={clientSitePath.trailDetails + "/" + trip?.slug}
       />
     </div>
   );

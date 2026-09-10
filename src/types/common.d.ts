@@ -2,6 +2,7 @@ type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
 
 type TViewMode = "list" | "grid";
+type TUserRole = "superadmin" | "dmo" | "authority" | "traveller";
 
 type TStatus =
   "draft" | "pending" | "approved" | "rejected" | "closed" | "archived";
@@ -9,6 +10,7 @@ type TStatus =
 type EventStatus = "draft" | "pending" | "approved";
 type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
 type TCampaign = "CASH_IN" | "CASH_BACK" | "MINI_SITE";
+type TMethod = "POST" | "PUT" | "DELETE" | "PATCH" | "GET";
 
 type TGeoLocation = {
   lat: string;
@@ -161,10 +163,17 @@ interface ISearchBusiness {
 
 type TNotifStatus = "ALL" | "READ" | "UNREAD";
 
-type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "POI";
+type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "POI" | "DISPUTE";
 
 type TNotifType =
-  "ALL" | "INFO" | "WARNING" | "ACTION" | "URGENT" | "ERROR" | "UNREAD";
+  | "ALL"
+  | "INFO"
+  | "WARNING"
+  | "ACTION"
+  | "URGENT"
+  | "ERROR"
+  | "UNREAD"
+  | "DISPUTE";
 
 type TItemStatus =
   "PENDING" | "APPROVED" | "CLOSED" | "REJECTED" | "DRAFT" | "ARCHIVED";
@@ -208,4 +217,12 @@ interface IDoucment {
 
 interface IDocumentRes extends IPagination {
   data: Array<IDoucment>;
+}
+
+interface IPoiColumnVisibility {
+  impact: boolean;
+  name: boolean;
+  shortDescription: boolean;
+  address: boolean;
+  status: boolean;
 }

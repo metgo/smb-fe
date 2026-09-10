@@ -9,6 +9,7 @@ interface IEventDate {
 }
 
 interface IEventSession {
+  _id: string;
   name: string;
   tagline?: string;
   description?: string;
@@ -21,17 +22,27 @@ interface IEventSession {
   isActive: boolean;
 }
 
+interface ISessionBlock {
+  _id: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  bookingLimit: number;
+  sessionIds: string[];
+}
+
 interface IAdminConfig {
   eventId: string;
   brand: string;
   themeId: string;
   headline: string;
   subhead: string;
+  greeting?: string;
   images: IImage[];
   isActive: boolean;
-  selectionMode: "radio" | "checkbox";
-  liveEventIds: string[];
+  bookingLimit: number;
   ticketIds: string[];
+  blocks: ISessionBlock[];
   sessions: IEventSession[];
 }
 
@@ -236,11 +247,15 @@ interface ITargetAudience {
 
 // Send notification payload
 interface ISendNotificationPayload {
-  type: "email" | "sms";
-  recipientType: "all" | "custom";
+  types: Array<"email" | "sms">;
+  recipientType: "all";
   subject?: string;
   message: string;
-  recipients?: string[];
+  scheduleDateTime?: string;
+  // Alternative to scheduleDateTime: send this many hours relative to the
+  // event, with sendTiming saying which side.
+  sendHoursOffset?: number;
+  sendTiming?: "PRE_EVENT" | "POST_EVENT";
 }
 
 interface INotificationHistoryResponse {
@@ -253,11 +268,15 @@ interface INotificationHistoryItem {
   recipientType: string;
   subject?: string;
   message: string;
-  status: "SENT" | "FAILED" | "PENDING";
+  status: "SENT" | "FAILED" | "PENDING" | "SCHEDULED" | "PARTIAL";
   successCount: number;
   failureCount: number;
   recipientCount: number;
-  sentAt: string;
+  sentAt: string | null;
+  createdAt: string;
+  scheduleDateTime?: string | null;
+  sendHoursOffset?: number | null;
+  sendTiming?: "PRE_EVENT" | "POST_EVENT" | null;
 }
 
 interface INotificationDetailResponse {
@@ -275,13 +294,14 @@ interface INotificationDetailResponse {
   subject?: string;
   message: string;
   language: string;
-  status: "SENT" | "FAILED" | "PENDING";
+  status: "SENT" | "FAILED" | "PENDING" | "SCHEDULED" | "PARTIAL";
   sentBy: string;
   successCount: number;
   failureCount: number;
   __v: number;
   errorSummary?: string;
-  sentAt: string;
+  sentAt: string | null;
+  createdAt?: string;
 }
 
 interface INotificationRecipient {

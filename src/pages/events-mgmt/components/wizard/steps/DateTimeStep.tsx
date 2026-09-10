@@ -13,6 +13,7 @@ import {
 import DatePicker from "@/components/shared/DatePicker";
 import { MarkerMap } from "@/components/maps";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { type ParsedAddressParts } from "@/helpers";
 
 const WEEKDAYS = [
   { value: "Sunday", label: "sun" },
@@ -31,14 +32,15 @@ interface DateTimeStepProps {
   setIsMultiDay: React.Dispatch<React.SetStateAction<boolean>>;
   startDate: string;
   setStartDate: React.Dispatch<React.SetStateAction<string>>;
-  eventDays: EventDay[];
-  setEventDays: React.Dispatch<React.SetStateAction<EventDay[]>>;
+  eventDays: IEventDay[];
+  setEventDays: React.Dispatch<React.SetStateAction<IEventDay[]>>;
   eventFormat: "physical" | "online" | "hybrid";
   setEventFormat: React.Dispatch<
     React.SetStateAction<"physical" | "online" | "hybrid">
   >;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
+  onAddressParts?: (parts: ParsedAddressParts) => void;
   onlineLink: string;
   setOnlineLink: React.Dispatch<React.SetStateAction<string>>;
   errors: { startDate?: string; address?: string; onlineLink?: string };
@@ -83,6 +85,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
   setEventFormat,
   address,
   setAddress,
+  onAddressParts,
   onlineLink,
   setOnlineLink,
   errors,
@@ -136,10 +139,28 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
   const startDateRef = useRef<HTMLDivElement>(null);
   const addressRef = useRef<HTMLDivElement>(null);
   const onlineLinkRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Track if this is the first render to prevent auto-scrolling to errors on mount
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      // Always scroll to the top of this section when the user first arrives
+      if (containerRef.current) {
+        containerRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+      return;
+    }
+
+    // On subsequent renders, handle scrolling to validation errors if any exist
     const errorKeys = Object.keys(errors);
-    if (!errorKeys.length) return;
+    if (errorKeys.length === 0) return;
+
     const refs: Record<string, React.RefObject<any>> = {
       address: addressRef,
       startDate: startDateRef,
@@ -233,7 +254,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
     })();
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div ref={containerRef} className="space-y-6">
       {/* ── Duration toggle ──────────────────────────────────────────── */}
       <div>
         <label className={`block text-sm mb-2 ${textSecondary}`}>
@@ -427,7 +448,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
                 onChange={(e) => setIsRecurring(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-300 rounded-full peer dark:bg-gray-700 peer-checked:bg-teal-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-full" />
+              <div className="w-11 h-6 bg-gray-300 rounded-full peer dark:bg-gray-700 peer-checked:bg-teal-600 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-full" />
             </label>
           </div>
 
@@ -785,6 +806,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
             setGeo={setGeo}
             address={address}
             setAddress={setAddress}
+            onAddressParts={onAddressParts}
           />
         </div>
       )}

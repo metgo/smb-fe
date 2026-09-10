@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -59,8 +59,23 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
     markDirty,
   ]);
 
+  // Scroll the newly-added question into view - new questions are
+  // prepended to the top of the list, so without this the user has no
+  // visual confirmation that clicking "Add question" did anything.
+  const firstQuestionRef = useRef<HTMLDivElement>(null);
+  const prevQuestionCountRef = useRef(customQuestions.length);
+  useEffect(() => {
+    if (customQuestions.length > prevQuestionCountRef.current) {
+      firstQuestionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+    prevQuestionCountRef.current = customQuestions.length;
+  }, [customQuestions.length]);
+
   return (
-    <div className="space-y-8 max-w-3xl mx-auto">
+    <div className="space-y-8">
       {/* ── Registration toggle ──────────────────────────────────────── */}
       <div
         className={clsx(
@@ -183,6 +198,7 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
                 customQuestions.map((q, index) => (
                   <div
                     key={q.id}
+                    ref={index === 0 ? firstQuestionRef : undefined}
                     className={clsx(
                       "p-5 rounded-xl border",
                       isDark
@@ -205,22 +221,29 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
                         placeholder={t("question_placeholder")}
                         className={`flex-1 px-4 py-3 rounded-lg border ${inputClasses}`}
                       />
-                      <select
-                        value={q.type}
-                        onChange={(e) => {
-                          const updated = [...customQuestions];
-                          updated[index] = {
-                            ...updated[index],
-                            type: e.target.value as CustomQuestion["type"],
-                          };
-                          setCustomQuestions(updated);
-                        }}
-                        className={`px-4 py-3 rounded-lg border ${inputClasses}`}
+                      <label
+                        className={clsx(
+                          "flex items-center gap-2 px-4 py-3 whitespace-nowrap select-none cursor-pointer",
+                          textSecondary,
+                        )}
                       >
-                        <option value="text">{t("text")}</option>
-                        <option value="textarea">{t("textarea")}</option>
-                        <option value="checkbox">{t("checkbox")}</option>
-                      </select>
+                        <input
+                          type="checkbox"
+                          checked={q.required}
+                          onChange={(e) => {
+                            const updated = [...customQuestions];
+                            updated[index] = {
+                              ...updated[index],
+                              required: e.target.checked,
+                            };
+                            setCustomQuestions(updated);
+                          }}
+                          className="w-4 h-4 rounded accent-teal-600"
+                        />
+                        <span className="text-sm font-medium">
+                          {t("required")}
+                        </span>
+                      </label>
                       <button
                         onClick={() =>
                           setCustomQuestions(

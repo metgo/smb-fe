@@ -82,7 +82,7 @@ function VideoModal({
   labels: { active: string };
 }) {
   return (
-    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl">
+    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl" height="max-h">
       <div>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200/10">

@@ -1,6 +1,4 @@
 import clsx from "clsx";
-import { toast } from "sonner";
-import { useRef, useState, useEffect } from "react";
 import {
   Trash,
   Upload,
@@ -10,40 +8,34 @@ import {
   ArrowRight,
   Calendar,
   PenBox,
+  Link,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useBlocker, useNavigate, useSearchParams } from "react-router-dom";
-import { skipToken } from "@reduxjs/toolkit/query";
 
 import { AField } from "./AField";
 import { THEMES } from "../themes";
 import { formatDate } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { CreateEventSessionWizard } from "./CreateEventSessionWizard";
-import { useFileUpload } from "@/hooks/useFileUpload";
-import {
-  useCreateEventSessionMutation,
-  useUpdateEventSessionMutation,
-  useGetEventSessionByIdQuery,
-} from "@/store/api/eventSessionApi";
-import { useGetAllSessionTicketQuery } from "@/store/api/eventQueryApi";
+import { useLandingPageTab } from "../hooks/useLandingPageTab";
 import { routes } from "@/lib/routes";
 import { ActionIconButtons, PublishButton } from "@/components/btns";
 import { ConfirmDialog, ImageWithFallback, Spinner } from "@/components/shared";
 import { ModalWrapper, TooltipWrapper } from "@/components/wrapper";
-import { DEFAULT_CONFIG } from "../data";
-
-const TICKETS_PREVIEW_COUNT = 2;
+import BlockSessionAssignModal from "./BlockSessionAssignModal";
 
 interface LandingTabProps {
   config: IAdminConfig;
   onChange: (config: IAdminConfig) => void;
-  eventId: string;
-  wrapperId: string;
-  ticketId: string;
+  eventId: string | null;
+  wrapperId: string | null;
+  setWrapperId: (wrapperId: string | null) => void;
+  ticketId: string | null;
   onDirtyChange?: (isDirty: boolean) => void;
   isLoading: boolean;
   isDuplicate: boolean;
+  refetch: () => void;
 }
 
 const CARD_HEAD = "flex items-center justify-between mb-3.5";
@@ -54,9 +46,11 @@ export function LandingTab({
   wrapperId,
   eventId,
   ticketId,
+  setWrapperId,
   onDirtyChange,
   isLoading,
   isDuplicate = false,
+  refetch,
 }: LandingTabProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("event_session");
@@ -69,125 +63,71 @@ export function LandingTab({
     language,
     borderColor,
   } = useThemeClasses();
-  const update = (patch: Partial<IAdminConfig>) =>
-    onChange({ ...config, ...patch });
 
-  const [_searchParams, setSearchParams] = useSearchParams();
-  const [ticketDateTime, setTicketDateTime] = useState<
-    ITicketDayTimeForSession[]
-  >([]);
-
-  const [createEventSession, { isLoading: isCreating }] =
-    useCreateEventSessionMutation();
-  const [updateEventSession, { isLoading: isUpdating }] =
-    useUpdateEventSessionMutation();
-
-  const { data: ticketRes, refetch } = useGetAllSessionTicketQuery(
-    eventId ? { eventId, wrapperId } : skipToken,
-  );
-
-  const { data: existingSession } = useGetEventSessionByIdQuery(wrapperId, {
-    skip: !wrapperId,
-  });
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
+    // State
+    editBlockData,
+    setEditBlockData,
+    editSessionData,
+    setEditSessionData,
+    ticketDateTime,
+    isCreateWizardOpen,
+    setIsCreateWizardOpen,
+    isCreateBlockWizardOpen,
+    setIsCreateBlockWizardOpen,
+    deleteIndex,
+    setDeleteIndex,
+    deleteBlockIndex,
+    setDeleteBlockIndex,
+    isTicketsModalOpen,
+    setIsTicketsModalOpen,
+
+    // Loading states
+    isCreating,
+    isUpdating,
+
+    // Data
+    tickets,
     previewUrl,
-    gcsUrl,
     progress,
     status,
+    fileInputRef,
+
+    // Computed values
+    hasHeroImage,
+    hasTicket,
+    hasBrand,
+    hasHeadline,
+    hasSubhead,
+    hasBlock,
+    canPublish,
+    blocker,
+
+    // Functions
+    update,
+    getSessionBlock,
+    hasAvailableSessionsForBlock,
+    confirmDeleteEventSession,
+    toggleTicket,
+    handleSubmit,
+    confirmDeleteSessionBlock,
+    toggleBlockActive,
     handleFileSelect,
     deleteFile,
-    reset: resetImage,
-  } = useFileUpload({
-    initialUrl: config.images?.[0]?.image,
+    handleAddSessionBtn,
+
+    // Constants
+    TICKETS_PREVIEW_COUNT,
+  } = useLandingPageTab({
+    config,
+    onChange,
+    wrapperId,
+    eventId,
+    ticketId,
+    onDirtyChange,
+    isDuplicate,
+    setWrapperId,
   });
-
-  const savedConfigRef = useRef<IAdminConfig>(config);
-
-  useEffect(() => {
-    if (!wrapperId) {
-      onChange(DEFAULT_CONFIG);
-      savedConfigRef.current = DEFAULT_CONFIG;
-      resetImage();
-    }
-  }, [wrapperId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  useEffect(() => {
-    if (existingSession) {
-      if (isDuplicate) {
-        const formattedExsitingSession = {
-          ...existingSession,
-          brand: `${existingSession.brand} (Copy)`,
-          images: [],
-          ticketIds: [],
-          sessions: existingSession?.sessions?.map((session) => ({
-            ...session,
-            images: [],
-          })),
-        };
-        (onChange(formattedExsitingSession),
-          (savedConfigRef.current = formattedExsitingSession));
-      } else {
-        onChange(existingSession);
-        savedConfigRef.current = existingSession;
-      }
-    }
-  }, [existingSession]);
-
-  const tickets = isDuplicate
-    ? ticketRes?.data?.tickets?.filter(
-        (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
-      )
-    : (ticketRes?.data?.tickets ?? []);
-
-  const isDirty =
-    JSON.stringify(config) !== JSON.stringify(savedConfigRef.current);
-
-  useEffect(() => {
-    onDirtyChange?.(isDirty);
-  }, [isDirty]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    return () => onDirtyChange?.(false);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname,
-  );
-
-  useEffect(() => {
-    if (!isDirty) return;
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isDirty]);
-
-  useEffect(() => {
-    const currentUrl = config.images?.[0]?.image ?? "";
-    if (gcsUrl !== currentUrl) {
-      update({ images: gcsUrl ? [{ image: gcsUrl }] : [] });
-    }
-  }, [gcsUrl]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!ticketId) return;
-    if ((config.ticketIds ?? []).includes(ticketId)) return;
-    update({ ticketIds: [...(config.ticketIds ?? []), ticketId] });
-  }, [ticketId, config.ticketIds]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const [editIndex, setEditIndex] = useState<number>(0);
-  const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
-  const [isTicketsModalOpen, setIsTicketsModalOpen] = useState(false);
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
@@ -197,85 +137,6 @@ export function LandingTab({
       ? "focus:border-blue-400 focus:ring-blue-400/10"
       : "focus:border-blue-500 focus:ring-blue-500/10",
   );
-
-  const modeBtn = (active: boolean) =>
-    clsx(
-      "text-start px-3.5 py-3.5 rounded-[11px] border-[1.5px] flex flex-col gap-0.5 transition-colors",
-      active
-        ? isDark
-          ? "border-blue-400 bg-blue-950/50"
-          : "border-blue-600 bg-blue-50"
-        : isDark
-          ? "border-gray-700 bg-gray-800"
-          : "border-gray-200 bg-white",
-    );
-
-  function deleteEvent(index: number) {
-    if (config.sessions.length <= 1) return;
-    const sessions = config.sessions.filter((_, i) => i !== index);
-    update({ sessions });
-    setEditIndex(0);
-  }
-
-  function confirmDeleteEvent() {
-    if (deleteIndex === null) return;
-    deleteEvent(deleteIndex);
-    setDeleteIndex(null);
-  }
-
-  function toggleTicket(ticketId: string) {
-    const ticketIds = config.ticketIds ?? [];
-    const isAdding = !ticketIds.includes(ticketId);
-
-    // Update ticket IDs if no conflict
-    update({
-      ticketIds: ticketIds.includes(ticketId)
-        ? ticketIds.filter((id) => id !== ticketId)
-        : [...ticketIds, ticketId],
-    });
-
-    if (isAdding) {
-      // Find the ticket being added
-      const ticketToAdd = tickets?.find((t) => t.ticketId === ticketId);
-      if (!ticketToAdd) return;
-
-      // Get currently selected tickets
-      const currentSelectedTickets =
-        tickets?.filter((t) => ticketIds.includes(t.ticketId!)) || [];
-
-      // Check for date/time conflicts with existing selections
-      const allSelectedTickets = [...currentSelectedTickets, ticketToAdd];
-      const dateTimeSet = new Set<string>();
-
-      for (const ticket of allSelectedTickets) {
-        for (const day of ticket.dayDescription || []) {
-          const key = `${day.date}_${day.startTime}`;
-          if (dateTimeSet.has(key)) {
-            break;
-          }
-          dateTimeSet.add(key);
-        }
-      }
-
-      // Add the new ticket's date/times to the state
-      const newDateTimeEntries: ITicketDayTimeForSession[] = (
-        ticketToAdd.dayDescription || []
-      ).map((day) => ({
-        ticketId: ticketToAdd.ticketId!,
-        ticketName: ticketToAdd.name,
-        date: day.date,
-        startTime: day.startTime,
-        endTime: day.endTime,
-      }));
-
-      setTicketDateTime((prev) => [...prev, ...newDateTimeEntries]);
-    } else {
-      // Remove the ticket's date/times when unchecking
-      setTicketDateTime((prev) =>
-        prev.filter((item) => item.ticketId !== ticketId),
-      );
-    }
-  }
 
   function renderTicketRow(ticket: ITicket) {
     const selected = (config.ticketIds ?? []).includes(ticket.ticketId!);
@@ -338,51 +199,6 @@ export function LandingTab({
     );
   }
 
-  const hasHeroImage = !!config.images?.length;
-  const hasTicket = !!config.ticketIds?.length;
-  const hasActiveSession = config.sessions.some((s) => s.isActive);
-  const canPublish = hasHeroImage && hasTicket && hasActiveSession;
-
-  async function handleSubmit() {
-    if (!canPublish) {
-      toast.error(t("publish_requirements_error"));
-      return;
-    }
-    try {
-      if (wrapperId && !isDuplicate) {
-        await updateEventSession({
-          sessionId: wrapperId,
-          body: config,
-        }).unwrap();
-        savedConfigRef.current = config;
-        toast.success(t("toast_session_updated"));
-      } else {
-        const created = await createEventSession({
-          ...config,
-          eventId,
-        }).unwrap();
-        savedConfigRef.current = config;
-        setSearchParams(
-          (prev) => {
-            const next = new URLSearchParams(prev);
-            next.set("wrapperId", created.id);
-            return next;
-          },
-          { replace: true },
-        );
-        toast.success(t("toast_session_created"));
-      }
-    } catch {
-      toast.error(
-        t(
-          wrapperId
-            ? "toast_session_update_error"
-            : "toast_session_create_error",
-        ),
-      );
-    }
-  }
-
   return (
     <>
       <Spinner isLoading={isLoading} />
@@ -394,27 +210,61 @@ export function LandingTab({
                 {t("page_header_title")}
               </h3>
             </div>
-            <AField label={t("brand_name_field")}>
+            <AField label={t("brand_name_field")} isRequired>
               <input
                 className={INPUT}
                 value={config.brand}
                 onChange={(e) => update({ brand: e.target.value })}
               />
             </AField>
-            <AField label={t("main_heading_field")}>
+            {!hasBrand && (
+              <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
+                {t("required_badge")}
+              </p>
+            )}
+            <AField label={t("main_heading_field")} isRequired>
               <input
                 className={INPUT}
                 value={config.headline}
                 onChange={(e) => update({ headline: e.target.value })}
               />
             </AField>
-            <AField label={t("subtitle_field")}>
+            {!hasHeadline && (
+              <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
+                {t("required_badge")}
+              </p>
+            )}
+            <AField label={t("subtitle_field")} isRequired>
               <textarea
                 className={clsx(INPUT, "resize-y leading-relaxed")}
                 rows={2}
                 value={config.subhead}
                 onChange={(e) => update({ subhead: e.target.value })}
               />
+            </AField>
+            {!hasSubhead && (
+              <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
+                {t("required_badge")}
+              </p>
+            )}
+            <AField label={t("greeting")}>
+              <div className="relative">
+                <textarea
+                  rows={4}
+                  maxLength={500}
+                  value={config.greeting}
+                  onChange={(e) => update({ greeting: e.target.value })}
+                  className={clsx(INPUT, "resize-y leading-relaxed pr-16")}
+                />
+                <span
+                  className={clsx(
+                    "absolute bottom-2 right-2 text-xs",
+                    textTertiary,
+                  )}
+                >
+                  {config.greeting?.length || 0}/500
+                </span>
+              </div>
             </AField>
           </div>
 
@@ -577,11 +427,11 @@ export function LandingTab({
                 {t("required_badge")}
               </p>
             )}
-            {ticketRes?.data?.availableTickets === 0 && !wrapperId && (
-              <p className="text-xs font-semibold text-amber-500 -mt-2 mb-3">
-                {t("ticket_already_used_note")}
-              </p>
-            )}
+            {/* {ticketRes?.data?.availableTickets === 0 && !wrapperId && (
+                <p className="text-xs font-semibold text-amber-500 -mt-2 mb-3">
+                  {t("ticket_already_used_note")}
+                </p>
+              )} */}
 
             {tickets?.length ? (
               <>
@@ -590,7 +440,7 @@ export function LandingTab({
                     .slice(0, 2)
                     .map((ticket: ITicket) => renderTicketRow(ticket))}
                 </div>
-                {tickets.length > TICKETS_PREVIEW_COUNT && (
+                {tickets?.length > TICKETS_PREVIEW_COUNT && (
                   <button
                     onClick={() => setIsTicketsModalOpen(true)}
                     className={clsx(
@@ -613,40 +463,23 @@ export function LandingTab({
             )}
           </div>
 
-          <div className={CARD}>
-            <div className={CARD_HEAD}>
-              <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
-                {t("selection_mode_title")}
-              </h3>
-            </div>
-            <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5">
-              <button
-                className={modeBtn(config.selectionMode === "radio")}
-                onClick={() => update({ selectionMode: "radio" })}
-              >
-                <strong className="text-sm">{t("radio_mode_label")}</strong>
-                <span className={clsx("text-[12.5px]", textTertiary)}>
-                  {t("radio_mode_desc")}
-                </span>
-              </button>
-              <button
-                className={modeBtn(config.selectionMode === "checkbox")}
-                onClick={() => update({ selectionMode: "checkbox" })}
-              >
-                <strong className="text-sm">{t("checkbox_mode_label")}</strong>
-                <span className={clsx("text-[12.5px]", textTertiary)}>
-                  {t("checkbox_mode_desc")}
-                </span>
-              </button>
-            </div>
-          </div>
-
+          {/* Create session & session list */}
           <div className={CARD}>
             <div className="flex items-center justify-between">
               <div className={CARD_HEAD}>
                 <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
                   {t("live_sessions_title")}
                   <span className="text-red-500"> *</span>
+                  {config?.sessions?.length ? (
+                    <span
+                      className={clsx(
+                        "ml-1.5 text-[12.5px] font-semibold",
+                        textTertiary,
+                      )}
+                    >
+                      ({config.sessions.length})
+                    </span>
+                  ) : null}
                 </h3>
               </div>
               <TooltipWrapper
@@ -654,10 +487,7 @@ export function LandingTab({
                 infoText={"You must have ticket first"}
               >
                 <button
-                  onClick={() => {
-                    setEditIndex(-1);
-                    setIsCreateWizardOpen(true);
-                  }}
+                  onClick={handleAddSessionBtn}
                   className={clsx(
                     "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold hover:brightness-110 transition-[transform,filter] active:translate-y-px",
                     hasTicket
@@ -678,62 +508,199 @@ export function LandingTab({
             >
               {t("live_sessions_help")}
             </p>
-            {!hasActiveSession && (
+
+            <div
+              className={clsx(
+                (config?.sessions?.length || 0) > 5 &&
+                  "max-h-76 overflow-y-auto pr-1",
+              )}
+            >
+              {config?.sessions?.map((e, sessionIdx) => {
+                const assignedBlock = getSessionBlock(e._id || "");
+                const isAssigned = !!assignedBlock;
+
+                return (
+                  <div
+                    key={sessionIdx}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2.5 py-2.25 px-0.5">
+                      <div className="flex items-center gap-2.5 text-sm font-semibold">
+                        <ImageWithFallback
+                          src={e?.images?.[0]?.image}
+                          alt={e.name}
+                          className="rounded w-8 h-8 object-cover"
+                        />
+                        <div className="flex1">
+                          <div className="flex items-center gap-1">
+                            <p className="">{e.name}</p>
+                            {isAssigned && (
+                              <div
+                                className={clsx(
+                                  "flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full",
+                                  isDark ? "text-blue-400" : "text-blue-600",
+                                )}
+                              >
+                                <Link className="w-3 h-3" />
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500 line-clamp-1">
+                            {e.description}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ActionIconButtons
+                        isDark={isDark}
+                        actions={[
+                          {
+                            title: t("edit"),
+                            icon: PenBox,
+                            color: "blue",
+                            onClick: () => {
+                              setEditSessionData(e);
+                              setIsCreateWizardOpen(true);
+                            },
+                          },
+                          {
+                            title: isAssigned
+                              ? t("session_assigned_warning")
+                              : t("delete"),
+                            icon: Trash,
+                            color: "red",
+                            disabled: isAssigned,
+                            onClick: () => {
+                              if (!isAssigned) {
+                                setDeleteIndex(sessionIdx);
+                              }
+                            },
+                          },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Assign Sessions into Block */}
+          <div className={CARD}>
+            <div className="flex items-center justify-between">
+              <div className={CARD_HEAD}>
+                <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
+                  {t("assign_sessions_into_block")}
+                  <span className="text-red-500"> *</span>
+                  {config?.blocks?.length ? (
+                    <span
+                      className={clsx(
+                        "ml-1.5 text-[12.5px] font-semibold",
+                        textTertiary,
+                      )}
+                    >
+                      ({config.blocks.length})
+                    </span>
+                  ) : null}
+                </h3>
+              </div>
+              <TooltipWrapper
+                showToolTip={!hasTicket || !hasAvailableSessionsForBlock()}
+                infoText={
+                  !hasTicket
+                    ? "You must have ticket first"
+                    : t("no_sessions_available_for_block")
+                }
+              >
+                <button
+                  onClick={() => setIsCreateBlockWizardOpen(true)}
+                  className={clsx(
+                    "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold hover:brightness-110 transition-[transform,filter] active:translate-y-px",
+                    hasTicket && hasAvailableSessionsForBlock()
+                      ? "bg-blue-500 cursor-pointer text-white"
+                      : "bg-blue-300 cursor-not-allowed text-gray-100",
+                  )}
+                  disabled={!hasTicket || !hasAvailableSessionsForBlock()}
+                >
+                  {t("add_block")}
+                </button>
+              </TooltipWrapper>
+            </div>
+            <p
+              className={clsx(
+                "text-sm leading-relaxed -mt-1.5 mb-3.5",
+                textTertiary,
+              )}
+            >
+              {t("assign_block_help")}
+            </p>
+            {!hasBlock && (
               <p className="text-xs font-semibold text-red-500 -mt-2.5 mb-3.5">
                 {t("required_badge")}
               </p>
             )}
-            {config?.sessions?.map((e, sessionIdx) => (
-              <div
-                key={sessionIdx}
-                className="flex items-center justify-between"
-              >
-                <label className="flex items-center gap-2.5 py-2.25 px-0.5 text-sm font-semibold cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className={clsx(
-                      "w-4.25 h-4.25",
-                      isDark ? "accent-blue-400" : "accent-blue-600",
-                    )}
-                    checked={e.isActive}
-                    onChange={() =>
-                      update({
-                        sessions: config.sessions.map((s, i) =>
-                          i === sessionIdx
-                            ? { ...s, isActive: !e.isActive }
-                            : s,
-                        ),
-                      })
-                    }
-                  />
-                  <span>{e.name}</span>
-                </label>
-                <div className="flex items-center gap-1">
-                  <ActionIconButtons
-                    isDark={isDark}
-                    actions={[
-                      {
-                        title: t("edit"),
-                        icon: PenBox,
-                        color: "blue",
-                        onClick: () => {
-                          setEditIndex(sessionIdx);
-                          setIsCreateWizardOpen(true);
+
+            <div
+              className={clsx(
+                (config?.blocks?.length || 0) > 5 &&
+                  "max-h-76 overflow-y-auto pr-1",
+              )}
+            >
+              {config?.blocks?.map((e, blockId) => (
+                <div
+                  key={blockId}
+                  className="flex items-center justify-between"
+                >
+                  <label className="flex items-center gap-2.5 py-2.25 px-0.5 text-sm font-semibold cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className={clsx(
+                        "w-4.25 h-4.25",
+                        isDark ? "accent-blue-400" : "accent-blue-600",
+                      )}
+                      checked={e.isActive}
+                      onChange={() => toggleBlockActive(blockId)}
+                    />
+                    <div className="flex-1">
+                      <span>{e.name}</span>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className={clsx("text-xs", textTertiary)}>
+                          {t("booking_limit")}: {e.bookingLimit}
+                        </span>
+                        <span className={clsx("text-xs", textTertiary)}>
+                          {t("assigned_sessions")}: {e.sessionIds?.length || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <ActionIconButtons
+                      isDark={isDark}
+                      actions={[
+                        {
+                          title: t("edit"),
+                          icon: PenBox,
+                          color: "blue",
+                          onClick: () => {
+                            setEditBlockData(e);
+                            setIsCreateBlockWizardOpen(true);
+                          },
                         },
-                      },
-                      {
-                        title: t("delete"),
-                        icon: Trash,
-                        color: "red",
-                        onClick: () => {
-                          setDeleteIndex(sessionIdx);
+                        {
+                          title: t("delete"),
+                          icon: Trash,
+                          color: "red",
+                          onClick: () => {
+                            setDeleteBlockIndex(blockId);
+                          },
                         },
-                      },
-                    ]}
-                  />
+                      ]}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className={CARD}>
@@ -766,11 +733,23 @@ export function LandingTab({
 
       {isCreateWizardOpen && (
         <CreateEventSessionWizard
-          onChange={onChange}
-          config={config}
-          editIndex={editIndex}
+          wrapperId={wrapperId}
           ticketDateTime={ticketDateTime}
           setIsOpen={setIsCreateWizardOpen}
+          editData={editSessionData || undefined}
+          setEditSessionData={setEditSessionData}
+          onDone={refetch}
+        />
+      )}
+
+      {isCreateBlockWizardOpen && (
+        <BlockSessionAssignModal
+          config={config}
+          onChange={onChange}
+          setIsOpen={setIsCreateBlockWizardOpen}
+          wrapperId={wrapperId}
+          setEditData={setEditBlockData}
+          editData={editBlockData || undefined}
         />
       )}
 
@@ -791,7 +770,17 @@ export function LandingTab({
         confirmText="delete"
         variant="danger"
         onCancel={() => setDeleteIndex(null)}
-        onConfirm={confirmDeleteEvent}
+        onConfirm={confirmDeleteEventSession}
+      />
+
+      <ConfirmDialog
+        open={deleteBlockIndex !== null}
+        title="delete_session_block"
+        message="delete_session_block_confirm"
+        confirmText="delete"
+        variant="danger"
+        onCancel={() => setDeleteBlockIndex(null)}
+        onConfirm={confirmDeleteSessionBlock}
       />
 
       {isTicketsModalOpen && (

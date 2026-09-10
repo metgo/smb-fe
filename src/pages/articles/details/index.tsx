@@ -20,7 +20,7 @@ import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
 import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
 import { formatDateTime } from "@/helpers/formatter";
-import { getLngWiseStr } from "@/helpers";
+import { getLngWiseStr, sanitizeRichTextHtml } from "@/helpers";
 
 interface BlogImage {
   image: string;
@@ -29,47 +29,8 @@ interface BlogImage {
   caption?: string;
 }
 
-interface BlogDetails {
-  _id: string;
-  status: string;
-  title: string;
-  titleHe: string;
-  titleAr: string;
-  shortDescription: string;
-  shortDescriptionHe: string;
-  shortDescriptionAr: string;
-  contentHe: string;
-  contentAr: string;
-  content: string;
-  summary: string;
-  summaryHe: string;
-  summaryAr: string;
-  slug: string;
-  metaTitle: string;
-  metaTitleHe: string;
-  metaTitleAr: string;
-  metaDescription: string;
-  metaDescriptionHe: string;
-  metaDescriptionAr: string;
-  tags: string[];
-  tagsHe: string[];
-  tagsAr: string[];
-  images: BlogImage[];
-  createdAt: string;
-  updatedAt: string | null;
-  createdBy: string;
-  updatedBy: string | null;
-  externalApiId: {
-    id: string;
-    name: string;
-    logo: string;
-    url: string;
-  };
-}
-
 // ─── Mapper ───────────────────────────────────────────────────────────────────
-
-function mapBlogDetailsToArticle(blogDetails: any): BlogDetails {
+function mapBlogDetailsToArticle(blogDetails: any): IBlogDetails {
   return {
     _id: blogDetails?._id,
     status: blogDetails?.status?.toLowerCase() ?? "draft",
@@ -133,7 +94,7 @@ export default function ArticleDetails() {
   } = useGetBlogByIdQuery({ blogId }, { skip: !blogId });
 
   // Prefer API data; fall back to passed article prop
-  const blogDetails: BlogDetails | null = blogDetailsRaw
+  const blogDetails: IBlogDetails | null = blogDetailsRaw
     ? mapBlogDetailsToArticle(blogDetailsRaw)
     : null;
 
@@ -206,14 +167,20 @@ export default function ArticleDetails() {
         <h3 className={`text-sm mb-2 ${textTertiary}`}>
           {t("short_description")}
         </h3>
-        <p className={textPrimary}>
-          {getLngWiseStr(
-            language,
-            blogDetails?.shortDescription,
-            blogDetails?.shortDescriptionHe,
-            blogDetails?.shortDescriptionAr,
-          ) || "-"}
-        </p>
+        <div
+          className={textPrimary}
+          dangerouslySetInnerHTML={{
+            __html:
+              sanitizeRichTextHtml(
+                getLngWiseStr(
+                  language,
+                  blogDetails?.shortDescription,
+                  blogDetails?.shortDescriptionHe,
+                  blogDetails?.shortDescriptionAr,
+                ),
+              ) || "-",
+          }}
+        />
       </div>
 
       {/* Subtitle */}
@@ -271,13 +238,14 @@ export default function ArticleDetails() {
       <div
         className={`p-6 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} prose max-w-none`}
         dangerouslySetInnerHTML={{
-          __html:
+          __html: sanitizeRichTextHtml(
             getLngWiseStr(
               language,
               blogDetails?.content,
               blogDetails?.contentHe,
               blogDetails?.contentAr,
-            ) || "",
+            ),
+          ),
         }}
       />
     </div>
@@ -397,61 +365,10 @@ export default function ArticleDetails() {
     <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isDetailLoading} />
 
-      {/* Action bar */}
-      <div className="flex items-center justify-between mb-3 shrink-0">
-        <BackToListBtn navPath={routes.articleMgmt} />
-
-        <div className="flex items-center gap-3">
-          <StatusChangeBtn
-            handleStatusChange={onStatusChangeHandler}
-            status={blogDetails?.status as TStatus}
-          />
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
-              }`}
-            >
-              <span className="text-sm font-medium">Actions</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {isDropdownOpen && (
-              <div
-                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
-                  isDark
-                    ? "bg-gray-900 border-gray-700"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                <button
-                  onClick={() => {
-                    setIsEditOpen(true);
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                    isDark
-                      ? "text-indigo-400 hover:bg-gray-800"
-                      : "text-indigo-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <Edit className="w-4 h-4 shrink-0" />
-                  {t("edit") || "Edit"}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Title + meta */}
       <div className="details-top shrink-0">
-        <div className="flex items-center gap-3">
+        <BackToListBtn navPath={routes.articleMgmt} />
+        <div className="flex items-center gap-3 mt-2">
           <ImageWithFallback
             src={primaryImage}
             alt={
@@ -463,11 +380,11 @@ export default function ArticleDetails() {
               ) || "-"
             }
             className={clsx(
-              "w-14 h-14 rounded-xl object-cover shrink-0 border",
+              "w-14 h-14 rounded-xl object-cover border shrink-0",
               isDark ? "border-gray-600" : "border-gray-200",
             )}
           />
-          <div className="flex flex-1 items-center justify-between gap-4 min-w-0">
+          <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 min-w-0">
             <div className="min-w-0">
               <h1
                 className={`text-lg font-semibold leading-tight truncate ${
@@ -553,10 +470,13 @@ export default function ArticleDetails() {
                       style={{ background: "currentColor" }}
                     />
                     <a
-                      href={blogDetails?.externalApiId?.url}
+                      href={`${blogDetails?.externalApiId?.url}blog-article-details/${blogDetails?.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-gray-700"
+                      className={clsx(
+                        "inline-flex items-center gap-1 text-xs",
+                        textSecondary,
+                      )}
                     >
                       <img
                         src={blogDetails?.externalApiId?.logo}
@@ -569,6 +489,55 @@ export default function ArticleDetails() {
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </>
+                )}
+              </div>
+            </div>
+
+            <div className="shrink-0 flex items-center gap-2">
+              <StatusChangeBtn
+                handleStatusChange={onStatusChangeHandler}
+                status={blogDetails?.status as TStatus}
+              />
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+                  }`}
+                >
+                  <span className="text-sm font-medium">
+                    {t("actions") || "Actions"}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div
+                    className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                      isDark
+                        ? "bg-gray-900 border-gray-700"
+                        : "bg-white border-gray-200"
+                    }`}
+                  >
+                    <button
+                      onClick={() => {
+                        setIsEditOpen(true);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-indigo-400 hover:bg-gray-800"
+                          : "text-indigo-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Edit className="w-4 h-4 shrink-0" />
+                      {t("edit") || "Edit"}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

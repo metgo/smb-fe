@@ -1,7 +1,7 @@
 import { useEffect, useRef, type FC } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { DmoAuthorityWebsiteSelector } from "@/components/shared";
+import { DmoAuthorityWebsiteIdsSelector } from "@/components/shared";
 
 interface PoiFormData {
   nameEn: string;
@@ -21,15 +21,14 @@ interface PoiBasicInfoProps {
   formData: PoiFormData;
   setFormData: (data: any) => void;
   errors: Record<string, string>;
-  poiId: string;
+  setErrors?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   selectedAuthorityId: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
-  websiteVisibilityIds: IWebsiteVisibilityIds;
-  setWebsiteVisibilityIds: (v: any) => void;
-  poiAssociatedWebsites?: IAssociatedWebsiteIds[];
+  websiteVisibilityIds: string[];
+  setWebsiteVisibilityIds: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
@@ -37,14 +36,13 @@ const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
   formData,
   markDirty,
   errors,
-  poiId,
+  setErrors,
   selectedDmoId,
   setSelectDmoId,
   selectedAuthorityId,
   setSelectAuthorityId,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
-  poiAssociatedWebsites = [],
 }) => {
   const { isDark } = useThemeClasses();
 
@@ -55,25 +53,23 @@ const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
   }, [formData, selectedDmoId]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className={`text-lg ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           {t("basic_information")}
         </h3>
       </div>
 
-      <DmoAuthorityWebsiteSelector
+      <DmoAuthorityWebsiteIdsSelector
         errors={errors}
-        isEdit={!!poiId}
-        keyId="externalApiId"
+        setErrors={setErrors}
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
         setSelectAuthorityId={setSelectAuthorityId}
+        selectedWebsiteIds={websiteVisibilityIds}
+        setSelectWebsiteIds={setWebsiteVisibilityIds}
         dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={websiteVisibilityIds}
-        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-        itemAssociatedWebsites={poiAssociatedWebsites}
       />
     </div>
   );

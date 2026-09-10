@@ -2,10 +2,17 @@ import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Users, Ticket, DollarSign } from "lucide-react";
+import {
+  Calendar,
+  Users,
+  Ticket,
+  DollarSign,
+  SlidersHorizontal,
+} from "lucide-react";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageHeader, PageStats, ViewModeToggle } from "@/components/shared";
+import { ViewModeToggle } from "@/components/shared";
+import ListHeaderBar from "@/components/shared/ListHeaderBar";
 import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
 import { CreateEventWizardNew, EventsWithViewMode } from "./components";
 import SearchInput from "@/components/shared/SearchInput";
@@ -20,13 +27,15 @@ export default function EventsMgmtPage() {
 
   const navigate = useNavigate();
 
-  const { textPrimary, textSecondary, inputClasses, textTertiary, isDark } =
+  const { textSecondary, inputClasses, textTertiary, isDark } =
     useThemeClasses();
 
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
+  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
+  const [_isScrolled, setIsScrolled] = useState(false);
 
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   const [searchQuery, setSearchQuery] = useState(savedState?.searchQuery || "");
@@ -122,6 +131,81 @@ export default function EventsMgmtPage() {
     setIsCreateWizardOpen(false);
   };
 
+  // ─── Collapse the controls drawer on scroll ────────────────────────────
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (
+        (target && target.scrollTop && target.scrollTop > 20) ||
+        window.scrollY > 20
+      ) {
+        setIsScrolled(true);
+        setShowControlsDrawer(false);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, {
+      capture: true,
+      passive: true,
+    });
+    return () =>
+      window.removeEventListener("scroll", handleScroll, {
+        capture: true,
+      } as any);
+  }, []);
+
+  // ─── Active filter count (search term + any non-default filter values) ──
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery?.trim()) count += 1;
+    if (eventTypeFilter !== "all") count += 1;
+    if (registrationFilter !== "all") count += 1;
+    if (statusFilter !== "all") count += 1;
+    if (dateRangeFilter.start || dateRangeFilter.end) count += 1;
+    return count;
+  }, [
+    searchQuery,
+    eventTypeFilter,
+    registrationFilter,
+    statusFilter,
+    dateRangeFilter,
+  ]);
+
+  // ─── Reusable icon-only filter toggle button ──────────────────────────
+  const filterToggleButton = (
+    <button
+      onClick={() => setShowControlsDrawer((prev) => !prev)}
+      className={clsx(
+        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
+        showControlsDrawer
+          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
+          : isDark
+            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
+            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
+      )}
+      title={
+        showControlsDrawer
+          ? (tc("close_options") ?? "Close Options")
+          : (tc("search_and_filters") ?? "Search & Filters")
+      }
+    >
+      <SlidersHorizontal className="w-4 h-4" />
+      {activeFilterCount > 0 && (
+        <span
+          className={clsx(
+            "absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+            showControlsDrawer
+              ? "bg-white text-teal-600"
+              : "bg-teal-500 text-white",
+          )}
+        >
+          {activeFilterCount > 9 ? "9+" : activeFilterCount}
+        </span>
+      )}
+    </button>
+  );
+
   const eventStats = [
     {
       id: 1,
@@ -129,54 +213,62 @@ export default function EventsMgmtPage() {
       value: eventStatsData?.totalEventsCount,
       label: `${eventStatsData?.upcomingEventsCount} ${t("upcoming")}`,
       labelClass: "text-green-500",
-      icon: <Calendar className="w-8 h-8 text-teal-500" />,
+      icon: <Calendar className="w-5 h-5 text-teal-500" />,
     },
     {
       id: 2,
       title: t("total_registrations"),
       value: eventStatsData?.totalRegistration,
-      icon: <Users className="w-8 h-8 text-blue-500" />,
+      icon: <Users className="w-5 h-5 text-blue-500" />,
     },
     {
       id: 3,
       title: t("total_revenue"),
       value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
-      icon: <DollarSign className="w-8 h-8 text-green-500" />,
+      icon: <DollarSign className="w-5 h-5 text-green-500" />,
     },
     {
       id: 4,
       title: t("avg_capacity_fill"),
       value: `${eventStatsData?.avgCapacityFill}%`,
-      icon: <Ticket className="w-8 h-8 text-purple-500" />,
+      icon: <Ticket className="w-5 h-5 text-purple-500" />,
     },
   ];
 
   return (
     <>
-      <div className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden pt-10">
-        <div className="shrink-0">
-          <PageHeader
+      <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
+        {/* Sticky Top Header Bar (Title + Add Button + Stats) */}
+        <div
+          className={clsx(
+            "shrink-0 sticky top-14 md:top-20 z-30 transition-all duration-200 py-2.5 px-3 md:px-4 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
+            isDark
+              ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
+              : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900",
+          )}
+        >
+          <ListHeaderBar
             title={t("events_management_dashboard")}
-            description={t("events_management_desc")}
-            btnLabel={t("add_event")}
-            h1Gradient={textPrimary}
-            onClick={handleAddEvent}
-            totalCount={totalData || 0}
-          />
-
-          <PageStats
+            count={totalData}
+            addLabel={t("add_event")}
+            onAdd={handleAddEvent}
             stats={eventStats}
-            isLoading={isEventStatsFetching}
-            className="sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            wrapperClassName="mb-4"
+            isStatsLoading={isEventStatsFetching}
+            filterToggle={filterToggleButton}
           />
         </div>
 
-        {/* Search and Filter Section */}
-        <div className="shrink-0 mb-2">
-          {/* Search Bar */}
-          <div className="flex flex-col sm:flex-row gap-2 mb-2">
-            <div className="flex-1 relative">
+        {/* Search bar (always visible) + collapsible controls on the same row */}
+        <div
+          className={clsx(
+            "shrink-0 transition-all duration-300 py-3 px-3 md:px-4 rounded-2xl border shadow-md flex flex-col gap-3",
+            isDark
+              ? "bg-gray-900/90 border-gray-800/90"
+              : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <div className="flex-1 min-w-0 relative" data-tour="search">
               <SearchInput
                 placeholder={t("search_events_placeholder")}
                 searchTerm={searchQuery}
@@ -184,18 +276,24 @@ export default function EventsMgmtPage() {
                 storageKey="eventSearchTerm"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <FilterButton value={showFilters} onChange={setShowFilters} />
-              <ViewModeToggle
-                showCalendor
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="eventViewMode"
-              />
-            </div>
+
+            {showControlsDrawer && (
+              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+                </div>
+
+                <ViewModeToggle
+                  showCalendor
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="eventViewMode"
+                />
+              </div>
+            )}
           </div>
 
-          {(showFilters || hasSavedFilters) && (
+          {showControlsDrawer && (showFilters || hasSavedFilters) && (
             <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
               {/* Collapsible Filters */}
               <div className="grid grid-cols-12 gap-2 pt-2 dark:border-gray-700">
@@ -399,7 +497,7 @@ export default function EventsMgmtPage() {
         </div>
 
         {/* Events with different View */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 mt-1">
           <EventsWithViewMode
             isLoading={isLoading || isFetching}
             events={combinedEvents}

@@ -64,7 +64,7 @@ interface UserInfoRes {
   address: string;
   isPhoneVerify: boolean;
   isEmailVerify: boolean;
-  role: "superadmin" | "admin" | "user" | string;
+  role: TUserRole;
   createdAt: string; // ISO date
   updatedAt: string; // ISO date
   bankAccount: BankAccount;
@@ -100,7 +100,7 @@ interface IUser {
   isPhoneVerify: boolean;
   isEmailVerify: boolean;
   loginAttempts: number;
-  role: "superadmin" | "admin" | "user" | "dmo" | "authority" | "traveller";
+  role: TUserRole;
   hasBusiness: boolean;
   lastLogin: string;
   countryCode: string;
@@ -121,4 +121,26 @@ interface IUsersRes {
     hasPreviousPage: boolean;
     hasNextPage: boolean;
   };
+}
+
+interface IUserDetailsRes {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phoneDetails: {
+    countryCode: string;
+    phoneNumber: string;
+  };
+  languagePreference: string;
+  address: string;
+  dob: string | null;
+  email: string;
+  isPhoneVerify: boolean;
+  isEmailVerify: boolean;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+  hasBusiness: boolean;
+  dmo: { id: string };
+  authority: { id: string };
 }

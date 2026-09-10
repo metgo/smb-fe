@@ -1,6 +1,7 @@
 export const routes = {
   dashboard: "/",
   analyticsDashboard: "/analytics-dashboard",
+  chat: "/chat",
   home: "/home",
 
   businessMgmt: "/businesses-management",
@@ -19,11 +20,13 @@ export const routes = {
 
   ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
+  ordersSummaryMgmt: "/orders-summary-management",
 
   contentMgmt: "/content-management",
   voucherMgmt: "/voucher-management",
   voucherDetails: "/voucher-details",
-
+  vendorReconciliationMgmt: "/vendor-reconciliation",
+  paymentTransactions: "/payment-transactions",
   pointOfInterest: "/point-of-interest",
   poiMgmt: "/poi-management",
   poiDetails: "/poi-details",
@@ -51,6 +54,7 @@ export const routes = {
 
   dynamicPages: "/dynamic-pages",
   promotionMgmt: "/promotions-management",
+  utmBuilder: "/campaign-url-builder",
 
   users: "/users",
 
@@ -58,6 +62,7 @@ export const routes = {
   publicSession: "/verify-session",
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
+  statsSummary: "/stats-summary",
 };
 
 export type RouteKey = keyof typeof routes;

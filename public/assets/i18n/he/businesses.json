@@ -72,6 +72,7 @@
   "no_delivery_policy": "אין מדיניות משלוחים",
   "add_delivery_policy_description": "הוסף תיאור מדיניות משלוחים",
   "dmo": "DMO",
+  "unassigned": "לא משויך",
   "actions": "פעולות",
   "bulk_actions": "פעולות בכמות גדולה",
   "approve": "אשר",
@@ -176,7 +177,6 @@
   "websiteUrl": "כתובת אתר",
   "contactPhone": "טלפון איש קשר",
   "bookmarks": "סימניות",
-  "connected_websites": "אתרים מחוברים",
   "shares": "שיתופים",
   "avg_time_on_page": "זמן ממוצע בדף",
   "conversion_rate": "שיעור המרה",
@@ -299,5 +299,14 @@
   "scanToVisit": "סרוק כדי לבקר",
   "last_active": "פעילות אחרונה",
   "member_since": "חבר מאז",
-  "tour": "סיור מודרך"
+  "tour": "סיור מודרך",
+  "stats": "סטטיסטיקות",
+  "hide_stats": "הסתר סטטיסטיקות",
+  "show_stats": "הצג סטטיסטיקות",
+  "stats_hidden": "סטטיסטיקות מוסתרות",
+  "key_metrics": "מדדי מפתח",
+  "search_and_filters": "חיפוש וסינון",
+  "close_options": "סגור אפשרויות",
+  "options": "אפשרויות",
+  "hide_options": "הסתר אפשרויות"
 }

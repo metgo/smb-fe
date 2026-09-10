@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FileText,
@@ -10,23 +10,25 @@ import {
   Eye,
   Pencil,
 } from "lucide-react";
-import { ImageWithFallback } from "@/components/shared";
+import { useCreateLandingPageSessionMutation } from "@/store/api/eventSessionApi";
 
 import { AField } from "./AField";
 import { DatesEditor } from "./DatesEditor";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
-import { WizardStepper, WizardFooter } from "@/components/shared";
 import ImageUploadSection from "./ImageUploadSection";
+import { ImageWithFallback } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { WizardStepper, WizardFooter } from "@/components/shared";
 
 type Instructor = { name: string; role: string };
 
 interface CreateEventSessionWizardProps {
-  config: IAdminConfig;
-  onChange: (config: IAdminConfig) => void;
+  wrapperId: string | null;
+  editData?: IEventSession;
   setIsOpen: (v: boolean) => void;
-  editIndex: number;
   ticketDateTime: ITicketDayTimeForSession[];
+  onDone?: () => void;
+  setEditSessionData?: (data: IEventSession | null) => void;
 }
 
 interface IEventSessionDate {
@@ -41,29 +43,23 @@ interface IEventSessionDate {
 function transformTicketDateTimeToDates(
   ticketDateTime: ITicketDayTimeForSession[],
 ): IEventSessionDate[] {
-  // Group by date
   const dateMap = new Map<string, Set<string>>();
 
   ticketDateTime.forEach((item) => {
-    // Extract just the date part (YYYY-MM-DD)
     const dateOnly = item.date.split("T")[0];
-
     if (!dateMap.has(dateOnly)) {
       dateMap.set(dateOnly, new Set());
     }
-
-    // Add startTime to the set for this date
     dateMap.get(dateOnly)!.add(item.startTime);
   });
 
-  // Convert to the required format
   const result: IEventSessionDate[] = [];
   dateMap.forEach((times, date) => {
     result.push({
-      date: `${date}`, // Keep the original format
+      date: `${date}`,
       slots: Array.from(times).map((time) => ({
         time: time,
-        capacity: 8, // Default capacity, adjust as needed
+        capacity: 8,
       })),
     });
   });
@@ -71,13 +67,15 @@ function transformTicketDateTimeToDates(
 }
 
 export function CreateEventSessionWizard({
-  config,
-  onChange,
+  wrapperId,
+  editData,
   setIsOpen,
-  editIndex,
   ticketDateTime,
+  onDone,
+  setEditSessionData,
 }: CreateEventSessionWizardProps) {
   const { t } = useTranslation("event_session");
+
   const {
     isDark,
     textPrimary,
@@ -88,9 +86,24 @@ export function CreateEventSessionWizard({
   } = useThemeClasses();
 
   const [currentStep, setCurrentStep] = useState(1);
-
-  // State for the new tag input field
   const [newRoomInput, setNewRoomInput] = useState("");
+
+  const [
+    createLandingPageSession,
+    { isLoading: isLandingPageSessionCreating },
+  ] = useCreateLandingPageSessionMutation();
+
+  // Track validation errors for instructors
+  const [instructorErrors, setInstructorErrors] = useState<
+    Record<number, { name: boolean; role: boolean }>
+  >({});
+
+  // Track validation errors for required fields
+  const [nameError, setNameError] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Track if any image is currently uploading
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
@@ -100,6 +113,11 @@ export function CreateEventSessionWizard({
       ? "focus:border-blue-400 focus:ring-blue-400/10"
       : "focus:border-blue-500 focus:ring-blue-500/10",
   );
+  const INPUT_ERROR = clsx(
+    INPUT,
+    "border-red-500 focus:border-red-500 focus:ring-red-500/10",
+  );
+
   const BTN_GHOST_XS = clsx(
     "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold transition-[transform,filter] active:translate-y-px",
     isDark
@@ -127,6 +145,7 @@ export function CreateEventSessionWizard({
         : [{ date: "2026-08-01", slots: [{ time: "10:00", capacity: 8 }] }];
 
     return {
+      _id: "",
       name: "",
       tagline: "",
       description: "",
@@ -134,66 +153,147 @@ export function CreateEventSessionWizard({
       imagesLables: [],
       roomLabel: "",
       rooms: [],
-      instructors: [
-        {
-          name: "",
-          role: "",
-        },
-      ],
+      instructors: [],
       isActive: true,
       dates: dates,
     };
   }
 
-  const isNew = editIndex === -1;
   const [draftSession, setDraftSession] = useState<IEventSession>(() =>
     blankSession(ticketDateTime),
   );
 
-  const ev = isNew ? draftSession : (config.sessions[editIndex] ?? null);
-  const update = (patch: Partial<IAdminConfig>) =>
-    onChange({ ...config, ...patch });
-  const updateSession = (patch: Partial<IEventSession>) => {
-    if (isNew) {
-      setDraftSession((prev) => ({ ...prev, ...patch }));
-      return;
+  useEffect(() => {
+    if (editData) {
+      setDraftSession(editData);
     }
-    update({
-      sessions: config.sessions.map((e, i) =>
-        i === editIndex ? { ...e, ...patch } : e,
-      ),
-    });
+  }, [editData]);
+
+  const updateSession = (patch: Partial<IEventSession>) => {
+    setDraftSession((prev) => ({ ...prev, ...patch }));
   };
 
-  function handleDone() {
-    if (isNew) {
-      update({ sessions: [...config.sessions, draftSession] });
+  const validateInstructors = (): boolean => {
+    if (!draftSession?.instructors || draftSession.instructors.length === 0)
+      return true;
+
+    const errors: Record<number, { name: boolean; role: boolean }> = {};
+    let isValid = true;
+
+    draftSession.instructors.forEach((ins, i) => {
+      const nameEmpty = !ins.name?.trim();
+      const roleEmpty = !ins.role?.trim();
+
+      errors[i] = { name: nameEmpty, role: roleEmpty };
+
+      if (nameEmpty || roleEmpty) {
+        isValid = false;
+      }
+    });
+
+    setInstructorErrors(errors);
+    return isValid;
+  };
+
+  const validateRequiredFields = (): boolean => {
+    let isValid = true;
+
+    // Validate name (required)
+    const hasName = draftSession?.name?.trim();
+    setNameError(!hasName);
+    if (!hasName) isValid = false;
+
+    // Validate images (at least one required)
+    const hasImages = draftSession?.images && draftSession.images.length > 0;
+    setImageError(!hasImages);
+    if (!hasImages) isValid = false;
+
+    return isValid;
+  };
+
+  async function handleDone() {
+    if (!validateInstructors()) {
+      setCurrentStep(3); // Jump back to instructors step if invalid
+      return;
     }
-    setIsOpen(false);
+
+    if (!validateRequiredFields()) {
+      // Jump to the first invalid step
+      if (nameError) setCurrentStep(1);
+      else if (imageError) setCurrentStep(2);
+      return;
+    }
+
+    // Filter out any completely empty instructors just in case
+    const validInstructors = (draftSession?.instructors || []).filter(
+      (instructor) =>
+        instructor.name?.trim() !== "" || instructor.role?.trim() !== "",
+    );
+
+    const sessionToSave = {
+      ...draftSession,
+      instructors: validInstructors,
+    };
+
+    if (wrapperId) {
+      if (editData)
+        await createLandingPageSession({
+          wrapperId,
+          data: { ...sessionToSave, sessionId: sessionToSave._id },
+          method: "PATCH",
+        });
+      else await createLandingPageSession({ wrapperId, data: sessionToSave });
+      setIsOpen(false);
+      setEditSessionData?.(null);
+      onDone?.();
+    }
   }
 
+  const handleNext = () => {
+    if (currentStep === 1) {
+      // Validate name before leaving step 1
+      const hasName = draftSession?.name?.trim();
+      setNameError(!hasName);
+      if (!hasName) return;
+    }
+    if (currentStep === 2) {
+      // Validate images before leaving step 2
+      const hasImages = draftSession?.images && draftSession.images.length > 0;
+      setImageError(!hasImages);
+      if (!hasImages) return;
+    }
+    if (currentStep === 3) {
+      if (!validateInstructors()) return; // Block navigation if invalid
+    }
+    setCurrentStep((p) => p + 1);
+  };
+
   function addDate() {
-    if (!ev) return;
+    if (!draftSession) return;
     updateSession({
       dates: [
-        ...ev.dates,
+        ...draftSession.dates,
         { date: "2026-08-01", slots: [{ time: "10:00", capacity: 8 }] },
       ],
     });
   }
   function patchDate(dateIndex: number, patch: Partial<IEventDate>) {
-    if (!ev) return;
+    if (!draftSession) return;
     updateSession({
-      dates: ev.dates.map((d, i) => (i === dateIndex ? { ...d, ...patch } : d)),
+      dates: draftSession.dates.map((d, i) =>
+        i === dateIndex ? { ...d, ...patch } : d,
+      ),
     });
   }
   function removeDate(dateIndex: number) {
-    if (!ev) return;
-    updateSession({ dates: ev.dates.filter((_, i) => i !== dateIndex) });
+    if (!draftSession) return;
+    updateSession({
+      dates: draftSession.dates.filter((_, i) => i !== dateIndex),
+    });
   }
   function addSlot(dateIndex: number) {
-    if (!ev) return;
-    const d = ev.dates[dateIndex];
+    if (!draftSession) return;
+    const d = draftSession.dates[dateIndex];
     if (!d) return;
     patchDate(dateIndex, {
       slots: [...d.slots, { time: "12:00", capacity: 8 }],
@@ -204,40 +304,42 @@ export function CreateEventSessionWizard({
     slotIndex: number,
     patch: Partial<IEventSlot>,
   ) {
-    if (!ev) return;
-    const d = ev.dates[dateIndex];
+    if (!draftSession) return;
+    const d = draftSession.dates[dateIndex];
     if (!d) return;
     patchDate(dateIndex, {
       slots: d.slots.map((s, i) => (i === slotIndex ? { ...s, ...patch } : s)),
     });
   }
   function removeSlot(dateIndex: number, slotIndex: number) {
-    if (!ev) return;
-    const d = ev.dates[dateIndex];
+    if (!draftSession) return;
+    const d = draftSession.dates[dateIndex];
     if (!d) return;
     patchDate(dateIndex, { slots: d.slots.filter((_, i) => i !== slotIndex) });
   }
 
   function listAdd(val: string) {
-    if (!ev) return;
-    updateSession({ rooms: [...(ev.rooms || []), val] });
+    if (!draftSession) return;
+    updateSession({ rooms: [...(draftSession.rooms || []), val] });
   }
   function listPatch(i: number, val: string) {
-    if (!ev) return;
+    if (!draftSession) return;
     updateSession({
-      rooms: (ev.rooms ?? []).map((x, idx) => (idx === i ? val : x)),
+      rooms: (draftSession.rooms ?? []).map((x, idx) => (idx === i ? val : x)),
     });
   }
   function listRemove(i: number) {
-    if (!ev) return;
-    updateSession({ rooms: (ev.rooms ?? []).filter((_, idx) => idx !== i) });
+    if (!draftSession) return;
+    updateSession({
+      rooms: (draftSession.rooms ?? []).filter((_, idx) => idx !== i),
+    });
   }
 
   function insAdd() {
-    if (!ev) return;
+    if (!draftSession) return;
     updateSession({
       instructors: [
-        ...(ev.instructors || []),
+        ...(draftSession.instructors || []),
         {
           name: "",
           role: "",
@@ -245,19 +347,36 @@ export function CreateEventSessionWizard({
       ],
     });
   }
+
   function insPatch(i: number, patch: Partial<Instructor>) {
-    if (!ev) return;
+    if (!draftSession) return;
     updateSession({
-      instructors: (ev.instructors ?? []).map((x, idx) =>
+      instructors: (draftSession.instructors ?? []).map((x, idx) =>
         idx === i ? { ...x, ...patch } : x,
       ),
     });
+
+    // Clear error for the patched field as user types
+    if (instructorErrors[i]) {
+      setInstructorErrors((prev) => {
+        const newErrors = { ...prev };
+        if (patch.name !== undefined)
+          newErrors[i] = { ...newErrors[i], name: false };
+        if (patch.role !== undefined)
+          newErrors[i] = { ...newErrors[i], role: false };
+        return newErrors;
+      });
+    }
   }
+
   function insRemove(i: number) {
-    if (!ev) return;
+    if (!draftSession) return;
     updateSession({
-      instructors: (ev.instructors ?? []).filter((_, idx) => idx !== i),
+      instructors: (draftSession.instructors ?? []).filter(
+        (_, idx) => idx !== i,
+      ),
     });
+    setInstructorErrors({}); // Reset errors, will re-validate on Next/Done
   }
 
   const steps: IWizardStep[] = [
@@ -308,7 +427,7 @@ export function CreateEventSessionWizard({
   );
 
   const renderStepContent = () => {
-    if (!ev) return null;
+    if (!draftSession) return null;
     switch (currentStep) {
       case 1:
         return (
@@ -318,17 +437,25 @@ export function CreateEventSessionWizard({
                 {t("session_details_title")}
               </h3>
             </div>
-            <AField label={t("field_name")}>
+            <AField label={t("field_name")} isRequired>
               <input
-                className={INPUT}
-                value={ev.name}
-                onChange={(e) => updateSession({ name: e.target.value })}
+                className={nameError ? INPUT_ERROR : INPUT}
+                value={draftSession.name}
+                onChange={(e) => {
+                  updateSession({ name: e.target.value });
+                  if (e.target.value.trim()) setNameError(false);
+                }}
               />
             </AField>
+            {nameError && (
+              <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
+                {t("required_badge")}
+              </p>
+            )}
             <AField label={t("field_subtitle")}>
               <input
                 className={INPUT}
-                value={ev.tagline}
+                value={draftSession.tagline}
                 onChange={(e) => updateSession({ tagline: e.target.value })}
               />
             </AField>
@@ -336,7 +463,7 @@ export function CreateEventSessionWizard({
               <textarea
                 className={clsx(INPUT, "resize-y leading-relaxed")}
                 rows={4}
-                value={ev.description}
+                value={draftSession.description}
                 onChange={(e) => updateSession({ description: e.target.value })}
               />
             </AField>
@@ -344,14 +471,25 @@ export function CreateEventSessionWizard({
         );
       case 2:
         return (
-          <ImageUploadSection
-            key={editIndex}
-            id={String(editIndex)}
-            images={ev.images || []}
-            onImagesChange={(images) => updateSession({ images })}
-            title={t("images_title")}
-            cardClasses={cardClasses}
-          />
+          <div>
+            <ImageUploadSection
+              key="new-session"
+              id="new-session"
+              images={draftSession.images || []}
+              onImagesChange={(images) => {
+                updateSession({ images });
+                if (images.length > 0) setImageError(false);
+              }}
+              onUploadingChange={setIsImageUploading}
+              title={t("images_title") + " *"}
+              cardClasses={cardClasses}
+            />
+            {imageError && (
+              <p className="text-xs font-semibold text-red-500 mt-3">
+                {t("required_badge")}
+              </p>
+            )}
+          </div>
         );
       case 3:
         return (
@@ -361,28 +499,65 @@ export function CreateEventSessionWizard({
                 {t("instructors_title")}
               </h3>
             </div>
-            {(ev.instructors || []).map((ins, i) => (
-              <div
-                key={i}
-                className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-2 items-center"
-              >
-                <input
-                  className={INPUT}
-                  value={ins.name}
-                  onChange={(e) => insPatch(i, { name: e.target.value })}
-                  placeholder={t("instructor_name_placeholder")}
-                />
-                <input
-                  className={INPUT}
-                  value={ins.role}
-                  onChange={(e) => insPatch(i, { role: e.target.value })}
-                  placeholder={t("instructor_role_placeholder")}
-                />
-                <button className={BTN_DANGER_XS} onClick={() => insRemove(i)}>
-                  {t("remove_btn")}
-                </button>
-              </div>
-            ))}
+            {(draftSession.instructors || []).map((ins, i) => {
+              const nameError = instructorErrors[i]?.name;
+              const roleError = instructorErrors[i]?.role;
+
+              return (
+                <div key={i} className="flex flex-col gap-1 mb-3">
+                  <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-start">
+                    <div className="flex flex-col">
+                      <input
+                        className={nameError ? INPUT_ERROR : INPUT}
+                        value={ins.name}
+                        onChange={(e) => insPatch(i, { name: e.target.value })}
+                        onBlur={() => {
+                          if (!ins.name.trim()) {
+                            setInstructorErrors((prev) => ({
+                              ...prev,
+                              [i]: { ...prev[i], name: true },
+                            }));
+                          }
+                        }}
+                        placeholder={t("instructor_name_placeholder") + " *"}
+                      />
+                      {nameError && (
+                        <span className="text-xs text-red-500 mt-1">
+                          {t("field_required", "Name is required")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <input
+                        className={roleError ? INPUT_ERROR : INPUT}
+                        value={ins.role}
+                        onChange={(e) => insPatch(i, { role: e.target.value })}
+                        onBlur={() => {
+                          if (!ins.role.trim()) {
+                            setInstructorErrors((prev) => ({
+                              ...prev,
+                              [i]: { ...prev[i], role: true },
+                            }));
+                          }
+                        }}
+                        placeholder={t("instructor_role_placeholder") + " *"}
+                      />
+                      {roleError && (
+                        <span className="text-xs text-red-500 mt-1">
+                          {t("field_required", "Role is required")}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      className={clsx(BTN_DANGER_XS, "mt-0.5")}
+                      onClick={() => insRemove(i)}
+                    >
+                      {t("remove_btn")}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
             <button className={BTN_GHOST_XS} onClick={insAdd}>
               {t("add_instructor_btn")}
             </button>
@@ -405,7 +580,6 @@ export function CreateEventSessionWizard({
               {t("rooms_help")}
             </p>
 
-            {/* Tag Input Field for Adding New Rooms */}
             <div className="flex gap-2 items-center mb-4">
               <input
                 className={clsx(INPUT, "flex-1")}
@@ -438,9 +612,8 @@ export function CreateEventSessionWizard({
                 {t("add_btn", "Add")}
               </button>
             </div>
-            {/* Existing Editable Tags */}
             <div className="flex flex-wrap gap-2 items-center mb-3">
-              {(ev.rooms || []).map((r, i) => (
+              {(draftSession.rooms || []).map((r, i) => (
                 <span
                   key={i}
                   className={clsx(
@@ -472,32 +645,33 @@ export function CreateEventSessionWizard({
         );
       case 5:
         return (
-          <DatesEditor
-            event={ev}
-            onAddDate={addDate}
-            onPatchDate={patchDate}
-            onRemoveDate={removeDate}
-            onAddSlot={addSlot}
-            onPatchSlot={patchSlot}
-            onRemoveSlot={removeSlot}
-            labels={{
-              datesTitle: t("dates_title"),
-              addDate: t("add_date_btn"),
-              groupSizeHelp: t("group_size_help"),
-              groupSizeHelpRoom: t("group_size_help_room", {
-                roomLabel: ev.roomLabel,
-              }),
-              removeDate: t("remove_date_btn"),
-              colTime: t("col_time"),
-              colGroupSize: t("col_group_size"),
-              addSlot: t("add_slot_btn"),
-            }}
-          />
+          <div>
+            <DatesEditor
+              event={draftSession}
+              onAddDate={addDate}
+              onPatchDate={patchDate}
+              onRemoveDate={removeDate}
+              onAddSlot={addSlot}
+              onPatchSlot={patchSlot}
+              onRemoveSlot={removeSlot}
+              labels={{
+                datesTitle: t("dates_title"),
+                addDate: t("add_date_btn"),
+                groupSizeHelp: t("group_size_help"),
+                groupSizeHelpRoom: t("group_size_help_room", {
+                  roomLabel: draftSession.roomLabel,
+                }),
+                removeDate: t("remove_date_btn"),
+                colTime: t("col_time"),
+                colGroupSize: t("col_group_size"),
+                addSlot: t("add_slot_btn"),
+              }}
+            />
+          </div>
         );
       case 6:
         return (
           <div className="flex flex-col gap-4">
-            {/* Details */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -516,9 +690,11 @@ export function CreateEventSessionWizard({
                   >
                     {t("field_name")}
                   </p>
-                  <p className="text-sm font-semibold">{ev.name || "—"}</p>
+                  <p className="text-sm font-semibold">
+                    {draftSession.name || "—"}
+                  </p>
                 </div>
-                {ev.tagline && (
+                {draftSession.tagline && (
                   <div>
                     <p
                       className={clsx(
@@ -528,10 +704,10 @@ export function CreateEventSessionWizard({
                     >
                       {t("field_subtitle")}
                     </p>
-                    <p className="text-sm">{ev.tagline}</p>
+                    <p className="text-sm">{draftSession.tagline}</p>
                   </div>
                 )}
-                {ev.description && (
+                {draftSession.description && (
                   <div>
                     <p
                       className={clsx(
@@ -544,14 +720,13 @@ export function CreateEventSessionWizard({
                     <p
                       className={clsx("text-sm leading-relaxed", textTertiary)}
                     >
-                      {ev.description}
+                      {draftSession.description}
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Images */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -561,13 +736,13 @@ export function CreateEventSessionWizard({
                 2,
               )}
               <div className="px-5 py-4">
-                {(ev.images || []).length === 0 ? (
+                {(draftSession.images || []).length === 0 ? (
                   <p className={clsx("text-sm", textTertiary)}>
                     {t("wizard_no_images")}
                   </p>
                 ) : (
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                    {(ev.images || []).map((img, idx) => (
+                    {(draftSession.images || []).map((img, idx) => (
                       <div
                         key={idx}
                         className={clsx(
@@ -587,7 +762,6 @@ export function CreateEventSessionWizard({
               </div>
             </div>
 
-            {/* Instructors */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -597,13 +771,13 @@ export function CreateEventSessionWizard({
                 3,
               )}
               <div className="px-5 py-4">
-                {(ev.instructors || []).length === 0 ? (
+                {(draftSession.instructors || []).length === 0 ? (
                   <p className={clsx("text-sm", textTertiary)}>
                     {t("wizard_no_instructors")}
                   </p>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    {(ev.instructors || []).map((ins, i) => (
+                    {(draftSession.instructors || []).map((ins, i) => (
                       <div key={i} className="flex items-center gap-3">
                         <span
                           className={clsx(
@@ -626,7 +800,6 @@ export function CreateEventSessionWizard({
               </div>
             </div>
 
-            {/* Rooms */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -636,13 +809,13 @@ export function CreateEventSessionWizard({
                 4,
               )}
               <div className="px-5 py-4">
-                {(ev.rooms || []).length === 0 ? (
+                {(draftSession.rooms || []).length === 0 ? (
                   <p className={clsx("text-sm", textTertiary)}>
                     {t("wizard_no_rooms")}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {(ev.rooms || []).map((r, i) => (
+                    {(draftSession.rooms || []).map((r, i) => (
                       <span
                         key={i}
                         className={clsx(
@@ -659,7 +832,6 @@ export function CreateEventSessionWizard({
               </div>
             </div>
 
-            {/* Schedule */}
             <div
               className={clsx("rounded-xl border overflow-hidden", borderColor)}
             >
@@ -669,7 +841,7 @@ export function CreateEventSessionWizard({
                 5,
               )}
               <div className="px-5 py-4 flex flex-col gap-3">
-                {ev.dates.map((d, di) => (
+                {draftSession.dates.map((d, di) => (
                   <div key={di}>
                     <p className="text-sm font-bold mb-1.5">{d.date}</p>
                     <div className="flex flex-wrap gap-2">
@@ -697,12 +869,16 @@ export function CreateEventSessionWizard({
     }
   };
 
-  if (!ev) return null;
+  if (!draftSession) return null;
 
   return (
     <ModalWrapper
-      onClose={() => setIsOpen(false)}
+      onClose={() => {
+        setIsOpen(false);
+        setEditSessionData?.(null);
+      }}
       height="max-sm:h-[90vh] md:max-h-[90vh] md:min-h-[60vh]"
+      maxWidth="max-w-3xl"
     >
       <div
         className={`px-4 py-3 md:p-6 border-b ${borderColor} flex items-center justify-between gap-3`}
@@ -711,7 +887,7 @@ export function CreateEventSessionWizard({
           <h2
             className={`text-lg md:text-2xl ${textPrimary} mb-0.5 md:mb-1 truncate`}
           >
-            {ev.name}
+            {draftSession.name}
           </h2>
           <p className={`text-xs md:text-sm ${textTertiary} truncate`}>
             {currentStep} / {steps.length} &mdash;{" "}
@@ -736,13 +912,12 @@ export function CreateEventSessionWizard({
       <WizardFooter
         currentStep={currentStep}
         totalSteps={steps.length}
-        isSaving={false}
-        isPublishing={false}
+        isSaving={isLandingPageSessionCreating}
+        isPublishing={isLandingPageSessionCreating}
+        isDisabled={isImageUploading}
         onPrevious={() => setCurrentStep((p) => p - 1)}
-        onNext={() => setCurrentStep((p) => p + 1)}
-        isPublishButton={false}
-        onDone={handleDone}
-        onPublish={() => {}}
+        onNext={handleNext}
+        onPublish={handleDone}
       />
     </ModalWrapper>
   );

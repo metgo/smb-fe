@@ -1,6 +1,7 @@
 import { getPlainTextFromRichText } from "@/helpers";
 import clsx from "clsx";
-import type { ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 type DescriptionCardProps = {
   title: string;
@@ -10,6 +11,8 @@ type DescriptionCardProps = {
   isDark?: boolean;
   preWrap?: boolean;
   isEvent?: boolean;
+  /** Character count before the content gets truncated with a "Show more" toggle. Set to 0 to disable. */
+  collapseAt?: number;
 };
 
 const DescriptionCard: React.FC<DescriptionCardProps> = ({
@@ -20,29 +23,45 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
   isDark = false,
   preWrap = false,
   isEvent = false,
+  collapseAt = 320,
 }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const plainText = useMemo(
+    () => (isEvent ? content || "" : getPlainTextFromRichText(content || "")),
+    [content, isEvent],
+  );
+
+  const isEmpty = !plainText || plainText.trim().length === 0;
+  const isLong = collapseAt > 0 && plainText.length > collapseAt;
+  const shouldTruncate = isLong && !expanded && !isEvent;
+
+  const displayText = shouldTruncate
+    ? `${plainText.slice(0, collapseAt).trimEnd()}…`
+    : plainText;
+
   return (
     <div
       className={clsx(
-        "rounded-xl border p-2 md:p-4 transition-all duration-200",
+        "rounded-xl border p-3 md:p-2 transition-all duration-200",
         isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
       )}
     >
       {icon && (
-        <div className="flex items-start gap-3 mb-3">
+        <div className="flex items-start gap-3 ">
           <div
             className={clsx(
-              "p-2 rounded-lg",
+              "p-0.5 rounded-lg shrink-0",
               iconBgClass || (isDark ? "bg-gray-700/20" : "bg-gray-100"),
             )}
           >
             {icon}
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h3
               className={clsx(
-                "text-md font-semibold  tracking-wide mb-1",
-                isDark ? "text-gray-400" : "text-gray-900",
+                "text-sm md:text-md font-semibold tracking-wide",
+                isDark ? "text-gray-300" : "text-gray-900",
               )}
             >
               {title}
@@ -51,7 +70,16 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
         </div>
       )}
 
-      {isEvent ? (
+      {isEmpty ? (
+        <p
+          className={clsx(
+            "text-sm italic md:pl-11",
+            isDark ? "text-gray-500" : "text-gray-400",
+          )}
+        >
+          No {title.toLowerCase()} provided.
+        </p>
+      ) : isEvent ? (
         <div
           className={clsx(
             "text-base leading-relaxed pl-11",
@@ -59,16 +87,41 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
             isDark ? "text-gray-200" : "text-gray-800",
           )}
           dangerouslySetInnerHTML={{ __html: content || "" }}
-        ></div>
+        />
       ) : (
-        <div
-          className={clsx(
-            " text-sm md:text-base leading-relaxed md:pl-11",
-            preWrap && "whitespace-pre-wrap",
-            isDark ? "text-gray-200" : "text-gray-800",
+        <div className="md:pl-11">
+          <div
+            className={clsx(
+              "text-sm md:text-base leading-relaxed",
+              preWrap && "whitespace-pre-wrap",
+              isDark ? "text-gray-200" : "text-gray-800",
+            )}
+          >
+            {displayText}
+          </div>
+
+          {isLong && (
+            <button
+              type="button"
+              onClick={() => setExpanded((prev) => !prev)}
+              className={clsx(
+                "mt-2 inline-flex items-center gap-1 text-xs font-medium transition-colors",
+                isDark
+                  ? "text-blue-400 hover:text-blue-300"
+                  : "text-blue-600 hover:text-blue-700",
+              )}
+            >
+              {expanded ? (
+                <>
+                  Show less <ChevronUp className="w-3.5 h-3.5" />
+                </>
+              ) : (
+                <>
+                  Show more <ChevronDown className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
           )}
-        >
-          {getPlainTextFromRichText(content || "")}
         </div>
       )}
     </div>

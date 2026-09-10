@@ -7,13 +7,21 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Search, Users, ChevronDown, AlertCircle } from "lucide-react";
 import { ReordableDataTable } from "@/components/shared";
 import { ExportBtns } from "@/components/btns";
-import { useAppSelector } from "@/hooks/hooks";
-import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi";
-import { useLazyGetEventTicketsQuery } from "@/store/api/eventQueryApi";
+import {
+  useUpdateEventTicketStatusMutation,
+  useSetEventTicketAttendanceMutation,
+} from "@/store/api/eventMutationApi";
+import {
+  useLazyGetEventTicketsQuery,
+  useLazyGetEventTicketsExportXlsxQuery,
+} from "@/store/api/eventQueryApi";
+import TicketRegDetailModal from "./TicketRegDetailModal";
+import { formatDateTime } from "@/helpers/formatter";
 
 const STATUS_OPTIONS = [
-  { value: "completed", label: "Completed" },
-  { value: "canceled", label: "Cancelled" },
+  { value: "attended", label: "attended" },
+  { value: "completed", label: "completed" },
+  { value: "canceled", label: "cancelled" },
 ];
 
 const getStatusColor = (status: string, isDark: boolean) => {
@@ -52,25 +60,6 @@ const getStatusColor = (status: string, isDark: boolean) => {
       );
   }
 };
-
-interface IEventTicket {
-  _id: string;
-  createdAt: string;
-  vendorId: string;
-  status: string;
-  email: string;
-  phone: string;
-  firstName: string;
-  lastName: string | null;
-  paymentMode: string[];
-  paymentDate: string | null;
-  ticketName: string;
-  ticketImage: { image: string }[];
-  orderProductId?: string;
-  amount?: number;
-  quantity?: number;
-  paymentStatus?: string;
-}
 
 interface CancelDialogProps {
   isDark: boolean;
@@ -171,23 +160,31 @@ interface StatusCellProps {
     status: string,
     cancelReason?: string,
   ) => Promise<void>;
+  onAttendance: (orderId: string, attended: boolean) => Promise<void>;
   isUpdating: boolean;
   updatingId: string | null;
 }
 
 const StatusCell: React.FC<StatusCellProps> = ({
   ticket,
-  isDark,
   onUpdate,
+  onAttendance,
   isUpdating,
   updatingId,
+  isDark,
 }) => {
   const { t } = useTranslation("events");
+
   const [open, setOpen] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const ticketOrderId = ticket.orderProductId ?? ticket._id;
   const isThisUpdating = isUpdating && updatingId === ticketOrderId;
+
+  // "attended" is a check-in marker, not an order status - show it ahead of
+  // the underlying status ("completed"), which stays untouched underneath.
+  // (canceled rows return early below, so this only applies to live ones.)
+  const currentValue = ticket.attended ? "attended" : ticket.status;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -202,14 +199,29 @@ const StatusCell: React.FC<StatusCellProps> = ({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleSelect = async (value: string) => {
+  const handleSelect = async (e: React.MouseEvent, value: string) => {
+    e.stopPropagation();
     setOpen(false);
-    if (value === ticket.status) return;
+    if (value === currentValue) return;
     if (value === "canceled") {
       setShowCancelDialog(true);
       return;
     }
-    await onUpdate(ticket.orderProductId ?? ticket._id, value);
+    if (value === "attended") {
+      await onAttendance(ticketOrderId, true);
+      return;
+    }
+    if (value === "completed") {
+      // leaving the "attended" marker -> just clear check-in; status is
+      // already "completed" underneath
+      if (ticket.attended) {
+        await onAttendance(ticketOrderId, false);
+      } else {
+        await onUpdate(ticketOrderId, value);
+      }
+      return;
+    }
+    await onUpdate(ticketOrderId, value);
   };
 
   const handleCancelConfirm = async (reason: string) => {
@@ -234,21 +246,56 @@ const StatusCell: React.FC<StatusCellProps> = ({
     );
   }
 
+  // canceled is terminal - no status change possible from here
+  if (ticket.status?.toLowerCase() === "canceled") {
+    return (
+      <span
+        className={clsx(
+          "inline-flex px-2.5 py-1 rounded-full text-xs font-medium border capitalize",
+          getStatusColor("canceled", isDark),
+        )}
+      >
+        {t("canceled", { defaultValue: "canceled" })}
+      </span>
+    );
+  }
+
+  // once checked in, "attended" is terminal too - show a static pill, no dropdown
+  if (ticket.attended) {
+    return (
+      <span
+        className={clsx(
+          "inline-flex px-2.5 py-1 rounded-full text-xs font-medium border capitalize",
+          getStatusColor("attended", isDark),
+        )}
+      >
+        {t("attended")}
+      </span>
+    );
+  }
+
   return (
     <>
-      <div ref={dropdownRef} className="relative inline-block">
+      <div
+        ref={dropdownRef}
+        className="relative inline-block"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
-          onClick={() => setOpen((v) => !v)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen((v) => !v);
+          }}
           disabled={isThisUpdating}
           className={clsx(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-opacity capitalize",
-            getStatusColor(ticket.status, isDark),
+            getStatusColor(currentValue, isDark),
             isThisUpdating && "opacity-60 cursor-not-allowed",
           )}
         >
           {isThisUpdating
             ? t("updating")
-            : t(ticket.status, { defaultValue: ticket.status })}
+            : t(currentValue, { defaultValue: currentValue })}
           {!isThisUpdating && <ChevronDown className="w-3 h-3" />}
         </button>
 
@@ -264,10 +311,10 @@ const StatusCell: React.FC<StatusCellProps> = ({
             {STATUS_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
-                onClick={() => handleSelect(opt.value)}
+                onClick={(e) => handleSelect(e, opt.value)}
                 className={clsx(
                   "w-full text-left px-3 py-2 text-xs transition-colors capitalize",
-                  ticket.status === opt.value
+                  currentValue === opt.value
                     ? isDark
                       ? "bg-gray-700 font-semibold text-white"
                       : "bg-gray-100 font-semibold text-gray-900"
@@ -286,12 +333,14 @@ const StatusCell: React.FC<StatusCellProps> = ({
       </div>
 
       {showCancelDialog && (
-        <CancelDialog
-          isDark={isDark}
-          isLoading={isThisUpdating}
-          onConfirm={handleCancelConfirm}
-          onCancel={() => setShowCancelDialog(false)}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <CancelDialog
+            isDark={isDark}
+            isLoading={isThisUpdating}
+            onConfirm={handleCancelConfirm}
+            onCancel={() => setShowCancelDialog(false)}
+          />
+        </div>
       )}
     </>
   );
@@ -305,14 +354,17 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   eventDetails,
 }) => {
   const { t } = useTranslation("events");
-  const { isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textTertiary, isDark } = useThemeClasses();
+  const { textPrimary, textTertiary, isDark, isRTL, language } =
+    useThemeClasses();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [isTicktDetailsModalOpen, setIsTicketDetailModalOpen] = useState(false);
 
   const [allTickets, setAllTickets] = useState<IEventTicket[]>([]);
+  const [ticketDetails, setTicketDetails] = useState<IEventTicket | null>(null);
+
   const [totalData, setTotalData] = useState(0);
 
   const eventId = eventDetails?._id ?? eventDetails?.vendorId ?? "";
@@ -342,8 +394,11 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
     load(debouncedSearch);
   }, [load, debouncedSearch]);
 
-  const [updateStatus, { isLoading: isUpdating }] =
+  const [updateStatus, { isLoading: isStatusUpdating }] =
     useUpdateEventTicketStatusMutation();
+  const [setAttendance, { isLoading: isAttendanceUpdating }] =
+    useSetEventTicketAttendanceMutation();
+  const isUpdating = isStatusUpdating || isAttendanceUpdating;
 
   const handleStatusUpdate = async (
     orderId: string,
@@ -366,110 +421,67 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
     }
   };
 
+  const handleAttendanceUpdate = async (orderId: string, attended: boolean) => {
+    setUpdatingId(orderId);
+    try {
+      await setAttendance({ orderId, attended }).unwrap();
+      toast.success(
+        t("order_status_updated", {
+          status: t(attended ? "attended" : "completed"),
+        }),
+      );
+      await load(debouncedSearch);
+    } catch {
+      toast.error(t("failed_to_update_order_status"));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const filteredTickets = allTickets;
 
-  const exportToCSV = () => {
-    if (!eventDetails) return;
-    const headers = [
-      t("full_name"),
-      t("phone"),
-      t("email"),
-      t("ticket_name"),
-      t("payment_mode"),
-      t("amount"),
-      t("status"),
-      t("purchased_date"),
-    ];
-    const rows = filteredTickets.map((ticket) => [
-      `${ticket.firstName} ${ticket.lastName || ""}`.trim(),
-      ticket.phone,
-      ticket.email,
-      ticket.ticketName,
-      ticket.paymentMode?.join(", "),
-      ticket.amount != null ? `₪${ticket.amount}` : "-",
-      ticket.status,
-      ticket.paymentDate
-        ? new Date(ticket.paymentDate).toLocaleDateString()
-        : "-",
-    ]);
-    const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+  const [fetchExportCsv, { isFetching, isLoading }] =
+    useLazyGetEventTicketsExportXlsxQuery();
+  // const [fetchExportPdf] = useLazyGetEventTicketsExportPdfQuery();
+
+  const downloadBlob = (blob: Blob, fileName: string) => {
+    const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `${eventDetails?.name?.replace(/\s+/g, "_") ?? "event"}_registrants.csv`;
+    a.href = blobUrl;
+    a.download = fileName;
     a.click();
+    URL.revokeObjectURL(blobUrl);
   };
 
-  const exportToPDF = () => {
-    if (!eventDetails) return;
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${eventDetails?.name} - ${t("registrants")}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: #333; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #14b8a6; color: white; }
-            tr:nth-child(even) { background-color: #f9f9f9; }
-          </style>
-        </head>
-        <body>
-          <h1>${eventDetails?.name}</h1>
-          <p><strong>${t("total_registrations")}:</strong> ${filteredTickets.length}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>${t("full_name")}</th>
-                <th>${t("phone")}</th>
-                <th>${t("email")}</th>
-                <th>${t("ticket_name")}</th>
-                <th>${t("payment_mode")}</th>
-                <th>${t("amount")}</th>
-                <th>${t("status")}</th>
-                <th>${t("purchased_date")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${filteredTickets
-                .map(
-                  (ticket) => `
-                <tr>
-                  <td>${`${ticket.firstName} ${ticket.lastName || ""}`.trim()}</td>
-                  <td>${ticket.phone || "-"}</td>
-                  <td>${ticket.email || "-"}</td>
-                  <td>${ticket.ticketName || "-"}</td>
-                  <td>${ticket.paymentMode?.join(", ") || "-"}</td>
-                  <td>${ticket.amount != null ? `₪${ticket.amount}` : "-"}</td>
-                  <td>${ticket.status || "-"}</td>
-                  <td>${ticket.paymentDate ? new Date(ticket.paymentDate).toLocaleDateString() : "-"}</td>
-                </tr>
-              `,
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    printWindow.print();
+  const exportToCSV = async () => {
+    if (!eventId) return;
+    try {
+      const blob = await fetchExportCsv({ eventId }).unwrap();
+      downloadBlob(
+        blob,
+        `${eventDetails?.name?.replace(/\s+/g, "_") ?? "event"}_registrants.xlsx`,
+      );
+    } catch {
+      toast.error(t("failed_to_export"));
+    }
   };
+
+  function handleTicketRegRowClick(ticket: IEventTicket) {
+    setTicketDetails(ticket);
+    setIsTicketDetailModalOpen(true);
+  }
 
   return (
-    <div className="max-h-[75vh]">
+    <div className="max-h-[75vh] overflow-y-auto">
       <section>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`text-2xl font-semibold ${textPrimary}`}>
             {t("registrants")} ({totalData})
           </h3>
-          <ExportBtns exportToCSV={exportToCSV} exportToPDF={exportToPDF} />
+          <ExportBtns
+            exportToCSV={exportToCSV}
+            isCsvExporting={isFetching || isLoading}
+          />
         </div>
 
         <div className="relative mb-6">
@@ -510,6 +522,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
               rowKey="_id"
               data={filteredTickets}
               storageKey="eventTicketsTableColumnOrder"
+              onRowClick={handleTicketRegRowClick}
               columns={[
                 {
                   key: "full_name",
@@ -607,6 +620,21 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   ),
                 },
                 {
+                  key: "quantity",
+                  label: t("quantity"),
+                  sortable: true,
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm font-medium",
+                        isDark ? "text-gray-100" : "text-gray-900",
+                      )}
+                    >
+                      {ticket.quantity}
+                    </span>
+                  ),
+                },
+                {
                   key: "status",
                   label: t("status"),
                   render: (ticket: IEventTicket) => (
@@ -614,6 +642,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                       ticket={ticket}
                       isDark={isDark}
                       onUpdate={handleStatusUpdate}
+                      onAttendance={handleAttendanceUpdate}
                       isUpdating={isUpdating}
                       updatingId={updatingId}
                     />
@@ -658,10 +687,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                       )}
                     >
                       {ticket.paymentDate
-                        ? new Date(ticket.paymentDate).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric", year: "numeric" },
-                          )
+                        ? formatDateTime(ticket?.paymentDate, language)
                         : "-"}
                     </span>
                   ),
@@ -671,6 +697,14 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
           </div>
         )}
       </section>
+
+      {isTicktDetailsModalOpen && (
+        <TicketRegDetailModal
+          setIsOpen={setIsTicketDetailModalOpen}
+          ticketDetails={ticketDetails}
+          onStatusUpdated={() => load(debouncedSearch)}
+        />
+      )}
     </div>
   );
 };

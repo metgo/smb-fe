@@ -28,7 +28,7 @@ import ReviewStep from "./steps/ReviewStep";
 interface CreateEventWizardNewProps {
   isOpen: boolean;
   onClose: () => void;
-  editData?: any;
+  editData?: IEventDetailsRes;
   refetch?: () => void;
   eventDataRefetch?: () => void;
 }
@@ -55,7 +55,6 @@ export default function CreateEventWizardNew({
 
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
-    // { number: 2, icon: Languages, title: tt("translation") },
     { number: 2, icon: Calendar, title: t("step_2_date_time") },
     { number: 3, icon: Users, title: t("step_3_registration") },
     { number: 4, icon: Mail, title: t("messaging") },
@@ -117,7 +116,7 @@ export default function CreateEventWizardNew({
       </div>
 
       {/* ── Step Content ──────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-8">
         {wizard.currentStep === 1 && (
           <EventBasicInformation
             formData={wizard.translationFormData}
@@ -128,6 +127,7 @@ export default function CreateEventWizardNew({
             internalNotes={wizard.internalNotes}
             setInternalNotes={wizard.setInternalNotes}
             errors={wizard.errors}
+            setErrors={wizard.setErrors}
             selectedDmoId={wizard.selectedDmoId}
             setSelectDmoId={wizard.setSelectDmoId}
             selectedAuthorityId={wizard.selectedAuthorityId}
@@ -138,8 +138,6 @@ export default function CreateEventWizardNew({
             setAccessiblitiesId={wizard.setAccessiblitiesId}
             selectedGroupTypesId={wizard.selectedGroupTypesId}
             setGroupTypesId={wizard.setGroupTypesId}
-            selectedSubCategoriesId={wizard.selectedSubCategoriesId}
-            setSubCategoriesId={wizard.setSubCategoriesId}
             websiteVisibilityIds={wizard.websiteVisibilityIds}
             setWebsiteVisibilityIds={wizard.setWebsiteVisibilityIds}
             selectedBusinessId={wizard.selectedBusinessId}
@@ -172,6 +170,7 @@ export default function CreateEventWizardNew({
             setEventFormat={wizard.setEventFormat}
             address={wizard.address}
             setAddress={wizard.setAddress}
+            onAddressParts={wizard.setAddressParts}
             onlineLink={wizard.onlineLink}
             setOnlineLink={wizard.setOnlineLink}
             errors={wizard.errors}
@@ -230,10 +229,6 @@ export default function CreateEventWizardNew({
             showNotificationForm={wizard.showNotificationForm}
             setShowNotificationForm={wizard.setShowNotificationForm}
             eventLanguage={wizard.eventLanguage}
-            eventName={wizard.translationFormData.name}
-            startDate={wizard.startDate}
-            eventDays={wizard.eventDays}
-            address={wizard.address}
             capacity={wizard.capacity}
           />
         )}

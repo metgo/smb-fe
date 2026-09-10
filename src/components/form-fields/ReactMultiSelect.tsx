@@ -1,11 +1,56 @@
-import Select, { type MultiValue } from "react-select";
+import Select, {
+  type MultiValue,
+  components,
+  type OptionProps,
+  type MultiValueGenericProps,
+} from "react-select";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import ImageWithFallback from "@/components/shared/ImageWithFallback";
 
 export interface MultiSelectOption {
   label: string;
   value: string;
+  image?: string;
 }
+
+const OptionWithImage = (props: OptionProps<MultiSelectOption, true>) => {
+  const { data } = props;
+  return (
+    <components.Option {...props}>
+      <div className="flex items-center gap-2">
+        {data.image && (
+          <ImageWithFallback
+            src={data.image}
+            alt={data.label}
+            className="h-6 w-6 rounded object-cover shrink-0"
+          />
+        )}
+        <span>{data.label}</span>
+      </div>
+    </components.Option>
+  );
+};
+
+const MultiValueLabelWithImage = (
+  props: MultiValueGenericProps<MultiSelectOption, true>,
+) => {
+  const { data } = props;
+  return (
+    <components.MultiValueLabel {...props}>
+      <div className="flex items-center gap-1">
+        {data.image && (
+          <ImageWithFallback
+            src={data.image}
+            alt={data.label}
+            className="h-4 w-4 rounded object-cover shrink-0"
+          />
+        )}
+        <span>{data.label}</span>
+      </div>
+    </components.MultiValueLabel>
+  );
+};
 
 interface ReactMultiSelectProps {
   label?: string;
@@ -57,6 +102,10 @@ const ReactMultiSelect: React.FC<ReactMultiSelectProps> = ({
         value={selectedOptions}
         onChange={handleChange}
         placeholder={finalPlaceholder}
+        components={{
+          Option: OptionWithImage,
+          MultiValueLabel: MultiValueLabelWithImage,
+        }}
         classNamePrefix="react-select"
         styles={{
           control: (base, state) => ({

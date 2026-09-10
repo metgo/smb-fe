@@ -44,6 +44,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { StatusPill } from "@/components/pills";
 import { ActionIconButtons } from "@/components/btns";
 import TicketsModal from "./TicketsModal";
+import LandingPagesModal from "./LandingPagesModal";
 import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
 
@@ -128,11 +129,18 @@ export default function EventsWithViewMode({
     isTicketLinkExist: false,
   });
 
+  const [isLandingPagesModalOpen, setIsLandingPagesModalOpen] = useState(false);
+  const [selectedEventForLanding, setSelectedEventForLanding] = useState<{
+    eventId: string;
+  }>({
+    eventId: "",
+  });
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarViewMode, setCalendarViewMode] =
     useState<TViewMode>("calendar-month");
 
-  const [editData, setEditData] = useState();
+  const [editData, setEditData] = useState<IEventDetailsRes>();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
@@ -457,7 +465,10 @@ export default function EventsWithViewMode({
     }
 
     return (
-      <div ref={scrollRef} className="py-4 px-3 overflow-y-auto max-h-full">
+      <div
+        ref={scrollRef}
+        className="py-4 px-3 overflow-y-auto max-h-[calc(100vh-200px)]"
+      >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
           {displayedEvents?.map((event) => {
             const imageUrl =
@@ -518,7 +529,8 @@ export default function EventsWithViewMode({
         onSelectionChange={(selected) =>
           setSelectedEvents(selected as Set<string>)
         }
-        onRowClick={(item) => handleEventSelect(item)}
+        // onRowClick={(item) => handleEventSelect(item)}
+        maxHeight="calc(100vh - 180px)"
         storageKey="eventsTableColumnOrder"
         hasMore={hasMore}
         next={fetchNextPage}
@@ -637,14 +649,6 @@ export default function EventsWithViewMode({
                 isDark={isDark}
                 actions={[
                   {
-                    title: t("edit_event"),
-                    icon: PenBox,
-                    color: "blue",
-                    onClick: () => {
-                      handleEditEvent(event._id);
-                    },
-                  },
-                  {
                     title: t("details"),
                     icon: Eye,
                     color: "green",
@@ -652,6 +656,14 @@ export default function EventsWithViewMode({
                       navigate(`${routes.eventDetails}?eventId=${event?._id}`, {
                         replace: true,
                       });
+                    },
+                  },
+                  {
+                    title: t("edit_event"),
+                    icon: PenBox,
+                    color: "blue",
+                    onClick: () => {
+                      handleEditEvent(event._id);
                     },
                   },
                   {
@@ -668,20 +680,21 @@ export default function EventsWithViewMode({
                       setIsTicketsModalOpen(true);
                     },
                   },
-                  {
-                    title: event?.hasExternalTicket
-                      ? t("create_ticket_for_this_event")
-                      : t("create_landing_page"),
-                    icon: LayoutList,
-                    color: "yellow",
-                    onClick: () => {
-                      if (event?.hasExternalTicket) return;
-                      window.open(
-                        `${routes.eventSessionMgmt}?eventId=${event?._id}`,
-                        "_blank",
-                      );
-                    },
-                  },
+                  ...(event?.hasExternalTicket || event.ticketCount === 0
+                    ? []
+                    : [
+                        {
+                          title: t("create_landing_page"),
+                          icon: LayoutList,
+                          color: "yellow" as const,
+                          onClick: () => {
+                            setSelectedEventForLanding({
+                              eventId: event._id,
+                            });
+                            setIsLandingPagesModalOpen(true);
+                          },
+                        },
+                      ]),
                 ]}
               />
             ),
@@ -797,25 +810,23 @@ export default function EventsWithViewMode({
         </div>
 
         {/* Main Content */}
-        <div
-          className={clsx(
-            bgSecondary,
-            borderColor,
-            "border flex-1 overflow-y-auto max-h-[calc(100vh-400px)] rounded-2xl",
-          )}
-        >
-          {calendarViewMode === "calendar-month" && viewMode === "calendar" && (
-            <MonthView />
-          )}
-          {calendarViewMode === "calendar-week" && viewMode === "calendar" && (
-            <WeekView />
-          )}
-          {calendarViewMode === "calendar-day" && viewMode === "calendar" && (
-            <DayView />
-          )}
-          {viewMode === "list" && <ListView />}
-          {viewMode === "grid" && <GridView />}
-        </div>
+        {viewMode === "calendar" ? (
+          <div
+            className={clsx(
+              bgSecondary,
+              borderColor,
+              "border flex-1 overflow-y-auto max-h-[calc(100vh-200px)] rounded-2xl",
+            )}
+          >
+            {calendarViewMode === "calendar-month" && <MonthView />}
+            {calendarViewMode === "calendar-week" && <WeekView />}
+            {calendarViewMode === "calendar-day" && <DayView />}
+          </div>
+        ) : viewMode === "list" ? (
+          <ListView />
+        ) : (
+          <GridView />
+        )}
 
         <ConfirmDialog
           open={isConfirmOpen}
@@ -851,6 +862,14 @@ export default function EventsWithViewMode({
           {...selectedEvent}
           eventsRefetch={refetch}
           setIsOpen={setIsTicketsModalOpen}
+        />
+      )}
+
+      {isLandingPagesModalOpen && (
+        <LandingPagesModal
+          {...selectedEventForLanding}
+          eventsRefetch={refetch}
+          setIsOpen={setIsLandingPagesModalOpen}
         />
       )}
     </>

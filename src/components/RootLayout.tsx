@@ -6,6 +6,7 @@ import Sidebar from "./sidebar";
 import { useAppSelector } from "@/hooks/hooks";
 import RouterProgressBar from "./shared/RouterProgressBar";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ChatPopupManager } from "./chat-popup";
 
 const RootLayout = () => {
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
@@ -40,6 +41,8 @@ const RootLayout = () => {
           <Outlet />
         </div>
       </div>
+
+      <ChatPopupManager />
     </main>
   );
 };

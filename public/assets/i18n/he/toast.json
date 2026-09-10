@@ -5,6 +5,7 @@
   "draft_saved": "הטיוטה נשמרה",
   "draft_failed": "שמירת הטיוטה נכשלה",
   "fill_all_fields": "יש למלא את כל השדות הנדרשים לפני ההמשך",
+  "complete_question_before_adding": "יש למלא את השאלה הנוכחית לפני הוספת שאלה חדשה",
   "name_required": "אנא הזן שם לפני השמירה",
   "short_description_required": "אנא הזן תיאור קצר לפני השמירה",
   "full_description_required": "אנא הזן תיאור מלא לפני השמירה",
@@ -62,6 +63,7 @@
   "promotion_group_publish_failed": "פרסום המבצעים נכשל",
 
   "website_select_info": "אנא בחר תחילה את האתר שבו תרצה להציג תוכן זה.",
+  "website_visibility_required": "אנא בחר לפחות אתר משויך אחד",
   "empty_content_info": "אנא הוסף לפחות קטגוריה אחת עם עסקים.",
   "unsaved_changes": "שינויים שלא נשמרו",
   "close_without_saving": "יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לסגור מבלי לשמור?",
@@ -73,5 +75,14 @@
   "trip_status_updated_faild": "עדכון סטטוס הטיול נכשל",
   "trip_updated_success": "הטיול עודכן בהצלחה!",
   "trip_created_success": "הטיול נוצר בהצלחה!",
-  "trip_create_failed": "יצירת הטיול נכשלה"
+  "trip_create_failed": "יצירת הטיול נכשלה",
+
+  "ticket_email_resend_success": "אימייל הכרטיס נשלח מחדש בהצלחה",
+  "ticket_email_resend_failed": "שליחת אימייל הכרטיס מחדש נכשלה",
+  "vendor_email_sent_success": "אימייל נשלח לספק בהצלחה",
+  "vendor_email_sent_failed": "שליחת אימייל לספק נכשלה",
+  "vendor_sms_sent_success": "SMS נשלח לספק בהצלחה",
+  "vendor_sms_sent_failed": "שליחת SMS לספק נכשלה",
+  "ticket_sms_resend_success": "ה-SMS של הכרטיס נשלח מחדש בהצלחה",
+  "ticket_sms_resend_faild": "שליחת ה-SMS של הכרטיס מחדש נכשלה"
 }

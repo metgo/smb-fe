@@ -5,10 +5,14 @@ const SEARCH_STORAGE_KEY = "poi_mgmt_search";
 
 export interface PoiFilters {
   status: string;
+  dmoFilter: "all" | "unassigned";
+  authorityFilter: "all" | "unassigned";
 }
 
 const defaultFilters: PoiFilters = {
   status: "all",
+  dmoFilter: "all",
+  authorityFilter: "all",
 };
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -23,9 +27,10 @@ function readStorage<T>(key: string, fallback: T): T {
 }
 
 export function usePoiFilters() {
-  const [filters, setFilters] = useState<PoiFilters>(() =>
-    readStorage(FILTER_STORAGE_KEY, defaultFilters),
-  );
+  const [filters, setFilters] = useState<PoiFilters>(() => ({
+    ...defaultFilters,
+    ...readStorage(FILTER_STORAGE_KEY, defaultFilters),
+  }));
 
   const [searchTerm, setSearchTerm] = useState<string>(() =>
     readStorage(SEARCH_STORAGE_KEY, ""),
@@ -62,9 +67,15 @@ export function usePoiFilters() {
     }
   }, []);
 
+  // Whether any actual FILTER (not just the search box) is set — used to
+  // decide whether the filters panel should stay open on its own, so
+  // typing in search alone doesn't pop it open.
   const hasSavedFilters = useMemo(
-    () => filters.status !== "all" || searchTerm.trim() !== "",
-    [filters, searchTerm],
+    () =>
+      filters.status !== "all" ||
+      filters.dmoFilter !== "all" ||
+      filters.authorityFilter !== "all",
+    [filters],
   );
 
   return {

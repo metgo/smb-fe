@@ -30,6 +30,7 @@ interface BusinessListParams {
   primaryCategoryId?: string;
   assignmentStatus?: string;
   viewCategory?: string;
+  viewId?: string;
 }
 
 interface BusinessesForProductParams {
@@ -69,7 +70,7 @@ export const businessQueryApi = createApi({
   tagTypes: ["Business"],
 
   endpoints: (builder) => ({
-    getAllbusinesses: builder.query<any, BusinessListParams>({
+    getAllbusinesses: builder.query<IBusinessesRes, BusinessListParams>({
       query: (params) => ({
         url: `${endpoints.businesses}?sortBy=DESC`,
         method: "GET",

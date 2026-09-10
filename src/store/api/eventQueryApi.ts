@@ -85,6 +85,41 @@ export const eventQueryApi = createApi({
       }),
     }),
 
+    getEventTicketsExportCsv: builder.query<Blob, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `${endpoints.eventTickets}/${eventId}/export/csv`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
+
+    getEventTicketsExportPdf: builder.query<Blob, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `${endpoints.eventTickets}/${eventId}/export/pdf`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
+
+    getEventTicketsExportXlsx: builder.query<Blob, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `${endpoints.eventTickets}/${eventId}/export/xlsx`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
+
+    getEventTicketAnswers: builder.query<
+      IEventTicketAnswersResponse,
+      { ticketId: string; email?: string; phone?: string; orderId?: string }
+    >({
+      query: ({ ticketId, email, phone, orderId }) => ({
+        url: `${endpoints.eventTicketAnswers}/${ticketId}`,
+        method: "GET",
+        params: { email, phone, orderId },
+      }),
+    }),
+
     getAllEvents: builder.query<any, EventListParams>({
       query: (params) => ({
         url: `${endpoints.events}?sortBy=DESC`,
@@ -108,7 +143,7 @@ export const eventQueryApi = createApi({
       }),
     }),
 
-    getEventById: builder.query<any, { eventId: string | null }>({
+    getEventById: builder.query<IEventDetailsRes, { eventId: string | null }>({
       query: ({ eventId }) => ({
         url: `${endpoints.events}/${eventId}`,
         method: "GET",
@@ -160,6 +195,10 @@ export const {
   useGetAllUpcomingEventsQuery,
   useGetEventTicketsQuery,
   useLazyGetEventTicketsQuery,
+  useLazyGetEventTicketsExportCsvQuery,
+  useLazyGetEventTicketsExportPdfQuery,
+  useLazyGetEventTicketsExportXlsxQuery,
+  useGetEventTicketAnswersQuery,
   useGetPublicEventTicketQuery,
   useLazyGetPublicEventTicketQuery,
   useGetSessionsByEventIdQuery,

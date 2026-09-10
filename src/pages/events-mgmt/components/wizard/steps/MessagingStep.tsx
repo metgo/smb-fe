@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
 import clsx from "clsx";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Mail,
   Clock,
   MessageSquare,
-  Smartphone,
   CheckCircle,
   XCircle,
   Copy,
@@ -13,25 +12,22 @@ import {
   Plus,
   PenBox,
 } from "lucide-react";
-import { useAppSelector } from "@/hooks/hooks";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
+
 import { ConfirmDialog } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import CreateNotificationWizard from "../../sub-components/CreateNotificationWizard";
+import { formatLocalDateTime } from "@/helpers/formatter";
 
 interface MessagingStepProps {
-  notifications: NotificationData[];
-  setNotifications: React.Dispatch<React.SetStateAction<NotificationData[]>>;
-  editingNotification: NotificationData | null;
+  notifications: INotificationData[];
+  setNotifications: React.Dispatch<React.SetStateAction<INotificationData[]>>;
+  editingNotification: INotificationData | null;
   setEditingNotification: React.Dispatch<
-    React.SetStateAction<NotificationData | null>
+    React.SetStateAction<INotificationData | null>
   >;
   showNotificationForm: boolean;
   setShowNotificationForm: React.Dispatch<React.SetStateAction<boolean>>;
   eventLanguage: Language;
-  eventName?: string;
-  startDate?: string;
-  eventDays?: { startTime: string }[];
-  address?: string;
   capacity?: number;
   markDirty: (step: number) => void;
 }
@@ -44,16 +40,11 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
   setEditingNotification,
   showNotificationForm,
   setShowNotificationForm,
-  eventLanguage,
-  eventName,
-  startDate,
-  eventDays,
-  address,
   capacity,
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textTertiary, isDark } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
+  const { textPrimary, textTertiary, isDark, isRTL, language } =
+    useThemeClasses();
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState<
@@ -61,25 +52,24 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
   >(null);
 
   useEffect(() => {
-    markDirty(6);
+    markDirty(4);
   }, [notifications, markDirty]);
 
   const openNewNotificationForm = () => {
     setEditingNotification({
       index: notifications.length,
-      hoursBeforeEvent: 24,
-      channels: { email: true, sms: false, whatsapp: false },
-      language: eventLanguage,
-      template: "24h-reminder",
+      channels: ["EMAIL"],
+      scheduleDateTime: "",
       subject: "",
       message: "",
       enabled: true,
+      status: "ACTIVE",
     });
     setShowNotificationForm(true);
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6">
       {/* ── Section header ───────────────────────────────────────────── */}
       <div className="text-center mb-6">
         <Mail className="w-12 h-12 mx-auto mb-3 text-teal-500" />
@@ -93,8 +83,8 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
 
       {/* ── Notifications list ───────────────────────────────────────── */}
       <div className="space-y-3">
-        {notifications.length > 0 ? (
-          notifications.map((notification, index) => (
+        {notifications?.length > 0 ? (
+          notifications?.map((notification, index) => (
             <div
               key={index}
               className={clsx(
@@ -120,8 +110,19 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
                 >
                   <Clock className="w-5 h-5 text-teal-500 shrink-0" />
                   <div>
-                    <p className={`font-medium ${textPrimary}`}>
-                      {notification.hoursBeforeEvent} {t("hours_before_event")}
+                    <p className={`font-xs ${textPrimary}`}>
+                      {notification.subject} |{" "}
+                      {notification.sendHoursOffset != null
+                        ? t(
+                            notification.sendTiming === "POST_EVENT"
+                              ? "send_offset_post_summary"
+                              : "send_offset_pre_summary",
+                            { count: notification.sendHoursOffset },
+                          )
+                        : formatLocalDateTime(
+                            notification.scheduleDateTime,
+                            language,
+                          )}
                     </p>
                     <div
                       className={clsx(
@@ -130,16 +131,12 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
                         isRTL && "flex-row-reverse",
                       )}
                     >
-                      {notification.channels.email && (
+                      {notification.channels.includes("EMAIL") && (
                         <Mail className="w-4 h-4" />
                       )}
-                      {notification.channels.sms && (
+                      {notification.channels.includes("SMS") && (
                         <MessageSquare className="w-4 h-4" />
                       )}
-                      {notification.channels.whatsapp && (
-                        <Smartphone className="w-4 h-4" />
-                      )}
-                      <span>• {notification.language.toUpperCase()}</span>
                       <span
                         className={clsx(
                           "px-2 py-0.5 rounded text-xs",
@@ -255,10 +252,6 @@ const MessagingStep: React.FC<MessagingStepProps> = ({
         {showNotificationForm && editingNotification && (
           <CreateNotificationWizard
             t={t}
-            eventName={eventName}
-            startDate={startDate}
-            eventDays={eventDays}
-            address={address}
             capacity={capacity}
             notifications={notifications}
             setNotifications={setNotifications}

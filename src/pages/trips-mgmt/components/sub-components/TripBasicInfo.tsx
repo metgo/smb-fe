@@ -101,7 +101,11 @@ const TripBasicInfo = ({
         </p>
       </FormFieldWrapper>
 
-      <FormFieldWrapper label={t("description")} error={errors.description}>
+      <FormFieldWrapper
+        label={t("description")}
+        error={errors.description}
+        required
+      >
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value.slice(0, 500))}
@@ -117,6 +121,7 @@ const TripBasicInfo = ({
 
       <FormFieldWrapper
         label={t("estimated_duration")}
+        hint={t("hours")}
         required
         error={errors.estimatedDuration}
       >

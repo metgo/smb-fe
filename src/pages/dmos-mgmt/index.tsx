@@ -59,8 +59,7 @@ const DmosMgmtPage = () => {
     navigate(`${routes.authorityMgmt}?dmoId=${dmoId}`);
   };
 
-  const handleMigrateToProd = (dmoId: string) => {
-    console.log("🚀 ~ handleMigrateToProd ~ dmoId:", dmoId);
+  const handleMigrateToProd = (_dmoId: string) => {
     // setMigrateTarget(dmo);
   };
 

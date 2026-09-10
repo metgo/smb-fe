@@ -26,6 +26,9 @@ i18n
       "trips",
       "tour",
       "content",
+      "reconciliation",
+      "payments",
+      "utm_campaign",
     ],
     defaultNS: "common",
 

@@ -43,6 +43,7 @@ interface Props {
   externalApiId?: string | null;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
+  isMarketplace?: boolean; // Added to handle TRAVELLER vs MARKETPLACE differences
 }
 
 const TopicCategoryCard = ({
@@ -52,6 +53,7 @@ const TopicCategoryCard = ({
   externalApiId,
   templateContents,
   setTemplateContent,
+  isMarketplace = false,
 }: Props) => {
   const { isDark, bgTertiary, inputClasses } = useThemeClasses();
   const { t } = useTranslation("content");
@@ -402,9 +404,10 @@ const TopicCategoryCard = ({
       const businesses = result.businesses.filter(
         (item) => !existingIds.has(item._id),
       );
-      const products = result.products.filter(
-        (item) => !existingIds.has(item._id),
-      );
+      // Products only available for MARKETPLACE purpose
+      const products = isMarketplace
+        ? result.products.filter((item) => !existingIds.has(item._id))
+        : [];
 
       // No matches found — genuine AI response with no relevant results
       if (!businesses.length && !products.length) {
@@ -450,13 +453,16 @@ const TopicCategoryCard = ({
       return true;
     });
 
-    const validProducts = selectedProducts.filter((product) => {
-      if (!product._id || !product.name) {
-        console.warn("Skipping invalid product:", product);
-        return false;
-      }
-      return true;
-    });
+    // Products disabled for TRAVELLER purpose - validate only for MARKETPLACE
+    const validProducts = isMarketplace
+      ? selectedProducts.filter((product) => {
+          if (!product._id || !product.name) {
+            console.warn("Skipping invalid product:", product);
+            return false;
+          }
+          return true;
+        })
+      : [];
 
     const nextContents: IContent[] = [
       ...validBusinesses.map((business) => ({
@@ -489,7 +495,8 @@ const TopicCategoryCard = ({
       const skipped =
         selectedBusinesses.length -
         validBusinesses.length +
-        (selectedProducts.length - validProducts.length);
+        selectedProducts.length -
+        validProducts.length;
       toast.warning(`${skipped} item(s) were invalid and skipped.`);
     }
 
@@ -956,6 +963,7 @@ const TopicCategoryCard = ({
         suggestedBusinesses={aiBusinesses}
         suggestedProducts={aiProducts}
         onConfirm={handleAiModalConfirm}
+        isMarketplace={isMarketplace}
       />
     </div>
   );

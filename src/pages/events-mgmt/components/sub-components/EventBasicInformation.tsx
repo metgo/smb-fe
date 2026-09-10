@@ -6,13 +6,11 @@ import {
   SelectableChips,
   DmoAuthorityWebsiteIdsSelector,
 } from "@/components/shared";
-import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
   FormFieldWrapper,
   ReactSelect,
   TextareaField,
 } from "@/components/form-fields";
-import { categoryIds } from "@/lib/utils";
 import { useCommon } from "@/hooks/useCommon";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { getLngWiseStr } from "@/helpers";
@@ -29,13 +27,12 @@ interface EventBasicInformationProps {
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
-  selectedSubCategoriesId: string[];
-  setSubCategoriesId: (v: string[]) => void;
   selectedGroupTypesId: string[];
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
   errors: Record<string, string>;
+  setErrors?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   selectedBusinessId: string;
@@ -57,13 +54,12 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   onChange,
   internalNotes,
   setInternalNotes,
-  selectedSubCategoriesId,
-  setSubCategoriesId,
   selectedGroupTypesId,
   setGroupTypesId,
   selectedAccessiblitiesId,
   setAccessiblitiesId,
   errors,
+  setErrors,
   selectAssociatedWebsiteIds,
   setSelectAssociatedWebsiteIds,
   selectedBusinessId,
@@ -72,15 +68,9 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   isBusinessLoading,
   searchBusiness,
 }) => {
-  const { t, i18n } = useTranslation("events");
+  const { t } = useTranslation("events");
   const { isSuperadmin } = useUserRoles();
   const { inputClasses, language } = useThemeClasses();
-  const locale = i18n.language as Language;
-
-  const { data: subCategories } = useGetSubCategoriesQuery({
-    bussCategoryId: categoryIds.event,
-    locale,
-  });
 
   const { groupTypes, accessibility } = useCommon();
 
@@ -134,19 +124,10 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     selectedDmoId,
     selectedAccessiblitiesId,
     selectedGroupTypesId,
-    selectedSubCategoriesId,
     internalNotes,
     selectedBusinessId,
     markDirty,
   ]);
-
-  const handleSubcategorySelect = (itemId: string) => {
-    setSubCategoriesId(
-      selectedSubCategoriesId.includes(itemId)
-        ? selectedSubCategoriesId.filter((id) => id !== itemId)
-        : [...selectedSubCategoriesId, itemId],
-    );
-  };
 
   const handleGroupTypeSelect = (itemId: string) => {
     setGroupTypesId(
@@ -165,7 +146,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6">
       <FormFieldWrapper label={t("select_business")}>
         <ReactSelect
           value={selectedBusinessId}
@@ -183,6 +164,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       </FormFieldWrapper>
       <DmoAuthorityWebsiteIdsSelector
         errors={errors}
+        setErrors={setErrors}
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
@@ -197,13 +179,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       </div>
 
       <BusinessContentForm formData={formData} onChange={onChange} />
-
-      <SelectableChips
-        label="subcategories"
-        items={subCategories?.datas?.data ?? []}
-        selectedIds={selectedSubCategoriesId}
-        onSelect={handleSubcategorySelect}
-      />
 
       <SelectableChips
         label="accessiblities"

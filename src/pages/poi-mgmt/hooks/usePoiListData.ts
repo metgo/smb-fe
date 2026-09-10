@@ -26,8 +26,9 @@ export function usePoiListData(filters: PoiFilters, searchTerm: string) {
   const queryParams = useMemo(() => {
     const params: Record<string, any> = {
       page,
-      dmoId,
-      authorityId,
+      dmoId: filters.dmoFilter === "unassigned" ? "null" : dmoId,
+      authorityId:
+        filters.authorityFilter === "unassigned" ? "null" : authorityId,
       limit: LIMIT,
       locale: language,
       externalApiId: websiteId,

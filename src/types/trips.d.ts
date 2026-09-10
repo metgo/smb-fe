@@ -178,6 +178,12 @@ interface ITripDetailsRes {
   estimatedDuration: number;
   totalDistanceCovered: number;
   images: Array<ITripImage>;
+  creator?: {
+    _id: string;
+    name: string;
+    email: string;
+    role: TUserRole;
+  };
 }
 
 interface ITripImage {
@@ -213,4 +219,14 @@ interface ITripItinerary {
   title: string;
   startTime: string;
   endTime: string;
+}
+
+interface ITripColumnVisibility {
+  name: boolean;
+  shortDescription: boolean;
+  estimatedDuration: boolean;
+  stations: boolean;
+  status: boolean;
+  createdAt: boolean;
+  updatedAt: boolean;
 }

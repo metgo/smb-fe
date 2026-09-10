@@ -1,6 +1,7 @@
 import { type FC } from "react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { MarkerMap } from "@/components/maps";
+import { type ParsedAddressParts } from "@/helpers";
 
 interface BusinessLocationProps {
   t: (key: string) => string;
@@ -8,6 +9,7 @@ interface BusinessLocationProps {
   setGeo: (v: Geo) => void;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
+  onAddressParts?: (parts: ParsedAddressParts) => void;
 }
 
 /* ---------- Component ---------- */
@@ -18,6 +20,7 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
   setGeo,
   address,
   setAddress,
+  onAddressParts,
 }) => {
   const { textSecondary } = useThemeClasses();
 
@@ -32,6 +35,7 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
           setGeo={setGeo}
           address={address}
           setAddress={setAddress}
+          onAddressParts={onAddressParts}
         />
       </div>
     </div>

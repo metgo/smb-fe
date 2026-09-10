@@ -23,7 +23,6 @@ import { toast } from "sonner";
 
 const ROLE_ORDER: UserRole[] = [
   UserRole.SUPERADMIN,
-  UserRole.ADMIN,
   UserRole.DMO,
   UserRole.AUTHORITY,
   UserRole.TRAVELLER,
@@ -31,7 +30,6 @@ const ROLE_ORDER: UserRole[] = [
 
 const ROLE_TAB_LABEL_KEYS: Partial<Record<UserRole, string>> = {
   [UserRole.SUPERADMIN]: "super_admins_tab",
-  [UserRole.ADMIN]: "admins_tab",
   [UserRole.DMO]: "dmos_tab",
   [UserRole.AUTHORITY]: "authorities_tab",
   [UserRole.TRAVELLER]: "travellers_tab",
@@ -43,7 +41,9 @@ const UsersMgmtPage = () => {
   const { t } = useTranslation("user");
   const { t: tt } = useTranslation("toast");
 
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { userRole, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const visibleTabs = useMemo(() => {
     const myIndex = ROLE_ORDER.indexOf(userRole as UserRole);
@@ -90,9 +90,11 @@ const UsersMgmtPage = () => {
       page,
       limit: LIMIT,
       role: activeRole,
+      dmoId: authorityId ? undefined : dmoId, // If authorityId is present, don't filter by dmoId
+      authorityId,
       search,
     }),
-    [page, activeRole, search],
+    [page, activeRole, search, dmoId, authorityId],
   );
 
   const { data, isFetching, isLoading, refetch } = useGetUsersQuery(

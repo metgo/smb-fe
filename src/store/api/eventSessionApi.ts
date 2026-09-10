@@ -28,6 +28,17 @@ export const eventSessionApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ["EventSession"],
   endpoints: (builder) => ({
+    initCreateSessionWrapper: builder.mutation<
+      { message: string; id: string },
+      any
+    >({
+      query: (payload) => ({
+        url: endpoints.initWrapperCreate,
+        method: "POST",
+        data: payload,
+      }),
+    }),
+
     getAllEventSessions: builder.query<
       EventSessionListResponse,
       GetAllEventSessionsParams
@@ -38,6 +49,14 @@ export const eventSessionApi = createApi({
         params,
       }),
       providesTags: ["EventSession"],
+    }),
+
+    deleteLandingPage: builder.mutation<void, string>({
+      query: (wrapperId) => ({
+        url: `${endpoints.eventSessions}/${wrapperId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["EventSession"],
     }),
 
     getEventSessionById: builder.query<IAdminConfig, string>({
@@ -61,7 +80,13 @@ export const eventSessionApi = createApi({
 
     eventSessionRegList: builder.query<
       IRegistrationsResponse,
-      { page: number; limit: number; wrapperId: string }
+      {
+        page: number;
+        limit: number;
+        wrapperId: string;
+        search?: string;
+        date?: string;
+      }
     >({
       query: (params) => ({
         url: `${endpoints.eventSessionReg}/${params.wrapperId}`,
@@ -69,6 +94,8 @@ export const eventSessionApi = createApi({
         params: {
           page: params.page,
           limit: params.limit,
+          search: params.search || undefined,
+          date: params.date || undefined,
         },
       }),
       providesTags: ["EventSession"],
@@ -174,16 +201,84 @@ export const eventSessionApi = createApi({
         method: "GET",
       }),
     }),
+
+    getAllLandingPageSessions: builder.query<unknown, string>({
+      query: (wrapperId) => ({
+        url: `${endpoints.eventSessions}/${wrapperId}`,
+        method: "GET",
+      }),
+      providesTags: ["EventSession"],
+    }),
+
+    // Landing page session block
+    createLandingPageSessionBlock: builder.mutation<
+      any,
+      { wrapperId: string; data: any; method?: TMethod }
+    >({
+      query: ({ wrapperId, data, method = "POST" }) => ({
+        url: `${endpoints.createWrapperSessionBlock}/${wrapperId}`,
+        method,
+        data,
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
+
+    deleteSessionBlock: builder.mutation<
+      any,
+      { wrapperId: string; blockId: string }
+    >({
+      query: ({ wrapperId, blockId }) => ({
+        url: `${endpoints.createWrapperSessionBlock}/${wrapperId}/${blockId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
+
+    // Landing page session
+    createLandingPageSession: builder.mutation<
+      any,
+      { wrapperId: string; data: any; method?: TMethod }
+    >({
+      query: ({ wrapperId, data, method = "POST" }) => ({
+        url: `${endpoints.createWrapperSession}/${wrapperId}`,
+        method,
+        data,
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
+
+    deleteSession: builder.mutation<
+      any,
+      { wrapperId: string; sessionId: string }
+    >({
+      query: ({ wrapperId, sessionId }) => ({
+        url: `${endpoints.eventSessions}/sessions/${wrapperId}/${sessionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
+
+    resendSessionBookNotify: builder.mutation<any, string>({
+      query: (sessionBookingId) => ({
+        url: `${endpoints.resendConfirmSessionRegister}/${sessionBookingId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
   }),
 });
 
 export const {
+  useInitCreateSessionWrapperMutation,
+
   useGetAllEventSessionsQuery,
+  useDeleteLandingPageMutation,
   useGetEventSessionByIdQuery,
   useCreateEventSessionMutation,
   useUpdateEventSessionMutation,
   useDeleteEventSessionMutation,
   useGenSessionPrivewLinkQuery,
+  useLazyGenSessionPrivewLinkQuery,
   useGetCapacityReportQuery,
   useEventSessionRegListQuery,
   useEventSessionTargetAudienceQuery,
@@ -192,4 +287,11 @@ export const {
   useReSendSessionNotificationMutation,
   useGetSendNotificationHistoryQuery,
   useGetSendNotificationHistoryDetailsQuery,
+  useResendSessionBookNotifyMutation,
+
+  useCreateLandingPageSessionMutation,
+  useCreateLandingPageSessionBlockMutation,
+  useGetAllLandingPageSessionsQuery,
+  useDeleteSessionBlockMutation,
+  useDeleteSessionMutation,
 } = eventSessionApi;

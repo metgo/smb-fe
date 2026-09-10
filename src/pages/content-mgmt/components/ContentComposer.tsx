@@ -1,7 +1,7 @@
 import clsx from "clsx";
-import { useState, useRef, useEffect } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { useTranslation } from "react-i18next";
+import { useState, useRef, useEffect } from "react";
 import { GripVertical, ChevronDown, ChevronRight, Layers } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -41,6 +41,7 @@ interface ContentComposerProps {
   hasUnsavedContent?: boolean;
   onSaveCurrentAsView?: () => void;
   isSavingCurrentAsView?: boolean;
+  isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
 }
 
 // ─── Draggable Topic Block ────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ interface TopicBlockProps {
   moveItem: (from: number, to: number) => void;
   setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
   setTopicToDelete: React.Dispatch<React.SetStateAction<number | null>>;
+  isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
 }
 
 const TopicBlock = ({
@@ -66,6 +68,7 @@ const TopicBlock = ({
   moveItem,
   setTopicToDelete,
   setShowDeleteConfirm,
+  isMarketplace = false,
 }: TopicBlockProps) => {
   const { t } = useTranslation("content");
   const ref = useRef<HTMLDivElement>(null);
@@ -310,6 +313,7 @@ const TopicBlock = ({
                       externalApiId={externalApiId}
                       templateContents={templateContents}
                       setTemplateContent={setTemplateContent}
+                      isMarketplace={isMarketplace}
                     />
                   </div>
                 ))}
@@ -390,12 +394,12 @@ const ContentComposer = ({
   };
 
   return (
-    <div className="min-w-0 flex-1 pt-6">
+    <div className="min-w-0 flex-1 pt-6 overflow-x-hidden px-1">
       {/* ── Header ── */}
       <div className="mb-4">
         {/* Second Row - Title + Description + Dropdown */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-0">
-          <div>
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          <div className="min-w-0">
             <h2
               className={clsx(
                 "text-lg font-semibold",
@@ -414,20 +418,21 @@ const ContentComposer = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 min-w-0 lg:shrink-0">
             {templateContentId && (
               <StatusChangeBtn
                 status={contentStatus}
                 handleStatusChange={onStatusChangeHandler}
               />
             )}
-            <ReactSelect
-              minWidth={180}
-              value={externalApiId}
-              items={associatedWebsite}
-              onChange={(value) => setExternalApiId(value)}
-              placeholder={t("select_website")}
-            />
+            <div className="flex-1 min-w-48 lg:flex-initial">
+              <ReactSelect
+                value={externalApiId}
+                items={associatedWebsite}
+                onChange={(value) => setExternalApiId(value)}
+                placeholder={t("select_website")}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -485,6 +490,7 @@ const ContentComposer = ({
               moveItem={moveItem}
               setTopicToDelete={setTopicToDelete}
               setShowDeleteConfirm={setShowDeleteConfirm}
+              isMarketplace={isMarketplace}
             />
           ))}
 

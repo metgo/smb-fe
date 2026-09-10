@@ -120,6 +120,7 @@
   "no_delivery_policy": "لا توجد سياسة توصيل",
   "add_delivery_policy_description": "أضف وصف سياسة التوصيل",
   "dmo": "منظمة تسويق وجهة (DMO)",
+  "unassigned": "غير معين",
   "actions": "الإجراءات",
   "bulk_actions": "إجراءات جماعية",
   "approve": "موافقة",
@@ -247,7 +248,6 @@
   "websiteUrl": "رابط الموقع",
   "contactPhone": "هاتف جهة الاتصال",
   "bookmarks": "الإشارات المرجعية",
-  "connected_websites": "المواقع المرتبطة",
   "shares": "المشاركات",
   "avg_time_on_page": "متوسط الوقت",
   "conversion_rate": "معدل التحويل",
@@ -379,5 +379,14 @@
   "scanToVisit": "امسح للزيارة",
   "last_active": "آخر نشاط",
   "member_since": "عضو منذ",
-  "tour": "جولة تعريفية"
+  "tour": "جولة تعريفية",
+  "stats": "الإحصائيات",
+  "hide_stats": "إخفاء الإحصائيات",
+  "show_stats": "إظهار الإحصائيات",
+  "stats_hidden": "الإحصائيات مخفية",
+  "key_metrics": "المقاييس الرئيسية",
+  "search_and_filters": "البحث والتصفية",
+  "close_options": "إغلاق الخيارات",
+  "options": "خيارات",
+  "hide_options": "إخفاء الخيارات"
 }

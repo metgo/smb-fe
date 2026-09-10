@@ -1,5 +1,6 @@
 type TMonthlyType = "SPECIFIC_DATE" | "RELATIVE_DAY";
 type TTicketOpMode = "CREATE" | "DUPLICATE" | "UPDATE";
+type TEventFormat = "physical" | "online" | "hybrid";
 
 interface Event {
   _id: string;
@@ -55,7 +56,7 @@ interface Registrant {
   attendingDays?: string[];
 }
 
-interface EventDay {
+interface IEventDay {
   id: string;
   date: string;
   startTime: string;
@@ -86,27 +87,31 @@ interface TicketData {
   assignedDays: string[];
 }
 
-interface NotificationData {
+interface INotificationData {
   _id?: string;
   index: number;
-  hoursBeforeEvent: number;
-  channels: {
-    email: boolean;
-    sms: boolean;
-    whatsapp: boolean;
-  };
-  language: "en" | "he" | "ar";
-  template: string;
+  channels: string[];
   subject: string;
   message: string;
+  body?: string;
+  scheduleDateTime?: string;
+  scheduleDateTimeLocal?: string;
+
+  // Alternative to scheduleDateTime: send this many hours relative to the
+  // event start/end (e.g. 24, 10). Paired with sendTiming to say which side.
+  sendHoursOffset?: number;
+  sendTiming?: "PRE_EVENT" | "POST_EVENT";
   enabled: boolean;
+  status: "ACTIVE" | "INACTIVE";
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 type RecurrencePattern = "daily" | "weekly" | "monthly" | "custom";
 type MonthlyOrdinal = "1st" | "2nd" | "3rd" | "4th" | "last";
 type RecurrenceEndType = "never" | "date" | "count";
 
-type EventStatus = "PENDING" | "APPROVED" | "CLOSED" | "REJECTED" | "DRAFT";
+type TEventStatus = "PENDING" | "APPROVED" | "CLOSED" | "REJECTED" | "DRAFT";
 
 // Event Creation Payload
 
@@ -124,11 +129,11 @@ interface EventBasicInfoPayload {
 }
 
 interface EventDateTimePayload {
-  dayDescription?: DayDescription[];
+  dayDescription?: IEventDayDescription[];
   eventType: string;
   address?: Address;
   onlineLink?: string;
-  recurringEventRule?: RecurringEventRule;
+  recurringEventRule?: IRecurringEventRule;
 }
 
 interface EventRegPayload {
@@ -140,12 +145,6 @@ interface EventMsgSchedulePayload {
 }
 
 interface EventMediaPayload {}
-
-interface DayDescription {
-  date: string;
-  startTime: string;
-  endTime: string;
-}
 
 interface Address {
   country: string;
@@ -172,23 +171,15 @@ interface QuestionOption {
   label: string;
 }
 
-interface SubCoordinates {
-  xMin: number;
-  yMin: number;
-  xMax: number;
-  yMax: number;
-  name?: string;
-}
-
 interface GeoLocation {
   lat: string;
   long: string;
 }
 
-interface RecurringEventRule {
+interface IRecurringEventRule {
   pattern: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "CUSTOM";
   daysOfWeek?: string[]; // e.g., ["Monday", "Wednesday"]
-  monthlyType?: "SPECIFIC_DATE" | "RELATIVE";
+  monthlyType?: TMonthlyType;
   specificDate?: number;
   relativeDate?: number;
   relativeDay?: string; // e.g., "Tuesday"
@@ -281,6 +272,8 @@ interface ITicketPayload {
   };
   quantity: {
     initial: number;
+    // server-owned counters — the backend ignores these on update and
+    // re-derives remaining from the live sold count
     sold: number;
     remaining: number;
     isUnlimited: boolean;
@@ -291,6 +284,11 @@ interface ITicketPayload {
   status: string;
   type: string;
   wrapperId?: string;
+}
+
+interface ITicketReorderPayload {
+  eventId: string;
+  ticketIds: string[];
 }
 
 interface IEventListRes {
@@ -334,4 +332,173 @@ interface IEventBusiness {
   _id: string;
   name: string;
   logoUrl: string;
+}
+
+interface IEventTicket {
+  _id: string;
+  createdAt: string;
+  vendorId: string;
+  status: string;
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string | null;
+  paymentMode: string[];
+  paymentDate: string | null;
+  ticketId: string;
+  ticketName: string;
+  ticketImage: { image: string }[];
+  orderProductId?: string;
+  amount?: number;
+  quantity?: number;
+  paymentStatus?: string;
+  attended?: boolean;
+  attendedAt?: string | null;
+}
+
+interface IEventTicketQuestionAnswer {
+  _id: string;
+  questionId: string;
+  question: string;
+  answer: string;
+}
+
+interface IEventTicketAnswerRecord {
+  _id: string;
+  eventInfo: {
+    eventId: string;
+    ticketIds: string[];
+  };
+  purchaserInfo: {
+    email: string;
+    phone: string;
+  };
+  questionAnswer: IEventTicketQuestionAnswer[];
+}
+
+interface IEventTicketAnswersResponse {
+  message: string;
+  data: IEventTicketAnswerRecord[];
+}
+
+interface IEventColumnVisibility {
+  image: boolean;
+  name: boolean;
+  status: boolean;
+  dayDescription: boolean;
+  ticketCount: boolean;
+  wrapperCount: boolean;
+  associatedWebsiteIds: boolean;
+  address: boolean;
+  pricing: boolean;
+  hasExternalTicket: boolean;
+  ticketBuyLink: boolean;
+  updatedAt: boolean;
+  createdAt: boolean;
+}
+
+interface IEventDetailsRes {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+  updatedBy: string;
+  deletedBy: string | null;
+  deletedAt: string | null;
+  isDeleted: boolean;
+
+  completionPercent: number;
+
+  name: string;
+
+  address: {
+    country: string;
+    city: string;
+    location: string;
+    additional_information: string;
+  };
+
+  status: TEventStatus;
+  eventType: TEventFormat;
+
+  userId: string;
+  authorityId: string;
+  dmoId: string;
+
+  associatedWebsiteIds: string[];
+
+  businessId: {
+    _id: string;
+    name: string;
+  };
+
+  geoLocation: {
+    lat: string;
+    long: string;
+  };
+
+  images: ITripImage[];
+
+  groupTypesId: string[];
+  accessibilitiesId: string[];
+  subCategoriesId: string[];
+
+  slug: string;
+
+  hasExternalTicket: boolean;
+  ticketBuyLink: string;
+  onlineLink: string;
+
+  impact: number;
+
+  scheduledNotificationId: INotificationData[];
+
+  wrapperIds: string[];
+
+  ticketId: string | null;
+
+  customQuestions: {
+    question: string;
+    isRequired: boolean;
+    _id: string;
+  }[];
+
+  dayDescription: IEventDay[];
+
+  description: string;
+  descriptionAr: string;
+  descriptionHe: string;
+
+  internalNotes: string;
+
+  nameAr: string;
+  nameHe: string;
+
+  recurringEventRuleId: IRecurringEventRule;
+
+  shortDescription: string;
+  shortDescriptionAr: string;
+  shortDescriptionHe: string;
+
+  registration: {
+    capacity: number;
+    isRegistration: boolean;
+    noOfPeople: number;
+    isUnlimited: boolean;
+  };
+
+  ticketCount: number;
+
+  associatedWebsites: {
+    _id: string;
+    name: string | null;
+    url: string;
+    logo: string;
+  }[];
+
+  creator: {
+    _id: string;
+    name: string;
+    email: string;
+    role: TUserRole;
+  };
 }

@@ -62,14 +62,16 @@ interface IOrderProduct {
   orderedProductId?: string;
 }
 
-class ProductDto {
+class IProductDto {
   _id: string;
+  orderedProductId: string;
   name: string;
   description: string;
   image: string;
   quantity: number;
   amount: number;
   status: string;
+  itemType: "PRODUCT" | "TICKET";
 
   receiverEmail: string;
   receiverCountryCode: string;
@@ -88,6 +90,15 @@ class ProductDto {
 
   isGift: boolean;
   additionalInfo: string;
+
+  cancelled: {
+    _id: string;
+    additionalInfo: string;
+    canceledDate: string;
+    canceledReson: string;
+    email: string; //canceledBy Admin email
+    name: string; //canceledBy Admin name
+  };
 
   business?: {
     _id: string;
@@ -120,5 +131,31 @@ class IOrdersRes {
   createdAt: string;
   externalApiId: string;
 
-  products: ProductDto[];
+  products: IProductDto[];
+}
+
+interface IOrderColumnVisibility {
+  name: boolean;
+  email: boolean;
+  phone: boolean;
+  status: boolean;
+  paymentStatus: boolean;
+  paymentMethod: boolean;
+  totalOrderAmount: boolean;
+  productCount: boolean;
+  deliveryFee: boolean;
+  createdAt: boolean;
+  _id: boolean;
+  website: boolean;
+  dmos: boolean;
+  authorities: boolean;
+}
+
+interface IOrderSummaryColumnVisibility {
+  businessName: boolean;
+  businessAddressCity: boolean;
+  businessAddressLocation: boolean;
+  totalNoOfOrders: boolean;
+  totalAmount: boolean;
+  totalAmountPaidByCreditCard: boolean;
 }

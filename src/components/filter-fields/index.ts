@@ -1,3 +1,4 @@
 import FilterByStatus from "./FilterByStatus";
+import FilterByUnassigned from "./FilterByUnassigned";
 
-export { FilterByStatus };
+export { FilterByStatus, FilterByUnassigned };

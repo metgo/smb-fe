@@ -55,18 +55,36 @@ export const endpoints = {
 
   //orders
   orders: "/orders",
+  orderStats: "/orders/stats",
   orderDetails: "/order-details",
-
   orderSummary: "/orders-summary",
+  orderProducts: "/order-products",
+  orderProductsDetails: "/order-products/details",
+  cancelOrderProduct: "/cancel-order-product",
+  approveOrderProduct: "/approve-order-product",
+  openDispute: "/orders/dispute",
+  respondDispute: "/disputes/respond",
+  reopenDispute: "/disputes/reopen",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",
-  orderStatus: "/orders",
   orderProductStatus: "/admin/orderProduct",
   orderConfirmation: "/admin/send-success-emails",
   productsStats: "/products-stat",
   cancleOrderProduct: "/cancel-order-product",
   updateOrderStatus: "/update-order-status",
+  bulkApprove: "/orders/bulk-approve",
+  reconciliationStats: "/orders/reconciliation-stats",
+  paymentSummary: "/payment-summary",
+  bulkMarkAsComplete: "/orders/bulk-order-product-status",
+  finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
+  previewFinaliseApprovedOrders:
+    "/admin/monthly-reports/finalize-closed-orders/preview",
+  exportBankTransferXlsx: "/monthly-reports/export/bank-transfer-xlsx",
+  exportVendorwiseXlsx: "/vendors/monthly-reports/export/xlsx",
+
+  // payments
+  paymentTransactions: "/payment/transactions",
 
   // public
   publicEventTicket: "/public/event-tickets",
@@ -77,12 +95,18 @@ export const endpoints = {
   eventsStats: "/events-stats",
   upcomingEvents: "/upcoming-events",
   contentManagementEvents: "/content-management-events",
+  tickets: "/tickets",
+  ticketsReorder: "/tickets/reorder",
+  eventTickets: "/event-tickets",
+  eventTicketAnswers: "/event-ticket-answers/by-ticket",
+  resendTicketEmailToCustomer: "/resend-order-emails",
 
   // event sessions
-  tickets: "/tickets",
-  eventTickets: "/event-tickets",
+  initWrapperCreate: "/event-sessions/initialize",
   eventSessions: "/event-sessions",
   eventSessionPreviwLink: "/event-sessions/preview-link",
+  createWrapperSessionBlock: "/event-sessions/blocks",
+  createWrapperSession: "/event-sessions/sessions",
   ticketsForEventSession: "/event-sessions/tickets-without-sessions",
   eventSessionCapacityReport: "/event-sessions/capacity-report",
   eventSessionReg: "/event-sessions/registrations",
@@ -91,6 +115,8 @@ export const endpoints = {
   eventSessionSendHistory: "/event-sessions/send-history",
   eventSessionSendHistoryDetails: "/event-sessions/send-history-detail",
   eventSessionResendNotification: "/event-sessions/resend-notification",
+  sendOrderNotification: "/send-order-notification",
+  resendConfirmSessionRegister: "event-sessions/resend-confirmation",
 
   // users
   users: "/users",
@@ -98,6 +124,7 @@ export const endpoints = {
   userAdmin: "/users/admin",
   createUser: "/users/create",
   resetLoginAttempts: "/users/reset-login-attempts",
+  notifyUserByEmailSms: "vendors/notify-missing-bank-details",
 
   // Media
   mediaSignedUrl: "/media-signed-url",
@@ -120,6 +147,7 @@ export const endpoints = {
   wizardGenerateCategories: "/site-filter-config/wizard/generate-categories",
   wizardAssignEntities: "/site-filter-config/wizard/assign-entities",
   wizardTranslate: "/site-filter-config/wizard/translate",
+  wizardGenerateUnified: "/site-filter-config/wizard/generate-unified",
 
   // Notifications
   notifications: "/notifications",
@@ -146,6 +174,9 @@ export const endpoints = {
   campaign: "/admin/campaign",
   campaignDetails: "/campaign-details",
 
+  // UTM campaign builder
+  utmCampaigns: "/utm-campaigns",
+
   // Admin endpoints
   dynamicPage: "/settings",
 
@@ -169,8 +200,22 @@ export const endpoints = {
   // Website error report
   websiteCrashes: "/website-crashes",
 
+  // Stats summary
+  businessSummary: "/business-summary",
+  poiSummary: "/poi-summary",
+
+  // Chat System
+  chatUsers: "/chats/users",
+  chatMessages: "/chats/messages",
+  chatConversations: "/chats/conversations",
+  chatUnreadCount: "/chats/unread-count",
+  chatPresence: "/chats/presence",
+  chatGroups: "/chats/groups",
+  chatBroadcasts: "/chats/broadcasts",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
+  googleGeocode: "https://maps.googleapis.com/maps/api/geocode/json",
   googleMapRouteDirection:
     "https://routes.googleapis.com/directions/v2:computeRoutes",
 };

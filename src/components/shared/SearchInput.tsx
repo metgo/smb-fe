@@ -49,9 +49,9 @@ const SearchInput: React.FC<SearchInputProps> = ({
   };
 
   return (
-    <div>
+    <div className="relative">
       <Search
-        className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
+        className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none ${
           isDark ? "text-gray-500" : "text-gray-400"
         }`}
       />

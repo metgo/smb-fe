@@ -11,6 +11,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { getPlainTextFromRichText, getLngWiseStr } from "@/helpers";
 import { StatusPill } from "@/components/pills";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
+import { formatDate } from "@/helpers/formatter";
 
 const STATUS_OPTIONS = [
   "approved",
@@ -29,11 +30,13 @@ const InlineStatusSelect = ({
   onUpdate: (id: string, status: string) => Promise<boolean>;
 }) => {
   const { t } = useTranslation("common");
+  const ref = useRef<HTMLDivElement>(null);
+
   const { isDark } = useThemeClasses();
+
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState<string>(product?.status || "");
-  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -179,7 +182,7 @@ interface ProductListViewProps {
   fetchNextPage: () => void;
   selectedProducts: Set<string>;
   setSelectedProducts: (v: Set<string>) => void;
-  columnVisibility: IColumnVisibility;
+  columnVisibility: IProductColumnVisibility;
   refetch: () => void;
 }
 
@@ -197,14 +200,8 @@ const ProductListView: React.FC<ProductListViewProps> = ({
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
   const { borderColor, bgSecondary, textPrimary, language } = useThemeClasses();
-  const USER_ROLE = "admin";
 
   const [updateProduct] = useUpdateProductMutation();
-
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    USER_ROLE,
-  );
-
   const handleProductClick = (product: any) => {
     navigate(`${routes.productDetails}?productId=${product?._id}`, {
       replace: true,
@@ -254,7 +251,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
   };
 
   const columns = [
-    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+    { key: "checkbox", label: "", width: "50px" },
 
     columnVisibility?.images && {
       key: "images",
@@ -386,8 +383,8 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       label: t("last_updated"),
       sortable: true,
       render: (product: any) => (
-        <div className={`${textPrimary} line-clamp-1`}>
-          {new Date(product.updatedAt).toLocaleDateString(language)}
+        <div className={`${textPrimary}`}>
+          {formatDate(product.updatedAt, language)}
         </div>
       ),
     },

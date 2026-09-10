@@ -65,6 +65,16 @@ export const eventMutationApi = createApi({
       }),
     }),
 
+    updateTicketReorder: builder.mutation<any, { body: ITicketReorderPayload }>(
+      {
+        query: ({ body }) => ({
+          url: `${endpoints.ticketsReorder}`,
+          method: "PATCH",
+          data: body,
+        }),
+      },
+    ),
+
     deleteTicket: builder.mutation<any, { ticketId: string }>({
       query: ({ ticketId }) => ({
         url: `${endpoints.tickets}/${ticketId}`,
@@ -83,6 +93,30 @@ export const eventMutationApi = createApi({
       }),
     }),
 
+    // Check-in toggle (Registrations tab). Separate from order-status because
+    // attendance must not overwrite `status` - reconciliation/payout key off it.
+    setEventTicketAttendance: builder.mutation<
+      any,
+      { orderId: string; attended: boolean }
+    >({
+      query: ({ orderId, attended }) => ({
+        url: `${endpoints.eventTickets}/attendance`,
+        method: "PATCH",
+        params: { orderId, attended },
+      }),
+    }),
+
+    // Public QR-scan check-in - no auth token required
+    markPublicTicketAttendance: builder.mutation<
+      any,
+      { eventId: string; ticketId: string }
+    >({
+      query: ({ eventId, ticketId }) => ({
+        url: `${endpoints.publicEventTicket}/${eventId}/${ticketId}/attendance`,
+        method: "PATCH",
+      }),
+    }),
+
     createSession: builder.mutation<
       { data: EventSession },
       CreateSessionPayload
@@ -95,24 +129,26 @@ export const eventMutationApi = createApi({
       invalidatesTags: ["Event"],
     }),
 
-    updateSession: builder.mutation<
-      { data: EventSession },
-      { sessionId: string; body: UpdateSessionPayload }
+    resendTicketEmailToCustomer: builder.mutation<
+      any,
+      { ordersId: string[]; emailRecipient: "CUSTOMER" }
     >({
-      query: ({ sessionId, body }) => ({
-        url: `${endpoints.eventSessions}/${sessionId}`,
-        method: "PATCH",
-        data: body,
+      query: (payload) => ({
+        url: endpoints.resendTicketEmailToCustomer,
+        method: "POST",
+        data: payload,
       }),
-      invalidatesTags: ["Event"],
     }),
 
-    deleteSession: builder.mutation<any, { sessionId: string }>({
-      query: ({ sessionId }) => ({
-        url: `${endpoints.eventSessions}/${sessionId}`,
-        method: "DELETE",
+    notifyTicketCustomerByEmailSms: builder.mutation<
+      any,
+      { ordersId: string[]; type: "email" | "sms"; emailRecipient: string }
+    >({
+      query: (payload) => ({
+        url: endpoints.sendOrderNotification,
+        method: "POST",
+        data: payload,
       }),
-      invalidatesTags: ["Event"],
     }),
   }),
 });
@@ -125,7 +161,9 @@ export const {
   useCreateTicketMutation,
   useDeleteEventMutation,
   useUpdateEventTicketStatusMutation,
-  useCreateSessionMutation,
-  useUpdateSessionMutation,
-  useDeleteSessionMutation,
+  useSetEventTicketAttendanceMutation,
+  useMarkPublicTicketAttendanceMutation,
+  useUpdateTicketReorderMutation,
+  useResendTicketEmailToCustomerMutation,
+  useNotifyTicketCustomerByEmailSmsMutation,
 } = eventMutationApi;

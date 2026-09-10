@@ -30,12 +30,13 @@ import {
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { StatusChangeBtn } from "@/components/btns";
+import { ChatWithCreator } from "@/components/chat-popup";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
   AttributesDetails,
   DetailTitleSection,
-  LocationDetails,
+  // LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
@@ -84,7 +85,7 @@ export default function EventDetailsPage() {
     }
   };
 
-  const [eventDays, setEventDays] = useState<EventDay[]>([
+  const [eventDays, setEventDays] = useState<IEventDay[]>([
     { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" },
   ]);
 
@@ -182,7 +183,7 @@ export default function EventDetailsPage() {
     {
       id: 5,
       title: t("event_type"),
-      value: t(findEventType(eventDetails?.eventType)),
+      value: t(findEventType(eventDetails?.eventType || "PHYSICAL")),
       icon: <Ticket className="w-8 h-8 text-purple-500" />,
     },
   ];
@@ -206,15 +207,6 @@ export default function EventDetailsPage() {
         return <EventInfoDetails {...commonProps} />;
       case "date_time":
         return <EventDateTimeDetails {...(eventDetails ?? {})} />;
-      case "location":
-        return (
-          <LocationDetails
-            purpose="Event"
-            lat={eventDetails?.geoLocation?.lat}
-            long={eventDetails?.geoLocation?.long}
-            address={eventDetails?.address}
-          />
-        );
       case "media":
         return <MediaDetails {...mediaProps} />;
       case "tickets":
@@ -225,7 +217,7 @@ export default function EventDetailsPage() {
             refetch={ticketsRefetch}
             eventDays={eventDays}
             hasExternalTicket={hasExternalTicket}
-            ticketBuyLink={eventDetails?.ticketBuyLink}
+            ticketBuyLink={eventDetails?.ticketBuyLink || ""}
           />
         );
       case "schedual_notification":
@@ -243,6 +235,7 @@ export default function EventDetailsPage() {
       case "sessions":
         return (
           <EventSessionDetails
+            eventDetails={eventDetails}
             eventId={eventId}
             isLoading={isSessionsLoading}
             sessions={sessions}
@@ -255,71 +248,8 @@ export default function EventDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:top-0">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative md:top-0">
       <Spinner isLoading={isLoading || isFetching} />
-
-      {/* Action bar */}
-      <div className="flex items-center justify-between mb-3 shrink-0">
-        <BackToListBtn navPath={routes.eventsMgmt} />
-        <div className="flex items-center gap-3">
-          <StatusChangeBtn
-            handleStatusChange={onStatusChangeHandler}
-            status={eventDetails?.status}
-          />
-
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
-              }`}
-            >
-              <span className="text-sm font-medium">{t("actions")}</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {isDropdownOpen && (
-              <div
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
-                  isDark
-                    ? "bg-gray-900 border-gray-700"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                <button
-                  onClick={() => setIsEditOpen(true)}
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                    isDark
-                      ? "text-indigo-400 hover:bg-gray-800"
-                      : "text-indigo-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <Edit className="w-4 h-4" />
-                  {t("edit")}
-                </button>
-
-                <button
-                  onClick={() =>
-                    navigate(`${routes.eventSessionMgmt}?eventId=${eventId}`)
-                  }
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                    isDark
-                      ? "text-gray-300 hover:bg-gray-800"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <LayoutList className="w-4 h-4 shrink-0" />
-                  {t("create_landing_page")}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Title + Stats */}
       <div className="details-top shrink-0">
@@ -328,6 +258,71 @@ export default function EventDetailsPage() {
           imageSrc={
             eventDetails?.images?.find((img: any) => img.isPrimary)?.image ||
             eventDetails?.images?.[0]?.image
+          }
+          backPath={routes.eventsMgmt}
+          actions={
+            <>
+              <StatusChangeBtn
+                handleStatusChange={onStatusChangeHandler}
+                status={
+                  (eventDetails?.status?.toLowerCase() as TStatus) || "pending"
+                }
+              />
+
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+                  }`}
+                >
+                  <span className="text-sm font-medium">{t("actions")}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div
+                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                      isDark
+                        ? "bg-gray-900 border-gray-700"
+                        : "bg-white border-gray-200"
+                    }`}
+                  >
+                    <button
+                      onClick={() => setIsEditOpen(true)}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-indigo-400 hover:bg-gray-800"
+                          : "text-indigo-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Edit className="w-4 h-4" />
+                      {t("edit")}
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `${routes.eventSessionMgmt}?eventId=${eventId}`,
+                        )
+                      }
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-gray-300 hover:bg-gray-800"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <LayoutList className="w-4 h-4 shrink-0" />
+                      {t("create_landing_page")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
           }
         />
         <PageStats
@@ -367,6 +362,8 @@ export default function EventDetailsPage() {
           eventDataRefetch={refetch}
         />
       )}
+
+      <ChatWithCreator creator={eventDetails?.creator} />
     </div>
   );
 }

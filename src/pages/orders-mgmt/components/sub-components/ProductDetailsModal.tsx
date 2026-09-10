@@ -2,13 +2,14 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { routes } from "@/lib/routes";
+import CancelledInfo from "./CancelledInfo";
 import { ModalWrapper } from "@/components/wrapper";
 import { ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { getLngWiseStr, getPlainTextFromRichText } from "@/helpers";
 
 interface ProductDetailsModalProps {
-  product: ProductDto;
+  product: IProductDto;
   onClose: () => void;
 }
 
@@ -22,7 +23,11 @@ export default function ProductDetailsModal({
   const { textPrimary, textTertiary } = useThemeClasses();
 
   return (
-    <ModalWrapper onClose={onClose} height="h-[35vh]" maxWidth="max-w-2xl">
+    <ModalWrapper
+      onClose={onClose}
+      height={product?.cancelled ? "h-auto max-h-[70vh]" : "h-[35vh]"}
+      maxWidth="max-w-2xl"
+    >
       <div
         onClick={(e) => e.stopPropagation()}
         className={`w-full max-w-2xl rounded-lg ${
@@ -84,6 +89,10 @@ export default function ProductDetailsModal({
               ? getPlainTextFromRichText(product.description)
               : "-"}
           </p>
+
+          {product?.cancelled && (
+            <CancelledInfo cancelled={product.cancelled} />
+          )}
         </div>
       </div>
     </ModalWrapper>

@@ -133,6 +133,16 @@ export default function ContentMgmtPage() {
 
   const tabs = useContentTabs(externalApiId);
 
+  // ── Derived ──────────────────────────────────────────────────────────────────
+
+  const selectedWebsite = (associatedWebsite as IWebsite[]).find(
+    (w) => w._id === externalApiId,
+  );
+  const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
+  const selectedWebsiteName = selectedWebsite?.name ?? "";
+
+  const [activeViewId, setActiveViewId] = useState<string | null>(null);
+
   const data = useContentData({
     selected: tabs.selected,
     tabState: tabs.tabState,
@@ -140,6 +150,8 @@ export default function ContentMgmtPage() {
     dmoId,
     authorityId,
     language,
+    isMarketplace,
+    viewId: activeViewId,
   });
 
   const template = useContentTemplate({
@@ -152,6 +164,10 @@ export default function ContentMgmtPage() {
     filters: tabs.filters,
     searchQuery: tabs.searchQuery,
   });
+
+  useEffect(() => {
+    setActiveViewId(template.templateContentId ?? null);
+  }, [template.templateContentId]);
 
   // ── Message composer (mock) ──────────────────────────────────────────────────
 
@@ -186,24 +202,15 @@ export default function ContentMgmtPage() {
     toast.success(t("messages_sent_to_customers", { count: results?.length }));
   };
 
-  // ── Derived ──────────────────────────────────────────────────────────────────
-
-  const selectedWebsite = (associatedWebsite as IWebsite[]).find(
-    (w) => w._id === externalApiId,
-  );
-  console.log("🚀 ~ ContentMgmtPage ~ selectedWebsite:", selectedWebsite);
-  const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
-  console.log("🚀 ~ ContentMgmtPage ~ isMarketplace:", isMarketplace);
-  const selectedWebsiteName = selectedWebsite?.name ?? "";
-
   const marketplaceHiddenTabs = isMarketplace
-    ? ["Businesses", "POI", "Events"]
-    : [];
+    ? ["Businesses"] // MARKETPLACE: show only Products
+    : ["Products"]; // TRAVELLER: show only Businesses
 
   // When switching to a marketplace site, jump off any now-hidden tab
+  // When switching to a TRAVELLER site, jump off Products tab
   useEffect(() => {
     if (marketplaceHiddenTabs.includes(tabs.selected)) {
-      tabs.setSelected("Products");
+      tabs.setSelected(isMarketplace ? "Products" : "Businesses");
     }
   }, [isMarketplace]);
 
@@ -408,6 +415,7 @@ export default function ContentMgmtPage() {
                         searchQuery={tabs.searchQuery}
                         setSearchQuery={tabs.setSearchQuery}
                         isLoading={data.activeIsLoading}
+                        isFetching={data.activeIsFetching}
                         loadMore={data.activeLoadMore}
                         hasMore={data.activeHasMore}
                         templateContents={template.templateContents}
@@ -482,6 +490,7 @@ export default function ContentMgmtPage() {
                       isSavingCurrentAsView={
                         template.isCreating || template.isUpdating
                       }
+                      isMarketplace={isMarketplace}
                     />
                   </motion.div>
                 )}

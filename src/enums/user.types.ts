@@ -1,10 +1,8 @@
 export const UserRole = {
-  TRAVELLER: "traveller",
-  ADMIN: "admin",
   SUPERADMIN: "superadmin",
   DMO: "dmo",
   AUTHORITY: "authority",
-  AUTHORITY_ADMIN: "authorityAdmin",
+  TRAVELLER: "traveller",
   SITE_MANAGER: "siteManager",
 } as const;
 

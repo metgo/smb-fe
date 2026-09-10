@@ -1,7 +1,6 @@
 {
   "loading_text": "جاري تحميل المزيد من العناصر...",
   "loading_end_text": "لا توجد عناصر أخرى",
-
   "all_websites": "جميع المواقع",
   "all_authorities": "جميع الجهات المسؤولة",
   "app_title": "ناتي",
@@ -21,12 +20,10 @@
   "products": "المنتجات",
   "businesses": "الأعمال التجارية",
   "notifications": "الإشعارات",
-
   "users": "المستخدمون",
   "points_of_interest": "نقاط الاهتمام",
   "upload_up_to_10_images": "رفع حتى 10 صور",
   "upload_up_to_3_images": "رفع حتى 3 صور",
-
   "delete_business": "حذف العمل التجاري",
   "delete_business_confirm": "تأكيد حذف العمل التجاري؟",
   "delete_trip": "حذف الرحلة",
@@ -56,8 +53,10 @@
   "generate_tags": "إنشاء الوسوم",
   "generate_tags_with_ai": "إنشاء الوسوم باستخدام الذكاء الاصطناعي",
   "generating_tags": "جارٍ إنشاء العلامات",
-
   "orders": "الطلبات",
+  "order_summary": "ملخص الطلبات",
+  "vendor_reconciliation": "تسوية الموردين",
+  "payment_transactions": "معاملات الدفع",
   "pois": "نقاط الاهتمام",
   "trips": "الرحلات",
   "fun_days": "أيام الترفيه",
@@ -72,13 +71,16 @@
   "promotions": "العروض الترويجية",
   "blog": "المدونة",
   "article": "مقال",
+  "chat": "دردشة",
   "news_feed": "تدفق الأخبار",
   "feed_settings": "إعدادات التدفق",
   "mini_site": "الموقع المصغر",
+  "mini_campaigns": "الحملات المصغرة",
   "dynamic_pages": "الصفحات الديناميكية",
   "my_profile": "ملفي الشخصي",
   "settings": "الإعدادات",
   "documents": "صور قوالب البريد الإلكتروني",
+  "stats_summary": "ملخص الإحصائيات",
   "version": "الإصدار",
   "max_characters": "الحد الأقصى للحروف",
   "char_count": "{{count}} / {{limit}} حرف",
@@ -89,7 +91,6 @@
   "campaigns": "الحملات",
   "websites": "المواقع الإلكترونية",
   "partners": "الشركاء",
-
   "filters": "الفلاتر",
   "previous": "السابق",
   "next": "التالي",
@@ -111,12 +112,10 @@
   "continue": "متابعة",
   "send_invite": "إرسال الدعوة",
   "back_to_list": "العودة إلى القائمة",
-
   "all_time": "كل الوقت",
   "no_data_available": "لا توجد بيانات متاحة",
   "closed": "مغلق",
   "total": "الإجمالي: ",
-
   "pending": "معلق",
   "approved": "تمت الموافقة",
   "rejected": "مرفوض",
@@ -136,15 +135,12 @@
   "required": "مطلوب",
   "not_required": "غير مطلوب",
   "required_field": "هذا الحقل مطلوب",
-
   "change_status": "تغيير الحالة",
   "completion_percentage": "نسبة الإكمال",
   "created": "تم الإنشاء",
   "updated": "تم التحديث",
-
   "delete_ticket": "حذف التذكرة",
   "delete_ticket_confirm": "هل أنت متأكد من حذف هذه التذكرة؟",
-
   "delete_session": "حذف الجلسة",
   "delete_session_confirm": "هل أنت متأكد من حذف هذه الجلسة؟",
   "deletd_notification": "حذف الإشعار",
@@ -154,10 +150,10 @@
   "leave": "مغادرة",
   "delete_event": "حذف الفعالية",
   "delete_event_confirm": "هل أنت متأكد من حذف هذه الفعالية؟",
-
+  "delete_session_block": "حذف مجموعة الجلسات",
+  "delete_session_block_confirm": "هل أنت متأكد من حذف مجموعة الجلسات هذه؟",
   "logo_required": "الشعار (مطلوب)",
   "upload_logo": "رفع الشعار",
-
   "images": "الصور",
   "image_upload_info": "بدأ رفع الصورة. يرجى الانتظار…",
   "delete_image": "حذف الصورة",
@@ -165,16 +161,13 @@
   "image_deleted": "تم حذف الصورة",
   "delete_station": "حذف المحطة",
   "delete_station_confirm": "هل أنت متأكد من إزالة هذه المحطة من الرحلة؟",
-
   "image_upload_success": "تم رفع الصورة بنجاح!",
   "image_delete_success": "تم حذف الصورة بنجاح!",
   "image_upload_failed": "فشل رفع الصورة! يرجى المحاولة مرة أخرى...",
   "image_delete_failed": "فشل حذف الصورة! يرجى المحاولة مرة أخرى...",
-
   "to": "إلى",
   "primary": "الرئيسية",
   "set_as_primary": "تعيين كصورة رئيسية",
-
   "filter": "تصفية",
   "sunday": "الأحد",
   "monday": "الإثنين",
@@ -183,7 +176,6 @@
   "thursday": "الخميس",
   "friday": "الجمعة",
   "saturday": "السبت",
-
   "sun": "أحد",
   "mon": "إثنين",
   "tue": "ثلاثاء",
@@ -191,7 +183,6 @@
   "thu": "خميس",
   "fri": "جمعة",
   "sat": "سبت",
-
   "open": "مفتوح",
   "holiday": "عطلة",
   "today": "اليوم",
@@ -202,7 +193,6 @@
   "by_appointment": "بموعد مسبق",
   "for_entire_week": "لكامل الأسبوع",
   "add_time_slot": "أضف وقتاً",
-
   "all": "الكل",
   "select_dmo": "اختر منظمة تسويق الوجهة (DMO)",
   "your_geographic_location": "موقعك الجغرافي",
@@ -211,15 +201,13 @@
   "website_visibility": "رؤية الموقع",
   "select_associated_websites": "اختر المواقع المرتبطة",
   "select_unassociated_websites": "اختر المواقع غير المرتبطة",
-
+  "website_visibility_required": "يرجى اختيار موقع مرتبط واحد على الأقل",
   "download_pdf": "تحميل PDF",
   "download_csv": "تحميل CSV",
-
   "error_title": "عذرًا، حدث خطأ ما!",
   "error_description": "حدث خطأ غير متوقع. تم إرسال تقرير الخطأ — سنقوم بمراجعته ونشر إصلاح في أقرب وقت ممكن.",
   "go_back_home": "العودة إلى الصفحة الرئيسية",
   "reload_page": "إعادة تحميل الصفحة",
-
   "overview": "نظرة عامة",
   "stations": "المحطات",
   "step_itenary": "خط سير الرحلة",
@@ -247,7 +235,6 @@
   "assignee_and_creator": "المستلم والمنشئ",
   "usage_timeline": "الجدول الزمني للاستخدام",
   "transactions_and_usage": "المعاملات والاستخدام",
-
   "impact_score": "درجة التأثير",
   "location": "الموقع",
   "geo_coordinates": "الإحداثيات الجغرافية",
@@ -302,50 +289,38 @@
   "tags_desc": "{count} وسم متاح",
   "no_attribute_selected": "لم يتم اختيار أي سمات",
   "no_attribute_selected_info": "لم يتم تعيين فئات فرعية أو ميزات إمكانية وصول أو أنواع مجموعات لهذه الفعالية",
-
   "review_your_product": "مراجعة المنتج",
   "basic_info": "المعلومات الأساسية",
   "pricing_stock_dates": "التسعير والمخزون والتواريخ",
   "delivery_service": "التوصيل والخدمة",
-
   "name": "الاسم (EN)",
   "name_he": "الاسم (HE)",
   "name_ar": "الاسم (AR)",
-
   "short_description_en": "الوصف المختصر (EN)",
   "short_description_he": "الوصف المختصر (HE)",
   "short_description_ar": "الوصف المختصر (AR)",
-
   "full_description_en": "الوصف الكامل (EN)",
   "full_description_he": "الوصف الكامل (HE)",
   "full_description_ar": "الوصف الكامل (AR)",
-
   "categories": "الفئات",
   "sub_categories": "الفئات الفرعية",
-
   "marked_price": "السعر المعلن",
   "selling_price": "سعر البيع",
   "quantity": "الكمية",
   "discount": "الخصم",
   "off": "خصم",
-
   "unlimited": "غير محدود",
-
   "start_date": "تاريخ البدء",
   "end_date": "تاريخ الانتهاء",
-
   "home_delivery": "التوصيل للمنزل",
   "store_pickup": "الاستلام من المتجر",
   "vendor_delivers": "التاجر يقوم بالتوصيل",
   "pickup_available": "الاستلام متاح",
-
   "service_duration": "مدة الخدمة",
   "delivery_area": "منطقة التوصيل",
-
   "return_exchange_policy": "سياسة الإرجاع والاستبدال",
   "additional_details": "تفاصيل إضافية",
   "specific_seller_delivery_info": "معلومات التوصيل الخاصة بالبائع",
-
   "change_business_owner": "تغيير مالك النشاط التجاري",
   "current_owner": "المالك الحالي:",
   "owner_email_address": "عنوان البريد الإلكتروني للمالك",
@@ -388,15 +363,12 @@
   "last_name_placeholder": "الاسم الأخير",
   "phone_number_placeholder": "رقم الهاتف",
   "address_placeholder": "العنوان",
-
   "max_length_reached": "تم الوصول إلى الحد الأقصى للطول.",
   "select_options_placeholder": "اختر الخيارات",
-
   "delete_partner": "حذف الشريك",
   "delete_partner_confirm": "هل أنت متأكد من حذف هذا الشريك؟ لا يمكن التراجع عن هذا الإجراء.",
   "partner_deleted": "تم حذف الشريك بنجاح",
   "partner_delete_failed": "فشل حذف الشريك",
-
   "delete_authority": "حذف الجهة",
   "delete_authority_confirm": "هل أنت متأكد أنك تريد حذف هذه الجهة؟ لا يمكن التراجع عن هذا الإجراء.",
   "authority_deleted": "تم حذف الجهة بنجاح",
@@ -404,23 +376,47 @@
   "migrate_authority_to_prod": "نقل الجهة إلى بيئة الإنتاج",
   "migrate_authority_to_prod_confirm": "أنت على وشك نقل هذه الجهة إلى بيئة الإنتاج. سيجعلها ذلك متاحة لجميع المستخدمين. هل أنت متأكد أنك تريد المتابعة؟",
   "migrate_to_prod": "النقل إلى الإنتاج",
-
   "delete_dmo": "حذف DMO",
   "delete_dmo_confirm": "هل أنت متأكد أنك تريد حذف هذا الـ DMO؟ لا يمكن التراجع عن هذا الإجراء.",
   "dmo_deleted": "تم حذف الـ DMO بنجاح",
   "dmo_delete_failed": "فشل حذف الـ DMO",
   "migrate_dmo_to_prod": "نقل DMO إلى بيئة الإنتاج",
   "migrate_dmo_to_prod_confirm": "أنت على وشك نقل هذا الـ DMO إلى بيئة الإنتاج. سيجعله ذلك متاحاً لجميع المستخدمين. هل أنت متأكد أنك تريد المتابعة؟",
-
   "migrate_website_to_prod": "نقل الموقع إلى بيئة الإنتاج",
   "migrate_website_to_prod_confirm": "أنت على وشك نقل هذا الموقع إلى بيئة الإنتاج. سيجعله ذلك متاحاً لجميع المستخدمين. هل أنت متأكد أنك تريد المتابعة؟",
   "delete_website": "حذف الموقع",
   "delete_website_confirm": "هل أنت متأكد أنك تريد حذف هذا الموقع؟ لا يمكن التراجع عن هذا الإجراء.",
   "website_deleted": "تم حذف الموقع بنجاح",
   "website_delete_failed": "فشل حذف الموقع",
-
   "deactivate_website": "تعطيل الموقع",
   "deactivate_website_confirm": "بمجرد التعطيل، سيرى الزوار شاشة \"قيد الإنشاء\" بدلاً من موقعك الفعلي. هل أنت متأكد من رغبتك في التعطيل؟",
   "pending_approvals": "الموافقات المعلقة",
-  "service_unavailable": "هذه الخدمة غير متاحة في الوقت الحالي"
+  "service_unavailable": "هذه الخدمة غير متاحة في الوقت الحالي",
+  "check_availability": "تحقق من التوفر",
+  "please_enter_business_name": "يرجى إدخال اسم النشاط التجاري",
+  "business_name_available": "اسم النشاط التجاري متاح",
+  "business_name_unavailable": "اسم النشاط التجاري محجوز بالفعل",
+  "business_already_created": "النشاط التجاري تم إنشاؤه بالفعل",
+  "business_already_created_desc": "لقد قمنا بالفعل بإنشاء هذا النشاط التجاري لك. يمكنك الاطلاع عليه إذا أردت.",
+  "connected_websites": "المواقع المرتبطة",
+  "support_email": "support@metgo.app",
+  "support_phone": "050 554 5353",
+  "business_already_exists_title": "لقد قمنا بالفعل ببناء هذا النشاط التجاري لك",
+  "business_already_exists_body": "يرجى التواصل مع فريق الدعم لدينا أدناه، أو انظر إلى النشاط التجاري الذي قمنا بإنشاؤه بالفعل.",
+  "view_business_on": "عرض على",
+  "contact_support_label": "أو اتصل بفريق الدعم لدينا",
+  "selected_dmo_authority": "منظمة تسويق الوجهة والسلطة المحددة",
+  "no_connected_dmo_authority_websites": "لا توجد منظمة تسويق وجهة أو سلطة أو مواقع مرتبطة",
+  "stats": "الإحصائيات",
+  "hide_stats": "إخفاء الإحصائيات",
+  "show_stats": "إظهار الإحصائيات",
+  "stats_hidden": "الإحصائيات مخفية",
+  "key_metrics": "المقاييس الرئيسية",
+  "search_and_filters": "البحث والتصفية",
+  "close_options": "إغلاق الخيارات",
+  "options": "خيارات",
+  "hide_options": "إخفاء الخيارات",
+  "open_in_google_maps": "فتح في خرائط Google",
+  "open_in_waze": "فتح في Waze",
+  "campaign_url_builder": "منشئ روابط الحملات"
 }

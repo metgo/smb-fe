@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Check,
   Eye,
+  Siren,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -113,32 +114,50 @@ const NotificationsBell = () => {
     switch (type) {
       case "INFO":
         return (
-          <span className={`${base} bg-blue-100 dark:bg-blue-900/40`}>
+          <span
+            className={`${base} ${isDark ? "bg-blue-900/40" : "bg-blue-100"}`}
+          >
             <Info className="w-4 h-4 text-blue-500" />
           </span>
         );
       case "UNREAD":
         return (
-          <span className={`${base} bg-purple-100 dark:bg-purple-900/40`}>
+          <span
+            className={`${base} ${isDark ? "bg-purple-900/40" : "bg-purple-100"}`}
+          >
             <Info className="w-4 h-4 text-purple-500" />
           </span>
         );
       case "ACTION":
         return (
-          <span className={`${base} bg-yellow-50 dark:bg-amber-900/40`}>
+          <span
+            className={`${base} ${isDark ? "bg-amber-900/40" : "bg-yellow-50"}`}
+          >
             <AlertCircle className="w-4 h-4 text-amber-500" />
           </span>
         );
       case "WARNING":
         return (
-          <span className={`${base} bg-amber-100 dark:bg-amber-900/40`}>
+          <span
+            className={`${base} ${isDark ? "bg-amber-900/40" : "bg-amber-100"}`}
+          >
             <AlertTriangle className="w-4 h-4 text-amber-500" />
           </span>
         );
       case "ERROR":
         return (
-          <span className={`${base} bg-red-100 dark:bg-red-900/40`}>
+          <span
+            className={`${base} ${isDark ? "bg-red-900/40" : "bg-red-100"}`}
+          >
             <XCircle className="w-4 h-4 text-red-500" />
+          </span>
+        );
+      case "DISPUTE":
+        return (
+          <span
+            className={`${base} ${isDark ? "bg-red-900/40" : "bg-red-100"}`}
+          >
+            <Siren className="w-4 h-4 text-red-500" />
           </span>
         );
     }
@@ -236,7 +255,12 @@ const NotificationsBell = () => {
               className="flex justify-center pt-2.5 pb-1 md:hidden shrink-0 w-full"
               aria-label="Close notifications"
             >
-              <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+              <div
+                className={clsx(
+                  "w-10 h-1 rounded-full",
+                  isDark ? "bg-gray-600" : "bg-gray-300",
+                )}
+              />
             </button>
 
             {/* Header */}
@@ -251,7 +275,12 @@ const NotificationsBell = () => {
                   {t("notifications")}
                 </span>
                 {unreadCount > 0 && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  <span
+                    className={clsx(
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10",
+                      isDark ? "text-blue-400" : "text-blue-600",
+                    )}
+                  >
                     {unreadCount} {t("new")}
                   </span>
                 )}
@@ -262,7 +291,8 @@ const NotificationsBell = () => {
                   disabled={isMarkingAllRead}
                   className={clsx(
                     "flex items-center gap-1 text-xs font-medium transition-colors",
-                    "text-blue-500 hover:text-blue-600 dark:hover:text-blue-400",
+                    "text-blue-500",
+                    isDark ? "hover:text-blue-400" : "hover:text-blue-600",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
                   )}
                 >
@@ -293,7 +323,12 @@ const NotificationsBell = () => {
                 </p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+              <div
+                className={clsx(
+                  "flex-1 overflow-y-auto divide-y",
+                  isDark ? "divide-gray-800" : "divide-gray-100",
+                )}
+              >
                 {notifications?.map((notification) => {
                   const isUnread = !notification.isRead;
                   const itemType = notification?.itemType;
@@ -328,8 +363,21 @@ const NotificationsBell = () => {
                     await markNotificationsAsRead(notification._id);
                     dispatch(markNotificationAsRead(notification._id));
                     if (itemEndpoint[itemType]) {
+                      const paramName =
+                        itemType === "DISPUTE" ? "orderProductId" : queryParam;
+
+                      const idValue =
+                        itemType === "DISPUTE"
+                          ? notification.orderProductId
+                          : notification.itemId;
+
+                      const disputeParam =
+                        itemType === "DISPUTE"
+                          ? `&disputeId=${notification.itemId}`
+                          : "";
+
                       navigate(
-                        `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                        `${itemEndpoint[itemType]}?${paramName}=${idValue}${disputeParam}`,
                       );
                     }
                   };
@@ -533,17 +581,17 @@ const NotificationsBell = () => {
                             >
                               <Check className="w-3 h-3" />
                               {isApproved
-                                ? "Approved"
+                                ? t("approved")
                                 : isApproving
-                                  ? "Approving..."
-                                  : "Approve"}
+                                  ? t("approving")
+                                  : t("approve")}
                             </button>
                           )}
 
                           {isApproved && isAdmin && (
                             <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-500 text-white">
                               <Check className="w-3 h-3" />
-                              Approved
+                              {t("approved")}
                             </div>
                           )}
 
@@ -566,7 +614,7 @@ const NotificationsBell = () => {
                                 )}
                               >
                                 <Eye className="w-3 h-3" />
-                                View Changes
+                                {t("view_changes")}
                               </button>
                             )}
 
@@ -581,7 +629,7 @@ const NotificationsBell = () => {
                               )}
                             >
                               <ExternalLink className="w-3 h-3" />
-                              View Details
+                              {t("view_details")}
                             </button>
                           )}
                         </div>
@@ -605,8 +653,10 @@ const NotificationsBell = () => {
                   onClick={handleViewAllNotification}
                   className={clsx(
                     "w-full flex items-center justify-center gap-2",
-                    "text-sm font-semibold text-blue-600 dark:text-blue-400",
-                    "hover:text-blue-700 dark:hover:text-blue-300 transition-colors",
+                    "text-sm font-semibold transition-colors",
+                    isDark
+                      ? "text-blue-400 hover:text-blue-300"
+                      : "text-blue-600 hover:text-blue-700",
                   )}
                 >
                   {t("view_all_notifications")}

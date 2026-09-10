@@ -37,6 +37,7 @@ interface DataTableProps<T> {
   next?: () => void;
   hasMore?: boolean;
   t?: (key: string) => string;
+  maxHeight?: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -59,6 +60,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   onSelectionChange,
   isDataLoading = false,
   storageKey = "dataTableColumnOrder",
+  maxHeight,
 }: DataTableProps<T>) {
   const { t: tc } = useTranslation("common");
   const { isDark, isRTL, textSecondary } = useThemeClasses();
@@ -114,7 +116,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       ([entry]) => {
         if (entry.isIntersecting) next?.();
       },
-      { root: container, threshold: 0 },
+      { root: container, threshold: 0, rootMargin: "50px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
@@ -343,7 +345,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   // Header variant — always uses the header background
   const getStickyHeaderBgClass = useCallback(
     (colKey: string) => {
-      if (!PINNED_ALL.has(colKey)) return "";
+      if (!PINNED_ALL.has(colKey)) return isDark ? "bg-gray-900" : "bg-gray-50";
 
       const isVisuallyRight = isRTL
         ? PINNED_LEFT.has(colKey)
@@ -388,7 +390,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
         ref={scrollRef}
         className="w-full overflow-auto"
         style={{
-          maxHeight: "calc(100vh - 400px)",
+          maxHeight: maxHeight ?? "calc(100vh - 180px)",
           scrollbarWidth: "none",
         }}
       >
@@ -396,7 +398,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
           {/* ── Sticky Header ── */}
           <thead
             className={clsx(
-              "sticky top-0 z-20 border-b",
+              "sticky top-0 z-30 border-b",
               isDark
                 ? "bg-gray-900 border-gray-800"
                 : "bg-gray-50 border-gray-200",
@@ -415,7 +417,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 const isOver =
                   dragOverColumn === colKey && draggedColumn !== colKey;
 
-                // FIX: header pinned cells need z-index above body pinned cells
+                // Pinned header cells need horizontal sticky + z-index above body pinned cells
                 const stickyStyle: React.CSSProperties = isPinned
                   ? { ...getStickyStyle(colKey), zIndex: 40 }
                   : {};
@@ -434,9 +436,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                     onDragEnd={handleDragEnd}
                     onClick={() => isSortable && handleSort(field)}
                     className={clsx(
-                      "relative px-4 py-3",
+                      "relative px-4 py-4 min-h-[52px] align-middle",
                       isRTL ? "text-right" : "text-left",
-                      "text-xs font-semibold tracking-widest",
+                      "text-xs font-semibold tracking-wider leading-normal",
                       "transition-colors duration-150 select-none group",
                       isDark ? "text-gray-400" : "text-gray-500",
                       isSortable && "cursor-pointer",
@@ -513,12 +515,12 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 </td>
               </tr>
             ) : (
-              sortedData.map((item) => {
+              sortedData.map((item, index) => {
                 const isSelected = Boolean(selectedItems?.has(item[rowKey]));
 
                 return (
                   <tr
-                    key={String(item[rowKey])}
+                    key={index}
                     // FIX: only fire row navigation when clicking a non-pinned cell.
                     // We guard this at the <td> level below instead of stopping
                     // propagation there, so the tr handler is intentionally simple.

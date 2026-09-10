@@ -70,7 +70,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
       <div
         ref={scrollRef}
         id="business-table-scroll"
-        className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto"
+        className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto"
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
           {products?.map((product) => (

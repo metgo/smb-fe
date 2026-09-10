@@ -14,6 +14,7 @@ import { saveUserInfo } from "@/lib/storage";
 import DashboardPage from "@/pages/dashboard";
 import RootLayout from "@/components/RootLayout";
 import {
+  ChatPage,
   AuthPage,
   BusinessesMgmtPage,
   PendingApprovalsPage,
@@ -48,7 +49,12 @@ import {
   EventSessionMgmtPage,
   TripsMgmtPage,
   TripDetailsPage,
+  StatsSummaryPage,
+  PaymentMgmtPage,
+  PaymentTransactionsPage,
+  UtmBuilderPage,
 } from "@/pages";
+import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
 import RouterProgressBar from "./components/shared/RouterProgressBar";
@@ -537,6 +543,11 @@ function App() {
               path: routes.analyticsDashboard,
               element: <AnalyticsDashboardPage />,
             },
+            { path: routes.chat, element: <ChatPage /> },
+            {
+              path: routes.statsSummary,
+              element: <StatsSummaryPage />,
+            },
 
             { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
             { path: routes.businessDetails, element: <BusinessDetailsPage /> },
@@ -545,6 +556,16 @@ function App() {
               element: <PendingApprovalsPage />,
             },
 
+            { path: routes.articleMgmt, element: <ArticlesManagement /> },
+            { path: routes.articleDetails, element: <ArticleDetails /> },
+            {
+              path: routes.vendorReconciliationMgmt,
+              element: <PaymentMgmtPage />,
+            },
+            {
+              path: routes.paymentTransactions,
+              element: <PaymentTransactionsPage />,
+            },
             { path: routes.articleMgmt, element: <ArticlesManagement /> },
             { path: routes.articleDetails, element: <ArticleDetails /> },
 
@@ -585,12 +606,17 @@ function App() {
 
             { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
             {
+              path: routes.ordersSummaryMgmt,
+              element: <OrdersSummaryMgmtPage />,
+            },
+            {
               path: routes.notificationMgmt,
               element: <NotificationsMgmtPage />,
             },
             { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
             { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+            { path: routes.utmBuilder, element: <UtmBuilderPage /> },
             { path: routes.poiMgmt, element: <PoiMgmtPage /> },
             { path: routes.poiDetails, element: <PoiDetailsPage /> },
             { path: routes.users, element: <UsersMgmtPage /> },

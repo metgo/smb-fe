@@ -158,6 +158,7 @@ const Step01Generals = ({
           >
             <option value="MARKETPLACE">{t("purpose_marketplace")}</option>
             <option value="TRAVELING">{t("purpose_traveling")}</option>
+            <option value="DISCOUNT">{t("purpose_discount")}</option>
             <option value="OTHER">{t("purpose_other")}</option>
           </select>
         </div>
@@ -185,21 +186,6 @@ const Step01Generals = ({
           {errors.identifierId && (
             <p className="text-xs text-red-500">{errors.identifierId}</p>
           )}
-        </div>
-        <div className="flex flex-col gap-2 col-span-4">
-          <label className={clsx("text-sm font-medium", textPrimary)}>
-            {t("ga_property_id")}
-          </label>
-          <input
-            type="text"
-            value={formData.gaPropertyId}
-            onChange={(e) => onChange("gaPropertyId", e.target.value)}
-            placeholder={t("ga_property_id_placeholder")}
-            className={clsx(
-              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
-              inputClasses,
-            )}
-          />
         </div>
 
         <div className="flex flex-col gap-2 col-span-4">

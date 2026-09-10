@@ -17,6 +17,7 @@ interface AiReviewModalProps {
     selectedBusinesses: IAiSuggestedEntity[],
     selectedProducts: IAiSuggestedEntity[],
   ) => void;
+  isMarketplace?: boolean; // Added for TRAVELLER vs MARKETPLACE handling
 }
 
 const EntityCard = ({
@@ -129,10 +130,12 @@ const AiReviewModal = ({
   suggestedBusinesses,
   suggestedProducts,
   onConfirm,
+  isMarketplace = false,
 }: AiReviewModalProps) => {
   const { isDark } = useThemeClasses();
+  // For TRAVELLER, show businesses tab. For MARKETPLACE, show only products tab.
   const [activeTab, setActiveTab] = useState<"businesses" | "products">(
-    "businesses",
+    isMarketplace ? "products" : "businesses",
   );
   const [selectedBusinessIds, setSelectedBusinessIds] = useState<Set<string>>(
     () => new Set(suggestedBusinesses.map((b) => b._id)),
@@ -255,25 +258,26 @@ const AiReviewModal = ({
         >
           {(
             [
-              {
-                key: "businesses",
-                label: "Businesses",
-                icon: Building2,
-                count: suggestedBusinesses.length,
-                selected: selectedBusinessIds.size,
-              },
-              {
-                key: "products",
-                label: "Products",
-                icon: ShoppingBag,
-                count: suggestedProducts.length,
-                selected: selectedProductIds.size,
-              },
+              isMarketplace
+                ? {
+                    key: "products",
+                    label: "Products",
+                    icon: ShoppingBag,
+                    count: suggestedProducts.length,
+                    selected: selectedProductIds.size,
+                  }
+                : {
+                    key: "businesses",
+                    label: "Businesses",
+                    icon: Building2,
+                    count: suggestedBusinesses.length,
+                    selected: selectedBusinessIds.size,
+                  },
             ] as const
           ).map(({ key, label, icon: Icon, count, selected }) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key)}
+              onClick={() => setActiveTab(key as "businesses" | "products")}
               className={clsx(
                 "flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
                 activeTab === key

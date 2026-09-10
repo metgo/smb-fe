@@ -5,7 +5,11 @@
   "search_placeholder": "ابحث عن المقالات بالعنوان أو العنوان الفرعي...",
   "columns": "الأعمدة",
   "column_settings": "إعدادات الأعمدة",
+  "show_columns": "عرض الأعمدة",
+  "select_columns_to_display": "اختر الأعمدة للعرض",
+  "reset_to_default": "إعادة إلى الإعدادات الافتراضية",
   "reset": "إعادة تعيين",
+  "actions": "الإجراءات",
   "export": "تصدير",
   "no_blogs_to_export": "لا توجد مقالات للتصدير",
 

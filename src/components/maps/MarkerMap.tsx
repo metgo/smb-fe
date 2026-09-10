@@ -5,6 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
 import { googlePointOfInterest } from "@/lib/utils";
+import {
+  extractAddressParts,
+  getPlusCodeLocalCode,
+  type ParsedAddressParts,
+} from "@/helpers";
 
 interface MarkerMapProps {
   setGeo: (v: Geo) => void;
@@ -12,6 +17,7 @@ interface MarkerMapProps {
   address: string;
   geo: Geo;
   drag?: boolean;
+  onAddressParts?: (parts: ParsedAddressParts) => void;
 }
 
 interface PlaceSuggestion {
@@ -30,6 +36,7 @@ const MarkerMap = ({
   address,
   geo,
   drag,
+  onAddressParts,
 }: MarkerMapProps) => {
   const { t, i18n } = useTranslation("common");
   const locale = i18n.language;
@@ -76,18 +83,24 @@ const MarkerMap = ({
     googleMap.panTo({ lat, lng });
   };
 
-  const fetchAddress = (lat: number, lng: number): void => {
-    const geocoder = new window.google.maps.Geocoder();
-
-    geocoder.geocode(
-      { location: { lat, lng } },
-      (results: any, status: string) => {
-        if (status === "OK" && results?.[0]) {
-          setAddress(results[0].formatted_address);
-          setInputValue(results[0].formatted_address);
-        }
-      },
+  // Uses the REST Geocoding API (not the Maps JS Geocoder) so the address language can be
+  // forced to Hebrew regardless of the map/UI's display language.
+  const fetchAddress = async (lat: number, lng: number): Promise<void> => {
+    const response = await fetch(
+      `${endpoints.googleGeocode}?latlng=${lat},${lng}&language=he&key=${envKeys.googleMapApiKey}`,
     );
+    const data = await response.json();
+    const result = data.results?.[0];
+    if (data.status === "OK" && result) {
+      setAddress(result.formatted_address);
+      setInputValue(result.formatted_address);
+      const components = (result.address_components ?? []).map((c: any) => ({
+        text: c.long_name,
+        types: c.types,
+      }));
+      const plusCode = getPlusCodeLocalCode(result.plus_code?.compound_code);
+      onAddressParts?.(extractAddressParts(components, plusCode));
+    }
   };
 
   /* ---------------- Effects ---------------- */
@@ -199,7 +212,7 @@ const MarkerMap = ({
 
   const handleSuggestionSelect = async (placeId: string) => {
     const response = await fetch(
-      `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress`,
+      `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress,addressComponents,plusCode&languageCode=he`,
       {
         headers: {
           "X-Goog-Api-Key": envKeys.googleMapApiKey,
@@ -215,6 +228,13 @@ const MarkerMap = ({
     setAddress(data.formattedAddress);
     setInputValue(data.formattedAddress);
     setSuggestions([]);
+
+    const components = (data.addressComponents ?? []).map((c: any) => ({
+      text: c.longText,
+      types: c.types,
+    }));
+    const plusCode = getPlusCodeLocalCode(data.plusCode?.compoundCode);
+    onAddressParts?.(extractAddressParts(components, plusCode));
 
     if (map) {
       placeMarker(lat, lng, map);
