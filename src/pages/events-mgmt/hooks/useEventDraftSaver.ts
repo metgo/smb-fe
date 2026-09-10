@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { useCallback, useState } from "react";
+import { useCallback, useState, type MutableRefObject } from "react";
 
 interface UseEventDraftSaverProps {
   currentStep: number;
@@ -12,6 +12,12 @@ interface UseEventDraftSaverProps {
   initEventCreate: (args: { businessId?: string }) => any;
   updateEvent: (args: { eventId: string; body: any }) => any;
   stepPayloadMap: Record<number, () => any>;
+  /**
+   * Snapshot of the step payloads as hydrated from the server (edit mode only).
+   * When present, buildPayload() drops any field that still equals its
+   * snapshot value, so the update body carries only genuinely-changed fields.
+   */
+  hydratedPayloadRef?: MutableRefObject<Record<string, any> | null>;
   businessId?: string;
   debounceMs?: number;
 }
@@ -23,6 +29,7 @@ export function useEventDraftSaver({
   initEventCreate,
   updateEvent,
   stepPayloadMap,
+  hydratedPayloadRef,
   businessId,
   // debounceMs = 3600,
 }: UseEventDraftSaverProps) {
@@ -51,6 +58,47 @@ export function useEventDraftSaver({
     return payload;
   }, [dirtySteps, currentStep, stepPayloadMap, t]);
 
+  // Localized fields (name/description in He/Ar) that must never be sent as an
+  // empty string — an untouched non-active language would otherwise wipe the
+  // stored translation on the backend.
+  const OPTIONAL_LOCALIZED_FIELDS = [
+    "nameHe",
+    "nameAr",
+    "descriptionHe",
+    "descriptionAr",
+    "shortDescriptionHe",
+    "shortDescriptionAr",
+  ];
+
+  // 🔹 Edit mode: drop any field that still equals its server snapshot value,
+  // so untouched fields on a dirty step aren't re-sent.
+  const stripUnchangedFields = useCallback(
+    (payload: Record<string, any>) => {
+      const snapshot = hydratedPayloadRef?.current;
+      const diffed: Record<string, any> = {};
+      for (const key of Object.keys(payload)) {
+        // Never send an empty localized field: if the user didn't type a
+        // translation, omit it rather than clearing the server value.
+        if (
+          OPTIONAL_LOCALIZED_FIELDS.includes(key) &&
+          (payload[key] == null || payload[key] === "")
+        ) {
+          continue;
+        }
+        if (
+          snapshot &&
+          key in snapshot &&
+          JSON.stringify(payload[key]) === JSON.stringify(snapshot[key])
+        ) {
+          continue;
+        }
+        diffed[key] = payload[key];
+      }
+      return diffed;
+    },
+    [hydratedPayloadRef],
+  );
+
   // 🔹 Save Draft (manual or autosave)
   const saveDraft = useCallback(
     async (isPublish = false, overridePayload?: Record<string, any>) => {
@@ -62,7 +110,10 @@ export function useEventDraftSaver({
           setEventId(res?.id);
         }
 
-        let payload = { ...buildPayload(), ...overridePayload };
+        let payload = stripUnchangedFields({
+          ...buildPayload(),
+          ...overridePayload,
+        });
 
         if (isPublish) {
           payload = {
@@ -92,6 +143,7 @@ export function useEventDraftSaver({
     },
     [
       buildPayload,
+      stripUnchangedFields,
       currentStep,
       initEventCreate,
       eventId,

@@ -32,8 +32,8 @@ interface DateTimeStepProps {
   setIsMultiDay: React.Dispatch<React.SetStateAction<boolean>>;
   startDate: string;
   setStartDate: React.Dispatch<React.SetStateAction<string>>;
-  eventDays: EventDay[];
-  setEventDays: React.Dispatch<React.SetStateAction<EventDay[]>>;
+  eventDays: IEventDay[];
+  setEventDays: React.Dispatch<React.SetStateAction<IEventDay[]>>;
   eventFormat: "physical" | "online" | "hybrid";
   setEventFormat: React.Dispatch<
     React.SetStateAction<"physical" | "online" | "hybrid">
@@ -254,7 +254,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
     })();
 
   return (
-    <div ref={containerRef} className="space-y-6 max-w-3xl mx-auto">
+    <div ref={containerRef} className="space-y-6">
       {/* ── Duration toggle ──────────────────────────────────────────── */}
       <div>
         <label className={`block text-sm mb-2 ${textSecondary}`}>
@@ -448,7 +448,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
                 onChange={(e) => setIsRecurring(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-300 rounded-full peer dark:bg-gray-700 peer-checked:bg-teal-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-full" />
+              <div className="w-11 h-6 bg-gray-300 rounded-full peer dark:bg-gray-700 peer-checked:bg-teal-600 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-full" />
             </label>
           </div>
 

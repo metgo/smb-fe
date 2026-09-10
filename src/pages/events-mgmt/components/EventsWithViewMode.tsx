@@ -140,7 +140,7 @@ export default function EventsWithViewMode({
   const [calendarViewMode, setCalendarViewMode] =
     useState<TViewMode>("calendar-month");
 
-  const [editData, setEditData] = useState();
+  const [editData, setEditData] = useState<IEventDetailsRes>();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());

@@ -146,7 +146,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6">
       <FormFieldWrapper label={t("select_business")}>
         <ReactSelect
           value={selectedBusinessId}

@@ -8,7 +8,7 @@ import { Layout, Users, Bell, ClipboardList, Compass, Eye } from "lucide-react";
 import {
   LandingTab,
   CapacityTab,
-  NotifyTab,
+  NotifyScheduleTab,
   RegistrationsTab,
 } from "./components";
 import { store } from "./data";
@@ -33,8 +33,8 @@ const STEP_TAB_MAP: Partial<Record<string, TTabId>> = {
   landing: "landing",
   capacity: "capacity",
   analytics: "analytics",
-  notify: "notify",
   regs: "regs",
+  notify: "notify",
 };
 
 // ─── Inner component (needs TourProvider above it) ────────────────────────────
@@ -301,7 +301,7 @@ function EventSessionMgmtPageInner() {
             />
           )}
           {tab === "capacity" && <CapacityTab wrapperId={wrapperId} />}
-          {tab === "notify" && <NotifyTab wrapperId={wrapperId} />}
+          {tab === "notify" && <NotifyScheduleTab wrapperId={wrapperId} />}
           {tab === "regs" && <RegistrationsTab wrapperId={wrapperId} />}
         </div>
       </div>

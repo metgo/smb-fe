@@ -20,7 +20,6 @@ import {
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
 interface RichTextEditorProps {
   value: string;
   onChange: (html: string) => void;
@@ -379,6 +378,12 @@ const RichTextEditor = ({
   } = useThemeClasses();
 
   const editorRef = useRef<HTMLDivElement>(null);
+  // Tracks the last HTML this component emitted via onChange, so the external
+  // value sync below can tell "the parent echoed our own edit back" (skip —
+  // rewriting innerHTML here would kill the caret) from a genuine external
+  // change (apply). Starts as a sentinel (not `value`) so the very first sync
+  // always runs and populates the contentEditable div with the initial value.
+  const lastEmittedRef = useRef<string | null>(null);
   const savedRangeRef = useRef<Range | null>(null);
   const fontSizeDropRef = useRef<HTMLDivElement>(null);
   const textColorDropRef = useRef<HTMLDivElement>(null);
@@ -405,13 +410,27 @@ const RichTextEditor = ({
   const activeBg = isDark ? "bg-gray-700" : "bg-gray-200";
   const dropdownBg = isDark ? "bg-gray-900" : "bg-white";
 
-  // Sync external value
+  // Sync external value — only when it differs from both the DOM and the last
+  // value we emitted. Without the lastEmittedRef guard, the parent re-rendering
+  // with our own (browser-normalized) HTML would trip this and rewrite
+  // innerHTML on every keystroke, collapsing the caret so typing appears broken.
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value;
-      setCharacterCount(getPlainText(value).length);
+    const el = editorRef.current;
+    if (!el) return;
+    if (value === lastEmittedRef.current) return;
+    if (el.innerHTML === value) {
+      lastEmittedRef.current = value;
+      return;
     }
+    el.innerHTML = value;
+    lastEmittedRef.current = value;
+    setCharacterCount(getPlainText(value).length);
   }, [value]);
+
+  const emitChange = (html: string) => {
+    lastEmittedRef.current = html;
+    onChange(html);
+  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -495,7 +514,7 @@ const RichTextEditor = ({
     }
 
     setCharacterCount(plain.length);
-    onChange(el.innerHTML);
+    emitChange(el.innerHTML);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -580,7 +599,7 @@ const RichTextEditor = ({
     restoreSelection();
     applyFontSizeDOM(px, editorRef.current ?? undefined);
     setActiveFontSize(px.toString());
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    if (editorRef.current) emitChange(editorRef.current.innerHTML);
   };
 
   const applyCustomFontSize = () => {
@@ -668,7 +687,7 @@ const RichTextEditor = ({
         parent.normalize();
       }
       editorRef.current?.focus();
-      if (editorRef.current) onChange(editorRef.current.innerHTML);
+      if (editorRef.current) emitChange(editorRef.current.innerHTML);
       return;
     }
 
@@ -693,7 +712,7 @@ const RichTextEditor = ({
         a.style.textDecoration = "underline";
       });
 
-    onChange(root.innerHTML);
+    emitChange(root.innerHTML);
   };
 
   const insertVariable = (val: string) => {
@@ -703,14 +722,22 @@ const RichTextEditor = ({
     if (sel && sel.rangeCount > 0) {
       const r = sel.getRangeAt(0);
       r.deleteContents();
-      const tn = document.createTextNode(val);
+      // Pad the token with spaces unless the adjacent character is already
+      // whitespace — back-to-back tokens like {A}{B} otherwise render as
+      // run-on text in the delivered email/SMS.
+      const prevChar =
+        r.startContainer.nodeType === Node.TEXT_NODE
+          ? (r.startContainer.textContent?.[r.startOffset - 1] ?? "")
+          : "";
+      const lead = prevChar && !/\s/.test(prevChar) ? " " : "";
+      const tn = document.createTextNode(`${lead}${val} `);
       r.insertNode(tn);
       r.setStartAfter(tn);
       r.setEndAfter(tn);
       sel.removeAllRanges();
       sel.addRange(r);
     } else {
-      editorRef.current.innerHTML += val;
+      editorRef.current.innerHTML += ` ${val} `;
     }
     handleInput();
   };
@@ -1040,7 +1067,7 @@ const RichTextEditor = ({
                     if (btn.onClick) btn.onClick();
                     else execCmd(btn.command, btn.value);
                   }}
-                  className={`p-2 rounded transition-colors ${isActive ? activeBg : hoverBg} ${textPrimary}`}
+                  className={`p-2 rounded cursor-pointer transition-colors ${isActive ? activeBg : hoverBg} ${textPrimary}`}
                 >
                   <Icon className="w-4 h-4" />
                 </button>
@@ -1061,7 +1088,7 @@ const RichTextEditor = ({
                 type="button"
                 onClick={() => insertVariable(v.value)}
                 title={`Insert ${v.label}`}
-                className={`px-3 py-1.5 text-sm rounded border ${borderColor} ${hoverBg} ${VARIABLE_COLORS[i % VARIABLE_COLORS.length]} transition-colors font-medium`}
+                className={`px-2 py-1 text-sm rounded-xl border cursor-pointer ${borderColor} ${hoverBg} ${VARIABLE_COLORS[i % VARIABLE_COLORS.length]} transition-colors font-medium`}
               >
                 {v.label}
               </button>
