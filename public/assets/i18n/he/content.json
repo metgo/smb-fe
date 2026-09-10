@@ -45,6 +45,15 @@
   "select_website_first": "בחר אתר לניהול התוכן שלך",
   "select_website_first_subtitle": "בחר אתר מהפאנל הימני כדי להתחיל",
 
+  "auto_connect_label": "חיבור אוטומטי עם AI",
+  "auto_connect_hint": "כשמופעל, {{items}} חדשים שאושרו משובצים אוטומטית לתצוגות של אתר זה באמצעות AI.",
+  "auto_connect_items_businesses": "עסקים",
+  "auto_connect_items_products": "מוצרים",
+  "auto_connect_items_all": "עסקים ומוצרים",
+  "auto_connect_enabled": "חיבור אוטומטי הופעל",
+  "auto_connect_disabled": "חיבור אוטומטי הושבת",
+  "auto_connect_update_failed": "לא ניתן היה לעדכן את החיבור האוטומטי",
+
   "content_manager_title": "מנהל תוכן",
   "content_manager_description": "ארגן עסקים לקטגוריות מותאמות אישית עבור חלקי האתר שלך",
   "custom_categories_title": "קטגוריות מותאמות אישית",

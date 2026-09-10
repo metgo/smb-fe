@@ -58,6 +58,15 @@
   "select_website_first": "Select a website to manage your content",
   "select_website_first_subtitle": "Choose a website from the right panel to get started",
 
+  "auto_connect_label": "Auto-connect with AI",
+  "auto_connect_hint": "When on, newly approved {{items}} are automatically placed into this website's views by AI.",
+  "auto_connect_items_businesses": "businesses",
+  "auto_connect_items_products": "products",
+  "auto_connect_items_all": "businesses and products",
+  "auto_connect_enabled": "Auto-connect enabled",
+  "auto_connect_disabled": "Auto-connect disabled",
+  "auto_connect_update_failed": "Couldn't update auto-connect",
+
   "drag_handle_instruction": "Drag the handle to reorder topics",
   "no_topics_yet": "No topics yet. Add one to get started.",
   "categories": "Categories",

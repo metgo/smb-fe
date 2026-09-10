@@ -45,6 +45,15 @@
   "select_website_first": "اختر موقعًا لإدارة محتواك",
   "select_website_first_subtitle": "اختر موقعًا من اللوحة اليمنى للبدء",
 
+  "auto_connect_label": "الربط التلقائي بالذكاء الاصطناعي",
+  "auto_connect_hint": "عند التفعيل، تتم إضافة {{items}} المعتمدة حديثًا تلقائيًا إلى عروض هذا الموقع بواسطة الذكاء الاصطناعي.",
+  "auto_connect_items_businesses": "الأعمال",
+  "auto_connect_items_products": "المنتجات",
+  "auto_connect_items_all": "الأعمال والمنتجات",
+  "auto_connect_enabled": "تم تفعيل الربط التلقائي",
+  "auto_connect_disabled": "تم إيقاف الربط التلقائي",
+  "auto_connect_update_failed": "تعذّر تحديث الربط التلقائي",
+
   "content_manager_title": "مدير المحتوى",
   "content_manager_description": "نظم الأعمال في فئات مخصصة لأقسام موقعك",
   "custom_categories_title": "الفئات المخصصة",

@@ -316,7 +316,8 @@ const AiReviewModal = ({
             >
               <Sparkles className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">
-                No matching entities found for this category.
+                No matching {isMarketplace ? "products" : "businesses"} found
+                for this category.
               </p>
             </div>
           ) : (
@@ -384,7 +385,16 @@ const AiReviewModal = ({
             {totalSelected} item{totalSelected !== 1 ? "s" : ""} selected
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className={clsx(
+                "border-gray-300 text-gray-700 hover:bg-gray-100",
+                isDark
+                  ? "!border-gray-600 !text-gray-300 !hover:bg-gray-800"
+                  : "",
+              )}
+            >
               Cancel
             </Button>
             <Button
