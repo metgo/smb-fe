@@ -101,6 +101,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
 
       languagePreference: language || "en",
       message: formData.greeting || "",
+      smsMessage: formData.greeting || "",
       sendEmail: true,
     }));
   }, [activeAssignees, formData, language]);
