@@ -30,6 +30,8 @@
   "error_name_required": "שם נדרש",
   "error_email_required": "אימייל נדרש",
   "error_email_invalid": "יש להזין כתובת אימייל תקינה",
+  "error_phone_invalid": "יש להזין מספר טלפון תקין בן 10 ספרות",
+  "error_contact_required": "יש לספק אימייל או מספר טלפון",
   "error_campaign_required": "קמפיין נדרש",
   "error_amount_required": "סכום נדרש",
 
