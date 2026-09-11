@@ -1,6 +1,7 @@
 {
   "page_title": "منشئ روابط الحملات",
   "page_description": "أنشئ روابط موسومة (معلمات UTM) لتظهر زيارات كل مؤثّر كحملة مستقلة في Google Analytics.",
+  "view_analytics_dashboard": "عرض لوحة التحليلات",
   "form_title_new": "رابط حملة جديد",
   "form_title_edit": "تعديل رابط الحملة",
   "required_hint": "الحقول المميزة بـ * إلزامية.",

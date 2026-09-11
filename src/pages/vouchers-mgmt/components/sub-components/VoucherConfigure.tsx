@@ -59,7 +59,10 @@ const CSV_COLUMN_ALIASES: Record<CsvField, string[]> = {
   amount: ["amount", "value"],
 };
 
-const CSV_REQUIRED_FIELDS: CsvField[] = ["name", "email", "campaign", "amount"];
+// Email isn't a structurally required column anymore — a row can supply
+// phone instead. Per-row validation (fieldError below) catches rows that
+// have neither.
+const CSV_REQUIRED_FIELDS: CsvField[] = ["name", "campaign", "amount"];
 
 // Minimal CSV splitter that understands quoted fields with embedded commas
 // and "" escapes — good enough for the sample template and spreadsheet exports.
@@ -151,7 +154,12 @@ const VoucherConfigure = ({
 
   // ─── Per-field required / format validation ────────────────────────────────
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  type RequiredField = "name" | "email" | "campaignId" | "amount";
+  const PHONE_RE = /^\d{10}$/;
+  type RequiredField = "name" | "email" | "phone" | "campaignId" | "amount";
+
+  // Either an email or a phone is enough — not both.
+  const hasContact = (a: IVoucherAssignee) =>
+    a.email.trim().length > 0 || a.phone.trim().length > 0;
 
   // Fields touched (blurred) by the user, keyed `${assigneeId}:${field}`.
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -171,9 +179,18 @@ const VoucherConfigure = ({
     switch (field) {
       case "name":
         return a.name.trim() ? "" : t("error_name_required");
-      case "email":
-        if (!a.email.trim()) return t("error_email_required");
+      case "email": {
+        if (!hasContact(a)) return t("error_contact_required");
+        if (!a.email.trim()) return ""; // phone alone satisfies the pair
         return EMAIL_RE.test(a.email.trim()) ? "" : t("error_email_invalid");
+      }
+      case "phone": {
+        if (!hasContact(a)) return t("error_contact_required");
+        if (!a.phone.trim()) return ""; // email alone satisfies the pair
+        return PHONE_RE.test(a.phone.replace(/\D/g, ""))
+          ? ""
+          : t("error_phone_invalid");
+      }
       case "campaignId":
         return a.campaignId ? "" : t("error_campaign_required");
       case "amount":
@@ -185,8 +202,15 @@ const VoucherConfigure = ({
   };
 
   // Error to actually display for a field (respects touched / reveal state).
-  const shownError = (a: IVoucherAssignee, field: RequiredField): string =>
-    revealAllErrors || touched[`${a.id}:${field}`] ? fieldError(a, field) : "";
+  // Email and phone are a pair, so blurring either one reveals the
+  // "provide one of them" error on both.
+  const shownError = (a: IVoucherAssignee, field: RequiredField): string => {
+    const isTouched =
+      field === "email" || field === "phone"
+        ? touched[`${a.id}:email`] || touched[`${a.id}:phone`]
+        : touched[`${a.id}:${field}`];
+    return revealAllErrors || isTouched ? fieldError(a, field) : "";
+  };
 
   const errInputCls = isDark
     ? "border-red-500/70 focus:ring-red-500"
@@ -476,7 +500,7 @@ const VoucherConfigure = ({
             const hasError =
               revealAllErrors &&
               (
-                ["name", "email", "campaignId", "amount"] as RequiredField[]
+                ["name", "email", "phone", "campaignId", "amount"] as RequiredField[]
               ).some((f) => fieldError(a, f));
             // Cards with unresolved errors stay open so the messages are visible.
             const isCollapsed = Boolean(collapsed[a.id]) && !hasError;
@@ -602,7 +626,7 @@ const VoucherConfigure = ({
                         )}
                       </div>
                       <div className="min-w-0">
-                        <label className={labelCls}>{t("phone")}</label>
+                        <label className={labelCls}>{t("phone")} *</label>
                         <div className="flex gap-1.5">
                           <select
                             value={a.countryCode}
@@ -628,10 +652,16 @@ const VoucherConfigure = ({
                             onChange={(e) =>
                               updateAssignee(a.id, "phone", e.target.value)
                             }
+                            onBlur={() => markTouched(a.id, "phone")}
                             placeholder="50-000-0000"
-                            className={inputCls}
+                            className={`${inputCls} ${
+                              shownError(a, "phone") ? errInputCls : ""
+                            }`}
                           />
                         </div>
+                        {shownError(a, "phone") && (
+                          <p className={errText}>{shownError(a, "phone")}</p>
+                        )}
                       </div>
                       <div>
                         <label className={labelCls}>{t("campaign")} *</label>

@@ -1,6 +1,7 @@
 {
   "page_title": "Campaign URL Builder",
   "page_description": "Create tagged links (UTM parameters) so each influencer's traffic shows up as its own campaign in Google Analytics.",
+  "view_analytics_dashboard": "View Analytics Dashboard",
   "form_title_new": "New campaign link",
   "form_title_edit": "Edit campaign link",
   "required_hint": "Fields marked * are required.",

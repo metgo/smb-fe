@@ -21,6 +21,7 @@ import {
   useGetWebsiteSettingDetailsQuery,
   useUpdateWebsiteSettingMutation,
 } from "@/store/api/websiteConfigApi";
+import { useTranslateTopicMutation } from "@/store/api/contentMutationApi";
 import ViewManagerPanel from "./ViewManagerPanel";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
@@ -123,18 +124,37 @@ const TopicBlock = ({
 
   const hasMultipleCategories = topic.groups.length > 1;
 
-  const renameTopic = (topicIndex: number, newName: string) => {
-    const updated = [...templateContents];
+  const [translateTopicName, { isLoading: isTranslatingTopicRename }] =
+    useTranslateTopicMutation();
 
-    updated[topicIndex] = {
-      ...updated[topicIndex],
-      topic: newName,
-      // Keep existing He/Ar translations; only fall back to new name if they were empty
-      topicHe: updated[topicIndex].topicHe || newName,
-      topicAr: updated[topicIndex].topicAr || newName,
+  const renameTopic = async (topicIndex: number, newName: string) => {
+    // newName is whatever language is currently on screen (en/he/ar) — the
+    // translate endpoint detects the source language on its own.
+    const applyRename = (topic: string, topicHe: string, topicAr: string) => {
+      setTemplateContent((prev) =>
+        prev.map((t, i) =>
+          i === topicIndex ? { ...t, topic, topicHe, topicAr } : t,
+        ),
+      );
     };
 
-    setTemplateContent(updated);
+    // Re-translate on rename — the old title/He/Ar belong to the previous
+    // name and must not be carried forward under the new one.
+    try {
+      const translated = await translateTopicName({
+        title: newName,
+      }).unwrap();
+      applyRename(
+        translated.title || newName,
+        translated.titleHe || newName,
+        translated.titleAr || newName,
+      );
+    } catch {
+      toast.error(
+        "Translation failed — the name was set the same in all languages. You can edit them manually.",
+      );
+      applyRename(newName, newName, newName);
+    }
   };
 
   const handleColorChange = (topicIndex: number, colors: string[]) => {
@@ -261,12 +281,15 @@ const TopicBlock = ({
               topic={{
                 index,
                 name: topic.topic,
+                nameHe: topic.topicHe,
+                nameAr: topic.topicAr,
                 isHidden: topic.isHideTopic,
                 isPrimary: topic.isPrimary,
                 colors: topic.colors,
                 icon: topic.icon,
               }}
               onRename={renameTopic}
+              isRenaming={isTranslatingTopicRename}
               onToggleVisibility={handleToggleTopic}
               onTogglePrimary={handleTogglePrimary}
               onColorChange={handleColorChange}
