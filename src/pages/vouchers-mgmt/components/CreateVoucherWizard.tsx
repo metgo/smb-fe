@@ -164,6 +164,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
 
       case 2: {
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRe = /^\d{10}$/;
         const allAssigneesValid =
           activeAssignees.length > 0 &&
           activeAssignees.every((a) => {
@@ -173,6 +174,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
               a.name.trim() &&
               (hasEmail || hasPhone) &&
               (!hasEmail || emailRe.test(a.email.trim())) &&
+              (!hasPhone || phoneRe.test(a.phone.replace(/\D/g, ""))) &&
               a.campaignId &&
               Number(a.amount) > 0
             );

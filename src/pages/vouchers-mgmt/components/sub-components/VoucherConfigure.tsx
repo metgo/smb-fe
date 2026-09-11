@@ -154,6 +154,7 @@ const VoucherConfigure = ({
 
   // ─── Per-field required / format validation ────────────────────────────────
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const PHONE_RE = /^\d{10}$/;
   type RequiredField = "name" | "email" | "phone" | "campaignId" | "amount";
 
   // Either an email or a phone is enough — not both.
@@ -183,8 +184,13 @@ const VoucherConfigure = ({
         if (!a.email.trim()) return ""; // phone alone satisfies the pair
         return EMAIL_RE.test(a.email.trim()) ? "" : t("error_email_invalid");
       }
-      case "phone":
-        return hasContact(a) ? "" : t("error_contact_required");
+      case "phone": {
+        if (!hasContact(a)) return t("error_contact_required");
+        if (!a.phone.trim()) return ""; // email alone satisfies the pair
+        return PHONE_RE.test(a.phone.replace(/\D/g, ""))
+          ? ""
+          : t("error_phone_invalid");
+      }
       case "campaignId":
         return a.campaignId ? "" : t("error_campaign_required");
       case "amount":
