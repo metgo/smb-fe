@@ -7,6 +7,35 @@ import { RichTextEditor } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatFromBackendTemplate } from "@/helpers/formatter";
 
+// The schedule picker is expressed in the EVENT's timezone (Israel), not the
+// admin's browser zone — "8:45 PM" fires at 8:45 PM Israel wherever the admin
+// sits. `<input type="datetime-local">` speaks naive wall-clock, so its value is
+// sent as-is (the backend reads it as Asia/Jerusalem).
+const EVENT_TZ = "Asia/Jerusalem";
+const HOURS_MIN = 1;
+const HOURS_MAX = 8760;
+
+const israelNaiveNow = () =>
+  new Intl.DateTimeFormat("sv-SE", {
+    timeZone: EVENT_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date())
+    .replace(" ", "T");
+
+// Empty → undefined; otherwise a whole number clamped to the backend 1–8760.
+const clampHours = (raw: string): number | undefined => {
+  if (raw.trim() === "") return undefined;
+  const n = Math.round(Number(raw));
+  if (!Number.isFinite(n)) return undefined;
+  return Math.min(HOURS_MAX, Math.max(HOURS_MIN, n));
+};
+
 interface CreateNotificationWizardProps {
   t: (key: string, options?: Record<string, unknown>) => string;
   capacity?: number;
@@ -40,28 +69,9 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
       : "focus:border-blue-500 focus:ring-blue-500/10",
   );
 
-  // Earliest selectable value for <input type="datetime-local"> — now, in the
-  // admin's local wall-clock, so past times can't be scheduled.
-  const minDateTime = (() => {
-    const d = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-      d.getHours(),
-    )}:${pad(d.getMinutes())}`;
-  })();
-
-  // <input type="datetime-local"> speaks wall-clock local time with no zone.
-  // Store it the same way NotifyScheduleTab does: convert to a real instant
-  // (ISO/UTC) on write, and back to a local wall-clock string for display.
-  // const toLocalInputValue = (iso?: string) => {
-  //   if (!iso) return "";
-  //   const d = new Date(iso);
-  //   if (Number.isNaN(d.getTime())) return iso;
-  //   const pad = (n: number) => String(n).padStart(2, "0");
-  //   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-  //     d.getHours(),
-  //   )}:${pad(d.getMinutes())}`;
-  // };
+  // Earliest selectable value for <input type="datetime-local"> — "now" in the
+  // event's timezone (Israel), since the picker is read as Israel wall-clock.
+  const minDateTime = israelNaiveNow();
 
   // Preset offsets (in hours) offered in the dropdown; the field also accepts
   // a freely typed number for a custom offset.
@@ -82,7 +92,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
     setEditingNotification({
       ...editingNotification,
       scheduleDateTime: "",
-      sendHoursOffset: raw.trim() === "" ? undefined : Math.max(0, Number(raw)),
+      sendHoursOffset: clampHours(raw),
       sendTiming: timing,
     });
 
@@ -91,7 +101,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
       ...editingNotification,
       scheduleDateTime: value,
       sendHoursOffset: undefined,
-      sendTiming: timing,
+      sendTiming: undefined,
     });
 
   const segBtn = (active: boolean) =>
@@ -228,7 +238,9 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                 <div className="relative flex-1 min-w-35">
                   <input
                     type="number"
-                    min={1}
+                    min={HOURS_MIN}
+                    max={HOURS_MAX}
+                    step={1}
                     list="notif-hours-offset-presets"
                     className={clsx(
                       INPUT,
@@ -280,6 +292,17 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                   onChange={(e) => pickExact(e.target.value)}
                 />
               </div>
+              <span
+                className={clsx(
+                  "text-[11px] font-medium",
+                  isDark ? "text-gray-500" : "text-gray-400",
+                )}
+              >
+                {t("schedule_timezone_hint", {
+                  defaultValue:
+                    "Times are in Israel time (Asia/Jerusalem) — the event's timezone.",
+                })}
+              </span>
             </AField>
 
             <AField label={t("subject_field")} isRequired>

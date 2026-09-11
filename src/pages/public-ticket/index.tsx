@@ -125,8 +125,21 @@ export default function PublicTicketPage() {
   const handleMarkCompleted = async () => {
     if (!ticket || isTicketExpired() || !eventId || !ticketId) return;
     try {
-      await markAttendance({ eventId, ticketId }).unwrap();
-      toast.success(t("order_status_updated", { status: t("attended") }));
+      const res = (await markAttendance({ eventId, ticketId }).unwrap()) as
+        | { alreadyAttended?: boolean; data?: { alreadyAttended?: boolean } }
+        | undefined;
+      // BE returns alreadyAttended when the ticket was already checked in (a
+      // repeat scan) — it keeps the original time, so show that instead of a
+      // fresh "checked in" toast.
+      if (res?.alreadyAttended || res?.data?.alreadyAttended) {
+        toast.success(
+          t("ticket_already_scanned", {
+            defaultValue: "This ticket was already checked in",
+          }),
+        );
+      } else {
+        toast.success(t("order_status_updated", { status: t("attended") }));
+      }
       refetch();
     } catch {
       toast.error(t("failed_to_update_order_status"));
