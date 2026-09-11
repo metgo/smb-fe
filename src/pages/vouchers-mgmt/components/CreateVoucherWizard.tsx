@@ -166,13 +166,17 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const allAssigneesValid =
           activeAssignees.length > 0 &&
-          activeAssignees.every(
-            (a) =>
+          activeAssignees.every((a) => {
+            const hasEmail = a.email.trim().length > 0;
+            const hasPhone = a.phone.trim().length > 0;
+            return (
               a.name.trim() &&
-              emailRe.test(a.email.trim()) &&
+              (hasEmail || hasPhone) &&
+              (!hasEmail || emailRe.test(a.email.trim())) &&
               a.campaignId &&
-              Number(a.amount) > 0,
-          );
+              Number(a.amount) > 0
+            );
+          });
         if (!allAssigneesValid) {
           // Flag only — VoucherConfigure reads this to reveal the per-field
           // errors; no aggregate message is displayed.
