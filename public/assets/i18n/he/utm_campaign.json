@@ -1,6 +1,7 @@
 {
   "page_title": "בונה כתובות קמפיין",
   "page_description": "צרו קישורים מתויגים (פרמטרי UTM) כך שהתנועה מכל משפיען תופיע כקמפיין נפרד ב-Google Analytics.",
+  "view_analytics_dashboard": "צפייה בלוח האנליטיקס",
   "form_title_new": "קישור קמפיין חדש",
   "form_title_edit": "עריכת קישור קמפיין",
   "required_hint": "שדות המסומנים ב-* הם חובה.",

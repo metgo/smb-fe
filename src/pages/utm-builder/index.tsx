@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import {
   Link2,
   Copy,
@@ -16,10 +17,12 @@ import {
   Mail,
   Phone,
   Loader,
+  ChartLine,
 } from "lucide-react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { routes } from "@/lib/routes";
 import {
   PageHeader,
   ConfirmDialog,
@@ -181,6 +184,7 @@ const buildPayload = (
 
 const UtmBuilderPage = () => {
   const { t } = useTranslation("utm_campaign");
+  const navigate = useNavigate();
   const { allWebsites } = useCommon();
   const {
     isDark,
@@ -389,12 +393,28 @@ const UtmBuilderPage = () => {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto xl:overflow-hidden pt-10 md:pt-0">
-      <div className={clsx("shrink-0 z-10")}>
+      <div className={clsx("shrink-0 z-10 relative")}>
         <PageHeader
           title={t("page_title")}
           h1Gradient="text-transparent bg-gradient-to-r from-violet-500 to-purple-500"
           description={t("page_description")}
         />
+        <button
+          type="button"
+          onClick={() => navigate(routes.analyticsDashboard)}
+          className={clsx(
+            "absolute top-0 md:top-6 inset-e-0 inline-flex items-center gap-1.5 text-sm px-3 h-9 rounded-md border transition-colors cursor-pointer ",
+            textSecondary,
+            isDark
+              ? "hover:bg-gray-800 text-green-500 border-green-500"
+              : "hover:bg-gray-50 text-green-700 border-green-700",
+          )}
+        >
+          <ChartLine className="w-4 h-4" />
+          <span className="hidden md:block">
+            {t("view_analytics_dashboard")}
+          </span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-2 pb-10 xl:pb-0 xl:flex-1 xl:min-h-0">
@@ -537,7 +557,7 @@ const UtmBuilderPage = () => {
             </div>
 
             {/* Term */}
-            {/* <div>
+            <div>
               <label className={fieldLabel}>
                 {t("term_label")}{" "}
                 <span className={optionalTag}>{t("optional")}</span>
@@ -549,10 +569,10 @@ const UtmBuilderPage = () => {
                 className={inputClass}
               />
               <p className={helpText}>{t("term_help")}</p>
-            </div> */}
+            </div>
 
             {/* Content */}
-            {/* <div>
+            <div>
               <label className={fieldLabel}>
                 {t("content_label")}{" "}
                 <span className={optionalTag}>{t("optional")}</span>
@@ -564,7 +584,7 @@ const UtmBuilderPage = () => {
                 className={inputClass}
               />
               <p className={helpText}>{t("content_help")}</p>
-            </div> */}
+            </div>
           </div>
 
           {/* ---------- Influencer ---------- */}

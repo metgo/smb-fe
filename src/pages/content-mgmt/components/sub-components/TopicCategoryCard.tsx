@@ -20,9 +20,11 @@ import {
   X,
 } from "lucide-react";
 
+import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   useAiSuggestCategoryEntitiesMutation,
+  useTranslateTopicMutation,
   type IAiSuggestedEntity,
 } from "@/store/api/contentMutationApi";
 import ColorPickerField from "./ColorPickerField";
@@ -55,11 +57,17 @@ const TopicCategoryCard = ({
   setTemplateContent,
   isMarketplace = false,
 }: Props) => {
-  const { isDark, bgTertiary, inputClasses } = useThemeClasses();
-  const { t } = useTranslation("content");
+  const { isDark, bgTertiary, inputClasses, language } = useThemeClasses();
+  const { t, i18n } = useTranslation("content");
+  const displayCategory =
+    i18n.language === "he"
+      ? group.categoryHe || group.category
+      : i18n.language === "ar"
+        ? group.categoryAr || group.category
+        : group.category;
   const [expanded, setExpanded] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [editValue, setEditValue] = useState(group.category);
+  const [editValue, setEditValue] = useState(displayCategory);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<{
     topicIndex: number;
@@ -70,6 +78,8 @@ const TopicCategoryCard = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const [aiSuggestEntities, { isLoading: isAiLoading }] =
     useAiSuggestCategoryEntitiesMutation();
+  const [translateTopic, { isLoading: isTranslatingRename }] =
+    useTranslateTopicMutation();
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiBusinesses, setAiBusinesses] = useState<IAiSuggestedEntity[]>([]);
   const [aiProducts, setAiProducts] = useState<IAiSuggestedEntity[]>([]);
@@ -258,26 +268,51 @@ const TopicCategoryCard = ({
     setCategoryToDelete(null);
   };
 
-  const renameCategory = () => {
-    setTemplateContent((prev) =>
-      prev.map((template, tIndex) => {
-        if (tIndex !== topicIndex) return template;
-        return {
-          ...template,
-          groups: template.groups.map((grp, gIndex) => {
-            if (gIndex !== categoryIndex) return grp;
-            // Update all language fields — if no He/Ar translation exists yet, fall back to the new name
-            return {
-              ...grp,
-              category: editValue,
-              categoryHe: grp.categoryHe || editValue,
-              categoryAr: grp.categoryAr || editValue,
-            };
-          }),
-        };
-      }),
-    );
-    setEditing(false);
+  const renameCategory = async () => {
+    // Edited text is whatever language is currently on screen (en/he/ar) —
+    // the translate endpoint detects the source language on its own.
+    const trimmed = editValue.trim();
+    if (!trimmed || trimmed === displayCategory) {
+      setEditing(false);
+      return;
+    }
+
+    const applyRename = (
+      category: string,
+      categoryHe: string,
+      categoryAr: string,
+    ) => {
+      setTemplateContent((prev) =>
+        prev.map((template, tIndex) => {
+          if (tIndex !== topicIndex) return template;
+          return {
+            ...template,
+            groups: template.groups.map((grp, gIndex) => {
+              if (gIndex !== categoryIndex) return grp;
+              return { ...grp, category, categoryHe, categoryAr };
+            }),
+          };
+        }),
+      );
+    };
+
+    // Re-translate on rename — the old title/titleHe/titleAr belong to the
+    // previous name and must not be carried forward under the new one.
+    try {
+      const translated = await translateTopic({ title: trimmed }).unwrap();
+      applyRename(
+        translated.title || trimmed,
+        translated.titleHe || trimmed,
+        translated.titleAr || trimmed,
+      );
+    } catch {
+      toast.error(
+        "Translation failed — the name was set the same in all languages. You can edit them manually.",
+      );
+      applyRename(trimmed, trimmed, trimmed);
+    } finally {
+      setEditing(false);
+    }
   };
 
   const toggleCategoryVisibility = (
@@ -583,6 +618,7 @@ const TopicCategoryCard = ({
             <>
               <Input
                 autoFocus
+                disabled={isTranslatingRename}
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && renameCategory()}
@@ -590,18 +626,26 @@ const TopicCategoryCard = ({
               />
               <button
                 onClick={renameCategory}
+                disabled={isTranslatingRename}
                 className={clsx(
-                  "p-1.5 rounded bg-green-400 text-white hover:shadow-md",
+                  "p-1.5 rounded bg-green-400 text-white hover:shadow-md disabled:opacity-60",
                 )}
               >
-                <Check className="w-3.5 h-3.5" />
+                {isTranslatingRename ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
               </button>
               <button
                 onClick={() => {
                   setEditing(false);
-                  setEditValue(group.category);
+                  setEditValue(displayCategory);
                 }}
-                className={clsx("p-1.5 rounded bg-red-400 text-white")}
+                disabled={isTranslatingRename}
+                className={clsx(
+                  "p-1.5 rounded bg-red-400 text-white disabled:opacity-60",
+                )}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -752,7 +796,10 @@ const TopicCategoryCard = ({
 
               <div className="flex items-center gap-2">
                 <h3
-                  onClick={() => setEditing(true)}
+                  onClick={() => {
+                    setEditValue(displayCategory);
+                    setEditing(true);
+                  }}
                   className={clsx(
                     "text-lg font-semibold flex items-center gap-2 w-80 cursor-pointer rounded px-1 -mx-1 transition-colors",
                     isDark
@@ -760,7 +807,7 @@ const TopicCategoryCard = ({
                       : "text-gray-900 hover:bg-gray-200/60",
                   )}
                 >
-                  {group.category}
+                  {displayCategory}
                   {group.isPrimary && (
                     <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   )}
@@ -916,7 +963,12 @@ const TopicCategoryCard = ({
                   <div key={content._id} className="w-44 shrink-0">
                     <ContentCard
                       _id={content._id}
-                      name={content.name}
+                      name={getLngWiseStr(
+                        language,
+                        content.name,
+                        content.nameHe,
+                        content.nameAr,
+                      )}
                       descripition={content.desc}
                       image={content.imageUrl}
                       categoryName=""

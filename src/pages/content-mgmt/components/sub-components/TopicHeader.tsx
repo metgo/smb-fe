@@ -5,6 +5,7 @@ import {
   Check,
   Eye,
   EyeClosed,
+  Loader2,
   MoreVertical,
   Star,
   Trash2,
@@ -23,12 +24,15 @@ interface TopicHeaderProps {
   topic: {
     index: number;
     name: string;
+    nameHe?: string | null;
+    nameAr?: string | null;
     isHidden: boolean | undefined;
     isPrimary: boolean | undefined;
     colors?: string[];
     icon?: string | null;
   };
-  onRename: (topicIdx: number, newName: string) => void;
+  onRename: (topicIdx: number, newName: string) => void | Promise<void>;
+  isRenaming?: boolean;
   onToggleVisibility: (topicIdx: number) => void;
   onTogglePrimary: (topicIdx: number) => void;
   onColorChange?: (topicIdx: number, colors: string[]) => void;
@@ -41,6 +45,7 @@ interface TopicHeaderProps {
 const TopicHeader = ({
   topic,
   onRename,
+  isRenaming = false,
   onToggleVisibility,
   onTogglePrimary,
   onColorChange,
@@ -49,11 +54,17 @@ const TopicHeader = ({
   setTopicToDelete,
   setShowDeleteConfirm,
 }: TopicHeaderProps) => {
-  const { t } = useTranslation("content");
+  const { t, i18n } = useTranslation("content");
   const { isDark } = useThemeClasses();
+  const displayName =
+    i18n.language === "he"
+      ? topic.nameHe || topic.name
+      : i18n.language === "ar"
+        ? topic.nameAr || topic.name
+        : topic.name;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(topic.name);
+  const [editValue, setEditValue] = useState(displayName);
   const [showMenu, setShowMenu] = useState(false);
   const [applyToChildren, setApplyToChildren] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -69,8 +80,8 @@ const TopicHeader = ({
   } | null>(null);
 
   useEffect(() => {
-    setEditValue(topic.name);
-  }, [topic.name]);
+    if (!isEditing) setEditValue(displayName);
+  }, [displayName, isEditing]);
 
   useEffect(() => {
     if (!showMenu) return;
@@ -142,14 +153,16 @@ const TopicHeader = ({
     setIconPickerOpen(false);
   };
 
-  const handleRename = () => {
+  const handleRename = async () => {
     const trimmed = editValue.trim();
-    if (trimmed && trimmed !== topic.name) onRename(topic.index, trimmed);
+    if (trimmed && trimmed !== displayName) {
+      await onRename(topic.index, trimmed);
+    }
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setEditValue(topic.name);
+    setEditValue(displayName);
     setIsEditing(false);
   };
 
@@ -300,6 +313,7 @@ const TopicHeader = ({
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <Input
             value={editValue}
+            disabled={isRenaming}
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleRename();
@@ -315,13 +329,19 @@ const TopicHeader = ({
           />
           <button
             onClick={handleRename}
-            className="shrink-0 p-1 rounded bg-green-400 text-white hover:shadow-md"
+            disabled={isRenaming}
+            className="shrink-0 p-1 rounded bg-green-400 text-white hover:shadow-md disabled:opacity-60"
           >
-            <Check className="w-3 h-3" />
+            {isRenaming ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Check className="w-3 h-3" />
+            )}
           </button>
           <button
             onClick={handleCancel}
-            className="shrink-0 p-1 rounded bg-red-400 text-white"
+            disabled={isRenaming}
+            className="shrink-0 p-1 rounded bg-red-400 text-white disabled:opacity-60"
           >
             <X className="w-3 h-3" />
           </button>
@@ -330,7 +350,10 @@ const TopicHeader = ({
         <>
           {/* Title — click to rename inline */}
           <h3
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              setEditValue(displayName);
+              setIsEditing(true);
+            }}
             className={clsx(
               "flex-1 min-w-0 text-sm font-semibold truncate cursor-pointer rounded px-1 -mx-1 transition-colors",
               isDark
@@ -338,7 +361,7 @@ const TopicHeader = ({
                 : "text-gray-800 hover:bg-gray-200/60",
             )}
           >
-            {topic.name}
+            {displayName}
             {topic.isPrimary && (
               <Star className="inline-block align-middle ml-1 w-3 h-3 text-yellow-400 fill-yellow-400" />
             )}
