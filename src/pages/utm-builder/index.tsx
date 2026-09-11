@@ -39,6 +39,8 @@ import {
   type IUtmCampaign,
   type IUtmCampaignPayload,
 } from "@/store/api/utmCampaignApi";
+import { useAppDispatch } from "@/hooks/hooks";
+import { setWebsite } from "@/features/authSlice";
 
 // Medium options recommended by Google Analytics for influencer / social promotion.
 // https://support.google.com/analytics/answer/10917952
@@ -183,6 +185,8 @@ const buildPayload = (
 });
 
 const UtmBuilderPage = () => {
+  const dispatch = useAppDispatch();
+
   const { t } = useTranslation("utm_campaign");
   const navigate = useNavigate();
   const { allWebsites } = useCommon();
@@ -344,6 +348,11 @@ const UtmBuilderPage = () => {
     setEditingId(null);
   };
 
+  function handleNavigateToAnalyticsDashboard() {
+    dispatch(setWebsite("689aca6896fc4dd7086c8834"));
+    navigate(routes.analyticsDashboard);
+  }
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
@@ -401,7 +410,7 @@ const UtmBuilderPage = () => {
         />
         <button
           type="button"
-          onClick={() => navigate(routes.analyticsDashboard)}
+          onClick={handleNavigateToAnalyticsDashboard}
           className={clsx(
             "absolute top-0 md:top-6 inset-e-0 inline-flex items-center gap-1.5 text-sm px-3 h-9 rounded-md border transition-colors cursor-pointer ",
             textSecondary,

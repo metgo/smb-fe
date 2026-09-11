@@ -500,7 +500,13 @@ const VoucherConfigure = ({
             const hasError =
               revealAllErrors &&
               (
-                ["name", "email", "phone", "campaignId", "amount"] as RequiredField[]
+                [
+                  "name",
+                  "email",
+                  "phone",
+                  "campaignId",
+                  "amount",
+                ] as RequiredField[]
               ).some((f) => fieldError(a, f));
             // Cards with unresolved errors stay open so the messages are visible.
             const isCollapsed = Boolean(collapsed[a.id]) && !hasError;
