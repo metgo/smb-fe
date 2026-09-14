@@ -12,7 +12,6 @@ import {
   Truck,
   XCircle,
   Building2,
-  SlidersHorizontal,
 } from "lucide-react";
 
 import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
@@ -39,6 +38,7 @@ import { OrdersModal } from "../orders-mgmt/components/OrdersModal";
 import { formatILS } from "@/helpers/formatter";
 import { setDmo, setAuthority } from "@/features/authSlice";
 import { ORDER_SUMMARY_COLUMNS } from "@/lib/utils";
+import { usePersistentState } from "@/hooks/usePersistentState";
 
 const limit = 20;
 
@@ -65,24 +65,28 @@ export default function OrdersSummaryMgmtPage() {
   const dispatch = useAppDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTermSummary, setSearchTermSummary] = useState("");
+  const [searchTermSummary, setSearchTermSummary] = usePersistentState(
+    "orders_summary_mgmt_search",
+    "",
+  );
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
-  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
-  const [_isScrolled, setIsScrolled] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
   const [pageSummary, setPageSummary] = useState(1);
 
-  const [summaryFilters, setSummaryFilters] = useState({
-    status: "all",
-    startDate: "",
-    endDate: "",
-    month: "all",
-    dmoId: dmoId || "all",
-    authorityId: authorityId || "all",
-    amount: "",
-  });
+  const [summaryFilters, setSummaryFilters] = usePersistentState(
+    "orders_summary_mgmt_filters",
+    {
+      status: "all",
+      startDate: "",
+      endDate: "",
+      month: "all",
+      dmoId: dmoId || "all",
+      authorityId: authorityId || "all",
+      amount: "",
+    },
+  );
 
   const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
     null,
@@ -446,30 +450,6 @@ export default function OrdersSummaryMgmtPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ─── Collapse the controls drawer on scroll ────────────────────────────
-  useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (
-        (target && target.scrollTop && target.scrollTop > 20) ||
-        window.scrollY > 20
-      ) {
-        setIsScrolled(true);
-        setShowControlsDrawer(false);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll, {
-      capture: true,
-      passive: true,
-    });
-    return () =>
-      window.removeEventListener("scroll", handleScroll, {
-        capture: true,
-      } as any);
-  }, []);
-
   const orderStats = [
     {
       id: 1,
@@ -522,52 +502,6 @@ export default function OrdersSummaryMgmtPage() {
     });
   };
 
-  // ─── Active filter count (search term + any non-default filter values) ──
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (searchTermSummary?.trim()) count += 1;
-    if (summaryFilters.status !== "all") count += 1;
-    if (summaryFilters.month !== "all") count += 1;
-    if (summaryFilters.dmoId !== "all") count += 1;
-    if (summaryFilters.authorityId !== "all") count += 1;
-    if (summaryFilters.amount !== "") count += 1;
-    return count;
-  }, [searchTermSummary, summaryFilters]);
-
-  // ─── Reusable icon-only filter toggle button ──────────────────────────
-  const filterToggleButton = (
-    <button
-      onClick={() => setShowControlsDrawer((prev) => !prev)}
-      className={clsx(
-        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
-        showControlsDrawer
-          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
-          : isDark
-            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
-      )}
-      title={
-        showControlsDrawer
-          ? (tc("close_options") ?? "Close Options")
-          : (tc("search_and_filters") ?? "Search & Filters")
-      }
-    >
-      <SlidersHorizontal className="w-4 h-4" />
-      {activeFilterCount > 0 && (
-        <span
-          className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
-            showControlsDrawer
-              ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white",
-          )}
-        >
-          {activeFilterCount > 9 ? "9+" : activeFilterCount}
-        </span>
-      )}
-    </button>
-  );
-
   return (
     <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
       {/* Sticky Top Header Bar (Title + Count + Filter Toggle + Stats) */}
@@ -598,8 +532,6 @@ export default function OrdersSummaryMgmtPage() {
                 {t("online_orders_summary_management")}
               </h1>
             </div>
-
-            <div className="block xl:hidden shrink-0">{filterToggleButton}</div>
           </div>
           <p
             className={clsx(
@@ -621,11 +553,6 @@ export default function OrdersSummaryMgmtPage() {
             isLoading={isStatsLoading}
             className="flex-1 min-w-0"
           />
-        </div>
-
-        {/* Filters Toggle Button Next to Stats (desktop) */}
-        <div className="hidden xl:flex items-center gap-2 shrink-0">
-          {filterToggleButton}
         </div>
       </div>
 
@@ -653,44 +580,42 @@ export default function OrdersSummaryMgmtPage() {
             />
           </div>
 
-          {showControlsDrawer && (
-            <div
-              className={clsx(
-                "flex items-center gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2",
-                isRTL && "flex-row-reverse",
-              )}
-            >
-              <FilterButton value={showFilters} onChange={setShowFilters} />
-              <ShowColumns
-                t={t}
-                viewMode="list"
-                columnDefinitions={columnDefinitions}
-                columnVisibility={columnVisibility}
-                showColumnSettings={showColumnSettings}
-                setShowColumnSettings={setShowColumnSettings}
-                setColumnVisibility={setColumnVisibility}
-                resetToDefault={() =>
-                  setColumnVisibility(ORDER_SUMMARY_COLUMNS.defaultColumns)
-                }
-              />
-              <ExportOrdersButton
-                orders={[]}
-                selectedOrders={new Set()}
-                columnVisibility={columnVisibility as any}
-                websiteMap={{}}
-                isSummaryMode={true}
-                summaryData={combinedOrdersSummary}
-                t={t}
-                tc={tc}
-                monthFilter={summaryFilters.month}
-                customDateFrom={summaryFilters.startDate}
-                customDateTo={summaryFilters.endDate}
-              />
-            </div>
-          )}
+          <div
+            className={clsx(
+              "flex items-center gap-2 w-full lg:w-auto flex-wrap",
+              isRTL && "flex-row-reverse",
+            )}
+          >
+            <FilterButton value={showFilters} onChange={setShowFilters} />
+            <ShowColumns
+              t={t}
+              viewMode="list"
+              columnDefinitions={columnDefinitions}
+              columnVisibility={columnVisibility}
+              showColumnSettings={showColumnSettings}
+              setShowColumnSettings={setShowColumnSettings}
+              setColumnVisibility={setColumnVisibility}
+              resetToDefault={() =>
+                setColumnVisibility(ORDER_SUMMARY_COLUMNS.defaultColumns)
+              }
+            />
+            <ExportOrdersButton
+              orders={[]}
+              selectedOrders={new Set()}
+              columnVisibility={columnVisibility as any}
+              websiteMap={{}}
+              isSummaryMode={true}
+              summaryData={combinedOrdersSummary}
+              t={t}
+              tc={tc}
+              monthFilter={summaryFilters.month}
+              customDateFrom={summaryFilters.startDate}
+              customDateTo={summaryFilters.endDate}
+            />
+          </div>
         </div>
 
-        {showControlsDrawer && showFilters && (
+        {showFilters && (
           <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="min-w-45">
               <FilterSelect
@@ -752,11 +677,13 @@ export default function OrdersSummaryMgmtPage() {
 
             {(summaryFilters.status !== "all" ||
               summaryFilters.month !== "all" ||
-              summaryFilters.amount !== "") && (
+              summaryFilters.amount !== "" ||
+              searchTermSummary) && (
               <div className="min-w-55 mt-10">
                 <button
                   onClick={() => {
                     setSummaryFilters(defaultSummaryFilters);
+                    setSearchTermSummary("");
                     dispatch(setDmo(""));
                     dispatch(setAuthority(""));
                   }}

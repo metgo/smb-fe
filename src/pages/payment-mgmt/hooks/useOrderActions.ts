@@ -371,17 +371,36 @@ export function useOrderActions({
 
   const handleCloseAllOrders = async () => {
     try {
-      await finalizeClosedOrders({
+      const result = await finalizeClosedOrders({
         confirmFinalize: true,
       }).unwrap();
 
       setShowCloseAllOrdersModal(false);
-      toast.success(t("orders_closed_successfully"));
+      // finalized/carriedOver/sweptMonths all empty means there was nothing
+      // left to finalize (e.g. already closed on a previous click) - the
+      // backend still returns 200 for that, so say so instead of claiming
+      // a close that didn't actually happen this time.
+      const didNothing =
+        !result?.finalized &&
+        !result?.carriedOver &&
+        !result?.sweptMonths?.length;
+      if (didNothing) {
+        toast.info(
+          t("orders_already_closed", {
+            month: closeAllOrdersTargetMonthLabel,
+          }),
+          { duration: 6000 },
+        );
+      } else {
+        toast.success(t("orders_closed_successfully"), { duration: 6000 });
+      }
       refetch();
       refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
-      toast.error(errorMessage || t("close_orders_failed"));
+      toast.error(errorMessage || t("close_orders_failed"), {
+        duration: 6000,
+      });
     }
   };
 

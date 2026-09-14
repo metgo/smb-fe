@@ -5,6 +5,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import { useCommon } from "@/hooks/useCommon";
+import { getLngWiseStr } from "@/helpers";
 import { ContentCard } from "./sub-components";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -729,7 +730,12 @@ const Contents = ({
               <ContentCard
                 key={item._id}
                 _id={item._id}
-                name={item?.name}
+                name={getLngWiseStr(
+                  language,
+                  item?.name,
+                  item?.nameHe,
+                  item?.nameAr,
+                )}
                 descripition={item?.shortDescription}
                 image={
                   typeof item?.images === "string"

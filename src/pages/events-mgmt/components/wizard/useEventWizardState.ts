@@ -376,11 +376,13 @@ export function useEventWizardState({
           scheduleDateTime: item.scheduleDateTime,
           // Offset-based scheduling: send N hours before/after the event
           // instead of at a fixed wall-clock time. sendTiming (before/after
-          // the event) applies to either form, so it's always sent.
+          // the event) only applies to relative mode (when sendHoursOffset is set).
           ...(item.sendHoursOffset != null
-            ? { sendHoursOffset: item.sendHoursOffset }
+            ? {
+                sendHoursOffset: item.sendHoursOffset,
+                sendTiming: item.sendTiming ?? "PRE_EVENT",
+              }
             : {}),
-          sendTiming: item.sendTiming ?? "PRE_EVENT",
           body: formatToBackendTemplate(item.message),
         };
         return base;

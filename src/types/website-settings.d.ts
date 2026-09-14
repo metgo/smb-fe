@@ -147,6 +147,9 @@ interface ISiteSettingsFormData {
   identifierId: string;
   purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
   isActive: boolean;
+  // Content Manager toggle: participate in the AI auto-connect (auto Active-View
+  // assignment of approved businesses/products). Undefined is treated as true.
+  autoAssignEnabled?: boolean;
   platformCharge: number;
 
   /* Step 2 – Branding & Media */
@@ -243,6 +246,8 @@ interface IWebsiteConfigRes {
   externalApiId: string;
 
   isActive: boolean;
+  // Content Manager toggle for the AI auto-connect. Undefined ⇒ treated as true.
+  autoAssignEnabled?: boolean;
   websiteNameEn: string;
   websiteNameHe: string;
   websiteNameAr: string;
