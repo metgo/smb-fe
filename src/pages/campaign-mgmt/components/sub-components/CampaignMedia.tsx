@@ -93,7 +93,7 @@ export default function CampaignMedia({
             <img
               src={image.previewUrl}
               alt={t("campaign_image")}
-              className="w-full h-56 object-cover"
+              className="w-full h-56 object-contain"
             />
 
             {image.status === "uploading" && (

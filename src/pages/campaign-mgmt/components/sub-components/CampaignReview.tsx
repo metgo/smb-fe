@@ -1,12 +1,15 @@
-import clsx from "clsx";
 import {
   FileText,
   Image as ImageIcon,
   Building2,
+  Landmark,
   DollarSign,
   CheckCircle,
 } from "lucide-react";
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+
+import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllDmosQuery } from "@/store/api/websiteConfigApi";
 
@@ -22,6 +25,7 @@ interface CampaignReviewProps {
     endDate: string;
     imagePath: string;
     dmoIds: string[];
+    authorityIds: string[];
     rewardAmount: string;
     rewardVoucherLimit: string;
   };
@@ -47,10 +51,16 @@ export default function CampaignReview({
   const { textSecondary, textTertiary, borderColor, isDark } =
     useThemeClasses();
   const { data: dmos } = useGetAllDmosQuery();
+  const { dmosAuthorities } = useCommon();
 
   const selectedDmoNames = (dmos ?? [])
     .filter((d) => formData.dmoIds.includes(d._id))
     .map((d) => d.name);
+
+  const selectedAuthorityNames = (dmosAuthorities ?? [])
+    .flatMap((dmo) => dmo.authorities ?? [])
+    .filter((a: any) => formData.authorityIds.includes(a._id))
+    .map((a: any) => a.name);
 
   const Row = ({
     label,
@@ -214,7 +224,7 @@ export default function CampaignReview({
             <img
               src={formData.imagePath}
               alt={t("campaign_image")}
-              className="w-full max-h-32 object-cover rounded-lg"
+              className="w-full max-h-32 object-contain rounded-lg"
             />
           </div>
         ) : (
@@ -245,8 +255,35 @@ export default function CampaignReview({
         )}
       </Section>
 
+      {/* Authorities */}
+      <Section title={t("step_authority_selection")} icon={Landmark} step={4}>
+        {selectedAuthorityNames.length > 0 ? (
+          <div className="py-2 flex flex-wrap gap-1.5">
+            {selectedAuthorityNames.map((name) => (
+              <span
+                key={name}
+                className={clsx(
+                  "px-2 py-0.5 rounded-full text-xs font-medium",
+                  isDark
+                    ? "bg-teal-900/40 text-teal-400"
+                    : "bg-teal-50 text-teal-700 border border-teal-200",
+                )}
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <Row
+            label={t("field_authorities")}
+            value={t("none_selected")}
+            empty
+          />
+        )}
+      </Section>
+
       {/* Reward */}
-      <Section title={t("step_rewards")} icon={DollarSign} step={4}>
+      <Section title={t("step_rewards")} icon={DollarSign} step={5}>
         {hasRewards ? (
           <>
             {formData.rewardAmount && (

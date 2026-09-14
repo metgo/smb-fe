@@ -48,6 +48,7 @@ export const endpoints = {
 
   //mini-sites
   miniSites: "mini-sites",
+  miniSitesStats: "mini-sites/stats",
 
   //products
   products: "/products",

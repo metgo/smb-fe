@@ -1,6 +1,4 @@
-import { useMemo, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
-
+import clsx from "clsx";
 import {
   DollarSign,
   Users,
@@ -10,21 +8,26 @@ import {
   Copy,
   CheckSquare,
 } from "lucide-react";
-import ColumnSettingsDropdown from "@/components/shared/ColumnSettingsDropdown";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import type { Dispatch, SetStateAction } from "react";
+
+import ColumnSettingsDropdown from "@/components/shared/ColumnSettingsDropdown";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
-  MinisiteCreateWizard,
+  CreateMinisiteWizard,
   MinisiteGridView,
   MinisiteListView,
 } from "./components";
-import { useGetAllMiniSitesQuery } from "@/store/api/miniSiteQueryApi";
-import { useNavigate } from "react-router-dom";
+import {
+  useGetAllMiniSitesQuery,
+  useGetMiniSiteStatsQuery,
+} from "@/store/api/miniSiteQueryApi";
 import { routes } from "@/lib/routes";
 import { ViewModeToggle } from "@/components/shared";
 import SearchInput from "@/components/shared/SearchInput";
-import { useAppSelector } from "@/hooks/hooks";
-import { PageHeader } from "@/components/shared";
+import ListHeaderBar from "@/components/shared/ListHeaderBar";
 
 export const defaultColumns = {
   code: true,
@@ -62,8 +65,8 @@ export default function MiniSiteMgmtPage() {
     textTertiary,
     borderColor,
     isDark,
+    isRTL,
   } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
 
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
@@ -110,6 +113,8 @@ export default function MiniSiteMgmtPage() {
     isFetching,
     refetch,
   } = useGetAllMiniSitesQuery(queryParams);
+  const { data: minisiteStats, isLoading: isStatsLoading } =
+    useGetMiniSiteStatsQuery("");
 
   const hasMore = miniSiteData?.meta?.hasNextPage;
   const fetchNextPage = () => {
@@ -126,125 +131,80 @@ export default function MiniSiteMgmtPage() {
     });
   };
 
-  // Calculate KPIs
-  const totalCampaigns = miniSiteData?.data.length;
-  const activeCampaigns = miniSiteData?.data.filter(
-    (s: any) => s.status === "active",
-  ).length;
-  const totalRevenue = miniSiteData?.data.reduce(
-    (sum: any, s: any) => sum + s.revenue,
-    0,
+  // ─── Stats Cards ───────────────────────────────────────────────────────
+  const miniSiteStatsCards = useMemo(
+    () => [
+      {
+        id: 1,
+        title: t("total_mini_sites"),
+        value: minisiteStats?.totalMiniSites,
+        label: t("campaigns"),
+        icon: <Target className="w-5 h-5 text-purple-600" />,
+      },
+      {
+        id: 2,
+        title: t("active_mini_sites"),
+        value: minisiteStats?.activeMiniSites,
+        label: t("campaigns"),
+        icon: <TrendingUp className="w-5 h-5 text-green-600" />,
+      },
+      {
+        id: 3,
+        title: t("total_revenue"),
+        value: minisiteStats?.totalRevenue?.toLocaleString(),
+        label: t("total"),
+        icon: <DollarSign className="w-5 h-5 text-blue-600" />,
+      },
+      {
+        id: 4,
+        title: t("total_vouchers"),
+        value: minisiteStats?.totalVouchers,
+        label: t("total"),
+        icon: <Users className="w-5 h-5 text-orange-600" />,
+      },
+      {
+        id: 5,
+        title: t("used_vouchers"),
+        value: minisiteStats?.usedVouchers,
+        label: t("vouchers"),
+        icon: <Award className="w-5 h-5 text-pink-600" />,
+      },
+      {
+        id: 6,
+        title: t("conversion_rate"),
+        value:
+          minisiteStats?.conversionRate !== undefined
+            ? `${minisiteStats.conversionRate.toFixed(1)}%`
+            : undefined,
+        label: t("rate"),
+        icon: <TrendingUp className="w-5 h-5 text-teal-600" />,
+      },
+    ],
+    [minisiteStats, t],
   );
-  const totalVouchers = miniSiteData?.data.reduce(
-    (sum: any, s: any) => sum + s.totalVouchers,
-    0,
-  );
-  const usedVouchers = miniSiteData?.data.reduce(
-    (sum: any, s: any) => sum + s.usedVouchers,
-    0,
-  );
-  const avgConversion =
-    miniSiteData?.totalData &&
-    miniSiteData?.data.reduce((sum: any, s: any) => sum + s.conversionRate, 0) /
-      miniSiteData?.totalData;
 
   return (
     <>
-      <main className="overflow-y-auto h-[calc(100vh-64px)] ">
+      <main className="overflow-y-auto h-[calc(100vh-64px)]">
         <div>
-          {/* Header */}
-          <PageHeader
-            title={t("mini_site_management_page")}
-            description={t("manage_all_mini_site_campaigns")}
-            btnLabel={t("create_mini_site")}
-            onClick={() => setShowWizard(true)}
-            h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
-          />
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-            <div
-              className={`${bgPrimary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="w-5 h-5 text-purple-600" />
-                <span className={`text-sm ${textPrimary}`}>
-                  {t("total_mini_sites")}
-                </span>
-              </div>
-              <p className={`text-2xl ${textPrimary} mb-1`}>{totalCampaigns}</p>
-              <p className={`text-xs ${textTertiary}`}>{t("campaigns")}</p>
-            </div>
-
-            <div
-              className={`${bgPrimary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-                <span className={`text-sm ${textPrimary}`}>
-                  {t("active_mini_sites")}{" "}
-                </span>
-              </div>
-              <p className={`text-2xl ${textPrimary} mb-1`}>
-                {activeCampaigns}
-              </p>
-              <p className={`text-xs ${textTertiary}`}>{t("campaigns")}</p>
-            </div>
-
-            <div
-              className={`${bgPrimary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <DollarSign className="w-5 h-5 text-blue-600" />
-                <span className={`text-sm ${textPrimary}`}>
-                  {t("total_revenue")}{" "}
-                </span>
-              </div>
-              <p className={`text-2xl ${textPrimary} mb-1`}>
-                ₪{totalRevenue?.toLocaleString()}
-              </p>
-              <p className={`text-xs ${textTertiary}`}>{t("total")}</p>
-            </div>
-
-            <div
-              className={`${bgPrimary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="w-5 h-5 text-orange-600" />
-                <span className={`text-sm ${textPrimary}`}>
-                  {t("total_vouchers")}{" "}
-                </span>
-              </div>
-              <p className={`text-2xl ${textPrimary} mb-1`}>{totalVouchers}</p>
-              <p className={`text-xs ${textTertiary}`}>{t("total")}</p>
-            </div>
-
-            <div
-              className={`${bgPrimary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <Award className="w-5 h-5 text-pink-600" />
-                <span className={`text-sm ${textPrimary}`}>
-                  {t("used_vouchers")}{" "}
-                </span>
-              </div>
-              <p className={`text-2xl ${textPrimary} mb-1`}>{usedVouchers}</p>
-              <p className={`text-xs ${textTertiary}`}>{t("vouchers")}</p>
-            </div>
-
-            <div
-              className={`${bgPrimary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-5 h-5 text-teal-600" />
-                <span className={`text-sm ${textPrimary}`}>
-                  {t("conversion_rate")}{" "}
-                </span>
-              </div>
-              <p className={`text-2xl ${textPrimary} mb-1`}>
-                {avgConversion?.toFixed(1)}%
-              </p>
-              <p className={`text-xs ${textTertiary}`}>{t("rate")}</p>
-            </div>
+          {/* Sticky Top Header Bar (Title + Add Button + Horizontal Scrollable Stats) */}
+          <div
+            className={clsx(
+              "sticky z-30 transition-all duration-200 py-2.5 px-3 md:px-4 mb-6 rounded-2xl border backdrop-blur-md shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3",
+              isDark
+                ? "bg-gray-950/95 border-gray-800/90 shadow-black/40 text-gray-100"
+                : "bg-white/95 border-gray-200/90 shadow-gray-200/40 text-gray-900",
+            )}
+          >
+            <ListHeaderBar
+              title={t("mini_site_management_page")}
+              titleGradient="from-blue-500 via-indigo-600 to-purple-600"
+              count={miniSiteData?.totalData}
+              addLabel={t("create_mini_site")}
+              onAdd={() => setShowWizard(true)}
+              stats={miniSiteStatsCards}
+              isStatsLoading={isStatsLoading}
+            />
           </div>
 
           {/* Toolbar */}
@@ -426,7 +386,7 @@ export default function MiniSiteMgmtPage() {
 
       {/* Wizard Modal */}
       {showWizard && (
-        <MinisiteCreateWizard
+        <CreateMinisiteWizard
           onClose={() => {
             setShowWizard(false);
             setEditingMiniSite(null);

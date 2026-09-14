@@ -15,6 +15,7 @@
   "step_basic_info": "المعلومات الأساسية",
   "step_media": "الوسائط",
   "step_dmo_selection": "اختيار DMO",
+  "step_authority_selection": "اختيار السلطة",
   "step_rewards": "المكافآت",
   "step_review": "المراجعة",
 
@@ -67,6 +68,11 @@
   "select_all": "تحديد الكل",
   "authorities_count": "{{count}} سلطات",
 
+  "select_authorities": "اختر السلطات",
+  "select_authorities_hint": "اختر السلطات ضمن ال DMOs المحددة التي تنطبق عليها هذه الحملة.",
+  "select_dmos_first": "اختر DMO واحدًا على الأقل لعرض السلطات المتاحة",
+  "no_authorities_found": "لم يتم العثور على سلطات لل DMOs المحددة",
+
   "reward_configuration": "إعداد المكافآت",
   "reward_configuration_hint": "حدد مبلغ المكافأة والحد الأقصى للقسائم لهذه الحملة. هذه الحقول اختيارية.",
   "reward_amount": "مبلغ المكافأة",
@@ -90,6 +96,7 @@
   "no_image_uploaded": "لم يتم رفع أي صورة",
   "field_image": "الصورة",
   "field_dmos": "DMOs",
+  "field_authorities": "السلطات",
   "none_selected": "لم يتم الاختيار",
   "field_reward_amount": "مبلغ المكافأة",
   "field_voucher_limit": "الحد الأقصى للقسائم",

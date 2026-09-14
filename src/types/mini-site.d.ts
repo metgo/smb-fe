@@ -35,3 +35,12 @@ interface ICampaign {
 interface ICampaignsRes extends IPagination {
   data: ICampaign[];
 }
+
+interface IMiniSiteStatsRes {
+  totalMiniSites: number;
+  activeMiniSites: number;
+  totalRevenue: number;
+  totalVouchers: number;
+  usedVouchers: number;
+  conversionRate: number;
+}

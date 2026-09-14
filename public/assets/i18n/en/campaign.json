@@ -15,6 +15,7 @@
   "step_basic_info": "Basic Info",
   "step_media": "Media",
   "step_dmo_selection": "DMO Selection",
+  "step_authority_selection": "Authority Selection",
   "step_rewards": "Rewards",
   "step_review": "Review",
 
@@ -67,6 +68,11 @@
   "select_all": "Select all",
   "authorities_count": "{{count}} authorities",
 
+  "select_authorities": "Select Authorities",
+  "select_authorities_hint": "Choose which authorities within the selected DMOs this campaign applies to.",
+  "select_dmos_first": "Select at least one DMO to see available authorities",
+  "no_authorities_found": "No authorities found for the selected DMOs",
+
   "reward_configuration": "Reward Configuration",
   "reward_configuration_hint": "Set the reward amount and voucher limit for this campaign. These fields are optional.",
   "reward_amount": "Reward Amount",
@@ -90,6 +96,7 @@
   "no_image_uploaded": "No image uploaded",
   "field_image": "Image",
   "field_dmos": "DMOs",
+  "field_authorities": "Authorities",
   "none_selected": "None selected",
   "field_reward_amount": "Reward Amount",
   "field_voucher_limit": "Voucher Limit",

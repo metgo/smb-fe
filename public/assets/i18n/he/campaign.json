@@ -15,6 +15,7 @@
   "step_basic_info": "פרטים בסיסיים",
   "step_media": "מדיה",
   "step_dmo_selection": "בחירת DMO",
+  "step_authority_selection": "בחירת רשות",
   "step_rewards": "תגמולים",
   "step_review": "סקירה",
 
@@ -67,6 +68,11 @@
   "select_all": "בחר הכול",
   "authorities_count": "{{count}} רשויות",
 
+  "select_authorities": "בחר רשויות",
+  "select_authorities_hint": "בחר לאילו רשויות בתוך ה-DMOs שנבחרו קמפיין זה חל.",
+  "select_dmos_first": "בחר לפחות DMO אחד כדי לראות רשויות זמינות",
+  "no_authorities_found": "לא נמצאו רשויות עבור ה-DMOs שנבחרו",
+
   "reward_configuration": "הגדרת תגמולים",
   "reward_configuration_hint": "הגדר את סכום התגמול ומגבלת הוואוצ'רים לקמפיין זה. שדות אלה אינם חובה.",
   "reward_amount": "סכום תגמול",
@@ -90,6 +96,7 @@
   "no_image_uploaded": "לא הועלתה תמונה",
   "field_image": "תמונה",
   "field_dmos": "DMOs",
+  "field_authorities": "רשויות",
   "none_selected": "לא נבחרו",
   "field_reward_amount": "סכום תגמול",
   "field_voucher_limit": "מגבלת וואוצ'רים",

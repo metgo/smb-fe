@@ -1,16 +1,18 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FileText,
   Image as ImageIcon,
   Building2,
+  Landmark,
   DollarSign,
   Eye,
 } from "lucide-react";
 
+import { useCommon } from "@/hooks/useCommon";
 import { ModalWrapper } from "@/components/wrapper";
 import {
   ConfirmDialog,
@@ -27,6 +29,7 @@ import {
 import {
   CampaignBasicInfo,
   CampaignDmoSelection,
+  CampaignAuthoritySelection,
   CampaignMedia,
   CampaignRewardSettings,
   CampaignReview,
@@ -50,6 +53,7 @@ type CampaignFormData = {
   endDate: string;
   imagePath: string;
   dmoIds: string[];
+  authorityIds: string[];
   rewardAmount: string;
   rewardVoucherLimit: string;
 };
@@ -65,6 +69,7 @@ const INITIAL_FORM: CampaignFormData = {
   endDate: "",
   imagePath: "",
   dmoIds: [],
+  authorityIds: [],
   rewardAmount: "",
   rewardVoucherLimit: "",
 };
@@ -87,6 +92,7 @@ const payloadToForm = (data: ICampaignPayload): CampaignFormData => ({
   endDate: toDateInput(data.endDate),
   imagePath: data.imagePath ?? "",
   dmoIds: data.dmoIds ?? [],
+  authorityIds: data.authorityIds ?? [],
   rewardAmount: data.rewardAmount?.toString() ?? "",
   rewardVoucherLimit: data.rewardVoucherLimit?.toString() ?? "",
 });
@@ -99,13 +105,15 @@ export default function CreateCampaignWizard({
 }: CreateCampaignWizardProps) {
   const { t } = useTranslation("campaign");
   const { textPrimary, textTertiary, borderColor, isDark } = useThemeClasses();
+  const { dmosAuthorities } = useCommon();
 
   const STEPS: IWizardStep[] = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_media"), icon: ImageIcon },
     { number: 3, title: t("step_dmo_selection"), icon: Building2 },
-    { number: 4, title: t("step_rewards"), icon: DollarSign },
-    { number: 5, title: t("step_review"), icon: Eye },
+    { number: 4, title: t("step_authority_selection"), icon: Landmark },
+    { number: 5, title: t("step_rewards"), icon: DollarSign },
+    { number: 6, title: t("step_review"), icon: Eye },
   ];
 
   // Fetch full campaign payload only in EDIT mode
@@ -147,12 +155,13 @@ export default function CreateCampaignWizard({
 
   const completionPercent = useMemo(() => {
     const checks = [
-      { weight: 20, filled: !!formData.name.trim() },
+      { weight: 15, filled: !!formData.name.trim() },
       { weight: 15, filled: !!formData.code.trim() },
       { weight: 10, filled: !!formData.type },
       { weight: 10, filled: !!formData.startDate && !!formData.endDate },
       { weight: 15, filled: !!formData.imagePath },
-      { weight: 20, filled: formData.dmoIds.length > 0 },
+      { weight: 15, filled: formData.dmoIds.length > 0 },
+      { weight: 10, filled: formData.authorityIds.length > 0 },
       {
         weight: 10,
         filled: !!formData.rewardAmount || !!formData.rewardVoucherLimit,
@@ -192,6 +201,7 @@ export default function CreateCampaignWizard({
     endDate: formData.endDate,
     imagePath: formData.imagePath || undefined,
     dmoIds: formData.dmoIds,
+    authorityIds: formData.authorityIds,
     rewardAmount: formData.rewardAmount
       ? parseFloat(formData.rewardAmount)
       : undefined,
@@ -300,11 +310,32 @@ export default function CreateCampaignWizard({
         return (
           <CampaignDmoSelection
             selectedDmoIds={formData.dmoIds}
-            onChange={(ids) => handleChange({ dmoIds: ids })}
+            onChange={(ids) => {
+              const validAuthorityIds = new Set(
+                (dmosAuthorities ?? [])
+                  .filter((dmo) => ids.includes(dmo._id))
+                  .flatMap((dmo) => (dmo.authorities ?? []).map((a) => a._id)),
+              );
+              handleChange({
+                dmoIds: ids,
+                authorityIds: formData.authorityIds.filter((id) =>
+                  validAuthorityIds.has(id),
+                ),
+              });
+            }}
             errors={errors}
           />
         );
       case 4:
+        return (
+          <CampaignAuthoritySelection
+            selectedDmoIds={formData.dmoIds}
+            selectedAuthorityIds={formData.authorityIds}
+            onChange={(ids) => handleChange({ authorityIds: ids })}
+            errors={errors}
+          />
+        );
+      case 5:
         return (
           <CampaignRewardSettings
             rewardAmount={formData.rewardAmount}
@@ -313,7 +344,7 @@ export default function CreateCampaignWizard({
             errors={errors}
           />
         );
-      case 5:
+      case 6:
         return (
           <CampaignReview formData={formData} onGoToStep={setCurrentStep} />
         );

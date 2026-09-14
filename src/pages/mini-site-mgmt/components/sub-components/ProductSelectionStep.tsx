@@ -1,77 +1,63 @@
-import React from "react";
-import {
-  Search,
-  Grid,
-  List,
-  Image as ImageIcon,
-  Accessibility,
-} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Search, Loader, Package, Building2, AlertCircle } from "lucide-react";
+import clsx from "clsx";
 
-interface Product {
-  id: string;
-  name: string;
-  businessName: string;
-  price: number | string;
-  category: string;
-  accessibility: string[];
-}
+import { GridCard } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { getLngWiseStr } from "@/helpers";
 
 interface ProductSelectionStepProps {
-  t: any;
-  productSearchQuery: string;
-  setProductSearchQuery: (value: string) => void;
-  selectedCategory: string;
-  setSelectedCategory: (value: string) => void;
-  productViewMode: "grid" | "list";
-  setProductViewMode: (mode: "grid" | "list") => void;
-  filteredProducts: Product[];
+  products: any[];
+  isProductsLoading: boolean;
+  productSearch: string;
+  setProductSearch: (value: string) => void;
   selectedProducts: string[];
   toggleProductSelection: (productId: string) => void;
   primaryProducts: string[];
   togglePrimaryProduct: (productId: string) => void;
-  textPrimary: string;
-  textSecondary: string;
-  textTertiary: string;
-  bgPrimary: string;
-  bgSecondary: string;
-  bgTertiary: string;
-  borderColor: string;
+  hasWebsite: boolean;
+  minSelectedProducts: number;
 }
 
-export const ProductSelectionStep: React.FC<ProductSelectionStepProps> = ({
-  t,
-  productSearchQuery,
-  setProductSearchQuery,
-  selectedCategory,
-  setSelectedCategory,
-  productViewMode,
-  setProductViewMode,
-  filteredProducts,
+export default function ProductSelectionStep({
+  products,
+  isProductsLoading,
+  productSearch,
+  setProductSearch,
   selectedProducts,
   toggleProductSelection,
   primaryProducts,
-  togglePrimaryProduct,
-  textPrimary,
-  textSecondary,
-  textTertiary,
-  bgPrimary,
-  bgSecondary,
-  bgTertiary,
-  borderColor,
-}) => {
+  // togglePrimaryProduct,
+  hasWebsite,
+  minSelectedProducts,
+}: ProductSelectionStepProps) {
+  const { t } = useTranslation("mini_campaign");
+  const {
+    isDark,
+    language,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    bgPrimary,
+    bgSecondary,
+    borderColor,
+  } = useThemeClasses();
+  const needsMoreProducts = selectedProducts.length < minSelectedProducts;
+
   return (
     <div className="space-y-6">
-      <h3 className={`text-lg ${textPrimary} mb-4`}>
-        {t.selectProducts || "Select Products"}
-      </h3>
-
-      {/* Filters */}
-      <div className={`${bgSecondary} rounded-lg p-4 space-y-4`}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {!hasWebsite ? (
+        <div
+          className={`${bgSecondary} rounded-lg p-8 text-center border ${borderColor}`}
+        >
+          <p className={textTertiary}>{t("select_website_first")}</p>
+        </div>
+      ) : (
+        <>
           {/* Search */}
-          <div>
+          <div className={`${bgSecondary} rounded-lg p-4`}>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.search || "Search"}
+              {t("search")}
             </label>
             <div className="relative">
               <Search
@@ -79,174 +65,94 @@ export const ProductSelectionStep: React.FC<ProductSelectionStepProps> = ({
               />
               <input
                 type="text"
-                value={productSearchQuery}
-                onChange={(e) => setProductSearchQuery(e.target.value)}
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
                 className={`w-full pl-10 pr-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                placeholder={t.searchProducts || "Search products..."}
+                placeholder={t("search_products")}
               />
             </div>
           </div>
 
-          {/* Category */}
-          <div>
-            <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.category || "Category"}
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-            >
-              <option value="all">{t.allCategories || "All Categories"}</option>
-              <option value="Wellness">Wellness</option>
-              <option value="Tours">Tours</option>
-              <option value="Accommodation">Accommodation</option>
-              <option value="Dining">Dining</option>
-            </select>
-          </div>
-
-          {/* View toggle */}
-          <div className="flex items-end gap-2">
-            <button
-              onClick={() => setProductViewMode("grid")}
-              className={`p-2 rounded-lg ${
-                productViewMode === "grid"
-                  ? "bg-purple-600 text-white"
-                  : `${bgPrimary} ${textSecondary}`
-              }`}
-              title="Grid view"
-            >
-              <Grid className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setProductViewMode("list")}
-              className={`p-2 rounded-lg ${
-                productViewMode === "list"
-                  ? "bg-purple-600 text-white"
-                  : `${bgPrimary} ${textSecondary}`
-              }`}
-              title="List view"
-            >
-              <List className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Products */}
-      {productViewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredProducts.map((product) => (
+          {/* Products grid */}
+          {isProductsLoading ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-12">
+              <Loader className="w-8 h-8 animate-spin text-purple-600" />
+            </div>
+          ) : products.length === 0 ? (
             <div
-              key={product.id}
-              className={`${bgSecondary} rounded-lg p-4 border-2 transition-all cursor-pointer ${
-                selectedProducts.includes(product.id)
-                  ? "border-purple-500"
-                  : borderColor
-              }`}
-              onClick={() => toggleProductSelection(product.id)}
+              className={`${bgSecondary} rounded-lg p-8 text-center border ${borderColor}`}
             >
-              <div
-                className={`w-full h-32 ${bgTertiary} rounded-lg mb-3 flex items-center justify-center`}
-              >
-                <ImageIcon className={`w-12 h-12 ${textTertiary}`} />
-              </div>
-              <h4 className={`${textPrimary} mb-1`}>{product.name}</h4>
-              <p className={`text-sm ${textTertiary} mb-2`}>
-                {product.businessName}
+              <p className={textTertiary}>{t("no_products_found")}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {products.map((product) => (
+                <GridCard
+                  key={product._id}
+                  image={product.images?.[0]?.image}
+                  imageAlt={product.name}
+                  fallbackIcon={Package}
+                  fallbackGradient="from-purple-500 to-pink-600"
+                  title={getLngWiseStr(
+                    language,
+                    product?.name,
+                    product?.nameHe,
+                    product?.nameAr,
+                  )}
+                  isChecked={selectedProducts.includes(product._id)}
+                  onCheckChange={() => toggleProductSelection(product._id)}
+                  onClick={() => toggleProductSelection(product._id)}
+                  footer={
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={clsx(
+                            "font-bold text-sm",
+                            isDark ? "text-white" : "text-gray-900",
+                          )}
+                        >
+                          ₪ {product?.price?.sellingPrice ?? "-"}
+                        </span>
+                        {product?.businessId?.name && (
+                          <div
+                            className={clsx(
+                              "flex items-center gap-1 text-xs",
+                              textTertiary,
+                            )}
+                          >
+                            <Building2 className="w-3 h-3 shrink-0" />
+                            <span className="truncate max-w-16">
+                              {product.businessId.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  }
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Selection summary */}
+          <div className={`${bgSecondary} rounded-lg p-4`}>
+            <p className={textSecondary}>
+              {selectedProducts.length} {t("products_selected")}
+              {primaryProducts.length > 0 &&
+                ` • ${primaryProducts.length} ${t("marked_as_primary")}`}
+            </p>
+          </div>
+
+          {needsMoreProducts && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <p className="text-sm">
+                {t("min_products_required", { count: minSelectedProducts })}
               </p>
-              <div className="flex items-center justify-between mb-2">
-                <span className={`${textPrimary}`}>₪{product.price}</span>
-                <span
-                  className={`text-xs px-2 py-1 rounded-full ${bgTertiary} ${textSecondary}`}
-                >
-                  {product.category}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                {product.accessibility.map((acc) => (
-                  <Accessibility
-                    key={acc}
-                    className={`w-4 h-4 ${textTertiary}`}
-                  />
-                ))}
-              </div>
-
-              {selectedProducts.includes(product.id) && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePrimaryProduct(product.id);
-                  }}
-                  className={`w-full mt-2 px-3 py-1 rounded-lg text-sm ${
-                    primaryProducts.includes(product.id)
-                      ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
-                      : `${bgTertiary} ${textSecondary}`
-                  }`}
-                >
-                  {primaryProducts.includes(product.id)
-                    ? "★ Primary"
-                    : "Mark as Primary"}
-                </button>
-              )}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              className={`${bgSecondary} rounded-lg p-4 border-2 transition-all cursor-pointer flex items-center gap-4 ${
-                selectedProducts.includes(product.id)
-                  ? "border-purple-500"
-                  : borderColor
-              }`}
-              onClick={() => toggleProductSelection(product.id)}
-            >
-              <div
-                className={`w-16 h-16 ${bgTertiary} rounded-lg flex items-center justify-center shrink-0`}
-              >
-                <ImageIcon className={`w-8 h-8 ${textTertiary}`} />
-              </div>
-              <div className="flex-1">
-                <h4 className={`${textPrimary}`}>{product.name}</h4>
-                <p className={`text-sm ${textTertiary}`}>
-                  {product.businessName} • {product.category}
-                </p>
-              </div>
-              <div className={`${textPrimary}`}>₪{product.price}</div>
-
-              {selectedProducts.includes(product.id) && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePrimaryProduct(product.id);
-                  }}
-                  className={`px-3 py-1 rounded-lg text-sm ${
-                    primaryProducts.includes(product.id)
-                      ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
-                      : `${bgTertiary} ${textSecondary}`
-                  }`}
-                >
-                  {primaryProducts.includes(product.id)
-                    ? "★ Primary"
-                    : "Mark Primary"}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
-
-      {/* Selection summary */}
-      <div className={`${bgSecondary} rounded-lg p-4`}>
-        <p className={textSecondary}>
-          {selectedProducts.length} {t.productsSelected || "products selected"}
-          {primaryProducts.length > 0 &&
-            ` • ${primaryProducts.length} ${t.markedAsPrimary || "marked as primary"}`}
-        </p>
-      </div>
     </div>
   );
-};
+}

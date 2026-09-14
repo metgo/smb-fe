@@ -1,26 +1,12 @@
+import { ImageWithFallback } from "@/components/shared";
+import clsx from "clsx";
+
 interface Product {
   _id: string;
   name: string;
   description: string;
-  images: Array<{
-    image: string;
-    caption?: string;
-    alt?: string;
-    subCoordinates?: Record<string, number>;
-  }>;
-  price: {
-    markedPrice: number;
-    sellingPrice: number;
-    discountAmount?: number;
-    discountPercent?: number;
-    _id: string;
-  };
-  quantity: {
-    sold: number;
-    isUnlimited: boolean;
-    _id: string;
-    remaining?: number | null;
-  };
+  image: string;
+  price: number;
 }
 
 interface SectionProps {
@@ -28,6 +14,7 @@ interface SectionProps {
     productIds?: Product[];
   };
   t: any; // translation function
+  isDark?: boolean;
   textPrimary?: string;
   textSecondary?: string;
   borderColor?: string;
@@ -36,9 +23,10 @@ interface SectionProps {
 const MinisiteProductsList = ({
   miniSite,
   t,
-  textPrimary = "text-gray-800",
-  textSecondary = "text-gray-500",
-  borderColor = "border-gray-200",
+  isDark = false,
+  textPrimary = "text-gray-900 dark:text-white",
+  textSecondary = "text-gray-500 dark:text-gray-400",
+  borderColor = "border-gray-200 dark:border-gray-700",
 }: SectionProps) => {
   //main products
   const products = miniSite?.productIds ?? [];
@@ -46,7 +34,7 @@ const MinisiteProductsList = ({
   if (products?.length === 0) {
     return (
       <div className="w-full py-12 px-4 text-center">
-        <p className={`${textSecondary} text-lg`}>
+        <p className={clsx(textSecondary, "text-lg")}>
           {t("noProductsAvailable") || "אין מוצרים זמינים כרגע"}
         </p>
       </div>
@@ -54,71 +42,73 @@ const MinisiteProductsList = ({
   }
 
   return (
-    <div dir="rtl" className=" mx-auto space-y-4 md:space-y-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
       {products.map((product) => {
-        const primaryImage = product.images?.[0]?.image;
-        const hasDiscount =
-          product.price.markedPrice > product.price.sellingPrice;
+        const primaryImage = product.image;
 
         return (
           <div
             key={product._id}
-            className={`border ${borderColor} rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row`}
-          >
-            {/* Image – left side on larger screens */}
-            {primaryImage && (
-              <div className="sm:w-48 md:w-56 lg:w-64 shrink-0">
-                <div className="aspect-4/3 sm:aspect-square relative overflow-hidden bg-gray-50">
-                  <img
-                    src={primaryImage}
-                    alt={product.images[0].alt || product.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
+            className={clsx(
+              "group flex flex-col border rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300",
+              borderColor,
+              isDark ? "bg-gray-900/50" : "bg-white",
             )}
+          >
+            {/* Image */}
+            <div
+              className={clsx(
+                "aspect-square relative overflow-hidden",
+                isDark ? "bg-gray-800" : "bg-gray-50",
+              )}
+            >
+              {primaryImage ? (
+                <ImageWithFallback
+                  src={primaryImage}
+                  alt={product.name}
+                  className="w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+              ) : (
+                <div
+                  className={clsx(
+                    "w-full h-full flex items-center justify-center text-xs",
+                    textSecondary,
+                  )}
+                >
+                  {t("no_image") || "—"}
+                </div>
+              )}
+            </div>
 
             {/* Content */}
-            <div className="flex-1 flex flex-col p-5 md:p-6">
-              <div className="flex-1">
-                <h3
-                  className={`text-xl md:text-2xl font-semibold ${textPrimary} mb-2 leading-tight`}
+            <div className="flex-1 flex flex-col p-3.5 md:p-4">
+              <h3
+                className={clsx(
+                  "text-sm md:text-base font-semibold mb-1 leading-tight line-clamp-2",
+                  textPrimary,
+                )}
+                title={product.name}
+              >
+                {product.name}
+              </h3>
+
+              {/* Description – limited lines */}
+              <div
+                className={clsx(
+                  "text-xs md:text-sm mb-3 line-clamp-2 prose prose-sm dark:prose-invert max-w-none",
+                  textSecondary,
+                )}
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
+
+              {/* Price – bottom aligned */}
+              <div className="mt-auto pt-2">
+                <span
+                  className={clsx("text-lg md:text-xl font-bold", textPrimary)}
                 >
-                  {product.name}
-                </h3>
-
-                {/* Description – limited lines */}
-                <div
-                  className={`text-sm md:text-base ${textSecondary} mb-4 line-clamp-3 md:line-clamp-4 prose prose-sm max-w-none`}
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                />
-              </div>
-
-              {/* Price + Button – bottom aligned */}
-              <div className="mt-4 md:mt-6 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-baseline gap-3">
-                  <span
-                    className={`text-2xl md:text-3xl font-bold ${textPrimary}`}
-                  >
-                    ₪{product.price.sellingPrice.toLocaleString()}
-                  </span>
-
-                  {hasDiscount && (
-                    <>
-                      <span
-                        className={`text-lg ${textSecondary} line-through opacity-70`}
-                      >
-                        ₪{product.price.markedPrice.toLocaleString()}
-                      </span>
-                      {product.price.discountPercent && (
-                        <span className="text-sm font-medium text-green-600 bg-green-100 px-2.5 py-1 rounded">
-                          {product.price.discountPercent}% הנחה
-                        </span>
-                      )}
-                    </>
-                  )}
-                </div>
+                  ₪{product.price.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>

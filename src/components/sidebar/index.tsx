@@ -18,9 +18,6 @@ import {
   Receipt,
   Megaphone,
   FileText,
-  // Rss,
-  // SlidersHorizontal,
-  // Layout,
   Users,
   File,
   UserCircle,
@@ -224,13 +221,13 @@ export default function Sidebar() {
           icon: Ticket,
           isEnabled: true,
         },
-        {
-          id: "mini-campaign",
-          path: routes.miniCampaignMgmt,
-          label: t("mini_campaigns") || "Mini-Campaigns",
-          icon: Megaphone,
-          isEnabled: true,
-        },
+        // {
+        //   id: "mini-campaign",
+        //   path: routes.miniCampaignMgmt,
+        //   label: t("mini_campaigns") || "Mini-Campaigns",
+        //   icon: Megaphone,
+        //   isEnabled: true,
+        // },
       ],
     },
 
@@ -495,7 +492,7 @@ export default function Sidebar() {
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-45 lg:hidden"
           onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}
@@ -511,7 +508,7 @@ export default function Sidebar() {
           transition-all duration-300
           flex flex-col
           border-r
-          z-[45]
+          z-45
           ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}
           ${isRTL ? "right-0" : "left-0"}
           ${

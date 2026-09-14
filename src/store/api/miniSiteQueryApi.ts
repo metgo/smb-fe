@@ -19,6 +19,13 @@ export const miniSiteQueryApi = createApi({
   tagTypes: ["MiniSite"],
   endpoints: (builder) => {
     return {
+      getMiniSiteStats: builder.query<IMiniSiteStatsRes, any>({
+        query: () => ({
+          url: endpoints.miniSitesStats,
+          method: "GET",
+        }),
+      }),
+
       getAllMiniSites: builder.query<ICampaignsRes, MiniSiteListParams>({
         query: (params) => ({
           url: endpoints.miniSites,
@@ -37,5 +44,8 @@ export const miniSiteQueryApi = createApi({
   },
 });
 
-export const { useGetAllMiniSitesQuery, useGetMiniSiteByIdQuery } =
-  miniSiteQueryApi;
+export const {
+  useGetMiniSiteStatsQuery,
+  useGetAllMiniSitesQuery,
+  useGetMiniSiteByIdQuery,
+} = miniSiteQueryApi;

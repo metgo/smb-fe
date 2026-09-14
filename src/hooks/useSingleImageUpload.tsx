@@ -136,7 +136,8 @@ export const useSingleImageUpload = ({
     if (image?.status === "success" && image.gcsURL) {
       onChange({ image: image.gcsURL });
     }
-  }, [image, onChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [image?.status, image?.gcsURL]);
 
   return {
     image,

@@ -1,8 +1,8 @@
 import clsx from "clsx";
-import { useState } from "react";
 import { toast } from "sonner";
-import { Globe, Megaphone, Plus } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Globe, Megaphone, Plus } from "lucide-react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -17,8 +17,8 @@ import {
   useDeleteCampaignMutation,
   useUpdateCampaignMutation,
 } from "@/store/api/campaignApi";
-import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
 import CreateCampaignWizard from "./components/CreateCampaignWizard";
+import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
 
 const ALL_TAB = "__all__";
 

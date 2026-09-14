@@ -15,7 +15,10 @@ interface ICampaignPayload {
   // step 3
   dmoIds: string[];
 
-  // step 4
+  // step 4 (authority selection)
+  authorityIds: string[];
+
+  // step 5
   rewardAmount?: number;
   rewardVoucherLimit?: number;
 }

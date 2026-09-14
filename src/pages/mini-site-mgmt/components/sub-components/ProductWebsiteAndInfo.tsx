@@ -1,94 +1,35 @@
 import React from "react";
-import {
-  Globe,
-  Building2,
-  Ticket,
-  Home,
-  Briefcase,
-  Upload,
-  X,
-} from "lucide-react";
-import { ImageWithFallback } from "@/components/shared";
+import { Globe, Building2, Ticket, Home, Briefcase } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 interface Step1WebsiteAndInfoProps {
-  // miniSiteId: string | number;
-  // selectedDmoId: string | number | null;
-  // setSelectDmoId: React.Dispatch<React.SetStateAction<any>>;
-  // selectedAuthorityId: string | number | null;
-  // setSelectAuthorityId: React.Dispatch<React.SetStateAction<any>>;
-  // websiteVisibilityIds: IWebsiteVisibilityIds;
-  // setWebsiteVisibilityIds: (v: any) => void;
-  logoImage: IImageUpload | null;
-  handleLogoImageSelect: (file: File) => void;
-  confirmDeleteLogo: () => void;
-  deleteTargetLogo: string | null;
-  setDeleteTargetLogo: (imgUrl: string | null) => void;
-  isLogoImageDeleting: boolean;
-  handleDeleteLogoImage: (logoImg: IImageUpload) => void;
   currentStep: number;
   formData: any;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
-
   handleLogoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-
-  t: any;
-  textPrimary: string;
-  textSecondary: string;
-  textTertiary: string;
-  bgSecondary: string;
-  bgTertiary: string;
-  borderColor: string;
-  // businessAssociatedWebsites: any;
 }
 
 export default function Step1WebsiteAndInfo({
-  // miniSiteId,
-  // selectedDmoId,
-  // setSelectDmoId,
-  // selectedAuthorityId,
-  // setSelectAuthorityId,
-  // websiteVisibilityIds,
-  // setWebsiteVisibilityIds,
-
-  logoImage,
-  handleLogoImageSelect,
-  // deleteTargetLogo,
-  // setDeleteTargetLogo,
-  // isLogoImageDeleting,
-  handleDeleteLogoImage,
-  // confirmDeleteLogo,
   currentStep,
   formData,
   setFormData,
-  // handleLogoUpload,
-
-  t,
-  textPrimary,
-  textSecondary,
-  textTertiary,
-  bgSecondary,
-  bgTertiary,
-  borderColor,
-  // businessAssociatedWebsites = [],
 }: Step1WebsiteAndInfoProps) {
+  const { t } = useTranslation("minisites");
+  const {
+    bgSecondary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    bgTertiary,
+  } = useThemeClasses();
+
   if (currentStep !== 1) return null;
   // const dmoSectionRef = useRef<HTMLDivElement | null>(null);
   return (
     <div className="space-y-6">
-      {/* Website Selection */}
-      {/* <DmoAuthorityWebsiteSelector
-        // errors={errors}
-        isEdit={!!miniSiteId}
-        selectedDmoId={selectedDmoId ?? ""}
-        setSelectDmoId={setSelectDmoId}
-        selectedAuthorityId={selectedAuthorityId ?? ""}
-        setSelectAuthorityId={setSelectAuthorityId}
-        dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={websiteVisibilityIds}
-        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-        itemAssociatedWebsites={businessAssociatedWebsites}
-      /> */}
-
       {/* Purchaser Info */}
       <div>
         <h3 className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}>
@@ -155,21 +96,6 @@ export default function Step1WebsiteAndInfo({
               {t("phone") || "Phone"}
             </label>
             <div className="flex gap-2">
-              <select
-                name="phoneCountryCode"
-                value={formData.phoneCountryCode}
-                onChange={(e) =>
-                  setFormData((prev: any) => ({
-                    ...prev,
-                    phoneCountryCode: e.target.value,
-                  }))
-                }
-                className={`px-3 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              >
-                <option value="+972">🇮🇱 +972</option>
-                <option value="+1">🇺🇸 +1</option>
-                <option value="+44">🇬🇧 +44</option>
-              </select>
               <input
                 type="tel"
                 value={formData.phoneNumber}
@@ -203,85 +129,6 @@ export default function Step1WebsiteAndInfo({
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder={t("office_address_placeholder")}
             />
-          </div>
-
-          <div>
-            <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("company_logo") || "Company Logo"}
-            </label>
-            <div className="flex items-center gap-4">
-              {formData.logoFile && (
-                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-500">
-                  <img
-                    src={formData.logoFile}
-                    alt="Company logo preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              {/* <label
-                className={`px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textSecondary} cursor-pointer hover:${textPrimary} transition-colors flex items-center gap-2`}
-              >
-                <Upload className="w-4 h-4" />
-                {t("upload_logo") || "Upload Logo"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  name="logoFile"
-                  className="hidden"
-                />
-              </label> */}
-              <div>
-                <div className="flex items-center gap-4">
-                  {logoImage?.previewUrl ? (
-                    <div className="relative w-32 h-32 rounded-full border-2 border-gray-300">
-                      <div
-                        className="w-full h-full"
-                        onClick={() =>
-                          document.getElementById("logo-image-upload")?.click()
-                        }
-                      >
-                        <ImageWithFallback
-                          src={logoImage?.previewUrl}
-                          alt="Logo"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      </div>
-
-                      <button
-                        onClick={() => handleDeleteLogoImage(logoImage)}
-                        className="absolute top-2 right-2 z-50 cursor-pointer p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() =>
-                        document.getElementById("logo-image-upload")?.click()
-                      }
-                    >
-                      <div className="text-center">
-                        <Upload />
-                        <p>{t("upload_logo")}</p>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleLogoImageSelect(file);
-                          }}
-                          className="hidden"
-                          id="logo-image-upload"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -411,7 +258,7 @@ export default function Step1WebsiteAndInfo({
               }
               className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
             />
-            <Home className="w-4 h-4" />
+            <Home className={clsx("w-4 h-4", textPrimary)} />
             <span className={textSecondary}>{t("home")}</span>
           </label>
 
@@ -429,85 +276,18 @@ export default function Step1WebsiteAndInfo({
               }
               className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
             />
-            <Briefcase className="w-4 h-4" />
+            <Briefcase className={clsx("w-4 h-4", textPrimary)} />
             <span className={textSecondary}>{t("office")}</span>
           </label>
         </div>
       </div>
 
-      {/* Content (Multi-Language) */}
+      {/* Content */}
       <div>
         <h3 className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}>
           <Globe className="w-5 h-5" />
-          {t("content") || "Content"} ({t("multi_language") || "Multi-Language"}
-          )
+          {t("content") || "Content"}
         </h3>
-
-        <div className="mb-4">
-          <div className="flex gap-2">
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData((prev: any) => ({
-                    ...prev,
-                    contentLanguage: "en",
-                  }))
-                }
-                className={`
-              px-4 py-2 rounded-lg font-medium transition-colors
-              ${
-                formData.contentLanguage === "en"
-                  ? "bg-purple-600 text-white shadow-md"
-                  : `${bgSecondary} ${textSecondary} hover:bg-purple-100/50`
-              }
-            `}
-              >
-                English
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData((prev: any) => ({
-                    ...prev,
-                    contentLanguage: "he",
-                  }))
-                }
-                className={`
-              px-4 py-2 rounded-lg font-medium transition-colors
-              ${
-                formData.contentLanguage === "he"
-                  ? "bg-purple-600 text-white shadow-md"
-                  : `${bgSecondary} ${textSecondary} hover:bg-purple-100/50`
-              }
-            `}
-              >
-                עברית
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData((prev: any) => ({
-                    ...prev,
-                    contentLanguage: "ar",
-                  }))
-                }
-                className={`
-                px-4 py-2 rounded-lg font-medium transition-colors
-                ${
-                  formData.contentLanguage === "ar"
-                    ? "bg-purple-600 text-white shadow-md"
-                    : `${bgSecondary} ${textSecondary} hover:bg-purple-100/50`
-                }
-               `}
-              >
-                العربية
-              </button>
-            </div>
-          </div>
-        </div>
 
         <div className="space-y-4">
           {/* Title */}
@@ -517,18 +297,15 @@ export default function Step1WebsiteAndInfo({
             </label>
             <input
               type="text"
-              value={formData.contentTitle[formData.contentLanguage] ?? ""}
+              value={formData.contentTitle}
               onChange={(e) =>
                 setFormData((prev: any) => ({
                   ...prev,
-                  contentTitle: {
-                    ...prev.contentTitle,
-                    [prev.contentLanguage]: e.target.value,
-                  },
+                  contentTitle: e.target.value,
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder={t(`title_placeholder_${formData.contentLanguage}`)}
+              placeholder={t("title_placeholder")}
             />
           </div>
 
@@ -539,20 +316,15 @@ export default function Step1WebsiteAndInfo({
             </label>
             <input
               type="text"
-              value={formData.contentSubtitle[formData.contentLanguage] ?? ""}
+              value={formData.contentSubtitle}
               onChange={(e) =>
                 setFormData((prev: any) => ({
                   ...prev,
-                  contentSubtitle: {
-                    ...prev.contentSubtitle,
-                    [prev.contentLanguage]: e.target.value,
-                  },
+                  contentSubtitle: e.target.value,
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder={t(
-                `subtitle_placeholder_${formData.contentLanguage}`,
-              )}
+              placeholder={t("subtitle_placeholder")}
             />
           </div>
 
@@ -562,21 +334,16 @@ export default function Step1WebsiteAndInfo({
               {t("greeting")}
             </label>
             <textarea
-              value={formData.contentGreeting[formData.contentLanguage] ?? ""}
+              value={formData.contentGreeting}
               onChange={(e) =>
                 setFormData((prev: any) => ({
                   ...prev,
-                  contentGreeting: {
-                    ...prev.contentGreeting,
-                    [prev.contentLanguage]: e.target.value,
-                  },
+                  contentGreeting: e.target.value,
                 }))
               }
               rows={4}
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder={t(
-                `greeting_placeholder_${formData.contentLanguage}`,
-              )}
+              placeholder={t("greeting_placeholder")}
             />
           </div>
         </div>

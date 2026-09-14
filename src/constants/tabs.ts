@@ -32,7 +32,8 @@ export const businessTabs = [
 ];
 export const miniSiteTabs = [
   { id: "overview", label: "overview", icon: FileText },
-  { id: "product", label: "product", icon: Users },
+  // { id: "product", label: "product", icon: Users },
+  { id: "preview", label: "preview", icon: Monitor },
   // { id: "location", label: "location_map", icon: MapPin },
   // { id: "media", label: "images_branding", icon: ImageIcon },
   // { id: "social", label: "social_networks", icon: Globe },
