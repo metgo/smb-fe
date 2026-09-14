@@ -1,30 +1,14 @@
-// import { toast } from "sonner";
+import clsx from "clsx";
 import { useRef } from "react";
 import { AlertCircle, ExternalLink, TrashIcon } from "lucide-react";
 
-// import { ConfirmDialog } from "@/components/shared";
+import { getStatusColor } from "../mini-site.utils";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { getStatusColor } from "../mini-site.utils";
-import clsx from "clsx";
-
-interface MiniSite {
-  id: string;
-  code: string;
-  name: string;
-  companyName: string;
-  website: string;
-  status: string;
-  voucherAmount: number;
-  totalVouchers: number;
-  usedVouchers: number;
-  revenue: number;
-  image?: string;
-}
 
 interface MiniSiteGridViewProps {
-  data: MiniSite[];
-  onRowClick?: (item: MiniSite) => void;
+  data: ICampaign[] | undefined;
+  onRowClick?: (item: ICampaign) => void;
   refetch: () => void;
   next?: () => void;
   hasMore?: boolean;
@@ -42,8 +26,7 @@ export default function MinisiteGridView({
   t,
 }: MiniSiteGridViewProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const { isDark, textPrimary, textSecondary, textTertiary } =
-    useThemeClasses();
+  const { isDark, textPrimary, textSecondary } = useThemeClasses();
 
   useInfiniteScroll({
     ref: scrollRef,
@@ -61,7 +44,7 @@ export default function MinisiteGridView({
   //   refetch();
   // };
 
-  if (data.length === 0) {
+  if (data?.length === 0) {
     return (
       <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)]">
         <AlertCircle
@@ -88,15 +71,10 @@ export default function MinisiteGridView({
         ref={scrollRef}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {data.map((site) => {
-            const percentage =
-              site.totalVouchers > 0
-                ? (site.usedVouchers / site.totalVouchers) * 100
-                : 0;
-
+          {data?.map((site) => {
             return (
               <div
-                key={site.id}
+                key={site._id}
                 className={clsx(
                   isDark ? "bg-gray-900" : "bg-white",
                   "relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer",
@@ -117,9 +95,9 @@ export default function MinisiteGridView({
                 </button>
 
                 <div className="relative h-36">
-                  {site.image ? (
+                  {site.logoPath ? (
                     <img
-                      src={site.image}
+                      src={site.logoPath}
                       alt={site.name}
                       className="w-full h-full object-cover"
                     />
@@ -150,17 +128,19 @@ export default function MinisiteGridView({
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={textSecondary}>{site.companyName}</span>
+                      <span className={textSecondary}>
+                        {site.companyInfo.name}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <a
-                        href={site.website}
+                        href={site.externalApiId}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         className="text-teal-500 hover:text-teal-600 truncate"
                       >
-                        {site.website}
+                        {site.externalApiId}
                       </a>
                     </div>
                     <div className="flex items-center gap-2">
@@ -175,21 +155,21 @@ export default function MinisiteGridView({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={textPrimary}>
-                        ₪{site.voucherAmount ? site.voucherAmount : "-"}{" "}
+                        ₪{site.miniSite.amount ? site.miniSite.amount : "-"}{" "}
                         {t("vouchers")}
                       </span>
-                      <span className={`ml-2 text-xs ${textTertiary}`}>
+                      {/* <span className={`ml-2 text-xs ${textTertiary}`}>
                         {t("used")}
                         {site.usedVouchers}/{site.totalVouchers} (
                         {percentage.toFixed(0)}%)
-                      </span>
+                      </span> */}
                     </div>
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       <span className={textPrimary}>
                         {t("revenue")}: ₪
                         {site.revenue ? site.revenue?.toLocaleString() : "-"}
                       </span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

@@ -1,9 +1,9 @@
 import clsx from "clsx";
+
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
 import { getStatusColor } from "../mini-site.utils";
-import { UserRole } from "@/enums/user.types";
-import { useAppSelector } from "@/hooks/hooks";
+
 export const defaultColumns = {
   code: true,
   name: true,
@@ -18,36 +18,16 @@ export const defaultColumns = {
 
 export type MiniSiteColumnVisibility = typeof defaultColumns;
 
-interface MiniSite {
-  _id: string;
-  code: true;
-  name: true;
-  companyInfo: {
-    name: string;
-    contactPerson: string;
-    countryCode: string;
-    phoneNumber: string;
-    email: string;
-  };
-  website: string;
-  status: string;
-  voucherAmount: number;
-  totalVouchers: number;
-  usedVouchers: number;
-  revenue: number;
-}
-
 interface MiniSiteListViewProps {
-  miniSites: MiniSite[];
+  miniSites: ICampaign[];
   columnVisibility: MiniSiteColumnVisibility;
   selectedRows: Set<string>;
   setSelectedRows: (v: Set<string>) => void;
-  onRowClick: (site: MiniSite) => void;
+  onRowClick: (site: ICampaign) => void;
   t: (key: string) => string;
   hasMore?: any;
   next?: any;
   isLoading?: any;
-  data?: any;
 }
 
 export default function MiniSiteListView({
@@ -59,20 +39,16 @@ export default function MiniSiteListView({
   t,
   isLoading,
 }: MiniSiteListViewProps) {
-  const { userRole } = useAppSelector((state) => state.auth);
-  const canChangeStatus = userRole === UserRole.ADMIN || UserRole.SUPERADMIN;
-
-  const { textPrimary, textSecondary, textTertiary, isDark } =
-    useThemeClasses();
+  const { textPrimary, textSecondary, isDark } = useThemeClasses();
 
   const columns = [
-    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+    ...[{ key: "checkbox", label: "", width: "50px" }],
 
     columnVisibility.code && {
       key: "code",
       label: t("campaign_code"),
       width: "120px",
-      render: (site: MiniSite) => (
+      render: (site: ICampaign) => (
         <span className={`${textPrimary} font-mono text-sm`}>{site?.code}</span>
       ),
     },
@@ -80,7 +56,7 @@ export default function MiniSiteListView({
     columnVisibility.name && {
       key: "name",
       label: t("campaign_name"),
-      render: (site: MiniSite) => (
+      render: (site: ICampaign) => (
         <span className={textPrimary}>{site?.name}</span>
       ),
     },
@@ -88,7 +64,7 @@ export default function MiniSiteListView({
     columnVisibility.companyName && {
       key: "companyInfo",
       label: t("company_name"),
-      render: (site: MiniSite) => (
+      render: (site: ICampaign) => (
         <span className={textSecondary}>{site?.companyInfo?.name}</span>
       ),
     },
@@ -96,15 +72,15 @@ export default function MiniSiteListView({
     columnVisibility.website && {
       key: "website",
       label: t("website"),
-      render: (site: MiniSite) => (
+      render: (site: ICampaign) => (
         <a
-          href={site?.website}
+          href={site?.externalApiId}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
           className="text-teal-500 hover:text-teal-600"
         >
-          {site?.website}
+          {site?.externalApiId}
         </a>
       ),
     },
@@ -112,7 +88,7 @@ export default function MiniSiteListView({
     columnVisibility.status && {
       key: "status",
       label: t("status"),
-      render: (site: MiniSite) => (
+      render: (site: ICampaign) => (
         <span
           className={clsx(
             "inline-block px-2 py-1 rounded-full text-xs border",
@@ -127,44 +103,44 @@ export default function MiniSiteListView({
     columnVisibility.voucherAmount && {
       key: "voucherAmount",
       label: t("voucher_amount"),
-      render: (site: MiniSite) => <>₪{site?.voucherAmount}</>,
+      render: (site: ICampaign) => <>₪{site?.miniSite.amount}</>,
     },
 
     columnVisibility.totalVouchers && {
       key: "totalVouchers",
       label: t("total_vouchers"),
-      render: (site: MiniSite) => <>{site?.totalVouchers}</>,
+      render: (site: ICampaign) => <>{site?.miniSite.amount}</>,
     },
 
-    columnVisibility.usedVouchers && {
-      key: "usedVouchers",
-      label: t("used_vouchers"),
-      render: (site: MiniSite) => {
-        const percentage =
-          site?.totalVouchers > 0
-            ? (site?.usedVouchers / site?.totalVouchers) * 100
-            : 0;
-        return (
-          <>
-            {site?.usedVouchers}{" "}
-            <span className={`ml-2 text-xs ${textTertiary}`}>
-              ({percentage.toFixed(0)}%)
-            </span>
-          </>
-        );
-      },
-    },
+    // columnVisibility.usedVouchers && {
+    //   key: "usedVouchers",
+    //   label: t("used_vouchers"),
+    //   render: (site: ICampaign) => {
+    //     const percentage =
+    //       site?.totalVouchers > 0
+    //         ? (site?.usedVouchers / site?.totalVouchers) * 100
+    //         : 0;
+    //     return (
+    //       <>
+    //         {site?.usedVouchers}{" "}
+    //         <span className={`ml-2 text-xs ${textTertiary}`}>
+    //           ({percentage.toFixed(0)}%)
+    //         </span>
+    //       </>
+    //     );
+    //   },
+    // },
 
-    columnVisibility.revenue && {
-      key: "revenue",
-      label: t("revenue"),
-      render: (site: MiniSite) => <>₪{site?.revenue?.toLocaleString()}</>,
-    },
+    // columnVisibility.revenue && {
+    //   key: "revenue",
+    //   label: t("revenue"),
+    //   render: (site: ICampaign) => <>₪{site?.revenue?.toLocaleString()}</>,
+    // },
   ].filter(Boolean) as {
     key: string;
     label: string;
     width?: string;
-    render?: (row: MiniSite) => React.ReactNode;
+    render?: (row: ICampaign) => React.ReactNode;
   }[];
 
   return (

@@ -2,14 +2,11 @@ import { useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
 import {
-  // Search,
-  // Plus,
   DollarSign,
   Users,
   TrendingUp,
   Award,
   Target,
-  Download,
   Copy,
   CheckSquare,
 } from "lucide-react";
@@ -29,21 +26,6 @@ import SearchInput from "@/components/shared/SearchInput";
 import { useAppSelector } from "@/hooks/hooks";
 import { PageHeader } from "@/components/shared";
 
-interface MiniSite {
-  id: string;
-  code: string;
-  name: string;
-  companyName: string;
-  website: string;
-  startDate: string;
-  endDate: string;
-  status: "active" | "draft" | "completed" | "paused";
-  voucherAmount: number;
-  totalVouchers: number;
-  usedVouchers: number;
-  revenue: number;
-  conversionRate: number;
-}
 export const defaultColumns = {
   code: true,
   name: true,
@@ -93,7 +75,9 @@ export default function MiniSiteMgmtPage() {
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showWizard, setShowWizard] = useState(false);
-  const [editingMiniSite, setEditingMiniSite] = useState<MiniSite | null>(null);
+  const [editingMiniSite, setEditingMiniSite] = useState<IMiniSite | null>(
+    null,
+  );
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<string>("");
   //api call
@@ -160,117 +144,9 @@ export default function MiniSiteMgmtPage() {
     0,
   );
   const avgConversion =
+    miniSiteData?.totalData &&
     miniSiteData?.data.reduce((sum: any, s: any) => sum + s.conversionRate, 0) /
-    miniSiteData?.data.length;
-
-  const exportToCSV = () => {
-    if (selectedRows.size === 0) return;
-
-    const selectedSites = miniSiteData?.data?.filter((site: any) =>
-      selectedRows.has(site.id),
-    );
-    const headers = [
-      "Campaign Code",
-      "Campaign Name",
-      "Company Name",
-      "Website",
-      "Status",
-      "Voucher Amount",
-      "Total Vouchers",
-      "Used Vouchers",
-      "Revenue",
-      "Start Date",
-      "End Date",
-    ];
-    const csvContent = [
-      headers.join(","),
-      ...selectedSites.map((site: any) =>
-        [
-          site.campaignCode,
-          `"${site.campaignName}"`,
-          `"${site.companyName}"`,
-          site.website,
-          site.status,
-          site.voucherAmount,
-          site.totalVouchers,
-          site.usedVouchers,
-          site.revenue,
-          site.startDate,
-          site.endDate,
-        ].join(","),
-      ),
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `mini-sites-export-${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
-    setSelectedRows(new Set());
-  };
-
-  const exportToXLS = () => {
-    if (selectedRows.size === 0) return;
-
-    const selectedSites = miniSiteData?.data.filter((site: any) =>
-      selectedRows.has(site.id),
-    );
-    const headers = [
-      "Campaign Code",
-      "Campaign Name",
-      "Company Name",
-      "Website",
-      "Status",
-      "Voucher Amount",
-      "Total Vouchers",
-      "Used Vouchers",
-      "Revenue",
-      "Start Date",
-      "End Date",
-    ];
-
-    // Create HTML table for Excel
-    const htmlContent = `
-      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
-        <head><meta charset="utf-8"></head>
-        <body>
-          <table>
-            <thead>
-              <tr>${headers.map((h) => `<th>${h}</th>`).join("")}</tr>
-            </thead>
-            <tbody>
-              ${selectedSites
-                .map(
-                  (site: any) => `
-                <tr>
-                  <td>${site.campaignCode}</td>
-                  <td>${site.campaignName}</td>
-                  <td>${site.companyName}</td>
-                  <td>${site.website}</td>
-                  <td>${site.status}</td>
-                  <td>${site.voucherAmount}</td>
-                  <td>${site.totalVouchers}</td>
-                  <td>${site.usedVouchers}</td>
-                  <td>${site.revenue}</td>
-                  <td>${site.startDate}</td>
-                  <td>${site.endDate}</td>
-                </tr>
-              `,
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
-
-    const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `mini-sites-export-${new Date().toISOString().split("T")[0]}.xls`;
-    link.click();
-    setSelectedRows(new Set());
-  };
+      miniSiteData?.totalData;
 
   return (
     <>
@@ -365,7 +241,7 @@ export default function MiniSiteMgmtPage() {
                 </span>
               </div>
               <p className={`text-2xl ${textPrimary} mb-1`}>
-                {avgConversion.toFixed(1)}%
+                {avgConversion?.toFixed(1)}%
               </p>
               <p className={`text-xs ${textTertiary}`}>{t("rate")}</p>
             </div>
@@ -518,22 +394,6 @@ export default function MiniSiteMgmtPage() {
                       {t("duplicate")}{" "}
                     </button>
                   )}
-
-                  {/* Export Actions */}
-                  <button
-                    onClick={exportToCSV}
-                    className="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all flex items-center gap-2 text-sm"
-                  >
-                    <Download className="w-4 h-4" />
-                    CSV
-                  </button>
-                  <button
-                    onClick={exportToXLS}
-                    className="px-3 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-all flex items-center gap-2 text-sm"
-                  >
-                    <Download className="w-4 h-4" />
-                    XLS
-                  </button>
                 </div>
               </div>
             </div>
@@ -571,7 +431,6 @@ export default function MiniSiteMgmtPage() {
             setShowWizard(false);
             setEditingMiniSite(null);
           }}
-          // onSubmit={handleCreateMiniSite}
           editingMiniSite={editingMiniSite}
         />
       )}

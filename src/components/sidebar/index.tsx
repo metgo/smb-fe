@@ -40,6 +40,7 @@ import {
   ShoppingBag,
   BarChart3,
   Link2,
+  Layout,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -268,13 +269,13 @@ export default function Sidebar() {
           icon: Link2,
           isEnabled: true,
         },
-        // {
-        //   id: "mini-site",
-        //   path: routes.miniSiteMgmt,
-        //   label: t("mini_site") || "Mini-site",
-        //   icon: Layout,
-        //   isEnabled: true,
-        // },
+        {
+          id: "mini-site",
+          path: routes.miniSiteMgmt,
+          label: t("mini_site") || "Mini-site",
+          icon: Layout,
+          isEnabled: true,
+        },
       ],
     },
     {

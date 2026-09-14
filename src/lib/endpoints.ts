@@ -48,6 +48,7 @@ export const endpoints = {
 
   //mini-sites
   miniSites: "mini-sites",
+
   //products
   products: "/products",
   contentManagementProducts: "/content-management-products",
