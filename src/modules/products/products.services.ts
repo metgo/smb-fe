@@ -91,6 +91,10 @@ export class ProductsService {
     try {
       const select
         = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId';
+      // status/isDeleted aren't in the response shape but are needed by
+      // isVisible() below — select() is a projection, so they must be
+      // explicitly requested or they come back undefined on the lean doc.
+      const selectWithVisibilityFields = `${select} status isDeleted`;
 
       const populate = {
         path: 'categories subCategories',
@@ -103,71 +107,35 @@ export class ProductsService {
           '_id slug logo name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location tagsId',
       };
 
-      const baseProductFilter: any = {
-        slug,
-        status: CommonStatus.APPROVED,
-        isDeleted: { $ne: true },
-        $or: [
-          { 'quantity.remaining': { $gt: 0 } },
-          { 'quantity.isUnlimited': true },
-        ],
-      };
+      // A doc is only servable if it's still APPROVED, not deleted, and in
+      // stock/unlimited — checked AFTER picking the latest doc (below), not
+      // baked into the query before sorting by recency. Filtering by status
+      // first would let an older still-APPROVED audit version win once the
+      // real latest version stopped matching (e.g. after the product was
+      // closed/rejected/archived), resurfacing a product that should 404.
+      const isVisible = (doc: any): boolean => !!doc
+        && doc.status === CommonStatus.APPROVED
+        && doc.isDeleted !== true
+        && (doc.quantity?.remaining > 0 || doc.quantity?.isUnlimited === true);
 
-      // First try to find the latest audit doc with isActive: true
-      let product = await this.ProductsAuditModel.findOne({
-        ...baseProductFilter,
-        isActive: true,
-      })
+      // Find the truly-latest audit doc for this slug, regardless of status/isActive.
+      let product = await this.ProductsAuditModel.findOne({ slug })
         .sort({ createdAt: -1 })
         .populate<{ businessId: Business }>(businessPopulate)
         .populate(populate)
-        .select(select)
+        .select(selectWithVisibilityFields)
         .lean();
 
-      // If no isActive doc found, fall back to the latest audit doc regardless of isActive
-      if (!product) {
-        product = await this.ProductsAuditModel.findOne(baseProductFilter)
+      if (!isVisible(product) && mongoose.Types.ObjectId.isValid(slug)) {
+        product = await this.ProductsAuditModel.findOne({ productId: slug })
           .sort({ createdAt: -1 })
           .populate<{ businessId: Business }>(businessPopulate)
           .populate(populate)
-          .select(select)
+          .select(selectWithVisibilityFields)
           .lean();
       }
 
-      if (!product && mongoose.Types.ObjectId.isValid(slug)) {
-        const baseByIdFilter: any = {
-          productId: slug,
-          status: CommonStatus.APPROVED,
-          isDeleted: { $ne: true },
-          $or: [
-            { 'quantity.remaining': { $gt: 0 } },
-            { 'quantity.isUnlimited': true },
-          ],
-        };
-
-        // First try isActive: true by productId
-        product = await this.ProductsAuditModel.findOne({
-          ...baseByIdFilter,
-          isActive: true,
-        })
-          .sort({ createdAt: -1 })
-          .populate<{ businessId: Business }>(businessPopulate)
-          .populate(populate)
-          .select(select)
-          .lean();
-
-        // Fall back to latest audit doc by productId
-        if (!product) {
-          product = await this.ProductsAuditModel.findOne(baseByIdFilter)
-            .sort({ createdAt: -1 })
-            .populate<{ businessId: Business }>(businessPopulate)
-            .populate(populate)
-            .select(select)
-            .lean();
-        }
-      }
-
-      if (!product) {
+      if (!isVisible(product)) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
       const response = await this.localizeProduct(product, query.locale);

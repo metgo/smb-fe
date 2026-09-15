@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, PipelineStage } from 'mongoose';
+import { Model, PipelineStage, Types } from 'mongoose';
 
 import { SortOrder, CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -318,34 +318,35 @@ implements IQueryHandler<GetAllProductsQuery> {
       }
 
       // Default path: no search, or Atlas Search fallback
-      // Drop the isActive filter here and instead pick, per productId, whichever
-      // audit document is most recently created — this way a productId with no
-      // isActive:true doc still shows (via its latest doc), and an isActive:true
-      // doc that isn't the latest one no longer wins just because it's active.
-      const { isActive: _isActive, ...dedupeMatchQuery } = findQuery;
+      // Find the truly-latest audit doc per productId FIRST (ignoring status
+      // and isActive), then apply the full findQuery (status APPROVED,
+      // quantity, etc.) against only that doc. Filtering by status before
+      // dedup let an older still-APPROVED audit version "win" once the real
+      // latest version stopped matching (e.g. after the product was closed),
+      // resurrecting a closed product via its stale approved snapshot.
+      const castedFindQuery = this.castIdFilters(findQuery);
+      const preMatch: any = {};
+      if (castedFindQuery.businessId) {
+        preMatch.businessId = castedFindQuery.businessId;
+      }
 
-      // Use find() (not aggregate()) here so Mongoose applies its normal
-      // schema-based casting to query-string ids like businessId/categoriesId.
-      const candidateDocs = await this.ProductsAuditModel.find(dedupeMatchQuery)
-        .select('_id productId createdAt')
-        .lean();
+      const latestDocsPipeline: PipelineStage[] = [
+        ...(Object.keys(preMatch).length ? [{ $match: preMatch }] : []),
+        { $sort: { productId: 1, createdAt: -1 } },
+        { $group: { _id: '$productId', doc: { $first: '$$ROOT' } } },
+        { $replaceRoot: { newRoot: '$doc' } },
+        { $match: castedFindQuery },
+      ] as PipelineStage[];
 
-      if (!candidateDocs.length) {
+      const latestDocs = await this.ProductsAuditModel.aggregate(
+        latestDocsPipeline,
+      );
+
+      if (!latestDocs.length) {
         return { totalData: 0, products: [] };
       }
 
-      const latestByProductId = (candidateDocs as any[]).reduce<
-        Map<string, { _id: any; createdAt: Date }>
-      >((acc, doc) => {
-        const key = doc.productId.toString();
-        const existing = acc.get(key);
-        if (!existing || doc.createdAt > existing.createdAt) {
-          acc.set(key, doc);
-        }
-        return acc;
-      }, new Map());
-
-      const latestIds = Array.from(latestByProductId.values()).map(d => d._id);
+      const latestIds = latestDocs.map((doc: any) => doc._id);
 
       const productsList = await queryhandler<ProductsAudit>(
         this.ProductsAuditModel,
@@ -393,5 +394,35 @@ implements IQueryHandler<GetAllProductsQuery> {
     } catch (err) {
       exceptionHandling(err);
     }
+  }
+
+  // Mongoose only auto-casts query-string ids to ObjectId for find()/findOne(),
+  // not for aggregate() $match stages, so id filters built as raw strings
+  // (e.g. businessId/categories $in arrays from query params) need casting
+  // here or they silently match nothing in the aggregation pipeline.
+  private castIdFilters(query: Record<string, any>): Record<string, any> {
+    const idFields = [
+      'businessId',
+      'categories',
+      'subCategories',
+      'groupTypesId',
+      'accessibilitiesId',
+    ];
+
+    const castValue = (val: any): any => {
+      if (Array.isArray(val)) return val.map(castValue);
+      if (typeof val === 'string' && Types.ObjectId.isValid(val)) {
+        return new Types.ObjectId(val);
+      }
+      return val;
+    };
+
+    const result = { ...query };
+    idFields.forEach(field => {
+      if (result[field]?.$in) {
+        result[field] = { ...result[field], $in: castValue(result[field].$in) };
+      }
+    });
+    return result;
   }
 }
