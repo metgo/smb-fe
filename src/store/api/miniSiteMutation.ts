@@ -16,11 +16,11 @@ export const miniSiteMutationApi = createApi({
   tagTypes: ["MiniSites"],
   endpoints: (builder) => ({
     // POST → create minisite
-    initMiniSiteCreate: builder.mutation<any, void>({
-      query: () => ({
+    initMiniSiteCreate: builder.mutation<any, any>({
+      query: (body) => ({
         url: endpoints.miniSites,
         method: "POST",
-        data: { name: "" },
+        data: body,
       }),
       invalidatesTags: ["MiniSites"],
     }),
@@ -44,6 +44,17 @@ export const miniSiteMutationApi = createApi({
       invalidatesTags: ["MiniSites"],
     }),
 
+    minisiteVoucherUpload: builder.mutation<
+      IMinisiteVoucherUploadRes[],
+      IMinisiteVoucherUploadPayload
+    >({
+      query: (payload) => ({
+        url: endpoints.miniSiteVoucherUpload,
+        method: "POST",
+        data: payload,
+      }),
+    }),
+
     // // BULK PATCH
     // bulkMiniSitesUpdate: builder.mutation<any, IBulkMiniSiteUpdateParams>({
     //   query: (body) => ({
@@ -59,5 +70,6 @@ export const {
   useInitMiniSiteCreateMutation,
   useUpdateMiniSiteMutation,
   useDeleteMiniSiteMutation,
+  useMinisiteVoucherUploadMutation,
   // useBulkMiniSitesUpdateMutation,
 } = miniSiteMutationApi;

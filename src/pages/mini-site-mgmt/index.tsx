@@ -78,9 +78,6 @@ export default function MiniSiteMgmtPage() {
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showWizard, setShowWizard] = useState(false);
-  const [editingMiniSite, setEditingMiniSite] = useState<IMiniSite | null>(
-    null,
-  );
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<string>("");
   //api call
@@ -389,9 +386,7 @@ export default function MiniSiteMgmtPage() {
         <CreateMinisiteWizard
           onClose={() => {
             setShowWizard(false);
-            setEditingMiniSite(null);
           }}
-          editingMiniSite={editingMiniSite}
         />
       )}
     </>

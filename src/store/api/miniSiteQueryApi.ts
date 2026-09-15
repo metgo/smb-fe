@@ -34,7 +34,10 @@ export const miniSiteQueryApi = createApi({
         }),
       }),
 
-      getMiniSiteById: builder.query<any, { miniSiteId: string }>({
+      getMiniSiteById: builder.query<
+        IMinisiteDetailsRes,
+        { miniSiteId: string }
+      >({
         query: ({ miniSiteId }) => ({
           url: `${endpoints.miniSites}/${miniSiteId}`,
           method: "GET",

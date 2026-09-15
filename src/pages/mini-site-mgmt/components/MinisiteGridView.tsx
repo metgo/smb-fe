@@ -5,6 +5,7 @@ import { AlertCircle, ExternalLink, TrashIcon } from "lucide-react";
 import { getStatusColor } from "../mini-site.utils";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { ImageWithFallback } from "@/components/shared";
 
 interface MiniSiteGridViewProps {
   data: ICampaign[] | undefined;
@@ -67,10 +68,10 @@ export default function MinisiteGridView({
       className={`py-6 px-4 ${isDark ? "bg-gray-900" : "bg-gray-100"} rounded-xl`}
     >
       <div
-        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
+        className="overflow-x-auto max-h-[calc(100vh-300px)] overflow-y-auto mb-20"
         ref={scrollRef}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-3">
           {data?.map((site) => {
             return (
               <div
@@ -95,11 +96,11 @@ export default function MinisiteGridView({
                 </button>
 
                 <div className="relative h-36">
-                  {site.logoPath ? (
-                    <img
+                  {site?.logoPath ? (
+                    <ImageWithFallback
                       src={site.logoPath}
                       alt={site.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-400 flex items-center justify-center">
@@ -129,19 +130,8 @@ export default function MinisiteGridView({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={textSecondary}>
-                        {site.companyInfo.name}
+                        {site?.companyInfo?.name}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={site.externalApiId}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-teal-500 hover:text-teal-600 truncate"
-                      >
-                        {site.externalApiId}
-                      </a>
                     </div>
                     <div className="flex items-center gap-2">
                       <span

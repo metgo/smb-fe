@@ -5,29 +5,19 @@ import { ChevronLeft, ChevronRight, Copy, ImageOff } from "lucide-react";
 
 import { ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  image: string;
-  price: number;
-}
+const TILE_SIZES = [256, 208, 176, 144]; // px, indexed by |offset|
 
-interface SectionProps {
-  miniSite: {
-    code?: string;
-    productIds?: Product[];
-    miniSite?: {
-      title?: string;
-      subTitle?: string;
-      greeting?: string;
-    };
-  };
-  t: any;
-}
+export default function MinisitePreviewSection({
+  code,
+  miniSite,
+  productIds,
+  backgroundImage,
+  footerImage,
+}: Partial<IMinisiteDetailsRes>) {
+  const { t } = useTranslation("minisites");
 
-export default function MinisitePreviewSection({ miniSite, t }: SectionProps) {
   const {
     language,
     isRTL,
@@ -40,7 +30,7 @@ export default function MinisitePreviewSection({ miniSite, t }: SectionProps) {
   } = useThemeClasses();
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const products = miniSite?.productIds ?? [];
+  const products = productIds ?? [];
   const count = products.length;
 
   useEffect(() => {
@@ -50,7 +40,7 @@ export default function MinisitePreviewSection({ miniSite, t }: SectionProps) {
   }, [count, activeIndex]);
 
   const dir = language === "en" ? "ltr" : "rtl";
-  const miniSiteUrl = `https://tav-8.co.il/mini-site?campCode=${miniSite?.code ?? ""}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=`;
+  const miniSiteUrl = `https://tav-8.co.il/mini-site?campCode=${code ?? ""}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=`;
 
   const copyMiniSiteUrl = () => {
     navigator.clipboard.writeText(miniSiteUrl);
@@ -71,170 +61,206 @@ export default function MinisitePreviewSection({ miniSite, t }: SectionProps) {
     <div className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
       <div
         className={clsx(
-          "rounded-2xl p-8 border space-y-6 bg-linear-to-b",
+          "rounded-2xl border bg-linear-to-b relative overflow-hidden",
           isDark
             ? "from-gray-900 to-gray-950 border-gray-800"
             : "from-white to-gray-50 border-gray-200",
         )}
         dir={dir}
       >
-        {/* Title */}
-        <div className="text-center space-y-1">
-          <h1
-            className={clsx(
-              "text-2xl font-bold bg-linear-to-r bg-clip-text text-transparent",
-              isDark
-                ? "from-purple-400 via-pink-400 to-orange-300"
-                : "from-purple-600 via-pink-600 to-orange-500",
-            )}
-            dangerouslySetInnerHTML={{
-              __html: miniSite?.miniSite?.title?.trim() || t("campaign_name"),
-            }}
-          />
-          <p
-            className={textSecondary}
-            dangerouslySetInnerHTML={{
-              __html: miniSite?.miniSite?.subTitle?.trim() || "",
-            }}
-          />
-        </div>
-
-        {/* Carousel */}
-        {count === 0 ? (
-          <div
-            className={clsx(
-              "rounded-xl p-10 text-center border-2 border-dashed",
-              borderColor,
-            )}
-          >
-            <ImageOff className={`w-8 h-8 mx-auto mb-3 ${textTertiary}`} />
-            <p className={textTertiary}>{t("no_products_selected")}</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="relative flex items-center justify-center h-72 select-none">
-              <button
-                onClick={goPrev}
-                disabled={count < 2}
-                className={clsx(
-                  "absolute left-0 z-20 p-2.5 rounded-full shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed",
-                  isDark
-                    ? "bg-gray-800 hover:bg-gray-700 text-gray-100"
-                    : "bg-white hover:bg-gray-50 text-gray-700",
-                  "hover:shadow-lg",
-                )}
-                aria-label="Previous"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-
-              <div className="relative w-full h-full flex items-center justify-center overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-                {products.map((product, index) => {
-                  const offset = getOffset(index);
-                  const isActive = offset === 0;
-                  if (Math.abs(offset) > 2) return null;
-
-                  return (
-                    <div
-                      key={product._id}
-                      className={clsx(
-                        "absolute transition-all duration-300 ease-out rounded-2xl overflow-hidden",
-                        isActive
-                          ? clsx(
-                              "w-64 h-64 z-10 shadow-2xl ring-2",
-                              isDark
-                                ? "ring-purple-500/70 shadow-purple-950/50"
-                                : "ring-purple-500 shadow-purple-200/60",
-                            )
-                          : clsx(
-                              "w-48 h-48 shadow-md cursor-pointer",
-                              isDark ? "opacity-50" : "opacity-70",
-                            ),
-                        isDark ? "bg-gray-800" : "bg-white",
-                      )}
-                      style={{
-                        transform: `translateX(${offset * 65}%) scale(${isActive ? 1 : 0.85})`,
-                        zIndex: isActive ? 10 : 5 - Math.abs(offset),
-                      }}
-                      onClick={() => !isActive && setActiveIndex(index)}
-                    >
-                      <div className="relative w-full h-2/3">
-                        <ImageWithFallback
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <div
-                          className={clsx(
-                            "absolute inset-x-0 bottom-0 h-8 bg-linear-to-t to-transparent",
-                            isDark ? "from-black/40" : "from-black/10",
-                          )}
-                        />
-                      </div>
-                      <div className="p-3">
-                        <h4
-                          className={`text-sm font-medium truncate ${textPrimary}`}
-                        >
-                          {product?.name}
-                        </h4>
-                        <p
-                          className={clsx(
-                            "text-xs truncate",
-                            isActive
-                              ? "text-purple-600 dark:text-purple-400 font-semibold"
-                              : textTertiary,
-                          )}
-                        >
-                          {product?.price != null ? `₪${product.price}` : ""}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <button
-                onClick={goNext}
-                disabled={count < 2}
-                className={clsx(
-                  "absolute right-0 z-20 p-2.5 rounded-full shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed",
-                  isDark
-                    ? "bg-gray-800 hover:bg-gray-700 text-gray-100"
-                    : "bg-white hover:bg-gray-50 text-gray-700",
-                  "hover:shadow-lg",
-                )}
-                aria-label="Next"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Dot indicators */}
-            {count > 1 && (
-              <div className="flex items-center justify-center gap-1.5">
-                {products.map((product, index) => (
-                  <button
-                    key={product._id}
-                    onClick={() => setActiveIndex(index)}
-                    aria-label={`Go to slide ${index + 1}`}
-                    className={clsx(
-                      "h-1.5 rounded-full transition-all",
-                      index === activeIndex
-                        ? "w-6 bg-linear-to-r from-purple-500 to-pink-600"
-                        : clsx("w-1.5", isDark ? "bg-gray-700" : "bg-gray-300"),
-                    )}
-                  />
-                ))}
-              </div>
-            )}
+        {backgroundImage && (
+          <div className="absolute inset-0 ">
+            <img
+              src={backgroundImage}
+              alt="Background image"
+              className="w-full h-full object-cover"
+            />
+            <div
+              className={clsx(
+                "absolute inset-0",
+                isDark ? "bg-black/60" : "bg-white/70",
+              )}
+            />
           </div>
         )}
 
-        {/* Greeting */}
-        {miniSite?.miniSite?.greeting?.trim() && (
-          <p
-            className={`text-center ${textSecondary}`}
-            dangerouslySetInnerHTML={{ __html: miniSite.miniSite.greeting }}
+        <div className="relative p-8 space-y-6">
+          {/* Title */}
+          <div className="text-center space-y-1">
+            <h1
+              className={clsx(
+                "text-2xl font-bold bg-linear-to-r bg-clip-text text-transparent",
+                isDark
+                  ? "from-purple-400 via-pink-400 to-orange-300"
+                  : "from-purple-600 via-pink-600 to-orange-500",
+              )}
+              dangerouslySetInnerHTML={{
+                __html: miniSite?.title?.trim() || t("campaign_name"),
+              }}
+            />
+            <p
+              className={textSecondary}
+              dangerouslySetInnerHTML={{
+                __html: miniSite?.subTitle?.trim() || "",
+              }}
+            />
+          </div>
+
+          {/* Carousel */}
+          {count === 0 ? (
+            <div
+              className={clsx(
+                "rounded-xl p-10 text-center border-2 border-dashed",
+                borderColor,
+              )}
+            >
+              <ImageOff className={`w-8 h-8 mx-auto mb-3 ${textTertiary}`} />
+              <p className={textTertiary}>{t("no_products_selected")}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="relative flex items-center justify-center h-72 select-none">
+                <button
+                  onClick={goPrev}
+                  disabled={count < 2}
+                  className={clsx(
+                    "absolute left-0 z-20 p-2.5 rounded-full shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed",
+                    isDark
+                      ? "bg-gray-800 hover:bg-gray-700 text-gray-100"
+                      : "bg-white hover:bg-gray-50 text-gray-700",
+                    "hover:shadow-lg",
+                  )}
+                  aria-label="Previous"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+                  {products.map((product, index) => {
+                    const offset = getOffset(index);
+                    const absOffset = Math.abs(offset);
+                    const isActive = offset === 0;
+                    if (absOffset > 3) return null;
+
+                    const tileSize =
+                      TILE_SIZES[Math.min(absOffset, TILE_SIZES.length - 1)];
+
+                    return (
+                      <div
+                        key={product._id}
+                        className={clsx(
+                          "absolute transition-all duration-300 ease-out rounded-2xl overflow-hidden",
+                          isActive
+                            ? clsx(
+                                "z-10 shadow-2xl ring-2",
+                                isDark
+                                  ? "ring-purple-500/70 shadow-purple-950/50"
+                                  : "ring-purple-500 shadow-purple-200/60",
+                              )
+                            : clsx(
+                                "shadow-md cursor-pointer",
+                                isDark ? "opacity-50" : "opacity-70",
+                              ),
+                          isDark ? "bg-gray-800" : "bg-white",
+                        )}
+                        style={{
+                          width: tileSize,
+                          height: tileSize,
+                          transform: `translateX(${offset * 65}%) scale(${isActive ? 1 : 0.85})`,
+                          zIndex: isActive ? 10 : 5 - absOffset,
+                        }}
+                        onClick={() => !isActive && setActiveIndex(index)}
+                      >
+                        <div className="relative w-full h-2/3">
+                          <ImageWithFallback
+                            src={product?.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div
+                            className={clsx(
+                              "absolute inset-x-0 bottom-0 h-8 bg-linear-to-t to-transparent",
+                              isDark ? "from-black/40" : "from-black/10",
+                            )}
+                          />
+                        </div>
+                        <div className="p-3">
+                          <h4
+                            className={`text-sm font-medium truncate ${textPrimary}`}
+                          >
+                            {product.name}
+                          </h4>
+                          <p
+                            className={clsx(
+                              "text-xs truncate",
+                              isActive
+                                ? "text-purple-600 dark:text-purple-400 font-semibold"
+                                : textTertiary,
+                            )}
+                          >
+                            {product?.price != null ? `₪${product.price}` : ""}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={goNext}
+                  disabled={count < 2}
+                  className={clsx(
+                    "absolute right-0 z-20 p-2.5 rounded-full shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed",
+                    isDark
+                      ? "bg-gray-800 hover:bg-gray-700 text-gray-100"
+                      : "bg-white hover:bg-gray-50 text-gray-700",
+                    "hover:shadow-lg",
+                  )}
+                  aria-label="Next"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Dot indicators */}
+              {count > 1 && (
+                <div className="flex items-center justify-center gap-1.5">
+                  {products.map((product, index) => (
+                    <button
+                      key={product._id}
+                      onClick={() => setActiveIndex(index)}
+                      aria-label={`Go to slide ${index + 1}`}
+                      className={clsx(
+                        "h-1.5 rounded-full transition-all",
+                        index === activeIndex
+                          ? "w-6 bg-linear-to-r from-purple-500 to-pink-600"
+                          : clsx(
+                              "w-1.5",
+                              isDark ? "bg-gray-700" : "bg-gray-300",
+                            ),
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Greeting */}
+          {miniSite?.greeting?.trim() && (
+            <p
+              className={`text-center ${textSecondary}`}
+              dangerouslySetInnerHTML={{ __html: miniSite?.greeting }}
+            />
+          )}
+        </div>
+
+        {/* Footer image */}
+        {footerImage && (
+          <img
+            src={footerImage}
+            alt="Footer image"
+            className="relative w-full h-auto object-cover"
           />
         )}
       </div>
@@ -253,7 +279,7 @@ export default function MinisitePreviewSection({ miniSite, t }: SectionProps) {
           <button
             onClick={copyMiniSiteUrl}
             className={clsx(
-              "px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 shrink-0",
+              "px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 shrink-0 cursor-pointer",
               borderColor,
               textSecondary,
               isDark

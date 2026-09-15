@@ -1,22 +1,16 @@
+import { formatDateTime } from "@/helpers/formatter";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 
 interface SectionProps {
   miniSite: any;
   t: any;
-  isDark?: boolean;
-  textPrimary?: string;
-  textSecondary?: string;
-  borderColor?: string;
 }
 
-export default function OverviewSection({
-  miniSite,
-  t,
-  isDark = false,
-  textPrimary = "text-gray-900 dark:text-white",
-  textSecondary = "text-gray-500 dark:text-gray-400",
-  borderColor = "border-gray-200 dark:border-gray-700",
-}: SectionProps) {
+export default function OverviewSection({ miniSite, t }: SectionProps) {
+  const { language, textPrimary, textSecondary, borderColor, isDark } =
+    useThemeClasses();
+
   const cardClass = clsx(
     "p-5 rounded-xl border",
     borderColor,
@@ -62,9 +56,7 @@ export default function OverviewSection({
             <dt className={textSecondary}>{t("validity")}</dt>
             <dd className={clsx("font-medium", textPrimary)}>
               {miniSite?.startDate && miniSite?.endDate
-                ? `${new Date(miniSite.startDate).toLocaleDateString()} — ${new Date(
-                    miniSite.endDate,
-                  ).toLocaleDateString()}`
+                ? `${formatDateTime(miniSite.startDate, language)} — ${formatDateTime(miniSite.endDate, language)}`
                 : "—"}
             </dd>
           </div>

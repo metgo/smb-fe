@@ -17,6 +17,7 @@ type WizardFooterProps = {
   onPublish: () => void;
   onDone?: () => void;
   isPublishButton?: boolean;
+  hideDraftButton?: boolean;
 };
 
 export default function WizardFooter({
@@ -31,6 +32,7 @@ export default function WizardFooter({
   onPublish,
   onDone,
   isPublishButton = true,
+  hideDraftButton = false,
 }: WizardFooterProps) {
   const { t } = useTranslation("common");
   const { isRTL } = useAppSelector((state) => state.settings);
@@ -71,7 +73,7 @@ export default function WizardFooter({
 
       {/* Right */}
       <div className={clsx("flex items-center gap-2 sm:gap-3")}>
-        {onSaveDraft && (
+        {hideDraftButton && (
           <button
             onClick={onSaveDraft}
             disabled={isSaving || isDisabled}

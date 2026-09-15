@@ -1,47 +1,56 @@
-// VoucherResultsStep.tsx
-import React from "react";
-import { CheckCircle, XCircle, Download, Send } from "lucide-react"; // adjust imports based on your icon library
+import * as XLSX from "xlsx";
+import { useTranslation } from "react-i18next";
+import { CheckCircle, XCircle, Download } from "lucide-react";
 
-interface VoucherResult {
-  name: string;
-  email: string;
-  phone: string;
-  emailSent: boolean;
-  smsSent: boolean;
-  // add any other fields if your actual data has more (e.g. voucherCode, errorMessage, etc.)
-}
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface VoucherResultsStepProps {
-  t: any;
-  voucherResults: VoucherResult[];
-  downloadSampleXLS: () => void; // note: probably should be renamed to downloadResultsXLS in real code
-  retryFailedSends: () => void; // you'll need to implement/pass this handler
-  textPrimary: string;
-  textSecondary: string;
-  textTertiary: string;
-  bgSecondary: string;
-  bgTertiary: string;
-  borderColor: string;
+  voucherResults: IMinisiteVoucherUploadRes[] | null;
 }
 
 export const VoucherResultsStep: React.FC<VoucherResultsStepProps> = ({
-  t,
   voucherResults,
-  downloadSampleXLS,
-  retryFailedSends,
-  textPrimary,
-  textSecondary,
-  textTertiary,
-  bgSecondary,
-  bgTertiary,
-  borderColor,
 }) => {
-  const hasResults = voucherResults.length > 0;
+  const { t } = useTranslation("minisites");
+  const {
+    bgSecondary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    bgTertiary,
+  } = useThemeClasses();
+
+  const vouchers = voucherResults ?? [];
+  const hasResults = vouchers?.length > 0;
+
+  const downloadResultsXLS = () => {
+    if (!hasResults) return;
+    const rows = vouchers?.map((v) => ({
+      [t("assignee_name") || "Assignee Name"]: v.assigneeInfo?.name || "",
+      [t("email") || "Email"]: v.assigneeInfo?.email || "",
+      [t("phone") || "Phone"]:
+        v.assigneeInfo?.countryCode && v.assigneeInfo?.phone
+          ? `${v.assigneeInfo.countryCode}${v.assigneeInfo.phone}`
+          : v.assigneeInfo?.phone || "",
+      [t("email_sent") || "Email Sent"]:
+        v.emailSent === "SUCCESS" ? "Yes" : "No",
+      [t("sms_sent") || "SMS Sent"]: v.smsReceived === "SUCCESS" ? "Yes" : "No",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Vouchers");
+    XLSX.writeFile(
+      workbook,
+      `voucher-results_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    );
+  };
 
   return (
     <div className="space-y-6">
       <h3 className={`text-lg ${textPrimary} mb-4`}>
-        {t.voucherGenerationResults || "Voucher Generation Results"}
+        {t("voucher_generation_results") || "Voucher Generation Results"}
       </h3>
 
       {hasResults ? (
@@ -57,58 +66,60 @@ export const VoucherResultsStep: React.FC<VoucherResultsStepProps> = ({
                     scope="col"
                     className={`px-4 py-3 text-left text-sm font-medium ${textSecondary}`}
                   >
-                    {t.assigneeName || "Assignee Name"}
+                    {t("assignee_name") || "Assignee Name"}
                   </th>
                   <th
                     scope="col"
                     className={`px-4 py-3 text-left text-sm font-medium ${textSecondary}`}
                   >
-                    {t.email || "Email"}
+                    {t("email") || "Email"}
                   </th>
                   <th
                     scope="col"
                     className={`px-4 py-3 text-left text-sm font-medium ${textSecondary}`}
                   >
-                    {t.phone || "Phone"}
+                    {t("phone") || "Phone"}
                   </th>
                   <th
                     scope="col"
                     className={`px-4 py-3 text-center text-sm font-medium ${textSecondary}`}
                   >
-                    {t.emailSent || "Email Sent"}
+                    {t("email_sent") || "Email Sent"}
                   </th>
                   <th
                     scope="col"
                     className={`px-4 py-3 text-center text-sm font-medium ${textSecondary}`}
                   >
-                    {t.smsSent || "SMS Sent"}
+                    {t("sms_sent") || "SMS Sent"}
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {voucherResults.map((recipient, index) => (
+                {vouchers.map((v) => (
                   <tr
-                    key={index}
+                    key={v._id}
                     className={`border-b ${borderColor} last:border-b-0`}
                   >
                     <td className={`px-4 py-3 text-sm ${textPrimary}`}>
-                      {recipient.name || "-"}
+                      {v.assigneeInfo?.name || "-"}
                     </td>
                     <td className={`px-4 py-3 text-sm ${textSecondary}`}>
-                      {recipient.email || "-"}
+                      {v.assigneeInfo?.email || "-"}
                     </td>
                     <td className={`px-4 py-3 text-sm ${textSecondary}`}>
-                      {recipient.phone || "-"}
+                      {v.assigneeInfo?.phone
+                        ? `${v.assigneeInfo.countryCode || ""}${v.assigneeInfo.phone}`
+                        : "-"}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {recipient.emailSent ? (
+                      {v.emailSent === "SUCCESS" ? (
                         <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
                       ) : (
                         <XCircle className="w-5 h-5 text-red-500 mx-auto" />
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {recipient.smsSent ? (
+                      {v.smsReceived === "SUCCESS" ? (
                         <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
                       ) : (
                         <XCircle className="w-5 h-5 text-red-500 mx-auto" />
@@ -121,23 +132,13 @@ export const VoucherResultsStep: React.FC<VoucherResultsStepProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={downloadSampleXLS} // ← should probably be renamed to downloadResults or similar
-              className={`px-4 py-2 rounded-lg ${bgSecondary} ${textSecondary} hover:${textPrimary} transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none`}
-            >
-              <Download className="w-4 h-4" />
-              {t.downloadResults || "Download Results"}
-            </button>
-            <button
-              onClick={retryFailedSends}
-              className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none"
-              disabled={!voucherResults.some((r) => !r.emailSent || !r.smsSent)}
-            >
-              <Send className="w-4 h-4" />
-              {t.retryFailed || "Retry Failed Sends"}
-            </button>
-          </div>
+          <button
+            onClick={downloadResultsXLS}
+            className={`px-4 py-2 rounded-lg ${bgSecondary} ${textSecondary} hover:${textPrimary} transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none`}
+          >
+            <Download className="w-4 h-4" />
+            {t("download_results") || "Download Results"}
+          </button>
         </>
       ) : (
         /* Empty State */
@@ -145,7 +146,7 @@ export const VoucherResultsStep: React.FC<VoucherResultsStepProps> = ({
           className={`${bgSecondary} rounded-lg p-8 text-center border ${borderColor}`}
         >
           <p className={`text-base ${textTertiary}`}>
-            {t.noVouchersCreated ||
+            {t("no_vouchers_created") ||
               "No vouchers have been created yet. Go back to Step 4 to create vouchers."}
           </p>
         </div>

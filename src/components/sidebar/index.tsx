@@ -208,28 +208,28 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "local-economy",
-      path: "#local_economy",
-      label: t("local_economy") || "Local Economy",
-      icon: Wallet,
+      id: "vouchers",
+      path: routes.voucherMgmt,
+      label: t("vouchers") || "Vouchers",
+      icon: Ticket,
       isEnabled: true,
-      subItems: [
-        {
-          id: "vouchers",
-          path: routes.voucherMgmt,
-          label: t("vouchers") || "Vouchers",
-          icon: Ticket,
-          isEnabled: true,
-        },
-        // {
-        //   id: "mini-campaign",
-        //   path: routes.miniCampaignMgmt,
-        //   label: t("mini_campaigns") || "Mini-Campaigns",
-        //   icon: Megaphone,
-        //   isEnabled: true,
-        // },
-      ],
     },
+    // {
+    //   id: "local-economy",
+    //   path: "#local_economy",
+    //   label: t("local_economy") || "Local Economy",
+    //   icon: Wallet,
+    //   isEnabled: true,
+    //   subItems: [
+    //     {
+    //       id: "vouchers",
+    //       path: routes.voucherMgmt,
+    //       label: t("vouchers") || "Vouchers",
+    //       icon: Ticket,
+    //       isEnabled: true,
+    //     },
+    //   ],
+    // },
 
     {
       id: "site-management",

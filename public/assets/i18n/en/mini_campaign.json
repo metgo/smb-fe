@@ -41,7 +41,7 @@
   "cash_in_desc": "Customers use voucher value for purchases",
   "website_selection": "Website Selection",
   "select_website": "Select website...",
-  "select_website_first": "Select a website in step 1 to see its products",
+  "select_website_first": "Select a website from the modal header to see its products",
   "search": "Search",
   "search_products": "Search products...",
   "no_products_found": "No products found",

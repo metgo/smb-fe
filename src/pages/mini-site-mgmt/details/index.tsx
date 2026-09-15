@@ -16,10 +16,6 @@ import { useGetMiniSiteByIdQuery } from "@/store/api/miniSiteQueryApi";
 import MiniOverviewSection from "./components/MiniOverviewSection";
 import MinisitePreviewSection from "./components/MinisitePreviewSection";
 import MinisiteCreateWizard from "../components/CreateMinisiteWizard";
-// import ContactSection from "./components/ContactSection";
-// import LocationSection from "./components/LocationSection";
-// import MediaSection from "./components/MediaSection";
-// import SocialSection from "./components/SocialSection";
 
 type TabId = (typeof miniSiteTabs)[number]["id"];
 
@@ -58,10 +54,7 @@ export default function MiniSiteDetailsPage() {
       case "overview":
         return <MiniOverviewSection {...commonProps} />;
       case "preview":
-        return <MinisitePreviewSection miniSite={miniSite} t={t} />;
-      // case "location":  return <LocationSection {...commonProps} />;
-      // case "media":     return <MediaSection {...commonProps} />;
-      // case "social":    return <SocialSection {...commonProps} />;
+        return <MinisitePreviewSection {...miniSite} />;
       default:
         return (
           <div className={clsx("py-16 text-center", textSecondary)}>
@@ -132,14 +125,14 @@ export default function MiniSiteDetailsPage() {
             setActiveTab={setActiveTab}
           />
         </div>
-        <div className="details-content flex-1 overflow-y-auto min-h-0 !p-2">
+        <div className="details-content flex-1 overflow-y-auto min-h-0 p-2!">
           {renderContent()}
         </div>
       </div>
 
       {isEditClicked && (
         <MinisiteCreateWizard
-          editingMiniSite={miniSite}
+          editData={miniSite}
           onClose={() => {
             setIsEditClicked(false);
             refetch();

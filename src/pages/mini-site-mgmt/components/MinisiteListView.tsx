@@ -144,7 +144,7 @@ export default function MiniSiteListView({
   }[];
 
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)]">
+    <div className="flex flex-col overflow-hidden h-[calc(100vh-300px)]">
       <ReordableDataTable
         rowKey="_id"
         data={miniSites}

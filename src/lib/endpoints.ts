@@ -49,6 +49,7 @@ export const endpoints = {
   //mini-sites
   miniSites: "mini-sites",
   miniSitesStats: "mini-sites/stats",
+  miniSiteVoucherUpload: "mini-site/upload-vouchers",
 
   //products
   products: "/products",

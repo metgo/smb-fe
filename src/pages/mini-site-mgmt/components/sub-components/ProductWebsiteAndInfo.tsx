@@ -2,6 +2,7 @@ import React from "react";
 import { Globe, Building2, Ticket, Home, Briefcase } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 import clsx from "clsx";
 
 interface Step1WebsiteAndInfoProps {
@@ -27,7 +28,6 @@ export default function Step1WebsiteAndInfo({
   } = useThemeClasses();
 
   if (currentStep !== 1) return null;
-  // const dmoSectionRef = useRef<HTMLDivElement | null>(null);
   return (
     <div className="space-y-6">
       {/* Purchaser Info */}
@@ -295,16 +295,14 @@ export default function Step1WebsiteAndInfo({
             <label className={`block text-sm ${textSecondary} mb-2`}>
               {t("title")}
             </label>
-            <input
-              type="text"
+            <RichTextEditor
               value={formData.contentTitle}
-              onChange={(e) =>
+              onChange={(html) =>
                 setFormData((prev: any) => ({
                   ...prev,
-                  contentTitle: e.target.value,
+                  contentTitle: html,
                 }))
               }
-              className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder={t("title_placeholder")}
             />
           </div>
@@ -314,16 +312,14 @@ export default function Step1WebsiteAndInfo({
             <label className={`block text-sm ${textSecondary} mb-2`}>
               {t("subtitle")}
             </label>
-            <input
-              type="text"
+            <RichTextEditor
               value={formData.contentSubtitle}
-              onChange={(e) =>
+              onChange={(html) =>
                 setFormData((prev: any) => ({
                   ...prev,
-                  contentSubtitle: e.target.value,
+                  contentSubtitle: html,
                 }))
               }
-              className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder={t("subtitle_placeholder")}
             />
           </div>
@@ -333,16 +329,14 @@ export default function Step1WebsiteAndInfo({
             <label className={`block text-sm ${textSecondary} mb-2`}>
               {t("greeting")}
             </label>
-            <textarea
+            <RichTextEditor
               value={formData.contentGreeting}
-              onChange={(e) =>
+              onChange={(html) =>
                 setFormData((prev: any) => ({
                   ...prev,
-                  contentGreeting: e.target.value,
+                  contentGreeting: html,
                 }))
               }
-              rows={4}
-              className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder={t("greeting_placeholder")}
             />
           </div>

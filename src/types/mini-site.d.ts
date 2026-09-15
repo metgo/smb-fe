@@ -23,6 +23,8 @@ interface ICampaign {
   status: TCampaignStatus;
   code: string;
   logoPath: string;
+  footerImage: string;
+  backgroundImage: string;
   externalApiId: string;
 
   companyInfo: ICompanyInfo;
@@ -43,4 +45,66 @@ interface IMiniSiteStatsRes {
   totalVouchers: number;
   usedVouchers: number;
   conversionRate: number;
+}
+
+interface IMinisiteDetailsRes {
+  _id: string;
+  name: string;
+  status: "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
+  code: string;
+  logoPath: string;
+  backgroundImage: string;
+  footerImage: string;
+  externalApiId: string;
+  productIds: {
+    _id: string;
+    name?: string;
+    shortDescription: string;
+    image: string;
+    price: number;
+  }[];
+  companyInfo: {
+    name: string;
+    contactPerson: string;
+    phoneNumber: string;
+    email: string;
+  };
+  miniSite: {
+    title: string;
+    subTitle: string;
+    greeting: string;
+    deliveryAddress: string;
+    isDeliveredToHome: boolean;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Minisite Voucher upload
+interface IMinisiteVoucherUploadPayload {
+  campaignId: string;
+  languagePreference: string;
+  purchaserCountryCode: string;
+  purchaserEmail: string;
+  purchaserName: string;
+  purchaserPhone: string;
+  vouchers: {
+    assigneeName: string;
+    assigneeEmail: string;
+    assigneeCountryCode: string;
+    assigneePhone: string;
+  }[];
+}
+
+interface IMinisiteVoucherUploadRes {
+  _id: string;
+  assigneeInfo: {
+    name: string;
+    countryCode: string;
+    phone: string;
+    email: string;
+    assignedAt: string;
+  };
+  smsReceived: "FAILED" | "SUCCESS";
+  emailSent: "FAILED" | "SUCCESS";
 }

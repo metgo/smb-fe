@@ -1,14 +1,15 @@
 import clsx from "clsx";
-import { X, Loader, ImageIcon } from "lucide-react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { X, Loader, ImageIcon } from "lucide-react";
+
+import { ConfirmDialog } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
-import { ConfirmDialog } from "@/components/shared";
 
 interface SingleMediaUploadProps {
   label: string;
-  hint: string;
+  hint?: string;
   imagePath: string;
   onImageChange: (url: string) => void;
 }
@@ -47,7 +48,7 @@ function SingleMediaUpload({
   return (
     <div>
       <p className={clsx("text-sm font-medium mb-1", textSecondary)}>{label}</p>
-      <p className={clsx("text-xs mb-4", textTertiary)}>{hint}</p>
+      {hint && <p className={clsx("text-xs mb-4", textTertiary)}>{hint}</p>}
 
       {!image ? (
         <button
@@ -181,30 +182,18 @@ export default function MinisiteMedia({
     <div className="space-y-8">
       <SingleMediaUpload
         label={t("company_logo") || "Company Logo"}
-        hint={
-          t("company_logo_hint") ||
-          "Upload your company logo. Recommended size: 400×400px."
-        }
         imagePath={logoImagePath}
         onImageChange={onLogoImageChange}
       />
 
       <SingleMediaUpload
         label={t("background_image") || "Background Image"}
-        hint={
-          t("background_image_hint") ||
-          "Upload a background image for the mini-site. Recommended size: 1920×1080px."
-        }
         imagePath={backgroundImagePath}
         onImageChange={onBackgroundImageChange}
       />
 
       <SingleMediaUpload
         label={t("footer_image") || "Footer Image"}
-        hint={
-          t("footer_image_hint") ||
-          "Upload a footer image for the mini-site. Recommended size: 1200×300px."
-        }
         imagePath={footerImagePath}
         onImageChange={onFooterImageChange}
       />

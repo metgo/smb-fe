@@ -1,14 +1,19 @@
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Search, Loader, Package, Building2, AlertCircle } from "lucide-react";
 import clsx from "clsx";
 
 import { GridCard } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { getLngWiseStr } from "@/helpers";
 
 interface ProductSelectionStepProps {
   products: any[];
   isProductsLoading: boolean;
+  isProductsFetching?: boolean;
+  hasMoreProducts?: boolean;
+  fetchNextProductsPage?: () => void;
   productSearch: string;
   setProductSearch: (value: string) => void;
   selectedProducts: string[];
@@ -22,6 +27,9 @@ interface ProductSelectionStepProps {
 export default function ProductSelectionStep({
   products,
   isProductsLoading,
+  isProductsFetching,
+  hasMoreProducts,
+  fetchNextProductsPage,
   productSearch,
   setProductSearch,
   selectedProducts,
@@ -44,13 +52,36 @@ export default function ProductSelectionStep({
   } = useThemeClasses();
   const needsMoreProducts = selectedProducts.length < minSelectedProducts;
 
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useInfiniteScroll({
+    ref: scrollRef,
+    hasMore: hasMoreProducts,
+    isLoading: isProductsFetching,
+    onLoadMore: fetchNextProductsPage,
+  });
+
   return (
     <div className="space-y-6">
       {!hasWebsite ? (
         <div
-          className={`${bgSecondary} rounded-lg p-8 text-center border ${borderColor}`}
+          className={clsx(
+            "rounded-xl border border-dashed p-12 flex flex-col items-center text-center gap-3",
+            bgSecondary,
+            borderColor,
+          )}
         >
-          <p className={textTertiary}>{t("select_website_first")}</p>
+          <div
+            className={clsx(
+              "w-12 h-12 rounded-full flex items-center justify-center",
+              isDark ? "bg-purple-500/10" : "bg-purple-50",
+            )}
+          >
+            <Building2 className="w-6 h-6 text-purple-500" />
+          </div>
+          <p className={clsx("text-sm max-w-sm", textTertiary)}>
+            {t("select_website_first")}
+          </p>
         </div>
       ) : (
         <>
@@ -85,52 +116,60 @@ export default function ProductSelectionStep({
               <p className={textTertiary}>{t("no_products_found")}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {products.map((product) => (
-                <GridCard
-                  key={product._id}
-                  image={product.images?.[0]?.image}
-                  imageAlt={product.name}
-                  fallbackIcon={Package}
-                  fallbackGradient="from-purple-500 to-pink-600"
-                  title={getLngWiseStr(
-                    language,
-                    product?.name,
-                    product?.nameHe,
-                    product?.nameAr,
-                  )}
-                  isChecked={selectedProducts.includes(product._id)}
-                  onCheckChange={() => toggleProductSelection(product._id)}
-                  onClick={() => toggleProductSelection(product._id)}
-                  footer={
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={clsx(
-                            "font-bold text-sm",
-                            isDark ? "text-white" : "text-gray-900",
-                          )}
-                        >
-                          ₪ {product?.price?.sellingPrice ?? "-"}
-                        </span>
-                        {product?.businessId?.name && (
-                          <div
+            <div ref={scrollRef} className="max-h-[480px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {products.map((product) => (
+                  <GridCard
+                    key={product._id}
+                    image={product.images?.[0]?.image}
+                    imageAlt={product.name}
+                    fallbackIcon={Package}
+                    fallbackGradient="from-purple-500 to-pink-600"
+                    title={getLngWiseStr(
+                      language,
+                      product?.name,
+                      product?.nameHe,
+                      product?.nameAr,
+                    )}
+                    isChecked={selectedProducts.includes(product._id)}
+                    onCheckChange={() => toggleProductSelection(product._id)}
+                    onClick={() => toggleProductSelection(product._id)}
+                    footer={
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span
                             className={clsx(
-                              "flex items-center gap-1 text-xs",
-                              textTertiary,
+                              "font-bold text-sm",
+                              isDark ? "text-white" : "text-gray-900",
                             )}
                           >
-                            <Building2 className="w-3 h-3 shrink-0" />
-                            <span className="truncate max-w-16">
-                              {product.businessId.name}
-                            </span>
-                          </div>
-                        )}
+                            ₪ {product?.price?.sellingPrice ?? "-"}
+                          </span>
+                          {product?.businessId?.name && (
+                            <div
+                              className={clsx(
+                                "flex items-center gap-1 text-xs",
+                                textTertiary,
+                              )}
+                            >
+                              <Building2 className="w-3 h-3 shrink-0" />
+                              <span className="truncate max-w-16">
+                                {product.businessId.name}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  }
-                />
-              ))}
+                    }
+                  />
+                ))}
+              </div>
+
+              {isProductsFetching && !isProductsLoading && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader className="w-5 h-5 animate-spin text-purple-600" />
+                </div>
+              )}
             </div>
           )}
 

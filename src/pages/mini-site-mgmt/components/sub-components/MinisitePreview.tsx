@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Copy, X, ImageOff } from "lucide-react";
 
 import { getLngWiseStr } from "@/helpers";
 import { ImageWithFallback } from "@/components/shared";
+import { getPlainText } from "@/components/shared/RichTextEditor";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface MiniSitePreviewProps {
@@ -14,7 +15,13 @@ interface MiniSitePreviewProps {
   selectedProducts: string[];
   removeSelectedProduct: (productId: string) => void;
   copyMiniSiteUrl: () => void;
+  minSelectedProducts?: number;
 }
+
+// Carousel tiles shrink gradually the further they sit from the active
+// slide, up to this many offset levels away.
+const MAX_VISIBLE_OFFSET = 3;
+const TILE_SIZES = [256, 208, 176, 144]; // px, indexed by |offset|
 
 export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
   formData,
@@ -23,6 +30,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
   selectedProducts,
   removeSelectedProduct,
   copyMiniSiteUrl,
+  minSelectedProducts = 3,
 }) => {
   const { t } = useTranslation("minisites");
   const {
@@ -49,7 +57,6 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
     }
   }, [count, activeIndex]);
 
-  const dir = language === "en" ? "ltr" : "rtl";
   const miniSiteUrl = `https://tav-8.co.il/mini-site?campCode=${formData.campaignCode}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=${formData.email}`;
 
   const goPrev = () => setActiveIndex((prev) => (prev - 1 + count) % count);
@@ -69,7 +76,6 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
           "relative rounded-2xl border overflow-hidden",
           borderColor,
         )}
-        dir={dir}
       >
         {/* Background image */}
         {formData.backgroundImage ? (
@@ -109,21 +115,34 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
 
           {/* Title */}
           <div className="text-center space-y-1">
-            <h1
-              className={clsx(
-                "text-2xl font-bold bg-linear-to-r bg-clip-text text-transparent",
-                isDark
-                  ? "from-purple-400 via-pink-400 to-orange-300"
-                  : "from-purple-600 via-pink-600 to-orange-500",
-              )}
-            >
-              {(formData.contentTitle as string)?.trim() ||
-                formData.campaignName ||
-                t("campaign_name")}
-            </h1>
-            <p className={textSecondary}>
-              {(formData.contentSubtitle as string)?.trim() || ""}
-            </p>
+            {getPlainText(formData.contentTitle ?? "").trim() ? (
+              <h1
+                className={clsx(
+                  "text-2xl font-bold bg-linear-to-r bg-clip-text text-transparent",
+                  isDark
+                    ? "from-purple-400 via-pink-400 to-orange-300"
+                    : "from-purple-600 via-pink-600 to-orange-500",
+                )}
+                dangerouslySetInnerHTML={{ __html: formData.contentTitle }}
+              />
+            ) : (
+              <h1
+                className={clsx(
+                  "text-2xl font-bold bg-linear-to-r bg-clip-text text-transparent",
+                  isDark
+                    ? "from-purple-400 via-pink-400 to-orange-300"
+                    : "from-purple-600 via-pink-600 to-orange-500",
+                )}
+              >
+                {formData.campaignName || t("campaign_name")}
+              </h1>
+            )}
+            {getPlainText(formData.contentSubtitle ?? "").trim() && (
+              <p
+                className={textSecondary}
+                dangerouslySetInnerHTML={{ __html: formData.contentSubtitle }}
+              />
+            )}
           </div>
 
           {/* Carousel */}
@@ -158,8 +177,13 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
                   {selectedProductDetails.map((product, index) => {
                     const offset = getOffset(index);
+                    const absOffset = Math.abs(offset);
                     const isActive = offset === 0;
-                    if (Math.abs(offset) > 2) return null;
+                    if (absOffset > MAX_VISIBLE_OFFSET) return null;
+
+                    const tileSize =
+                      TILE_SIZES[Math.min(absOffset, TILE_SIZES.length - 1)];
+                    const canRemove = count > minSelectedProducts;
 
                     return (
                       <div
@@ -168,24 +192,26 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                           "absolute transition-all duration-300 ease-out rounded-2xl overflow-hidden",
                           isActive
                             ? clsx(
-                                "w-64 h-64 z-10 shadow-2xl ring-2",
+                                "z-10 shadow-2xl ring-2",
                                 isDark
                                   ? "ring-purple-500/70 shadow-purple-950/50"
                                   : "ring-purple-500 shadow-purple-200/60",
                               )
                             : clsx(
-                                "w-48 h-48 shadow-md cursor-pointer",
+                                "shadow-md cursor-pointer",
                                 isDark ? "opacity-50" : "opacity-70",
                               ),
                           isDark ? "bg-gray-800" : "bg-white",
                         )}
                         style={{
+                          width: tileSize,
+                          height: tileSize,
                           transform: `translateX(${offset * 65}%) scale(${isActive ? 1 : 0.85})`,
-                          zIndex: isActive ? 10 : 5 - Math.abs(offset),
+                          zIndex: isActive ? 10 : 5 - absOffset,
                         }}
                         onClick={() => !isActive && setActiveIndex(index)}
                       >
-                        {isActive && (
+                        {isActive && canRemove && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -280,10 +306,11 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
           )}
 
           {/* Greeting */}
-          {(formData.contentGreeting as string)?.trim() && (
-            <p className={`text-center ${textSecondary}`}>
-              {formData.contentGreeting as string}
-            </p>
+          {getPlainText(formData.contentGreeting ?? "").trim() && (
+            <p
+              className={`text-center ${textSecondary}`}
+              dangerouslySetInnerHTML={{ __html: formData.contentGreeting }}
+            />
           )}
         </div>
 

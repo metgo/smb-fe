@@ -340,8 +340,9 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         onPrevious={handlePrevious}
         onNext={handleNext}
         onDone={handleDone}
-        onPublish={() => {}}
+        onPublish={handleDone}
         isPublishButton={false}
+        hideDraftButton
       />
 
       <ConfirmDialog
