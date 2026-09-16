@@ -222,7 +222,7 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
 
                           <td className={TD}>
                             {registration.sessionName}
-                            {registration.room && (
+                            {registration?.room !== "N/A" && (
                               <span className={textTertiary}>
                                 {" "}
                                 · {registration.room}

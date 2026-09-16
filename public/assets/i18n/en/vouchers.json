@@ -226,5 +226,6 @@
   "noDataToExport": "No data to export",
   "remaining_balance": "Remaining Balance",
   "expired": "Expired",
-  "revenue": "Revenue"
+  "revenue": "Revenue",
+  "voucher_id": "Voucher ID"
 }

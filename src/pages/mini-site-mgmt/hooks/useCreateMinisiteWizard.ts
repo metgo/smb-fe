@@ -406,6 +406,7 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
       limit: 20,
       locale: language,
       status: "APPROVED",
+      priceMax: formData.voucherAmount,
       websiteId: formData.externalApiId,
       ...(debouncedProductSearch ? { search: debouncedProductSearch } : {}),
     },

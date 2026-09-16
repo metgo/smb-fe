@@ -56,6 +56,13 @@ export const miniSiteQueryApi = createApi({
         }),
         invalidatesTags: ["MiniSite"],
       }),
+
+      getVoucherUsage: builder.query<any, string>({
+        query: (voucherId) => ({
+          url: `${endpoints.voucherUsage}?voucherId=${voucherId}`,
+          method: "GET",
+        }),
+      }),
     };
   },
 });
@@ -65,4 +72,5 @@ export const {
   useGetAllMiniSitesQuery,
   useGetMiniSiteByIdQuery,
   useUpdateMiniSiteStatusMutation,
+  useGetVoucherUsageQuery,
 } = miniSiteQueryApi;

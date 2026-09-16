@@ -7,7 +7,7 @@ interface SectionProps {
   miniSite: IMinisiteDetailsRes | undefined;
 }
 
-export default function OverviewSection({ miniSite }: SectionProps) {
+const MinisiteOverviewSection = ({ miniSite }: SectionProps) => {
   const { t } = useTranslation("minisites");
 
   const { language, textPrimary, textSecondary, borderColor, isDark } =
@@ -205,4 +205,6 @@ export default function OverviewSection({ miniSite }: SectionProps) {
       </div>
     </div>
   );
-}
+};
+
+export default MinisiteOverviewSection;

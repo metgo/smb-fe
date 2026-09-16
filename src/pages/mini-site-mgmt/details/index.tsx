@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { toast } from "sonner";
 import { useState } from "react";
 import { Edit } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -14,15 +15,16 @@ import {
   AuditInfoDetails,
   DetailTitleSection,
 } from "@/components/details-sections";
-import { toast } from "sonner";
 import {
   useGetMiniSiteByIdQuery,
   useUpdateMiniSiteStatusMutation,
 } from "@/store/api/miniSiteQueryApi";
-
-import MiniOverviewSection from "./components/MiniOverviewSection";
-import MinisitePreviewSection from "./components/MinisitePreviewSection";
-import MinisiteCreateWizard from "../components/CreateMinisiteWizard";
+import { CreateMinisiteWizard } from "../components";
+import {
+  MinisiteOverviewSection,
+  MinisitePreviewSection,
+  MinisiteVouchersList,
+} from "./components";
 
 type TabId = (typeof miniSiteTabs)[number]["id"];
 
@@ -70,9 +72,11 @@ export default function MiniSiteDetailsPage() {
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
-        return <MiniOverviewSection miniSite={miniSite} />;
+        return <MinisiteOverviewSection miniSite={miniSite} />;
       case "preview":
         return <MinisitePreviewSection {...miniSite} />;
+      case "voucher_list":
+        return <MinisiteVouchersList miniSiteId={miniSite?._id} />;
       case "audit_info":
         return (
           <AuditInfoDetails
@@ -175,7 +179,7 @@ export default function MiniSiteDetailsPage() {
       </div>
 
       {isEditClicked && (
-        <MinisiteCreateWizard
+        <CreateMinisiteWizard
           editData={miniSite}
           onClose={() => {
             setIsEditClicked(false);

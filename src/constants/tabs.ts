@@ -33,6 +33,7 @@ export const businessTabs = [
 export const miniSiteTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "preview", label: "preview", icon: Monitor },
+  { id: "voucher_list", label: "Vouchers", icon: Ticket },
   { id: "audit_info", label: "audit_info", icon: History },
 ];
 export const eventTabs = [

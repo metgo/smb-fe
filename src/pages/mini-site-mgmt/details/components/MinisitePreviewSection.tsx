@@ -10,14 +10,14 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const TILE_SIZES = [256, 208, 176, 144]; // px, indexed by |offset|
 
-export default function MinisitePreviewSection({
+const MinisitePreviewSection = ({
   code,
   miniSite,
   externalApiId,
   productIds,
   backgroundImage,
   footerImage,
-}: Partial<IMinisiteDetailsRes>) {
+}: Partial<IMinisiteDetailsRes>) => {
   const { t } = useTranslation("minisites");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
 
@@ -298,4 +298,6 @@ export default function MinisitePreviewSection({
       </div>
     </div>
   );
-}
+};
+
+export default MinisitePreviewSection;
