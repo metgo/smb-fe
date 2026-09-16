@@ -218,6 +218,9 @@ export default function EventDetailsPage() {
             eventDays={eventDays}
             hasExternalTicket={hasExternalTicket}
             ticketBuyLink={eventDetails?.ticketBuyLink || ""}
+            eventSlug={eventDetails?.slug || ""}
+            associatedWebsites={eventDetails?.associatedWebsites || []}
+            associatedWebsiteIds={eventDetails?.associatedWebsiteIds || []}
           />
         );
       case "schedual_notification":
