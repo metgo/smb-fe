@@ -1,12 +1,11 @@
-import { useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { Search, Loader, Package, Building2, AlertCircle } from "lucide-react";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import { useMemo, useState } from "react";
+import { Search, Loader, Package, Building2, AlertCircle } from "lucide-react";
 
+import { getLngWiseStr } from "@/helpers";
 import { GridCard } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { getLngWiseStr } from "@/helpers";
 
 interface ProductSelectionStepProps {
   products: any[];
@@ -39,7 +38,7 @@ export default function ProductSelectionStep({
   hasWebsite,
   minSelectedProducts,
 }: ProductSelectionStepProps) {
-  const { t } = useTranslation("mini_campaign");
+  const { t } = useTranslation("minisites");
   const {
     isDark,
     language,
@@ -51,15 +50,12 @@ export default function ProductSelectionStep({
     borderColor,
   } = useThemeClasses();
   const needsMoreProducts = selectedProducts.length < minSelectedProducts;
+  const [showSelectedOnly, setShowSelectedOnly] = useState(false);
 
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  useInfiniteScroll({
-    ref: scrollRef,
-    hasMore: hasMoreProducts,
-    isLoading: isProductsFetching,
-    onLoadMore: fetchNextProductsPage,
-  });
+  const visibleProducts = useMemo(() => {
+    if (!showSelectedOnly) return products;
+    return products.filter((product) => selectedProducts.includes(product._id));
+  }, [products, selectedProducts, showSelectedOnly]);
 
   return (
     <div className="space-y-6">
@@ -85,22 +81,41 @@ export default function ProductSelectionStep({
         </div>
       ) : (
         <>
-          {/* Search */}
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("search")}
-            </label>
-            <div className="relative">
-              <Search
-                className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
-              />
-              <input
-                type="text"
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                placeholder={t("search_products")}
-              />
+          {/* Search & selection controls */}
+          <div className={`${bgSecondary} rounded-lg py-4`}>
+            <div className="flex flex-col md:flex-row md:items-center gap-3">
+              <div className="relative flex-1">
+                <Search
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
+                />
+                <input
+                  type="text"
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  className={`w-full pl-10 pr-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  placeholder={t("search_products")}
+                />
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <span
+                  className={clsx("text-sm whitespace-nowrap", textSecondary)}
+                >
+                  {selectedProducts.length} {t("products_selected")}
+                </span>
+
+                <label className="flex items-center gap-2 cursor-pointer select-none whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={showSelectedOnly}
+                    onChange={(e) => setShowSelectedOnly(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className={clsx("text-sm", textSecondary)}>
+                    {t("show_selected_only")}
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -109,16 +124,20 @@ export default function ProductSelectionStep({
             <div className="flex flex-col items-center justify-center gap-3 py-12">
               <Loader className="w-8 h-8 animate-spin text-purple-600" />
             </div>
-          ) : products.length === 0 ? (
+          ) : visibleProducts.length === 0 ? (
             <div
               className={`${bgSecondary} rounded-lg p-8 text-center border ${borderColor}`}
             >
-              <p className={textTertiary}>{t("no_products_found")}</p>
+              <p className={textTertiary}>
+                {showSelectedOnly
+                  ? t("no_selected_products_found")
+                  : t("no_products_found")}
+              </p>
             </div>
           ) : (
-            <div ref={scrollRef} className="max-h-[480px] overflow-y-auto pr-1">
+            <div className="max-h-120 overflow-y-auto pr-1">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {products.map((product) => (
+                {visibleProducts.map((product) => (
                   <GridCard
                     key={product._id}
                     image={product.images?.[0]?.image}
@@ -165,22 +184,38 @@ export default function ProductSelectionStep({
                 ))}
               </div>
 
-              {isProductsFetching && !isProductsLoading && (
-                <div className="flex items-center justify-center py-4">
-                  <Loader className="w-5 h-5 animate-spin text-purple-600" />
+              {!showSelectedOnly && hasMoreProducts && (
+                <div className="flex items-center justify-center pt-4">
+                  <button
+                    type="button"
+                    onClick={fetchNextProductsPage}
+                    disabled={isProductsFetching}
+                    className={clsx(
+                      "px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2",
+                      borderColor,
+                      textPrimary,
+                      isProductsFetching
+                        ? "opacity-60 cursor-not-allowed"
+                        : "hover:bg-purple-500/10",
+                    )}
+                  >
+                    {isProductsFetching && (
+                      <Loader className="w-4 h-4 animate-spin text-purple-600" />
+                    )}
+                    {t("load_more")}
+                  </button>
                 </div>
               )}
             </div>
           )}
 
-          {/* Selection summary */}
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <p className={textSecondary}>
-              {selectedProducts.length} {t("products_selected")}
-              {primaryProducts.length > 0 &&
-                ` • ${primaryProducts.length} ${t("marked_as_primary")}`}
-            </p>
-          </div>
+          {primaryProducts.length > 0 && (
+            <div className={`${bgSecondary} rounded-lg p-4`}>
+              <p className={textSecondary}>
+                {primaryProducts.length} {t("marked_as_primary")}
+              </p>
+            </div>
+          )}
 
           {needsMoreProducts && (
             <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">

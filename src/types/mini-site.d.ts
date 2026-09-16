@@ -15,6 +15,7 @@ interface IMiniSite {
   deliveryAddress: string;
   isDeliveredToHome: boolean;
   amount: number;
+  quantity: number;
 }
 
 interface ICampaign {
@@ -47,15 +48,17 @@ interface IMiniSiteStatsRes {
   conversionRate: number;
 }
 
-interface IMinisiteDetailsRes {
+interface IMinisiteDetailsRes extends IAuditInfo {
   _id: string;
   name: string;
-  status: "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
+  status: "DRAFT" | "ACTIVE" | "INACTIVE" | "EXPIRED" | "PAUSED" | "COMPLETED";
   code: string;
   logoPath: string;
   backgroundImage: string;
   footerImage: string;
   externalApiId: string;
+  startDate: string;
+  endDate: string;
   productIds: {
     _id: string;
     name?: string;
@@ -75,9 +78,9 @@ interface IMinisiteDetailsRes {
     greeting: string;
     deliveryAddress: string;
     isDeliveredToHome: boolean;
+    quantity: number;
+    amount: number;
   };
-  createdAt: string;
-  updatedAt: string;
 }
 
 // Minisite Voucher upload

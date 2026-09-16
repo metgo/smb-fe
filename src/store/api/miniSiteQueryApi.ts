@@ -42,6 +42,19 @@ export const miniSiteQueryApi = createApi({
           url: `${endpoints.miniSites}/${miniSiteId}`,
           method: "GET",
         }),
+        providesTags: ["MiniSite"],
+      }),
+
+      updateMiniSiteStatus: builder.mutation<
+        any,
+        { miniSiteId: string; status: string }
+      >({
+        query: ({ miniSiteId, status }) => ({
+          url: `${endpoints.miniSites}/${miniSiteId}`,
+          method: "PATCH",
+          data: { status },
+        }),
+        invalidatesTags: ["MiniSite"],
       }),
     };
   },
@@ -51,4 +64,5 @@ export const {
   useGetMiniSiteStatsQuery,
   useGetAllMiniSitesQuery,
   useGetMiniSiteByIdQuery,
+  useUpdateMiniSiteStatusMutation,
 } = miniSiteQueryApi;

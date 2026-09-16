@@ -10,12 +10,14 @@ interface Step1WebsiteAndInfoProps {
   formData: any;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   handleLogoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isEditMode?: boolean;
 }
 
 export default function Step1WebsiteAndInfo({
   currentStep,
   formData,
   setFormData,
+  isEditMode,
 }: Step1WebsiteAndInfoProps) {
   const { t } = useTranslation("minisites");
   const {
@@ -28,6 +30,9 @@ export default function Step1WebsiteAndInfo({
   } = useThemeClasses();
 
   if (currentStep !== 1) return null;
+
+  const Required = () => <span className="text-red-500">*</span>;
+
   return (
     <div className="space-y-6">
       {/* Purchaser Info */}
@@ -39,7 +44,7 @@ export default function Step1WebsiteAndInfo({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("company_name")}
+              {t("company_name")} <Required />
             </label>
             <input
               type="text"
@@ -58,7 +63,7 @@ export default function Step1WebsiteAndInfo({
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("contact_name")}
+              {t("contact_name")} <Required />
             </label>
             <input
               type="text"
@@ -77,7 +82,7 @@ export default function Step1WebsiteAndInfo({
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("email")}
+              {t("email")} <Required />
             </label>
             <input
               type="email"
@@ -142,7 +147,7 @@ export default function Step1WebsiteAndInfo({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("campaign_name")}
+              {t("campaign_name")} <Required />
             </label>
             <input
               type="text"
@@ -161,26 +166,30 @@ export default function Step1WebsiteAndInfo({
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("campaign_code")}
+              {t("campaign_code")} <Required />
             </label>
             <input
               type="text"
               value={formData.campaignCode}
               name="campaignCode"
+              readOnly={isEditMode}
               onChange={(e) =>
                 setFormData((prev: any) => ({
                   ...prev,
                   campaignCode: e.target.value,
                 }))
               }
-              className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgTertiary} ${textTertiary} font-mono`}
+              className={clsx(
+                `w-full px-4 py-2 rounded-lg border ${borderColor} ${bgTertiary} ${textTertiary} font-mono`,
+                isEditMode && "cursor-not-allowed opacity-70",
+              )}
               placeholder={t("campaign_code_placeholder")}
             />
           </div>
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("voucher_amount")}
+              {t("voucher_amount")} <Required />
             </label>
             <input
               type="number"
@@ -212,7 +221,7 @@ export default function Step1WebsiteAndInfo({
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("start_date")}
+              {t("start_date")} <Required />
             </label>
             <input
               type="date"
@@ -227,7 +236,7 @@ export default function Step1WebsiteAndInfo({
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("end_date")} ({t("optional")})
+              {t("end_date")} <Required />
             </label>
             <input
               type="date"
@@ -293,7 +302,7 @@ export default function Step1WebsiteAndInfo({
           {/* Title */}
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("title")}
+              {t("title")} <Required />
             </label>
             <RichTextEditor
               value={formData.contentTitle}
@@ -310,7 +319,7 @@ export default function Step1WebsiteAndInfo({
           {/* Sub-title */}
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("subtitle")}
+              {t("subtitle")} <Required />
             </label>
             <RichTextEditor
               value={formData.contentSubtitle}
@@ -327,7 +336,7 @@ export default function Step1WebsiteAndInfo({
           {/* Greeting */}
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t("greeting")}
+              {t("greeting")} <Required />
             </label>
             <RichTextEditor
               value={formData.contentGreeting}

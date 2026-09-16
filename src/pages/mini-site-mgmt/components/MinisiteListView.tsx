@@ -1,5 +1,6 @@
 import clsx from "clsx";
 
+import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
 import { getStatusColor } from "../mini-site.utils";
@@ -8,7 +9,7 @@ export const defaultColumns = {
   code: true,
   name: true,
   companyName: true,
-  website: true,
+  minisiteUrl: true,
   status: true,
   voucherAmount: true,
   totalVouchers: true,
@@ -40,6 +41,16 @@ export default function MiniSiteListView({
   isLoading,
 }: MiniSiteListViewProps) {
   const { textPrimary, textSecondary, isDark } = useThemeClasses();
+  const { associatedWebsite } = useAppSelector((state) => state.auth);
+
+  const getMiniSiteUrl = (site: ICampaign) => {
+    const website = (associatedWebsite as IWebsite[])?.find(
+      (w) => w._id === site?.externalApiId,
+    );
+    const baseUrl = website?.websiteUrl?.replace(/\/+$/, "");
+    if (!baseUrl || !site?.code) return "";
+    return `${baseUrl}/mini-site?campCode=${site.code}`;
+  };
 
   const columns = [
     ...[{ key: "checkbox", label: "", width: "50px" }],
@@ -69,20 +80,25 @@ export default function MiniSiteListView({
       ),
     },
 
-    columnVisibility.website && {
-      key: "website",
-      label: t("website"),
-      render: (site: ICampaign) => (
-        <a
-          href={site?.externalApiId}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="text-teal-500 hover:text-teal-600"
-        >
-          {site?.externalApiId}
-        </a>
-      ),
+    columnVisibility.minisiteUrl && {
+      key: "minisiteUrl",
+      label: t("minisite_url"),
+      render: (site: ICampaign) => {
+        const url = getMiniSiteUrl(site);
+        if (!url) return <span className={textSecondary}>-</span>;
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-teal-500 hover:text-teal-600 truncate block max-w-55"
+            title={url}
+          >
+            {url}
+          </a>
+        );
+      },
     },
 
     columnVisibility.status && {
@@ -109,7 +125,7 @@ export default function MiniSiteListView({
     columnVisibility.totalVouchers && {
       key: "totalVouchers",
       label: t("total_vouchers"),
-      render: (site: ICampaign) => <>{site?.miniSite.amount}</>,
+      render: (site: ICampaign) => <>{site?.miniSite?.quantity}</>,
     },
 
     // columnVisibility.usedVouchers && {

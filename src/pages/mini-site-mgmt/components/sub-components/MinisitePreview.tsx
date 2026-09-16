@@ -14,6 +14,7 @@ interface MiniSitePreviewProps {
   products: any[];
   selectedProducts: string[];
   removeSelectedProduct: (productId: string) => void;
+  miniSiteUrl: string;
   copyMiniSiteUrl: () => void;
   minSelectedProducts?: number;
 }
@@ -29,6 +30,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
   products,
   selectedProducts,
   removeSelectedProduct,
+  miniSiteUrl,
   copyMiniSiteUrl,
   minSelectedProducts = 3,
 }) => {
@@ -56,8 +58,6 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
       setActiveIndex(Math.max(0, count - 1));
     }
   }, [count, activeIndex]);
-
-  const miniSiteUrl = `https://tav-8.co.il/mini-site?campCode=${formData.campaignCode}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=${formData.email}`;
 
   const goPrev = () => setActiveIndex((prev) => (prev - 1 + count) % count);
   const goNext = () => setActiveIndex((prev) => (prev + 1) % count);
@@ -163,7 +163,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                   onClick={goPrev}
                   disabled={count < 2}
                   className={clsx(
-                    "absolute left-0 z-20 p-2.5 rounded-full shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed",
+                    "absolute left-0 z-20 p-2.5 rounded-full shadow-md transition-all  disabled:cursor-not-allowed",
                     isDark
                       ? "bg-gray-800 hover:bg-gray-700 text-gray-100"
                       : "bg-white hover:bg-gray-50 text-gray-700",
@@ -197,10 +197,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                                   ? "ring-purple-500/70 shadow-purple-950/50"
                                   : "ring-purple-500 shadow-purple-200/60",
                               )
-                            : clsx(
-                                "shadow-md cursor-pointer",
-                                isDark ? "opacity-50" : "opacity-70",
-                              ),
+                            : clsx("shadow-md cursor-pointer"),
                           isDark ? "bg-gray-800" : "bg-white",
                         )}
                         style={{
@@ -223,7 +220,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                             <X className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        <div className="relative w-full h-2/3">
+                        <div className="relative w-full h-3/4">
                           <ImageWithFallback
                             src={product.images?.[0]?.image}
                             alt={product.name}
@@ -236,7 +233,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                             )}
                           />
                         </div>
-                        <div className="p-3">
+                        <div className="p-2">
                           <h4
                             className={`text-sm font-medium truncate ${textPrimary}`}
                           >
@@ -269,7 +266,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                   onClick={goNext}
                   disabled={count < 2}
                   className={clsx(
-                    "absolute right-0 z-20 p-2.5 rounded-full shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed",
+                    "absolute right-0 z-20 p-2.5 rounded-full shadow-md transition-all disabled:cursor-not-allowed",
                     isDark
                       ? "bg-gray-800 hover:bg-gray-700 text-gray-100"
                       : "bg-white hover:bg-gray-50 text-gray-700",
@@ -338,7 +335,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
           <button
             onClick={copyMiniSiteUrl}
             className={clsx(
-              "px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 shrink-0",
+              "px-4 py-2 cursor-pointer rounded-lg border transition-colors flex items-center gap-2 shrink-0",
               borderColor,
               textSecondary,
               isDark

@@ -1,13 +1,15 @@
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 
 interface SectionProps {
-  miniSite: any;
-  t: any;
+  miniSite: IMinisiteDetailsRes | undefined;
 }
 
-export default function OverviewSection({ miniSite, t }: SectionProps) {
+export default function OverviewSection({ miniSite }: SectionProps) {
+  const { t } = useTranslation("minisites");
+
   const { language, textPrimary, textSecondary, borderColor, isDark } =
     useThemeClasses();
 
@@ -48,7 +50,16 @@ export default function OverviewSection({ miniSite, t }: SectionProps) {
           <div className="flex flex-col gap-4">
             <dt className={textSecondary}>{t("voucher_amount")}</dt>
             <dd className={clsx("font-medium", textPrimary)}>
-              {miniSite?.amount ? `₪${miniSite?.amount}` : "—"}
+              {miniSite?.miniSite.amount
+                ? `₪${miniSite?.miniSite.amount}`
+                : "—"}
+            </dd>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <dt className={textSecondary}>{t("total_vouchers")}</dt>
+            <dd className={clsx("font-medium", textPrimary)}>
+              {miniSite?.miniSite.quantity ? miniSite?.miniSite.quantity : "—"}
             </dd>
           </div>
 
@@ -185,9 +196,8 @@ export default function OverviewSection({ miniSite, t }: SectionProps) {
                 textPrimary,
               )}
             >
-              {miniSite?.companyInfo?.countryCode &&
-              miniSite?.companyInfo?.phoneNumber
-                ? `+${miniSite.companyInfo.countryCode} ${miniSite.companyInfo.phoneNumber}`
+              {miniSite?.companyInfo?.phoneNumber
+                ? `${miniSite.companyInfo.phoneNumber}`
                 : "—"}
             </div>
           </div>

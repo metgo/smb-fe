@@ -28,6 +28,7 @@ const CreateMinisiteWizard = ({
   const {
     t,
     associatedWebsite,
+    isEditMode,
     isPublishing,
     isCreating,
     isSaving,
@@ -36,14 +37,11 @@ const CreateMinisiteWizard = ({
     setLogoGcsUrl,
 
     currentStep,
-    setCurrentStep,
     steps,
     totalSteps,
 
     formData,
     setFormData,
-
-    saveDraft,
     handlePublish,
 
     products,
@@ -69,6 +67,7 @@ const CreateMinisiteWizard = ({
     handleNext,
     handlePrev,
 
+    miniSiteUrl,
     copyMiniSiteUrl,
     downloadSampleXLS,
   } = useCreateMinisiteWizard(editData);
@@ -95,9 +94,9 @@ const CreateMinisiteWizard = ({
         </div>
 
         {/* Right Side */}
-        <div className="ml-auto">
+        <div className="flex-1 min-w-48 lg:flex-initial">
           <ReactSelect
-            minWidth={180}
+            minWidth={250}
             value={formData.externalApiId}
             onChange={(e) =>
               setFormData((prev: any) => ({
@@ -117,7 +116,6 @@ const CreateMinisiteWizard = ({
           steps={steps}
           currentStep={currentStep}
           totalSteps={steps.length}
-          onStepClick={setCurrentStep}
         />
       </div>
 
@@ -129,6 +127,7 @@ const CreateMinisiteWizard = ({
             currentStep={currentStep}
             formData={formData}
             setFormData={setFormData}
+            isEditMode={isEditMode}
           />
         )}
 
@@ -174,6 +173,7 @@ const CreateMinisiteWizard = ({
             products={products}
             selectedProducts={selectedProducts}
             removeSelectedProduct={removeSelectedProduct}
+            miniSiteUrl={miniSiteUrl}
             copyMiniSiteUrl={copyMiniSiteUrl}
             minSelectedProducts={MIN_SELECTED_PRODUCTS}
           />
@@ -206,7 +206,6 @@ const CreateMinisiteWizard = ({
         isPublishing={isPublishing}
         onPrevious={handlePrev}
         onNext={handleNext}
-        onSaveDraft={saveDraft}
         onPublish={() => handlePublish(onClose)}
       />
     </ModalWrapper>

@@ -1,25 +1,27 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Copy, ImageOff } from "lucide-react";
 
+import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useTranslation } from "react-i18next";
 
 const TILE_SIZES = [256, 208, 176, 144]; // px, indexed by |offset|
 
 export default function MinisitePreviewSection({
   code,
   miniSite,
+  externalApiId,
   productIds,
   backgroundImage,
   footerImage,
 }: Partial<IMinisiteDetailsRes>) {
   const { t } = useTranslation("minisites");
+  const { associatedWebsite } = useAppSelector((state) => state.auth);
 
   const {
-    language,
     isRTL,
     isDark,
     textPrimary,
@@ -39,8 +41,14 @@ export default function MinisitePreviewSection({
     }
   }, [count, activeIndex]);
 
-  const dir = language === "en" ? "ltr" : "rtl";
-  const miniSiteUrl = `https://tav-8.co.il/mini-site?campCode=${code ?? ""}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=`;
+  const miniSiteUrl = useMemo(() => {
+    const website = (associatedWebsite as IWebsite[]).find(
+      (w) => w._id === externalApiId,
+    );
+    const baseUrl = website?.websiteUrl?.replace(/\/+$/, "");
+    if (!baseUrl) return "";
+    return `${baseUrl}/mini-site?campCode=${code ?? ""}`;
+  }, [associatedWebsite, externalApiId, code]);
 
   const copyMiniSiteUrl = () => {
     navigator.clipboard.writeText(miniSiteUrl);
@@ -66,7 +74,6 @@ export default function MinisitePreviewSection({
             ? "from-gray-900 to-gray-950 border-gray-800"
             : "from-white to-gray-50 border-gray-200",
         )}
-        dir={dir}
       >
         {backgroundImage && (
           <div className="absolute inset-0 ">
@@ -157,10 +164,7 @@ export default function MinisitePreviewSection({
                                   ? "ring-purple-500/70 shadow-purple-950/50"
                                   : "ring-purple-500 shadow-purple-200/60",
                               )
-                            : clsx(
-                                "shadow-md cursor-pointer",
-                                isDark ? "opacity-50" : "opacity-70",
-                              ),
+                            : clsx("shadow-md cursor-pointer"),
                           isDark ? "bg-gray-800" : "bg-white",
                         )}
                         style={{
@@ -171,7 +175,7 @@ export default function MinisitePreviewSection({
                         }}
                         onClick={() => !isActive && setActiveIndex(index)}
                       >
-                        <div className="relative w-full h-2/3">
+                        <div className="relative w-full h-3/4">
                           <ImageWithFallback
                             src={product?.image}
                             alt={product.name}

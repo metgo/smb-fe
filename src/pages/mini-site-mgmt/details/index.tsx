@@ -1,17 +1,24 @@
 import clsx from "clsx";
 import { useState } from "react";
+import { Edit } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { Edit } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { miniSiteTabs } from "@/constants/tabs";
 import { BackToListBtn } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Spinner, TabsSection } from "@/components/shared";
-import { DetailTitleSection } from "@/components/details-sections";
-import { useGetMiniSiteByIdQuery } from "@/store/api/miniSiteQueryApi";
+import {
+  AuditInfoDetails,
+  DetailTitleSection,
+} from "@/components/details-sections";
+import { toast } from "sonner";
+import {
+  useGetMiniSiteByIdQuery,
+  useUpdateMiniSiteStatusMutation,
+} from "@/store/api/miniSiteQueryApi";
 
 import MiniOverviewSection from "./components/MiniOverviewSection";
 import MinisitePreviewSection from "./components/MinisitePreviewSection";
@@ -19,11 +26,19 @@ import MinisiteCreateWizard from "../components/CreateMinisiteWizard";
 
 type TabId = (typeof miniSiteTabs)[number]["id"];
 
+const statusOptions = ["ACTIVE", "INACTIVE", "DRAFT", "EXPIRED"];
+
 export default function MiniSiteDetailsPage() {
   const { t } = useTranslation("minisites");
-  const { isDark, textPrimary, textSecondary, borderColor, bgPrimary } =
-    useThemeClasses();
-  // const { userRole } = useAppSelector((state) => state.auth);
+  const { t: tc } = useTranslation("common");
+  const {
+    isDark,
+    textPrimary,
+    textSecondary,
+    bgPrimary,
+    borderColor,
+    bgSecondary,
+  } = useThemeClasses();
 
   const [searchParams] = useSearchParams();
   const miniSiteId = searchParams.get("miniSiteId") ?? "";
@@ -35,32 +50,40 @@ export default function MiniSiteDetailsPage() {
     refetch,
   } = useGetMiniSiteByIdQuery(miniSiteId ? { miniSiteId } : skipToken);
 
+  const [updateStatus, { isLoading: isUpdatingStatus }] =
+    useUpdateMiniSiteStatusMutation();
+
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [isEditClicked, setIsEditClicked] = useState(false);
 
-  // const canEdit = ["superadmin", "admin"].includes(userRole);
+  const handleStatusChange = async (status: string) => {
+    if (!miniSiteId || status === miniSite?.status) return;
+    try {
+      await updateStatus({ miniSiteId, status }).unwrap();
+      toast.success(tc("status_updated") || "Status updated");
+      refetch();
+    } catch {
+      toast.error(tc("status_update_failed") || "Failed to update status");
+    }
+  };
 
   const renderContent = () => {
-    const commonProps = {
-      miniSite,
-      t,
-      isDark,
-      textPrimary,
-      textSecondary,
-      borderColor,
-    };
-
     switch (activeTab) {
       case "overview":
-        return <MiniOverviewSection {...commonProps} />;
+        return <MiniOverviewSection miniSite={miniSite} />;
       case "preview":
         return <MinisitePreviewSection {...miniSite} />;
-      default:
+      case "audit_info":
         return (
-          <div className={clsx("py-16 text-center", textSecondary)}>
-            {t("select_a_section")}
-          </div>
+          <AuditInfoDetails
+            createdAt={miniSite?.createdAt}
+            updatedAt={miniSite?.updatedAt}
+            createdBy={miniSite?.createdBy}
+            updatedBy={miniSite?.updatedBy}
+          />
         );
+      default:
+        return null;
     }
   };
 
@@ -100,18 +123,39 @@ export default function MiniSiteDetailsPage() {
           imageSrc={miniSite?.logoPath}
           backPath={routes.miniSiteMgmt}
           actions={
-            <button
-              onClick={() => setIsEditClicked(true)}
-              className={clsx(
-                "px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium",
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-teal-400 bg-gray-900"
-                  : "border-gray-300 hover:bg-gray-100 text-teal-700 bg-white",
-              )}
-            >
-              <Edit className="w-4 h-4" />
-              {t("edit")}
-            </button>
+            <div className="flex items-center gap-2">
+              <select
+                value={miniSite?.status ?? ""}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                disabled={isUpdatingStatus}
+                className={clsx(
+                  "px-3 py-2 rounded-lg border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500",
+                  borderColor,
+                  bgSecondary,
+                  textPrimary,
+                )}
+                style={{ colorScheme: isDark ? "dark" : "light" }}
+              >
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {tc(status.toLowerCase())}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                onClick={() => setIsEditClicked(true)}
+                className={clsx(
+                  "px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer text-sm font-medium",
+                  isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-teal-400 bg-gray-900"
+                    : "border-gray-300 hover:bg-gray-100 text-teal-700 bg-white",
+                )}
+              >
+                <Edit className="w-4 h-4" />
+                {tc("edit")}
+              </button>
+            </div>
           }
         />
       </div>

@@ -33,11 +33,11 @@ export const defaultColumns = {
   code: true,
   name: true,
   companyName: true,
-  website: false,
+  minisiteUrl: true,
   status: true,
-  voucherAmount: false,
-  totalVouchers: false,
-  usedVouchers: false,
+  voucherAmount: true,
+  totalVouchers: true,
+  usedVouchers: true,
   revenue: true,
 };
 type ColumnVisibility = typeof defaultColumns;
@@ -46,16 +46,17 @@ const columnDefinitions = [
   { key: "code" as keyof ColumnVisibility, isDefault: true },
   { key: "name" as keyof ColumnVisibility, isDefault: true },
   { key: "companyName" as keyof ColumnVisibility, isDefault: true },
-  { key: "website" as keyof ColumnVisibility, isDefault: false },
+  { key: "minisiteUrl" as keyof ColumnVisibility, isDefault: true },
   { key: "status" as keyof ColumnVisibility, isDefault: true },
-  { key: "voucherAmount" as keyof ColumnVisibility, isDefault: false },
-  { key: "totalVouchers" as keyof ColumnVisibility, isDefault: false },
-  { key: "usedVouchers" as keyof ColumnVisibility, isDefault: false },
+  { key: "voucherAmount" as keyof ColumnVisibility, isDefault: true },
+  { key: "totalVouchers" as keyof ColumnVisibility, isDefault: true },
+  { key: "usedVouchers" as keyof ColumnVisibility, isDefault: true },
   { key: "revenue" as keyof ColumnVisibility, isDefault: true },
 ];
 
 export default function MiniSiteMgmtPage() {
   const { t } = useTranslation("minisites");
+  const { t: tc } = useTranslation("common");
 
   const {
     bgPrimary,
@@ -223,11 +224,11 @@ export default function MiniSiteMgmtPage() {
                   }
                   className={`px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                 >
-                  <option value="all">{t("all_statuses")}</option>
-                  <option value="active">{t("active")}</option>
-                  <option value="draft">{t("draft")}</option>
-                  <option value="completed">{t("completed")}</option>
-                  <option value="paused">{t("paused")}</option>
+                  <option value="all">{tc("all")}</option>
+                  <option value="active">{tc("active")}</option>
+                  <option value="inactive">{tc("inactive")}</option>
+                  <option value="draft">{tc("draft")}</option>
+                  <option value="expired">{tc("expired")}</option>
                 </select>
               </div>
               {viewMode === "list" && (

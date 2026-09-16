@@ -19,7 +19,6 @@ import {
   BusinessesMgmtPage,
   PendingApprovalsPage,
   ProductsMgmtPage,
-  MiniCampaignsMgmtPage,
   EventsMgmtPage,
   ProfilePage,
   OrdersMgmtPage,
@@ -581,10 +580,6 @@ function App() {
             { path: routes.eventDetails, element: <EventDetailsPage /> },
 
             { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
-            {
-              path: routes.miniCampaignMgmt,
-              element: <MiniCampaignsMgmtPage />,
-            },
 
             { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
             { path: routes.eventDetails, element: <EventDetailsPage /> },

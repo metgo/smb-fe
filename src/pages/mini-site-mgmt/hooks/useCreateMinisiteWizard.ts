@@ -51,10 +51,6 @@ export interface MiniSiteFormData {
   primaryProducts: string[];
 
   // Step 4
-  sendTiming: "immediate" | "scheduled";
-  scheduledDate: string;
-  scheduledTime: string;
-  allowInstanceCreation: boolean;
   instanceName: string;
   instanceEmail: string;
   instancePhone: string;
@@ -63,6 +59,23 @@ export interface MiniSiteFormData {
 
 const totalSteps = 6;
 const MIN_SELECTED_PRODUCTS = 3;
+
+// `<input type="date">` requires a strict "yyyy-MM-dd" value; API dates
+// come back as full ISO datetime strings, so they need to be trimmed.
+const toDateInputValue = (value?: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+};
+
+const getDefaultStartDate = () => toDateInputValue(new Date().toISOString());
+
+const getDefaultEndDate = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() + 6);
+  return toDateInputValue(date.toISOString());
+};
 
 const initialFormData: MiniSiteFormData = {
   externalApiId: "",
@@ -75,8 +88,8 @@ const initialFormData: MiniSiteFormData = {
   campaignCode: "",
   voucherAmount: "",
   totalVouchers: "",
-  startDate: "",
-  endDate: "",
+  startDate: getDefaultStartDate(),
+  endDate: getDefaultEndDate(),
   deliveryArea: "home",
   contentTitle: "",
   contentSubtitle: "",
@@ -87,10 +100,6 @@ const initialFormData: MiniSiteFormData = {
   selectedProducts: [],
   primaryProducts: [],
 
-  sendTiming: "immediate",
-  scheduledDate: "",
-  scheduledTime: "",
-  allowInstanceCreation: false,
   instanceName: "",
   instanceEmail: "",
   instancePhone: "",
@@ -128,6 +137,10 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
           contentTitle: editData.miniSite?.title ?? "",
           contentSubtitle: editData.miniSite?.subTitle ?? "",
           contentGreeting: editData.miniSite?.greeting ?? "",
+          startDate: toDateInputValue(editData.startDate),
+          endDate: toDateInputValue(editData.endDate),
+          voucherAmount: String(editData?.miniSite?.amount),
+          totalVouchers: String(editData?.miniSite?.quantity),
         }
       : initialFormData,
   );
@@ -139,7 +152,24 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
   const [primaryProducts, setPrimaryProducts] = useState<string[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const [productPage, setProductPage] = useState(1);
-  const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
+
+  // In edit mode, `editData.productIds` carries a lightweight product shape
+  // for whatever was already selected. Normalize it to the same shape the
+  // marketplace product API returns so selected products can still render
+  // (e.g. in "show selected only") even before/without being fetched.
+  const editModeProducts = useMemo(
+    () =>
+      (editData?.productIds ?? []).map((p) => ({
+        _id: p._id,
+        name: p.name,
+        images: p.image ? [{ image: p.image }] : [],
+        price: { sellingPrice: p.price },
+      })),
+    [editData],
+  );
+
+  const [combinedProducts, setCombinedProducts] =
+    useState<any[]>(editModeProducts);
 
   // Step 5: Voucher assignees
   const [assignees, setAssignees] = useState<IMinisiteVoucherAssignee[]>([
@@ -179,14 +209,9 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
         greeting: formData.contentGreeting,
         isDeliveredToHome: formData.deliveryArea === "office" ? false : true,
         deliveryAddress: formData.officeAddress,
-      },
-      // Monetary / voucher details
-      voucher: {
         amount: Number(formData.voucherAmount) || 0,
-        totalVouchers: Number(formData.totalVouchers) || 0,
-        currency: "ILS", // ← hard-code or add to formData if multi-currency
+        quantity: Number(formData.totalVouchers) || 0,
       },
-
       // Dates & timing (similar to opening hours / availability)
       startDate: formData.startDate, // should be ISO string "2025-04-10"
       endDate: formData.endDate,
@@ -358,10 +383,12 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
     return () => clearTimeout(timer);
   }, [productSearch]);
 
-  // Reset pagination whenever the effective query changes.
+  // Reset pagination whenever the effective query changes. Keep any
+  // edit-mode selected products around so they don't disappear from the
+  // "show selected only" view while the fetched list is reloading.
   useEffect(() => {
     setProductPage(1);
-    setCombinedProducts([]);
+    setCombinedProducts(editModeProducts);
   }, [debouncedProductSearch, formData.externalApiId, language]);
 
   // Fetch marketplace products for the selected website on both the Select
@@ -378,6 +405,7 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
       page: productPage,
       limit: 20,
       locale: language,
+      status: "APPROVED",
       websiteId: formData.externalApiId,
       ...(debouncedProductSearch ? { search: debouncedProductSearch } : {}),
     },
@@ -386,18 +414,28 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
 
   useEffect(() => {
     if (!productData?.data?.length) {
-      if (productPage === 1) setCombinedProducts([]);
+      if (productPage === 1) setCombinedProducts(editModeProducts);
       return;
     }
     setCombinedProducts((prev) => {
-      if (productPage === 1) return productData.data;
-      const existingIds = new Set(prev.map((p: any) => p._id));
-      const newItems = productData.data.filter(
+      const base =
+        productPage === 1
+          ? // Fetched data always has the fullest product shape, so let it
+            // take priority; keep edit-mode entries not present on this page.
+            [
+              ...productData.data,
+              ...editModeProducts.filter(
+                (p) => !productData.data.some((d: any) => d._id === p._id),
+              ),
+            ]
+          : prev;
+      const existingIds = new Set(base.map((p: any) => p._id));
+      const newItems = (productPage === 1 ? [] : productData.data).filter(
         (p: any) => !existingIds.has(p._id),
       );
-      return newItems.length ? [...prev, ...newItems] : prev;
+      return newItems.length ? [...base, ...newItems] : base;
     });
-  }, [productData, productPage]);
+  }, [productData, productPage, editModeProducts]);
 
   const hasMoreProducts = !!productData?.meta?.hasNextPage;
 
@@ -440,12 +478,9 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
     !!formData.companyName.trim() &&
     !!formData.contactName.trim() &&
     !!formData.email.trim() &&
-    !!formData.phoneNumber.trim() &&
-    !!formData.officeAddress.trim() &&
     !!formData.campaignName.trim() &&
     !!formData.campaignCode.trim() &&
     !!formData.voucherAmount.trim() &&
-    !!formData.totalVouchers.trim() &&
     !!formData.startDate.trim() &&
     !!formData.endDate.trim() &&
     !!getPlainText(formData.contentTitle).trim() &&
@@ -494,7 +529,14 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
         return;
       }
     }
-    if (miniSiteId) {
+    if (currentStep === 5 && !isStep5Valid) {
+      toast.error(
+        t("assignee_info_required") ||
+          "Please fill in name and email or phone for each voucher assignee",
+      );
+      return;
+    }
+    if (miniSiteId && currentStep === 5) {
       try {
         await uploadVouchers(miniSiteId);
       } catch (err: any) {
@@ -520,23 +562,35 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
     setCurrentStep((prev) => (prev > 1 ? prev - 1 : prev));
   }, []);
 
+  const selectedWebsite = useMemo(
+    () =>
+      (associatedWebsite as IWebsite[]).find(
+        (w) => w._id === formData.externalApiId,
+      ),
+    [associatedWebsite, formData.externalApiId],
+  );
+
+  const miniSiteUrl = useMemo(() => {
+    const baseUrl = selectedWebsite?.websiteUrl?.replace(/\/+$/, "");
+    if (!baseUrl) return "";
+    return `${baseUrl}/mini-site?campCode=${formData.campaignCode}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=${formData.email}`;
+  }, [selectedWebsite, formData.campaignCode, formData.email]);
+
   const copyMiniSiteUrl = useCallback(() => {
-    const url = `https://tav-8.co.il/mini-site?campCode=${formData.campaignCode}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=${formData.email}`;
-    navigator.clipboard.writeText(url);
-  }, [formData.campaignCode, formData.email]);
+    if (!miniSiteUrl) return;
+    navigator.clipboard.writeText(miniSiteUrl);
+  }, [miniSiteUrl]);
 
   const downloadSampleXLS = useCallback(() => {
     const rows = [
       {
-        Name: "John Doe",
-        Email: "john@example.com",
-        CountryCode: "972",
+        AssigneeName: "John Doe",
+        AssigneeEmail: "john@example.com",
         Phone: "501234567",
       },
       {
-        Name: "Jane Smith",
-        Email: "jane@example.com",
-        CountryCode: "972",
+        AssigneeName: "Jane Smith",
+        AssigneeEmail: "jane@example.com",
         Phone: "501234568",
       },
     ];
@@ -559,6 +613,7 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
   return {
     t,
     associatedWebsite,
+    isEditMode: !!editData,
 
     // publishing / saving state
     isPublishing,
@@ -611,6 +666,7 @@ export const useCreateMinisiteWizard = (editData?: IMinisiteDetailsRes) => {
     handlePrev,
 
     // misc actions
+    miniSiteUrl,
     copyMiniSiteUrl,
     downloadSampleXLS,
   };

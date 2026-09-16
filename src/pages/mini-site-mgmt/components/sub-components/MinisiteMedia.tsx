@@ -12,6 +12,7 @@ interface SingleMediaUploadProps {
   hint?: string;
   imagePath: string;
   onImageChange: (url: string) => void;
+  required?: boolean;
 }
 
 function SingleMediaUpload({
@@ -19,6 +20,7 @@ function SingleMediaUpload({
   hint,
   imagePath,
   onImageChange,
+  required,
 }: SingleMediaUploadProps) {
   const { t } = useTranslation("minisites");
   const { textSecondary, textTertiary, borderColor, isDark } =
@@ -47,7 +49,9 @@ function SingleMediaUpload({
 
   return (
     <div>
-      <p className={clsx("text-sm font-medium mb-1", textSecondary)}>{label}</p>
+      <p className={clsx("text-sm font-medium mb-1", textSecondary)}>
+        {label} {required && <span className="text-red-500">*</span>}
+      </p>
       {hint && <p className={clsx("text-xs mb-4", textTertiary)}>{hint}</p>}
 
       {!image ? (
@@ -184,18 +188,21 @@ export default function MinisiteMedia({
         label={t("company_logo") || "Company Logo"}
         imagePath={logoImagePath}
         onImageChange={onLogoImageChange}
+        required
       />
 
       <SingleMediaUpload
         label={t("background_image") || "Background Image"}
         imagePath={backgroundImagePath}
         onImageChange={onBackgroundImageChange}
+        required
       />
 
       <SingleMediaUpload
         label={t("footer_image") || "Footer Image"}
         imagePath={footerImagePath}
         onImageChange={onFooterImageChange}
+        required
       />
     </div>
   );

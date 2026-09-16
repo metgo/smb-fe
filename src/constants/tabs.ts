@@ -7,6 +7,7 @@ import {
   Clock,
   FileText,
   Globe,
+  History,
   ImageIcon,
   LayoutList,
   MapPin,
@@ -28,22 +29,11 @@ export const businessTabs = [
   { id: "social", label: "social_networks", icon: Globe },
   { id: "delivery", label: "delivery_policy", icon: Truck },
   { id: "hours", label: "operating_hours", icon: Clock },
-  // { id: "products", label: "products", icon: Package },
 ];
 export const miniSiteTabs = [
   { id: "overview", label: "overview", icon: FileText },
-  // { id: "product", label: "product", icon: Users },
   { id: "preview", label: "preview", icon: Monitor },
-  // { id: "location", label: "location_map", icon: MapPin },
-  // { id: "media", label: "images_branding", icon: ImageIcon },
-  // { id: "social", label: "social_networks", icon: Globe },
-  // { id: "delivery", label: "delivery_policy", icon: Truck },
-  // {
-  //   id: "accessibility",
-  //   label: "accessibility_group_types",
-  //   icon: Accessibility,
-  // },
-  // { id: "hours", label: "operating_hours", icon: Clock },
+  { id: "audit_info", label: "audit_info", icon: History },
 ];
 export const eventTabs = [
   { id: "overview", label: "overview", icon: FileText },
