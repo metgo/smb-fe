@@ -109,6 +109,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
       const ticketRequest = new GetAllTicketsRequest();
       ticketRequest.eventId = event.eventId.toString();
       ticketRequest.status = TicketStatus.ACTIVE;
+      ticketRequest.includeHidden = query.showHidden === true;
       const tickets = await this.queryBus.execute(
         new GetAllTicketsQuery(ticketRequest),
       );

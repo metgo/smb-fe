@@ -100,6 +100,9 @@ export class Ticket extends AuditableSchema {
   @Prop({ type: Number, default: 0 })
     order: number;
 
+  @Prop({ type: Boolean, default: false })
+    isHidden: boolean;
+
   @Prop({
     type: [
       {

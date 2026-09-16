@@ -28,6 +28,8 @@ export class GetTicketByIdHandler implements IQueryHandler<GetTicketByIdQuery> {
           $match: {
             _id: new mongoose.Types.ObjectId(id),
             status: TicketStatus.ACTIVE,
+            isDeleted: { $ne: true },
+            // Allow fetching hidden tickets via direct link
           },
         },
         {

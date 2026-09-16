@@ -26,4 +26,12 @@ export class GetAllTicketsRequest extends CommonFilterQuery {
   @IsOptional()
   @IsEnum(TicketType)
     type: TicketType;
+
+  @ApiProperty({
+    required: false,
+    description: 'Include hidden tickets in the results (default: false)',
+    default: false,
+  })
+  @IsOptional()
+    includeHidden?: boolean = false;
 }

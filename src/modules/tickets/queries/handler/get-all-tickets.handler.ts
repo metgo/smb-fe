@@ -21,7 +21,7 @@ export class GetAllTicketsHandler implements IQueryHandler<GetAllTicketsQuery> {
   async execute(queries: GetAllTicketsQuery): Promise<Ticket[]> {
     try {
       const {
-        eventId, search, status, type,
+        eventId, search, status, type, includeHidden,
       } = queries.request;
 
       const query: any = {
@@ -33,6 +33,8 @@ export class GetAllTicketsHandler implements IQueryHandler<GetAllTicketsQuery> {
               { 'quantity.isUnlimited': true },
             ],
           },
+          // Only filter out hidden tickets if includeHidden is not explicitly set to true
+          ...(includeHidden !== true ? [{ isHidden: { $ne: true } }] : []),
           ...(eventId
             ? [{ eventId: new mongoose.Types.ObjectId(eventId) }]
             : []),
