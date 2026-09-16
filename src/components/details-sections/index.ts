@@ -1,5 +1,6 @@
 import Attributes from "./Attributes";
 import AttributesDetails from "./AttributesDetails";
+import AuditInfoDetails from "./AuditInfoDetails";
 import ConnectedDmoAuthorityWebsites from "./ConnectedDmoAuthorityWebsites";
 import DeliveryPolicyOption from "./DeliveryPolicyOption";
 import DeliveryPolicyOptionDetails from "./DeliveryPolicyOptionDetails";
@@ -14,6 +15,7 @@ export {
   MediaDetails,
   SectionHeader,
   LocationDetails,
+  AuditInfoDetails,
   LocationDetailsclosed,
   AttributesDetails,
   DeliveryPolicyOption,

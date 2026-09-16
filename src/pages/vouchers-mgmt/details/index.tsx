@@ -281,7 +281,7 @@ export default function VoucherDetailsPage() {
                     </>
                   )}
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(voucher?.status)}`}
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(voucher?.status, isDark)}`}
                   >
                     {getStatusLabel(voucher?.status)}
                   </span>

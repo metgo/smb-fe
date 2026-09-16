@@ -222,6 +222,7 @@ const VouchersList = ({
             <span
               className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(
                 voucher.status,
+                isDark,
               )}`}
             >
               {getStatusLabel(voucher.status)}

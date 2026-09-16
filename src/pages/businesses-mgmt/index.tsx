@@ -22,7 +22,6 @@ import {
   Map,
   Compass,
 } from "lucide-react";
-
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {

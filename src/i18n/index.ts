@@ -22,6 +22,7 @@ i18n
       "businesses",
       "products",
       "poi",
+      "campaign",
       "trips",
       "tour",
       "content",

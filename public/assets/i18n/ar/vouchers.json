@@ -226,5 +226,6 @@
   "noDataToExport": "لا توجد بيانات للتصدير",
   "remaining_balance": "الرصيد المتبقي",
   "expired": "منتهي",
-  "revenue": "الإيرادات"
+  "revenue": "الإيرادات",
+  "voucher_id": "معرف القسيمة"
 }

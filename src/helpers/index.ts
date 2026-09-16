@@ -381,24 +381,39 @@ export const formatDate = (dateString: string | Date) => {
   });
 };
 
-export const getStatusColor = (status: IVoucher["status"]) => {
+export const getStatusColor = (status: IVoucher["status"], isDark: boolean) => {
   switch (status) {
     case "ACTIVE":
-      return "bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/50";
+      return isDark
+        ? "bg-blue-900/30 text-blue-300 border border-blue-700/50"
+        : "bg-blue-300 text-blue-900 border border-blue-300";
     case "ASSIGNED":
-      return "bg-purple-100 text-white border border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700/50";
+      return isDark
+        ? "bg-purple-900/30 text-purple-300 border border-purple-700/50"
+        : "bg-purple-300 text-white border border-purple-300";
     case "UNASSIGNED":
-      return "bg-gray-200 text-white border border-gray-400 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700/50";
+      return isDark
+        ? "bg-gray-900/30 text-gray-300 border border-gray-700/50"
+        : "bg-gray-200 text-white border border-gray-400";
     case "REDEEMED":
-      return "bg-green-100 text-green-900 border border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50";
+      return isDark
+        ? "bg-green-900/30 text-green-300 border border-green-700/50"
+        : "bg-green-300 text-green-900 border border-green-300";
     case "EXPIRED":
-      return "bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/50";
+      return isDark
+        ? "bg-amber-900/30 text-amber-300 border border-amber-700/50"
+        : "bg-amber-300 text-amber-900 border border-amber-300";
     case "CANCELED":
-      return "bg-red-100 text-red-900 border border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/50";
+      return isDark
+        ? "bg-red-900/30 text-red-300 border border-red-700/50"
+        : "bg-red-300 text-red-900 border border-red-300";
     default:
-      return "bg-gray-200 text-gray-900 border border-gray-400 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700/50";
+      return isDark
+        ? "bg-gray-900/30 text-gray-300 border border-gray-700/50"
+        : "bg-gray-200 text-gray-900 border border-gray-400";
   }
 };
+
 export const getStatusLabel = (status: IVoucher["status"]) => {
   const labels: Record<string, string> = {
     ACTIVE: "Active",

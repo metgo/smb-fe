@@ -18,9 +18,6 @@ import {
   Receipt,
   Megaphone,
   FileText,
-  // Rss,
-  // SlidersHorizontal,
-  // Layout,
   Users,
   File,
   UserCircle,
@@ -40,6 +37,7 @@ import {
   ShoppingBag,
   BarChart3,
   Link2,
+  Layout,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -210,28 +208,28 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "local-economy",
-      path: "#local_economy",
-      label: t("local_economy") || "Local Economy",
-      icon: Wallet,
+      id: "vouchers",
+      path: routes.voucherMgmt,
+      label: t("vouchers") || "Vouchers",
+      icon: Ticket,
       isEnabled: true,
-      subItems: [
-        {
-          id: "vouchers",
-          path: routes.voucherMgmt,
-          label: t("vouchers") || "Vouchers",
-          icon: Ticket,
-          isEnabled: true,
-        },
-        {
-          id: "mini-campaign",
-          path: routes.miniCampaign,
-          label: t("mini_campaigns") || "Mini-Campaigns",
-          icon: Megaphone,
-          isEnabled: false,
-        },
-      ],
     },
+    // {
+    //   id: "local-economy",
+    //   path: "#local_economy",
+    //   label: t("local_economy") || "Local Economy",
+    //   icon: Wallet,
+    //   isEnabled: true,
+    //   subItems: [
+    //     {
+    //       id: "vouchers",
+    //       path: routes.voucherMgmt,
+    //       label: t("vouchers") || "Vouchers",
+    //       icon: Ticket,
+    //       isEnabled: true,
+    //     },
+    //   ],
+    // },
 
     {
       id: "site-management",
@@ -268,28 +266,13 @@ export default function Sidebar() {
           icon: Link2,
           isEnabled: true,
         },
-
-        // {
-        //   id: "news-feed",
-        //   path: routes.dashboard,
-        //   label: t("news_feed") || "News Feed",
-        //   icon: Rss,
-        //   isEnabled: false,
-        // },
-        // {
-        //   id: "feed-settings",
-        //   path: routes.dashboard,
-        //   label: t("feed_settings") || "Feed Settings",
-        //   icon: SlidersHorizontal,
-        //   isEnabled: false,
-        // },
-        // {
-        //   id: "mini-site",
-        //   path: routes.dashboard,
-        //   label: t("mini_site") || "Mini-site",
-        //   icon: Layout,
-        //   isEnabled: false,
-        // },
+        {
+          id: "mini-site",
+          path: routes.miniSiteMgmt,
+          label: t("mini_site") || "Mini-site",
+          icon: Layout,
+          isEnabled: true,
+        },
       ],
     },
     {
@@ -509,7 +492,7 @@ export default function Sidebar() {
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-45 lg:hidden"
           onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}
@@ -525,7 +508,7 @@ export default function Sidebar() {
           transition-all duration-300
           flex flex-col
           border-r
-          z-[45]
+          z-45
           ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}
           ${isRTL ? "right-0" : "left-0"}
           ${

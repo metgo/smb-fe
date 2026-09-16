@@ -46,6 +46,12 @@ export const endpoints = {
   bulkBusinessesUpdate: "/bulk-businesses-update",
   pendingApprovals: "/admin/pending-approvals",
 
+  //mini-sites
+  miniSites: "mini-sites",
+  miniSitesStats: "mini-sites/stats",
+  miniSiteVoucherUpload: "mini-site/upload-vouchers",
+  voucherUsage: "voucher-usage",
+
   //products
   products: "/products",
   contentManagementProducts: "/content-management-products",
@@ -170,6 +176,7 @@ export const endpoints = {
 
   // cmpaings
   campaign: "/admin/campaign",
+  campaignDetails: "/campaign-details",
 
   // UTM campaign builder
   utmCampaigns: "/utm-campaigns",

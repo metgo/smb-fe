@@ -19,7 +19,6 @@ import {
   BusinessesMgmtPage,
   PendingApprovalsPage,
   ProductsMgmtPage,
-  MiniCampaignsMgmtPage,
   EventsMgmtPage,
   ProfilePage,
   OrdersMgmtPage,
@@ -53,6 +52,8 @@ import {
   PaymentMgmtPage,
   PaymentTransactionsPage,
   UtmBuilderPage,
+  MiniSiteMgmtPage,
+  MiniSiteDetailsPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -579,7 +580,6 @@ function App() {
             { path: routes.eventDetails, element: <EventDetailsPage /> },
 
             { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
-            { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
 
             { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
             { path: routes.eventDetails, element: <EventDetailsPage /> },
@@ -617,6 +617,8 @@ function App() {
             { path: routes.poiMgmt, element: <PoiMgmtPage /> },
             { path: routes.poiDetails, element: <PoiDetailsPage /> },
             { path: routes.users, element: <UsersMgmtPage /> },
+            { path: routes.miniSiteMgmt, element: <MiniSiteMgmtPage /> },
+            { path: routes.miniSiteDetails, element: <MiniSiteDetailsPage /> },
             {
               path: routes.websiteCrashes,
               element: <WebsiteCrashesPage />,

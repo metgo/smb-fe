@@ -36,8 +36,11 @@ export const routes = {
 
   funDays: "/fun-days",
   vouchers: "/vouchers",
-  miniCampaign: "/mini-campaign",
+  offlineVouchers: "/offline-vouchers",
+  miniCampaignMgmt: "/mini-campaign-management",
   auth: "/authentication",
+  miniSiteMgmt: "/mini-site-management",
+  miniSiteDetails: "/mini-site-details",
   noInternet: "/no-internet",
   miniSite: "/mini-site",
 

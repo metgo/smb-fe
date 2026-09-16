@@ -226,5 +226,6 @@
   "noDataToExport": "אין נתונים לייצוא",
   "remaining_balance": "יתרה",
   "expired": "פג תוקף",
-  "revenue": "הכנסה"
+  "revenue": "הכנסה",
+  "voucher_id": "מזהה שובר"
 }

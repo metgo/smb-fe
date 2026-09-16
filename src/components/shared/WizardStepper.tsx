@@ -15,7 +15,7 @@ interface WizardStepperProps {
   currentStep: number;
   totalSteps: number;
   stepsWithMissingFields?: Set<number>;
-  onStepClick: (step: number) => void;
+  onStepClick?: (step: number) => void;
 }
 
 export default function WizardStepper({
@@ -79,7 +79,7 @@ export default function WizardStepper({
                   if (el) stepRefs.current.set(step.number, el);
                   else stepRefs.current.delete(step.number);
                 }}
-                onClick={() => onStepClick(step.number)}
+                onClick={() => onStepClick?.(step.number)}
                 className="flex flex-col items-center shrink-0 w-16 group"
               >
                 <div
@@ -137,7 +137,7 @@ export default function WizardStepper({
           <Fragment key={step.number}>
             {/* Step Column: Icon + Text perfectly aligned */}
             <div
-              onClick={() => onStepClick(step.number)}
+              onClick={() => onStepClick?.(step.number)}
               className="flex flex-col items-center shrink-0 cursor-pointer group"
               style={{ width: "70px" }}
             >
