@@ -388,18 +388,9 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
               >
                 {/* Hidden Badge - Diagonal Top Left */}
                 {ticket?.isHidden && (
-                  <div className="absolute top-0 left-0 z-10 w-16 h-16 overflow-hidden">
-                    <div
-                      className={clsx(
-                        "absolute -top-3 -left-3 w-20 h-20 -rotate-45 flex items-center justify-center",
-                        isDark ? "bg-purple-500" : "bg-purple-500",
-                      )}
-                    >
-                      <span
-                        className={clsx(
-                          "text-[9px] font-bold text-white uppercase tracking-wider",
-                        )}
-                      >
+                  <div className="absolute top-0 left-0 z-10 w-28 h-28 overflow-hidden pointer-events-none">
+                    <div className="absolute top-[10px] -left-[44px] w-32 h-5 -rotate-45 flex items-center justify-center border-y border-white/70 bg-purple-500">
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">
                         {t("hidden")}
                       </span>
                     </div>

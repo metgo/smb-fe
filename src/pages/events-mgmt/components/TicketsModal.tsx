@@ -427,11 +427,18 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                                     </div>
 
                                     <div className="flex-1 flex items-center gap-2 md:gap-4">
-                                      <div>
+                                      <div className="relative w-20 h-20 rounded overflow-hidden shrink-0">
                                         <ImageWithFallback
                                           src={ticket?.images?.[0]?.image}
                                           className="w-20 h-20 rounded object-cover"
                                         />
+                                        {ticket?.isHidden && (
+                                          <div className="absolute top-[7px] -left-[34px] w-24 h-3.5 -rotate-45 flex items-center justify-center border-y border-white/70 bg-purple-500 pointer-events-none">
+                                            <span className="text-[6px] font-bold text-white uppercase tracking-wider">
+                                              {t("hidden")}
+                                            </span>
+                                          </div>
+                                        )}
                                       </div>
                                       <div>
                                         <div className="flex items-center gap-3 mb-3">
@@ -563,10 +570,19 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                                         <GripVertical className="w-4 h-4" />
                                       </div>
 
-                                      <ImageWithFallback
-                                        src={ticket?.images?.[0]?.image}
-                                        className="w-16 h-16 rounded-lg object-cover shrink-0"
-                                      />
+                                      <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                                        <ImageWithFallback
+                                          src={ticket?.images?.[0]?.image}
+                                          className="w-16 h-16 rounded-lg object-cover"
+                                        />
+                                        {ticket?.isHidden && (
+                                          <div className="absolute top-1.5 -left-7 w-20 h-2.5 -rotate-45 flex items-center justify-center border-y border-white/70 bg-purple-500 pointer-events-none">
+                                            <span className="text-[5px] font-bold text-white uppercase tracking-wider">
+                                              {t("hidden")}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between gap-2">
                                           <h4
