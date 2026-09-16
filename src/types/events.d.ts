@@ -284,6 +284,7 @@ interface ITicketPayload {
   status: string;
   type: string;
   wrapperId?: string;
+  isHidden?: boolean;
 }
 
 interface ITicketReorderPayload {
