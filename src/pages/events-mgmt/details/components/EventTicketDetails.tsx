@@ -389,7 +389,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                 {/* Hidden Badge - Diagonal Top Left */}
                 {ticket?.isHidden && (
                   <div className="absolute top-0 left-0 z-10 w-28 h-28 overflow-hidden pointer-events-none">
-                    <div className="absolute top-[10px] -left-[44px] w-32 h-5 -rotate-45 flex items-center justify-center border-y border-white/70 bg-purple-500">
+                    <div className="absolute top-2.5 -left-11 w-32 h-5 -rotate-45 flex items-center justify-center border-y border-white/70 bg-purple-500">
                       <span className="text-[10px] font-bold text-white uppercase tracking-wider">
                         {t("hidden")}
                       </span>
@@ -403,7 +403,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                     <ImageWithFallback
                       src={image}
                       alt={ticket.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                     />
                     <div className="absolute bottom-1.5 left-1.5">
                       <span
@@ -522,26 +522,6 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                                 setIsEditModalOpen(true);
                               },
                             },
-                            ...(ticket?.isHidden
-                              ? [
-                                  {
-                                    title: "Copy Hidden Link",
-                                    icon: ExternalLink,
-                                    color: "blue" as const,
-                                    onClick: () => {
-                                      const associatedUrl =
-                                        selectedWebsites?.[0]?.url;
-                                      const hiddenLink = associatedUrl
-                                        ? `${associatedUrl}?showHidden=true`
-                                        : `${import.meta.env.VITE_CUSTOMER_URL || "http://localhost:3000"}/event-details/${eventSlug || ""}?showHidden=true`;
-                                      navigator.clipboard.writeText(hiddenLink);
-                                      toast.success(
-                                        "Hidden ticket link copied to clipboard!",
-                                      );
-                                    },
-                                  },
-                                ]
-                              : []),
                             {
                               title: "Delete",
                               icon: Trash2,
@@ -763,8 +743,8 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                       className={clsx(
                         "flex items-center justify-between p-4 rounded-xl border transition-all duration-200",
                         isDark
-                          ? "bg-gray-800 border-gray-700 hover:bg-gradient-to-br hover:from-purple-900/50 hover:to-blue-900/50 hover:border-purple-500"
-                          : "bg-white border-gray-200 hover:bg-gradient-to-br hover:from-purple-50 hover:to-blue-50 hover:border-purple-300 hover:shadow-purple-100/60",
+                          ? "bg-gray-800 border-gray-700 hover:bg-liner-to-br hover:from-purple-900/50 hover:to-blue-900/50 hover:border-purple-500"
+                          : "bg-white border-gray-200 hover:bg-liner-to-br hover:from-purple-50 hover:to-blue-50 hover:border-purple-300 hover:shadow-purple-100/60",
                       )}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">

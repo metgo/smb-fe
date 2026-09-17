@@ -19,6 +19,7 @@ import {
   useUpdateEventSessionMutation,
 } from "@/store/api/eventSessionApi";
 import { ActionIconButtons } from "@/components/btns";
+import { ImageWithFallback } from "@/components/shared";
 
 interface EventSessionDetailsProps {
   eventId: string;
@@ -258,15 +259,13 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
               )}
             >
               <div className="flex flex-col sm:flex-row">
-                {image && (
-                  <div className="relative sm:w-48 h-40 sm:h-auto overflow-hidden shrink-0">
-                    <img
-                      src={image}
-                      alt={session.headline}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                )}
+                <div className="relative sm:w-48 h-40 sm:h-auto overflow-hidden shrink-0">
+                  <ImageWithFallback
+                    src={image}
+                    alt={session.headline}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
 
                 <div className="flex-1 p-5 space-y-3">
                   <div className="flex items-start justify-between gap-3">

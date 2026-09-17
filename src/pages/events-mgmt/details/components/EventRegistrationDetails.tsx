@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import clsx from "clsx";
-
-import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Search, Users, ChevronDown, AlertCircle } from "lucide-react";
-import { ReordableDataTable } from "@/components/shared";
+
 import { ExportBtns } from "@/components/btns";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ImageWithFallback, ReordableDataTable } from "@/components/shared";
 import {
   useUpdateEventTicketStatusMutation,
   useSetEventTicketAttendanceMutation,
@@ -24,6 +24,26 @@ const STATUS_OPTIONS = [
   { value: "canceled", label: "cancelled" },
 ];
 
+const REGISTRATION_FILTER_OPTIONS = [
+  { value: "all", label: "all" },
+  { value: "attended", label: "attended" },
+  { value: "completed", label: "completed" },
+  { value: "canceled", label: "cancelled" },
+  { value: "failure", label: "failure" },
+];
+
+// mirrors the effective status shown in the status column: "attended" is a
+// check-in marker on top of "completed", and a missing status falls back to
+// payment status (pending/failure) like StatusCell does.
+const getEffectiveStatus = (ticket: IEventTicket) => {
+  if (ticket.attended) return "attended";
+  if (ticket.status) return ticket.status.toLowerCase();
+  return ticket.paymentStatus === "pending" ||
+    ticket.paymentStatus === "failure"
+    ? ticket.paymentStatus
+    : "failure";
+};
+
 const getStatusColor = (status: string, isDark: boolean) => {
   switch (status?.toLowerCase()) {
     case "paid":
@@ -34,13 +54,6 @@ const getStatusColor = (status: string, isDark: boolean) => {
         isDark
           ? "text-green-400 border-green-700"
           : "text-green-600 border-green-300",
-      );
-    case "pending":
-      return clsx(
-        "bg-yellow-500/20",
-        isDark
-          ? "text-yellow-400 border-yellow-700"
-          : "text-yellow-600 border-yellow-300",
       );
     case "failure":
       return clsx(
@@ -353,6 +366,121 @@ const StatusCell: React.FC<StatusCellProps> = ({
   );
 };
 
+interface StatusFilterDropdownProps {
+  isDark: boolean;
+  value: string;
+  onChange: (value: string) => void;
+  counts: Record<string, number>;
+  total: number;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}
+
+const StatusFilterDropdown: React.FC<StatusFilterDropdownProps> = ({
+  isDark,
+  value,
+  onChange,
+  counts,
+  total,
+  t,
+}) => {
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selectedOption =
+    REGISTRATION_FILTER_OPTIONS.find((opt) => opt.value === value) ??
+    REGISTRATION_FILTER_OPTIONS[0];
+  const selectedCount = value === "all" ? total : (counts[value] ?? 0);
+
+  return (
+    <div ref={dropdownRef} className="relative w-full sm:w-56 z-50">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={clsx(
+          "w-full flex items-center justify-between gap-2 py-3 px-4 rounded-xl border text-base capitalize transition-all",
+          isDark
+            ? "bg-gray-800 border-gray-700 text-white"
+            : "bg-white border-gray-300 text-gray-900",
+        )}
+      >
+        <span className="flex items-center gap-2 truncate">
+          {t(selectedOption.label, { defaultValue: selectedOption.label })}
+          <span
+            className={clsx(
+              "text-xs font-medium px-2 py-0.5 rounded-full",
+              isDark
+                ? "bg-gray-700 text-gray-300"
+                : "bg-gray-100 text-gray-600",
+            )}
+          >
+            {selectedCount}
+          </span>
+        </span>
+        <ChevronDown className="w-4 h-4 shrink-0" />
+      </button>
+
+      {open && (
+        <div
+          className={clsx(
+            "absolute z-20 top-full mt-1 left-0 right-0 rounded-lg border shadow-lg overflow-hidden",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+          )}
+        >
+          {REGISTRATION_FILTER_OPTIONS.map((opt) => {
+            const count =
+              opt.value === "all" ? total : (counts[opt.value] ?? 0);
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+                className={clsx(
+                  "w-full flex items-center justify-between gap-2 text-left px-3 py-2 text-sm transition-colors capitalize",
+                  value === opt.value
+                    ? isDark
+                      ? "bg-gray-700 font-semibold text-white"
+                      : "bg-gray-100 font-semibold text-gray-900"
+                    : isDark
+                      ? "text-gray-300 hover:bg-gray-700"
+                      : "text-gray-700 hover:bg-gray-50",
+                )}
+              >
+                <span>{t(opt.label, { defaultValue: opt.label })}</span>
+                <span
+                  className={clsx(
+                    "text-xs font-medium px-2 py-0.5 rounded-full",
+                    isDark
+                      ? "bg-gray-900 text-gray-300"
+                      : "bg-gray-200 text-gray-600",
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 interface EventRegistrationDetailsProps {
   eventDetails: any;
 }
@@ -361,18 +489,16 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   eventDetails,
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textTertiary, isDark, isRTL, language } =
-    useThemeClasses();
+  const { textTertiary, isDark, isRTL, language } = useThemeClasses();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [isTicktDetailsModalOpen, setIsTicketDetailModalOpen] = useState(false);
 
   const [allTickets, setAllTickets] = useState<IEventTicket[]>([]);
   const [ticketDetails, setTicketDetails] = useState<IEventTicket | null>(null);
-
-  const [totalData, setTotalData] = useState(0);
 
   const eventId = eventDetails?._id ?? eventDetails?.vendorId ?? "";
 
@@ -391,7 +517,6 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
         { eventId, ...(search ? { search } : {}) },
         false,
       ).unwrap();
-      setTotalData(result.totalData);
       setAllTickets(result.data);
     },
     [eventId, fetchTickets],
@@ -445,7 +570,21 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
     }
   };
 
-  const filteredTickets = allTickets;
+  const filteredTickets =
+    statusFilter === "all"
+      ? allTickets
+      : allTickets.filter(
+          (ticket) => getEffectiveStatus(ticket) === statusFilter,
+        );
+
+  const statusCounts = allTickets.reduce<Record<string, number>>(
+    (acc, ticket) => {
+      const status = getEffectiveStatus(ticket);
+      acc[status] = (acc[status] ?? 0) + 1;
+      return acc;
+    },
+    {},
+  );
 
   const [fetchExportCsv, { isFetching, isLoading }] =
     useLazyGetEventTicketsExportXlsxQuery();
@@ -481,30 +620,35 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   return (
     <div className="max-h-[75vh] overflow-y-auto">
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={`text-2xl font-semibold ${textPrimary}`}>
-            {t("registrants")} ({totalData})
-          </h3>
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search
+              className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-5 h-5 ${textTertiary}`}
+            />
+            <input
+              type="text"
+              placeholder={t("search_registrants_placeholder")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} py-3 rounded-xl border text-base ${
+                isDark
+                  ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
+                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+              } focus:ring-2 focus:ring-teal-500/20 transition-all`}
+            />
+          </div>
+
+          <StatusFilterDropdown
+            isDark={isDark}
+            value={statusFilter}
+            onChange={setStatusFilter}
+            counts={statusCounts}
+            total={allTickets.length}
+            t={t}
+          />
           <ExportBtns
             exportToCSV={exportToCSV}
             isCsvExporting={isFetching || isLoading}
-          />
-        </div>
-
-        <div className="relative mb-6">
-          <Search
-            className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-5 h-5 ${textTertiary}`}
-          />
-          <input
-            type="text"
-            placeholder={t("search_registrants_placeholder")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} py-3 rounded-xl border text-base ${
-              isDark
-                ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
-                : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-            } focus:ring-2 focus:ring-teal-500/20 transition-all`}
           />
         </div>
 
@@ -518,7 +662,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
               className={`w-20 h-20 mx-auto mb-5 opacity-50 ${textTertiary}`}
             />
             <p className={`text-lg ${textTertiary}`}>
-              {searchQuery
+              {searchQuery || statusFilter !== "all"
                 ? t("no_registrants_match")
                 : t("no_registrants_yet")}
             </p>
@@ -533,62 +677,54 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
               columns={[
                 {
                   key: "full_name",
-                  label: t("full_name"),
+                  label: t("purchecher"),
                   sortable: true,
                   render: (ticket: IEventTicket) => (
-                    <span
-                      className={clsx(
-                        "text-sm font-medium",
-                        isDark ? "text-gray-100" : "text-gray-900",
+                    <div className="flex flex-col">
+                      <span
+                        className={clsx(
+                          "text-sm font-medium",
+                          isDark ? "text-gray-100" : "text-gray-900",
+                        )}
+                      >
+                        {`${ticket.firstName} ${ticket.lastName || ""}`.trim()}
+                      </span>
+                      {ticket.email && (
+                        <span
+                          className={clsx(
+                            "text-xs",
+                            isDark ? "text-gray-400" : "text-gray-500",
+                          )}
+                        >
+                          {ticket.email}
+                        </span>
                       )}
-                    >
-                      {`${ticket.firstName} ${ticket.lastName || ""}`.trim()}
-                    </span>
-                  ),
-                },
-                {
-                  key: "phone",
-                  label: t("phone"),
-                  render: (ticket: IEventTicket) => (
-                    <span
-                      className={clsx(
-                        "text-sm",
-                        isDark ? "text-gray-400" : "text-gray-500",
+                      {ticket.phone && (
+                        <span
+                          className={clsx(
+                            "text-xs",
+                            isDark ? "text-gray-400" : "text-gray-500",
+                          )}
+                        >
+                          {ticket.phone}
+                        </span>
                       )}
-                    >
-                      {ticket.phone || "-"}
-                    </span>
-                  ),
-                },
-                {
-                  key: "email",
-                  label: t("email"),
-                  render: (ticket: IEventTicket) => (
-                    <span
-                      className={clsx(
-                        "text-sm",
-                        isDark ? "text-gray-400" : "text-gray-500",
-                      )}
-                    >
-                      {ticket.email || "-"}
-                    </span>
+                    </div>
                   ),
                 },
                 {
                   key: "ticket_name",
                   label: t("ticket_name"),
                   render: (ticket: IEventTicket) => (
-                    <div className="flex items-center gap-2">
-                      {ticket.ticketImage?.[0]?.image && (
-                        <img
-                          src={ticket.ticketImage[0].image}
-                          alt={ticket.ticketName}
-                          className="w-8 h-8 rounded object-cover shrink-0"
-                        />
-                      )}
+                    <div className="flex items-center gap-1">
+                      <ImageWithFallback
+                        src={ticket.ticketImage[0].image}
+                        alt={ticket.ticketName}
+                        className="w-20 object-contain shrink-0 rounded"
+                      />
                       <span
                         className={clsx(
-                          "text-sm",
+                          "text-xs line-clamp-3",
                           isDark ? "text-gray-400" : "text-gray-500",
                         )}
                       >
@@ -622,22 +758,11 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                         isDark ? "text-gray-100" : "text-gray-900",
                       )}
                     >
-                      {ticket.amount != null ? `₪${ticket.amount}` : "-"}
-                    </span>
-                  ),
-                },
-                {
-                  key: "quantity",
-                  label: t("quantity"),
-                  sortable: true,
-                  render: (ticket: IEventTicket) => (
-                    <span
-                      className={clsx(
-                        "text-sm font-medium",
-                        isDark ? "text-gray-100" : "text-gray-900",
-                      )}
-                    >
-                      {ticket.quantity}
+                      {ticket.amount != null
+                        ? isRTL
+                          ? `${ticket.quantity + "x "}${ticket.amount}₪`
+                          : `₪ ${ticket.amount} x${ticket.quantity}`
+                        : "-"}
                     </span>
                   ),
                 },

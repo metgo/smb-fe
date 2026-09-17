@@ -262,45 +262,6 @@ export default function EventsMgmtPage() {
                     }
                   />
                 </div>
-
-                {/* Date Range */}
-                <div className="col-span-12 sm:col-span-6 lg:col-span-4">
-                  <label className={`block text-sm mb-2 ${textSecondary}`}>
-                    {t("date_range")}
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="date"
-                      value={dateRangeFilter.start}
-                      onChange={(e) =>
-                        setDateRangeFilter({
-                          ...dateRangeFilter,
-                          start: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <input
-                      type="date"
-                      value={dateRangeFilter.end}
-                      onChange={(e) =>
-                        setDateRangeFilter({
-                          ...dateRangeFilter,
-                          end: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                  </div>
-                </div>
               </div>
 
               {/* Active Filters Summary */}

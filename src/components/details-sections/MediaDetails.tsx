@@ -35,7 +35,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({ images }) => {
               <ImageWithFallback
                 src={img.image}
                 alt={`Image ${idx + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
 
               {img.isPrimary && (
