@@ -370,6 +370,7 @@
   "cancel_order": "إلغاء الطلب",
   "cancel_order_reason_prompt": "يرجى تقديم سبب لإلغاء هذا الطلب.",
   "cancel_reason_placeholder": "أدخل سبب الإلغاء...",
+  "cancel_session_booking_warning": "إلغاء هذا التذكرة سيؤدي أيضًا إلى إلغاء حجوزات الجلسات المرتبطة",
   "updating": "جارٍ التحديث...",
   "confirm_cancel": "تأكيد الإلغاء",
   "order_status_updated": "تم تحديث حالة الطلب إلى {{status}}",

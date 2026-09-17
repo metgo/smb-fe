@@ -394,6 +394,7 @@
   "cancel_order": "ביטול הזמנה",
   "cancel_order_reason_prompt": "אנא ספק סיבה לביטול הזמנה זו.",
   "cancel_reason_placeholder": "הזן סיבת ביטול...",
+  "cancel_session_booking_warning": "ביטול כרטיס זה יבטל גם את ההזמנות לסשנים המשויכות",
   "updating": "מעדכן...",
   "confirm_cancel": "אשר ביטול",
   "order_status_updated": "סטטוס ההזמנה עודכן ל-{{status}}",
