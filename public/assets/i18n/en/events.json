@@ -365,6 +365,7 @@
   "cancel_order": "Cancel Order",
   "cancel_order_reason_prompt": "Please provide a reason for cancelling this order.",
   "cancel_reason_placeholder": "Enter cancel reason...",
+  "cancel_session_booking_warning": "Canceling this ticket will also cancel associated session bookings",
   "updating": "Updating...",
   "confirm_cancel": "Confirm Cancel",
   "order_status_updated": "Order status updated to {{status}}",

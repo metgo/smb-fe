@@ -109,6 +109,13 @@ const CancelDialog: React.FC<CancelDialogProps> = ({
             >
               {t("cancel_order_reason_prompt")}
             </p>
+            <p
+              className={clsx(
+                "text-xs mt-2 text-amber-600 dark:text-amber-400 font-medium",
+              )}
+            >
+              ⚠️ {t("cancel_session_booking_warning")}
+            </p>
           </div>
         </div>
 
