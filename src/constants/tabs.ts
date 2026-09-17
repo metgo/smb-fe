@@ -89,7 +89,6 @@ export const tripTabs = [
 export const voucherTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "assignee", label: "assignee_and_creator", icon: Users },
-  { id: "timeline", label: "usage_timeline", icon: Clock },
   { id: "transactions", label: "transactions_and_usage", icon: Truck },
 ];
 

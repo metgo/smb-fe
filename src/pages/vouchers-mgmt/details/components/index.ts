@@ -1,13 +1,11 @@
-import VoucherAssigneeCreator from "./VoucherAssigneeCreator";
 import VoucherOverview from "./VoucherOverview";
-import VoucherTransactionTable from "./VoucherTransactionTable";
-import VoucherUsageTimeline from "./VoucherUsageTimeline";
 import AssignVoucherModal from "./AssignVoucherModal";
+import VoucherUsageOrderList from "./VoucherUsageOrderList";
+import VoucherAssigneeCreator from "./VoucherAssigneeCreator";
 
 export {
   VoucherAssigneeCreator,
   VoucherOverview,
-  VoucherTransactionTable,
-  VoucherUsageTimeline,
   AssignVoucherModal,
+  VoucherUsageOrderList,
 };

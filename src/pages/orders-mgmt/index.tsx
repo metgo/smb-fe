@@ -27,12 +27,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { envKeys } from "@/lib/envKeys";
-import {
-  BulkActionBar,
-  ConfirmDialog,
-  ShowColumns,
-  // ViewModeToggle,
-} from "@/components/shared";
+import { BulkActionBar, ConfirmDialog, ShowColumns } from "@/components/shared";
 import {
   FilterSelect,
   MonthFilter,

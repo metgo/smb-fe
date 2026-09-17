@@ -44,6 +44,7 @@ import {
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { routes } from "@/lib/routes";
 import TooltipWrapper from "@/components/wrapper/TooltipWrapper";
+import { formatILS } from "@/helpers/formatter";
 
 const LIMIT = 20;
 const SEARCH_STORAGE_KEY = "voucherSearchTerm";
@@ -94,29 +95,14 @@ const VouchersList = ({
       {
         id: 2,
         title: t("total_voucher_value"),
-        value:
-          voucherStatsResponse?.totalRevenue != null
-            ? voucherStatsResponse.totalRevenue.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
-            : "0.00",
+        value: formatILS(voucherStatsResponse.totalRevenue),
         label: t("generated_revenue"),
         icon: <DollarSign className="w-5 h-5 text-green-500" />,
       },
       {
         id: 3,
         title: t("total_amount_to_redeem"),
-        value:
-          voucherStatsResponse?.totalRemainingBalance != null
-            ? voucherStatsResponse.totalRemainingBalance.toLocaleString(
-                "en-US",
-                {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                },
-              )
-            : "0.00",
+        value: formatILS(voucherStatsResponse.totalRemainingBalance),
         label: t("pending_redemption"),
         icon: <Clock className="w-5 h-5 text-orange-500" />,
       },
