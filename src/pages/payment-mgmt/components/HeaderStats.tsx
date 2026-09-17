@@ -347,32 +347,32 @@ const HeaderStats = ({
         />
         <RatioKpi
           label={t("total_revenue")}
-          actual={stats.totalRevenue}
-          potential={stats.totalRevenuePotential}
+          actual={stats?.totalRevenue}
+          potential={stats?.totalRevenuePotential}
         />
         <RatioKpi
           label={t("platform_fee")}
-          actual={stats.totalFee}
-          potential={stats.totalFeePotential}
+          actual={stats?.totalFee}
+          potential={stats?.totalFeePotential}
         />
         <Kpi
           label={t("total_orders")}
-          value={String(stats.totalOrderProductCount)}
+          value={String(stats?.totalOrderProductCount)}
           sub={
             <StatusBreakdown
               order={PRODUCT_STATUS_ORDER}
-              counts={stats.orderProductOverview}
+              counts={stats?.orderProductOverview}
             />
           }
         />
         <Kpi
           label={t("payable_orders")}
           labelHelp={<PayableOrdersInfo t={t} />}
-          value={String(stats.pending + stats.approved)}
+          value={String(stats?.pending + stats?.approved)}
           sub={
             <StatusBreakdown
               order={RECONCILIATION_STATUS_ORDER}
-              counts={stats.statusOverview}
+              counts={stats?.statusOverview}
               isReconciliation
             />
           }

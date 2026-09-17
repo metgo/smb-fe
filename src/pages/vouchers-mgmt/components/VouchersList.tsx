@@ -95,14 +95,14 @@ const VouchersList = ({
       {
         id: 2,
         title: t("total_voucher_value"),
-        value: formatILS(voucherStatsResponse.totalRevenue),
+        value: formatILS(voucherStatsResponse?.totalRevenue),
         label: t("generated_revenue"),
         icon: <DollarSign className="w-5 h-5 text-green-500" />,
       },
       {
         id: 3,
         title: t("total_amount_to_redeem"),
-        value: formatILS(voucherStatsResponse.totalRemainingBalance),
+        value: formatILS(voucherStatsResponse?.totalRemainingBalance),
         label: t("pending_redemption"),
         icon: <Clock className="w-5 h-5 text-orange-500" />,
       },
@@ -211,7 +211,7 @@ const VouchersList = ({
                 isDark,
               )}`}
             >
-              {getStatusLabel(voucher.status)}
+              {getStatusLabel(voucher?.status)}
             </span>
           ),
         },
@@ -235,7 +235,7 @@ const VouchersList = ({
             <span
               className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
             >
-              ₪{voucher.remainingAmount}
+              ₪{voucher?.remainingAmount}
             </span>
           ),
         },
@@ -256,7 +256,7 @@ const VouchersList = ({
           label: t("expiry"),
           sortable: true,
           render: (voucher: IVoucherItem) => {
-            const expired = isExpired(voucher.expireDate);
+            const expired = isExpired(voucher?.expireDate);
             const expiringSoon = isExpiringSoon(voucher.expireDate);
             const textColor = expired
               ? isDark

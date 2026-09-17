@@ -155,19 +155,19 @@ export function useOrderStats(
       totalOrders: reconciliationStats.totalOrders || 0,
       totalOrderProductCount: reconciliationStats.totalOrderProductCount || 0,
 
-      totalRevenue: reconciliationStats.totalRevenue || 0,
+      totalRevenue: reconciliationStats?.totalRevenue || 0,
       totalFee: reconciliationStats.totalFee || 0,
       netPayout:
-        reconciliationStats.netPayout ?? reconciliationStats.netPayoutRaw ?? 0,
+        reconciliationStats.netPayout ?? reconciliationStats?.netPayoutRaw ?? 0,
       netPayoutRaw: reconciliationStats.netPayoutRaw || 0,
 
-      totalRevenuePotential: reconciliationStats.totalRevenuePotential || 0,
+      totalRevenuePotential: reconciliationStats?.totalRevenuePotential || 0,
       totalFeePotential: reconciliationStats.totalFeePotential || 0,
       netPayoutPotential:
-        reconciliationStats.netPayoutPotential ??
-        reconciliationStats.netPayoutRawPotential ??
+        reconciliationStats?.netPayoutPotential ??
+        reconciliationStats?.netPayoutRawPotential ??
         0,
-      netPayoutRawPotential: reconciliationStats.netPayoutRawPotential || 0,
+      netPayoutRawPotential: reconciliationStats?.netPayoutRawPotential || 0,
 
       heldForDisputes: 0,
     };
