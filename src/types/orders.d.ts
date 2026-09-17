@@ -159,3 +159,30 @@ interface IOrderSummaryColumnVisibility {
   totalAmount: boolean;
   totalAmountPaidByCreditCard: boolean;
 }
+
+// -------------------- Offline Orders ---------------------
+interface IOfflineOrder {
+  _id: string;
+  companyName: string;
+  employerType: string;
+  leadDate: string;
+  initialRequest: number;
+  closedDealValue: number;
+  dealClosureDate: string;
+  vendor: string;
+  product: string;
+  paymentMethod: string;
+  description: string;
+  name: string;
+  productPrice: number;
+  desiredQuantity: number;
+  phone: string;
+  email: string;
+  createdAt: string;
+  position: string;
+  updatedAt: string;
+}
+
+interface IOfflineOrdersRes extends IPagination {
+  data: Array<IOfflineOrder>;
+}

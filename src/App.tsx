@@ -54,6 +54,7 @@ import {
   UtmBuilderPage,
   MiniSiteMgmtPage,
   MiniSiteDetailsPage,
+  OfflineOrdersMgmtPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -610,6 +611,11 @@ function App() {
               path: routes.notificationMgmt,
               element: <NotificationsMgmtPage />,
             },
+            {
+              path: routes.offlineOrdersMgmt,
+              element: <OfflineOrdersMgmtPage />,
+            },
+
             { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
             { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },

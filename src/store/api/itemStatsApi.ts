@@ -26,6 +26,12 @@ interface IPopularContentParams {
   authorityId?: string;
 }
 
+interface IOfflineOrderSats {
+  bankTransfer: number;
+  creditCard: number;
+  totalAmount: number;
+}
+
 export const itemStatsApi = createApi({
   reducerPath: "itemStatsApi",
   baseQuery: axiosBaseQuery(),
@@ -121,7 +127,10 @@ export const itemStatsApi = createApi({
       }),
     }),
 
-    getOfflineOrderStats: builder.query<any, IFinancialSummaryParams>({
+    getOfflineOrderStats: builder.query<
+      IOfflineOrderSats,
+      IFinancialSummaryParams
+    >({
       query: (params) => ({
         url: endpoints.offlineOrderStats,
         method: "GET",

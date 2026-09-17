@@ -38,6 +38,7 @@ import StatsSummaryPage from "./stats-summary";
 import { PaymentMgmtPage } from "./payment-mgmt";
 import PaymentTransactionsPage from "./payment-transactions-mgmt";
 import UtmBuilderPage from "./utm-builder";
+import OfflineOrdersMgmtPage from "./offline-orders-mgmt";
 
 export {
   ChatPage,
@@ -66,6 +67,7 @@ export {
   NotificationsMgmtPage,
   AnalyticsDashboardPage,
   ContentMgmtPage,
+  OfflineOrdersMgmtPage,
   PromotionsMgmtPage,
   PartnersPage,
   VouchersMgmtPage,

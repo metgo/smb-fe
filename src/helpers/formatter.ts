@@ -177,7 +177,7 @@ export function formatILSDraft(amount: string | number): string {
   }).format(value);
 }
 
-export function formatILS(amount: string | number): string {
+export function formatILS(amount: string | number | undefined): string {
   const value = Number(amount);
 
   if (Number.isNaN(value)) return "₪0.00";

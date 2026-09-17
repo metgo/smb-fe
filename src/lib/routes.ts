@@ -21,6 +21,7 @@ export const routes = {
   ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
   ordersSummaryMgmt: "/orders-summary-management",
+  offlineOrdersMgmt: "/offline-orders-management",
 
   contentMgmt: "/content-management",
   voucherMgmt: "/voucher-management",
@@ -36,7 +37,6 @@ export const routes = {
 
   funDays: "/fun-days",
   vouchers: "/vouchers",
-  offlineVouchers: "/offline-vouchers",
   miniCampaignMgmt: "/mini-campaign-management",
   auth: "/authentication",
   miniSiteMgmt: "/mini-site-management",
