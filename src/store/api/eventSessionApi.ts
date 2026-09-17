@@ -265,6 +265,18 @@ export const eventSessionApi = createApi({
       }),
       invalidatesTags: ["EventSession"],
     }),
+
+    updateRegistrationStatus: builder.mutation<
+      any,
+      { bookingId: string; status: RegistrationStatus }
+    >({
+      query: ({ bookingId, status }) => ({
+        url: `${endpoints.eventSessionReg}/${bookingId}`,
+        method: "PATCH",
+        data: { status },
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
   }),
 });
 
@@ -288,6 +300,7 @@ export const {
   useGetSendNotificationHistoryQuery,
   useGetSendNotificationHistoryDetailsQuery,
   useResendSessionBookNotifyMutation,
+  useUpdateRegistrationStatusMutation,
 
   useCreateLandingPageSessionMutation,
   useCreateLandingPageSessionBlockMutation,

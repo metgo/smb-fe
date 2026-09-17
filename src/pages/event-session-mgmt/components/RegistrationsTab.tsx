@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Loader, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { Loader, Mail, RefreshCw } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 
 import { fmtDate, fmtTime } from "../data";
@@ -13,6 +13,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import {
   useEventSessionRegListQuery,
   useResendSessionBookNotifyMutation,
+  useUpdateRegistrationStatusMutation,
 } from "@/store/api/eventSessionApi";
 
 const LIMIT = 400;
@@ -32,9 +33,11 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const [resendSessionBookNotify] = useResendSessionBookNotifyMutation();
+  const [updateRegistrationStatus] = useUpdateRegistrationStatusMutation();
 
   useEffect(() => {
     setPage(1);
@@ -46,7 +49,7 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
     setRegistrations([]);
   }, [searchTerm, selectedDate]);
 
-  const { data, isLoading, isFetching } = useEventSessionRegListQuery(
+  const { data, isLoading, isFetching, refetch } = useEventSessionRegListQuery(
     wrapperId
       ? {
           wrapperId,
@@ -90,6 +93,15 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
     onLoadMore: fetchNextPage,
   });
 
+  function handleRefresh() {
+    if (page !== 1) {
+      setPage(1);
+      setRegistrations([]);
+    } else {
+      refetch();
+    }
+  }
+
   async function handleResendNotify(registration: IRegistration) {
     setResendingId(registration.bookingId);
     try {
@@ -99,6 +111,30 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
       toast.error(t("toast_notification_send_error"));
     } finally {
       setResendingId(null);
+    }
+  }
+
+  async function handleStatusChange(
+    registration: IRegistration,
+    status: RegistrationStatus,
+  ) {
+    if (status === registration.status) return;
+    setUpdatingStatusId(registration.bookingId);
+    try {
+      await updateRegistrationStatus({
+        bookingId: registration.bookingId,
+        status,
+      }).unwrap();
+      setRegistrations((prev) =>
+        prev.map((r) =>
+          r.bookingId === registration.bookingId ? { ...r, status } : r,
+        ),
+      );
+      toast.success(t("toast_status_updated"));
+    } catch {
+      toast.error(t("toast_status_update_error"));
+    } finally {
+      setUpdatingStatusId(null);
     }
   }
 
@@ -132,6 +168,27 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
             </div>
 
             <DatePicker value={selectedDate} onChange={setSelectedDate} />
+
+            <button
+              type="button"
+              title={t("refresh_action")}
+              aria-label={t("refresh_action")}
+              disabled={isFetching}
+              onClick={handleRefresh}
+              className={clsx(
+                "p-2 rounded-lg border disabled:opacity-50",
+                borderColor,
+                isFetching ? "cursor-not-allowed" : "cursor-pointer",
+              )}
+            >
+              <RefreshCw
+                className={clsx(
+                  "w-4 h-4",
+                  isFetching && "animate-spin",
+                  textTertiary,
+                )}
+              />
+            </button>
           </div>
 
           {!isInitialLoading && registrations?.length === 0 ? (
@@ -189,22 +246,44 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
                           </td>
 
                           <td className={TD}>
-                            <span
-                              className={clsx(
-                                "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold",
-                                registration.status === "ATTENDED"
-                                  ? isDark
-                                    ? "bg-green-900/60 text-green-300"
-                                    : "bg-green-100 text-green-700"
-                                  : isDark
+                            {registration.status !== "ATTENDED" ? (
+                              <select
+                                value={registration.status}
+                                disabled={
+                                  updatingStatusId === registration.bookingId
+                                }
+                                onChange={(e) =>
+                                  handleStatusChange(
+                                    registration,
+                                    e.target.value as RegistrationStatus,
+                                  )
+                                }
+                                className={clsx(
+                                  "px-2.5 py-0.5 rounded-full text-xs font-bold border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed",
+                                  isDark
                                     ? "bg-blue-900/60 text-blue-300"
                                     : "bg-blue-100 text-blue-700",
-                              )}
-                            >
-                              {registration.status === "ATTENDED"
-                                ? t("status_attended")
-                                : t("status_registered")}
-                            </span>
+                                )}
+                              >
+                                <option value={registration.status}>
+                                  {t("status_registered")}
+                                </option>
+                                <option value="ATTENDED">
+                                  {t("status_attended")}
+                                </option>
+                              </select>
+                            ) : (
+                              <span
+                                className={clsx(
+                                  "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold",
+                                  isDark
+                                    ? "bg-green-900/60 text-green-300"
+                                    : "bg-green-100 text-green-700",
+                                )}
+                              >
+                                {t("status_attended")}
+                              </span>
+                            )}
                           </td>
 
                           <td className={TD}>{registration.customerName}</td>

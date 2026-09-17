@@ -163,6 +163,7 @@
   "col_actions": "الإجراءات",
   "view_action": "عرض",
   "resend_action": "إعادة الإرسال",
+  "refresh_action": "تحديث",
   "history_detail_title": "تفاصيل الرسالة",
   "detail_status_label": "الحالة",
   "detail_sent_at_label": "تاريخ الإرسال",
@@ -287,6 +288,9 @@
 
   "toast_notification_sent": "تم إرسال الرسالة بنجاح!",
   "toast_notification_send_error": "فشل إرسال الرسالة.",
+
+  "toast_status_updated": "تم تحديث الحالة بنجاح!",
+  "toast_status_update_error": "فشل تحديث الحالة.",
 
   "landing_add_session_btn": "إضافة جلسة",
 

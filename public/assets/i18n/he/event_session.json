@@ -163,6 +163,7 @@
   "col_actions": "פעולות",
   "view_action": "צפייה",
   "resend_action": "שליחה מחדש",
+  "refresh_action": "רענון",
   "history_detail_title": "פרטי ההודעה",
   "detail_status_label": "סטטוס",
   "detail_sent_at_label": "נשלח בתאריך",
@@ -287,6 +288,9 @@
 
   "toast_notification_sent": "ההודעה נשלחה בהצלחה!",
   "toast_notification_send_error": "שליחת ההודעה נכשלה.",
+
+  "toast_status_updated": "הסטטוס עודכן בהצלחה!",
+  "toast_status_update_error": "עדכון הסטטוס נכשל.",
 
   "landing_add_session_btn": "הוסף סשן",
 

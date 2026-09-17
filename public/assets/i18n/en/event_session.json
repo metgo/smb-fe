@@ -164,6 +164,7 @@
   "col_actions": "Actions",
   "view_action": "View",
   "resend_action": "Resend",
+  "refresh_action": "Refresh",
   "history_detail_title": "Message Details",
   "detail_status_label": "Status",
   "detail_sent_at_label": "Sent At",
@@ -288,6 +289,9 @@
 
   "toast_notification_sent": "Message sent successfully!",
   "toast_notification_send_error": "Failed to send message.",
+
+  "toast_status_updated": "Status updated successfully!",
+  "toast_status_update_error": "Failed to update status.",
 
   "landing_add_session_btn": "Add Session",
 
