@@ -105,6 +105,20 @@ export class SessionBooking extends AuditableSchema {
 
   @Prop({ required: false })
     comments?: string; // Optional comments from customer (injuries, accessibility needs, etc.)
+
+  // Cancellation tracking fields
+  @Prop({ required: false })
+    cancelledAt?: Date;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false,
+  })
+    cancelledBy?: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
+    cancelReason?: string;
 }
 
 export type SessionBookingDocument = HydratedDocument<SessionBooking>;
