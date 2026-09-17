@@ -87,6 +87,8 @@ export const endpoints = {
   exportBankTransferXlsx: "/monthly-reports/export/bank-transfer-xlsx",
   exportVendorwiseXlsx: "/vendors/monthly-reports/export/xlsx",
 
+  offlineOrders: "/offline-order",
+
   // payments
   paymentTransactions: "/payment/transactions",
 
