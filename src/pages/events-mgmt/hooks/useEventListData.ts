@@ -9,6 +9,7 @@ interface EventFilters {
   registrationFilter: "all" | "true" | "false";
   statusFilter: any | "all";
   dateRangeFilter: { start: string; end: string };
+  timeFilter: "all" | "UPCOMING" | "EXPIRED";
 }
 
 export function useEventListData(filters: EventFilters, searchQuery: string) {
@@ -16,8 +17,13 @@ export function useEventListData(filters: EventFilters, searchQuery: string) {
     (state) => state.auth,
   );
 
-  const { eventTypeFilter, registrationFilter, statusFilter, dateRangeFilter } =
-    filters;
+  const {
+    eventTypeFilter,
+    registrationFilter,
+    statusFilter,
+    dateRangeFilter,
+    timeFilter,
+  } = filters;
 
   const [page, setPage] = useState(1);
   const [combinedEvents, setCombinedEvents] = useState<IEventListRes[]>([]);
@@ -32,6 +38,7 @@ export function useEventListData(filters: EventFilters, searchQuery: string) {
     statusFilter,
     dateRangeFilter.start,
     dateRangeFilter.end,
+    timeFilter,
     dmoId,
     authorityId,
     websiteId,
@@ -62,6 +69,8 @@ export function useEventListData(filters: EventFilters, searchQuery: string) {
     if (dateRangeFilter.start) params.startDate = dateRangeFilter.start;
     if (dateRangeFilter.end) params.endDate = dateRangeFilter.end;
 
+    if (timeFilter !== "all") params.timeFilter = timeFilter;
+
     return params;
   }, [
     dmoId,
@@ -74,6 +83,7 @@ export function useEventListData(filters: EventFilters, searchQuery: string) {
     statusFilter,
     dateRangeFilter.start,
     dateRangeFilter.end,
+    timeFilter,
   ]);
 
   const {

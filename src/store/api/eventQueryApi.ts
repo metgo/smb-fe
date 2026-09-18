@@ -38,6 +38,21 @@ interface QrScanTrackingParams {
   search?: string;
 }
 
+interface IEventStatsRes {
+  totalSold: number;
+  totalAttended: number;
+  totalUnattended: number;
+  attendanceRate: number;
+  capacity: number;
+
+  totalRevenue: number;
+
+  totalEventsCount: number;
+  upcomingEventsCount: number;
+  totalRegistration: number;
+  avgCapacityFill: number;
+}
+
 export const eventQueryApi = createApi({
   reducerPath: "eventQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -143,7 +158,7 @@ export const eventQueryApi = createApi({
       }),
     }),
 
-    getEventsStats: builder.query<any, EventsStatsParams>({
+    getEventsStats: builder.query<IEventStatsRes, EventsStatsParams>({
       query: (params) => ({
         url: endpoints.eventsStats,
         method: "GET",

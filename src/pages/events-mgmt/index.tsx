@@ -11,7 +11,9 @@ import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
 import { CreateEventWizardNew, EventsWithViewMode } from "./components";
 import SearchInput from "@/components/shared/SearchInput";
 import { FilterByStatus } from "@/components/filter-fields";
+import { ReactSelect } from "@/components/form-fields";
 import { useEventListData } from "./hooks/useEventListData";
+import { formatILS } from "@/helpers/formatter";
 
 const STORAGE_KEY = "event_query_state";
 
@@ -21,8 +23,7 @@ export default function EventsMgmtPage() {
 
   const navigate = useNavigate();
 
-  const { textSecondary, inputClasses, textTertiary, isDark } =
-    useThemeClasses();
+  const { textSecondary, inputClasses, isDark } = useThemeClasses();
 
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
 
@@ -44,11 +45,15 @@ export default function EventsMgmtPage() {
     start: savedState?.dateRangeFilter?.start || "",
     end: savedState?.dateRangeFilter?.end || "",
   });
+  const [timeFilter, setTimeFilter] = useState<"all" | "UPCOMING" | "EXPIRED">(
+    savedState?.timeFilter || "UPCOMING",
+  );
 
   const hasSavedFilters =
     eventTypeFilter !== "all" ||
     registrationFilter !== "all" ||
     statusFilter !== "all" ||
+    timeFilter !== "all" ||
     dateRangeFilter?.start !== "" ||
     dateRangeFilter?.end !== "";
 
@@ -58,6 +63,7 @@ export default function EventsMgmtPage() {
       registrationFilter,
       statusFilter,
       dateRangeFilter,
+      timeFilter,
       searchQuery,
     };
 
@@ -67,6 +73,7 @@ export default function EventsMgmtPage() {
     statusFilter,
     dateRangeFilter,
     eventTypeFilter,
+    timeFilter,
     searchQuery,
   ]);
 
@@ -81,7 +88,13 @@ export default function EventsMgmtPage() {
     eventQueryParams,
     fetchNextPage,
   } = useEventListData(
-    { eventTypeFilter, registrationFilter, statusFilter, dateRangeFilter },
+    {
+      eventTypeFilter,
+      registrationFilter,
+      statusFilter,
+      dateRangeFilter,
+      timeFilter,
+    },
     searchQuery,
   );
 
@@ -93,9 +106,8 @@ export default function EventsMgmtPage() {
     if (eventQueryParams.isFree) urlParams.isFree = eventQueryParams.isFree;
     if (eventQueryParams.isRegistration)
       urlParams.isRegistration = eventQueryParams.isRegistration;
-    if (eventQueryParams.startDate)
-      urlParams.startDate = eventQueryParams.startDate;
-    if (eventQueryParams.endDate) urlParams.endDate = eventQueryParams.endDate;
+    if (eventQueryParams.timeFilter)
+      urlParams.timeFilter = eventQueryParams.timeFilter;
 
     const searchParams = new URLSearchParams(urlParams).toString();
     navigate(`?${searchParams}`, { replace: true });
@@ -141,7 +153,7 @@ export default function EventsMgmtPage() {
     {
       id: 3,
       title: t("total_revenue"),
-      value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
+      value: formatILS(eventStatsData?.totalRevenue),
       icon: <DollarSign className="w-5 h-5 text-green-500" />,
     },
     {
@@ -210,163 +222,90 @@ export default function EventsMgmtPage() {
           {(showFilters || hasSavedFilters) && (
             <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
               {/* Collapsible Filters */}
-              <div className="grid grid-cols-12 gap-2 pt-2 dark:border-gray-700">
+              <div className="grid grid-cols-12 gap-2 items-center pt-2 dark:border-gray-700">
                 {/* Event Type */}
-                <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+                <div className="col-span-12 sm:col-span-4 lg:col-span-2">
                   <label className={`block text-sm mb-2 ${textSecondary}`}>
                     {t("event_type")}
                   </label>
-                  <select
-                    value={eventTypeFilter}
-                    onChange={(e) => setEventTypeFilter(e.target.value as any)}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-900 border-gray-700 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="all">{tc("all")}</option>
-                    <option value="free">{tc("free")}</option>
-                    <option value="paid">{tc("paid")}</option>
-                  </select>
+                  <ReactSelect
+                    isClearable
+                    placeholder={tc("all")}
+                    value={eventTypeFilter !== "all" ? eventTypeFilter : ""}
+                    onChange={(v) => setEventTypeFilter((v || "all") as any)}
+                    items={[
+                      { _id: "free", name: tc("free") },
+                      { _id: "paid", name: tc("paid") },
+                    ]}
+                    minWidth={160}
+                  />
                 </div>
 
                 {/* Registration Required */}
-                <div className="col-span-12 sm:col-span-6 lg:col-span-3">
+                <div className="col-span-12 sm:col-span-4 lg:col-span-2">
                   <label className={`block text-sm mb-2 ${textSecondary}`}>
                     {t("registration")}
                   </label>
-                  <select
-                    value={registrationFilter}
-                    onChange={(e) =>
-                      setRegistrationFilter(e.target.value as any)
+                  <ReactSelect
+                    isClearable
+                    placeholder={tc("all")}
+                    value={
+                      registrationFilter !== "all" ? registrationFilter : ""
                     }
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-900 border-gray-700 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="all">{tc("all")}</option>
-                    <option value="true">{tc("required")}</option>
-                    <option value="false">{tc("not_required")}</option>
-                  </select>
+                    onChange={(v) => setRegistrationFilter((v || "all") as any)}
+                    items={[
+                      { _id: "true", name: tc("required") },
+                      { _id: "false", name: tc("not_required") },
+                    ]}
+                    minWidth={160}
+                  />
                 </div>
 
                 {/* Status */}
                 <div className="col-span-12 sm:col-span-6 lg:col-span-2">
                   <FilterByStatus
-                    filters={statusFilter}
+                    filters={{ status: statusFilter }}
                     setFilters={(newStatus) =>
                       setStatusFilter(newStatus.status)
                     }
                   />
                 </div>
-              </div>
 
-              {/* Active Filters Summary */}
-              {(eventTypeFilter !== "all" ||
-                registrationFilter !== "all" ||
-                statusFilter !== "all" ||
-                dateRangeFilter.start ||
-                dateRangeFilter.end ||
-                searchQuery) && (
-                <div className=" pt-4 flex items-center gap-2 flex-wrap">
-                  <span className={`text-sm ${textTertiary}`}>
-                    {t("active_filters")}:
-                  </span>
-
-                  {/* Search Query */}
-                  {searchQuery && (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
-                      "{searchQuery}"
-                      <button
-                        onClick={() => setSearchQuery("")}
-                        className="ml-1 text-teal-500 hover:text-teal-700 font-bold"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-
-                  {/* Event Type Filter */}
-                  {eventTypeFilter !== "all" && (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-purple-500/20 text-purple-500 rounded-full text-xs">
-                      {eventTypeFilter === "free" ? t("free") : t("paid")}
-                      <button
-                        onClick={() => setEventTypeFilter("all")}
-                        className="ml-1 text-purple-500 hover:text-purple-700 font-bold"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-
-                  {/* Registration Filter */}
-                  {registrationFilter !== "all" && (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
-                      {registrationFilter === "true"
-                        ? t("registration_required")
-                        : t("registration_not_required")}
-                      <button
-                        onClick={() => setRegistrationFilter("all")}
-                        className="ml-1 text-green-500 hover:text-green-700 font-bold"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-
-                  {/* Status Filter */}
-                  {statusFilter !== "all" && (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
-                      {statusFilter === "APPROVED"
-                        ? t("approved")
-                        : statusFilter === "PENDING"
-                          ? t("pending")
-                          : t("draft")}
-                      <button
-                        onClick={() => setStatusFilter("all")}
-                        className="ml-1 text-orange-500 hover:text-orange-700 font-bold"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-
-                  {/* Date Range Filter */}
-                  {dateRangeFilter.start !== "" &&
-                    dateRangeFilter.end !== "" && (
-                      <span className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
-                        {dateRangeFilter.start} - {dateRangeFilter.end}
-                        <button
-                          onClick={() =>
-                            setDateRangeFilter({ start: "", end: "" })
-                          }
-                          className="ml-1 text-orange-500 hover:text-orange-700 font-bold"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    )}
-
-                  {/* Clear All */}
-                  <button
-                    onClick={() => {
-                      setSearchQuery("");
-                      setEventTypeFilter("all");
-                      setRegistrationFilter("all");
-                      setStatusFilter("all");
-                      setDateRangeFilter({ start: "", end: "" });
-                      localStorage.removeItem(STORAGE_KEY);
-                      localStorage.removeItem("eventSearchTerm");
-                    }}
-                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                  >
-                    {t("clear_all")}
-                  </button>
+                {/* Time Status */}
+                <div className="col-span-12 sm:col-span-6 lg:col-span-2">
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>
+                    {t("time_status")}
+                  </label>
+                  <ReactSelect
+                    isClearable
+                    placeholder={tc("all")}
+                    value={timeFilter !== "all" ? timeFilter : ""}
+                    onChange={(v) => setTimeFilter((v || "all") as any)}
+                    items={[
+                      { _id: "UPCOMING", name: t("upcoming") },
+                      { _id: "EXPIRED", name: tc("expired") },
+                    ]}
+                    minWidth={160}
+                  />
                 </div>
-              )}
+
+                {/* Clear All */}
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setEventTypeFilter("all");
+                    setRegistrationFilter("all");
+                    setStatusFilter("all");
+                    setTimeFilter("all");
+                    setDateRangeFilter({ start: "", end: "" });
+                    localStorage.removeItem(STORAGE_KEY);
+                    localStorage.removeItem("eventSearchTerm");
+                  }}
+                  className=" py-1 mt-6 h-8 bg-red-500/20 text-red-500 rounded-md text-xs cursor-pointer hover:bg-red-500/30 transition-colors"
+                >
+                  {t("clear_all")}
+                </button>
+              </div>
             </div>
           )}
         </div>

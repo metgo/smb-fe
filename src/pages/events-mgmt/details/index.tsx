@@ -9,8 +9,10 @@ import {
   DollarSign,
   Edit,
   LayoutList,
-  Ticket,
+  Percent,
+  UserCheck,
   Users,
+  UserX,
 } from "lucide-react";
 
 import {
@@ -37,25 +39,12 @@ import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
   AttributesDetails,
   DetailTitleSection,
-  // LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { getEventTabs } from "@/constants/tabs";
 import { CreateEventWizardNew } from "../components";
-
-const findEventType = (type: string) => {
-  switch (type) {
-    case "PHYSICAL":
-      return type?.toLowerCase();
-    case "ONLINE":
-      return type?.toLowerCase();
-    case "HYBRID":
-      return type?.toLowerCase();
-    default:
-      return "physical";
-  }
-};
+import { formatILS } from "@/helpers/formatter";
 
 export default function EventDetailsPage() {
   const { t } = useTranslation("events");
@@ -152,40 +141,42 @@ export default function EventDetailsPage() {
 
   const singleEventStats = [
     {
-      id: 1,
-      title: t("total_registrations"),
-      value: eventStatsData?.totalSold,
-      labelClass: "text-green-500",
-      icon: <Calendar className="w-8 h-8 text-teal-500" />,
+      id: 3,
+      title: t("revenue"),
+      value: formatILS(eventStatsData?.totalRevenue),
+      icon: <DollarSign className="w-8 h-8 text-green-500" />,
     },
     {
       id: 2,
       title: t("capacity"),
-      value: eventStatsData?.totalAttended,
-      sub: `${
-        Math.round(
-          (eventStatsData?.totalRegistrations / eventStatsData?.capacity) * 100,
-        ) || 0
-      }% ${t("filled")}`,
+      value: eventStatsData?.capacity || 0,
       icon: <Users className="w-8 h-8 text-blue-500" />,
     },
     {
-      id: 3,
-      title: t("revenue"),
-      value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
-      icon: <DollarSign className="w-8 h-8 text-green-500" />,
+      id: 1,
+      title: t("total_registrations"),
+      value: eventStatsData?.totalSold || 0,
+      labelClass: "text-green-500",
+      icon: <Calendar className="w-8 h-8 text-teal-500" />,
     },
+
     {
       id: 4,
-      title: t("refunds"),
-      value: `₪${(eventStatsData?.refunds || 0 / 1000).toFixed(1)}K`,
-      icon: <DollarSign className="w-8 h-8 text-red-500" />,
+      title: t("attended"),
+      value: eventStatsData?.totalAttended || 0,
+      icon: <UserCheck className="w-8 h-8 text-red-500" />,
     },
     {
       id: 5,
-      title: t("event_type"),
-      value: t(findEventType(eventDetails?.eventType || "PHYSICAL")),
-      icon: <Ticket className="w-8 h-8 text-purple-500" />,
+      title: t("unattended"),
+      value: eventStatsData?.totalUnattended || 0,
+      icon: <UserX className="w-8 h-8 text-purple-500" />,
+    },
+    {
+      id: 6,
+      title: t("attendance_rate"),
+      value: eventStatsData?.attendanceRate || 0,
+      icon: <Percent className="w-8 h-8 text-orange-500" />,
     },
   ];
 
@@ -334,7 +325,7 @@ export default function EventDetailsPage() {
         <PageStats
           stats={singleEventStats}
           isLoading={isStatsLoading}
-          className="sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4"
+          className="sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-6 gap-4"
           wrapperClassName="pt-4 pb-1"
         />
       </div>

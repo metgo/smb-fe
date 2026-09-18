@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, Users, ChevronDown, AlertCircle } from "lucide-react";
 
 import { ExportBtns } from "@/components/btns";
@@ -36,6 +36,7 @@ const REGISTRATION_FILTER_OPTIONS = [
 // check-in marker on top of "completed", and a missing status falls back to
 // payment status (pending/failure) like StatusCell does.
 const getEffectiveStatus = (ticket: IEventTicket) => {
+  if (ticket.status?.toLowerCase() === "canceled") return "canceled";
   if (ticket.attended) return "attended";
   if (ticket.status) return ticket.status.toLowerCase();
   return ticket.paymentStatus === "pending" ||
@@ -676,7 +677,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
               onRowClick={handleTicketRegRowClick}
               columns={[
                 {
-                  key: "full_name",
+                  key: "purchaser",
                   label: t("purchaser"),
                   sortable: true,
                   render: (ticket: IEventTicket) => (

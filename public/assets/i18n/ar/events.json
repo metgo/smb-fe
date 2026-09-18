@@ -10,6 +10,7 @@
   "search_events_placeholder": "ابحث عن الأحداث...",
   "filters": "مرشحات",
   "event_type": "نوع الحدث",
+  "time_status": "الحالة الزمنية",
   "free": "مجاني",
   "paid": "مدفوع",
 
@@ -364,8 +365,11 @@
 
   "completed": "مكتمل",
   "attended": "حضر",
+  "unattended": "لم يحضر",
+  "attendance_rate": "نسبة الحضور",
   "failure": "فشل",
   "processing": "قيد المعالجة",
+  "purchaser": "المشتري",
 
   "cancel_order": "إلغاء الطلب",
   "cancel_order_reason_prompt": "يرجى تقديم سبب لإلغاء هذا الطلب.",

@@ -10,6 +10,7 @@
   "search_events_placeholder": "Search events...",
   "filters": "Filters",
   "event_type": "Event Type",
+  "time_status": "Time Status",
   "free": "Free",
   "paid": "Paid",
 
@@ -339,9 +340,12 @@
 
   "completed": "Completed",
   "attended": "Attended",
+  "unattended": "Unattended",
+  "attendance_rate": "Attendance Rate",
   "failure": "Failed",
   "processing": "Purchased",
   "purchased": "Purchased",
+  "purchaser": "Purchaser",
 
   "public_ticket_loading": "Loading ticket...",
   "ticket_not_found": "Ticket Not Found",

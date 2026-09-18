@@ -14,6 +14,7 @@
   "search_events_placeholder": "חפש אירועים...",
   "filters": "מסננים",
   "event_type": "סוג אירוע",
+  "time_status": "סטטוס זמן",
   "free": "חינם",
   "paid": "בתשלום",
 
@@ -368,9 +369,12 @@
 
   "completed": "הושלם",
   "attended": "נכח",
+  "unattended": "לא נכח",
+  "attendance_rate": "שיעור נוכחות",
   "failure": "נכשל",
   "processing": "נרכש",
   "purchased": "נרכש",
+  "purchaser": "רוכש",
 
   "public_ticket_loading": "טוען כרטיס...",
   "ticket_not_found": "הכרטיס לא נמצא",
