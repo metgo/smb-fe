@@ -10,6 +10,7 @@ import {
   History,
   ImageIcon,
   LayoutList,
+  Logs,
   MapPin,
   Monitor,
   Ticket,
@@ -49,6 +50,7 @@ export const eventTabs = [
     label: "schedual_notification",
     icon: Bell,
   },
+  { id: "qr_scan_logs", label: "qr_scan_logs", icon: Logs },
 ];
 
 export const getEventTabs = (hasExternalTicket?: boolean) => {

@@ -8,12 +8,15 @@ import DetailTitleSection from "./DetailTitleSection";
 import LocationDetails from "./LocationDetails";
 import LocationDetailsclosed from "./LocationDetailsclosed";
 import MediaDetails from "./MediaDetails";
+import QRScanGridView from "./QRScanGridView";
+import QRScanListView from "./QRScanListView";
 import SectionHeader from "./SectionHeader";
 
 export {
   Attributes,
   MediaDetails,
   SectionHeader,
+  QRScanGridView,
   LocationDetails,
   AuditInfoDetails,
   LocationDetailsclosed,
@@ -22,4 +25,5 @@ export {
   DetailTitleSection,
   DeliveryPolicyOptionDetails,
   ConnectedDmoAuthorityWebsites,
+  QRScanListView,
 };

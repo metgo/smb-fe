@@ -107,6 +107,9 @@ export const endpoints = {
   eventTicketAnswers: "/event-ticket-answers/by-ticket",
   resendTicketEmailToCustomer: "/resend-order-emails",
 
+  // event qr scan tracking
+  qrScanTracking: "/qr-tracking/scans",
+
   // event sessions
   initWrapperCreate: "/event-sessions/initialize",
   eventSessions: "/event-sessions",

@@ -677,7 +677,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
               columns={[
                 {
                   key: "full_name",
-                  label: t("purchecher"),
+                  label: t("purchaser"),
                   sortable: true,
                   render: (ticket: IEventTicket) => (
                     <div className="flex flex-col">
@@ -720,7 +720,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                       <ImageWithFallback
                         src={ticket.ticketImage[0].image}
                         alt={ticket.ticketName}
-                        className="w-20 object-contain shrink-0 rounded"
+                        className="w-14 object-contain shrink-0 rounded"
                       />
                       <span
                         className={clsx(

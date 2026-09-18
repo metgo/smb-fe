@@ -63,6 +63,8 @@ export const routes = {
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
   statsSummary: "/stats-summary",
+
+  qrscanLogsMgmt: "/qrscan-logs-management",
 };
 
 export type RouteKey = keyof typeof routes;

@@ -16,6 +16,7 @@ import {
 import {
   EventDateTimeDetails,
   EventInfoDetails,
+  EventQrScanLogs,
   EventRegistrationDetails,
   EventScheduledNotificationDetails,
   EventSessionDetails,
@@ -245,6 +246,8 @@ export default function EventDetailsPage() {
             refetch={sessionRefetch}
           />
         );
+      case "qr_scan_logs":
+        return <EventQrScanLogs eventId={eventId} />;
       default:
         return null;
     }

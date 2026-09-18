@@ -633,7 +633,6 @@ function App() {
               path: routes.websiteCrashDetails,
               element: <WebsiteCrashDetailsPage />,
             },
-
             { path: "/*", element: <DashboardPage /> },
           ],
         },

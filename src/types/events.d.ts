@@ -503,3 +503,28 @@ interface IEventDetailsRes {
     role: TUserRole;
   };
 }
+
+// QR Scan Log Types
+interface IQRScanLog {
+  _id: string;
+  orderId: string;
+  scanType: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  deviceInfo: {
+    userAgent: string;
+    deviceType: string;
+    browser: string;
+    os: string;
+  };
+  locationInfo: {
+    ip: string;
+  };
+  scannedAt: string;
+  referrer: string;
+}
+
+interface IQRScanLogRes extends IPagination {
+  data: IQRScanLog[];
+}

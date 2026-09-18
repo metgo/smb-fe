@@ -30,6 +30,14 @@ interface EventListParams {
   endDate?: string;
 }
 
+interface QrScanTrackingParams {
+  eventId: string;
+  scanType: string;
+  page: string;
+  limit: string;
+  search?: string;
+}
+
 export const eventQueryApi = createApi({
   reducerPath: "eventQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -182,6 +190,14 @@ export const eventQueryApi = createApi({
         params,
       }),
     }),
+
+    getQrScanTracking: builder.query<IQRScanLogRes, QrScanTrackingParams>({
+      query: (params) => ({
+        url: endpoints.qrScanTracking,
+        method: "GET",
+        params,
+      }),
+    }),
   }),
 });
 
@@ -203,4 +219,5 @@ export const {
   useLazyGetPublicEventTicketQuery,
   useGetSessionsByEventIdQuery,
   useGetContentManagementEventsQuery,
+  useGetQrScanTrackingQuery,
 } = eventQueryApi;

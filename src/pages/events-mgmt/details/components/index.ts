@@ -5,6 +5,7 @@ import EventDateTimeDetails from "./EventDateTimeDetails";
 import EventScheduledNotificationDetails from "./EventSchedualNotificationDetails";
 import EventRegistrationDetails from "./EventRegistrationDetails";
 import EventSessionDetails from "./EventSessionDetails";
+import EventQrScanLogs from "./EventQrScanLogs";
 
 export {
   EventDateTimeDetails,
@@ -14,4 +15,5 @@ export {
   EventRegistrationDetails,
   EventScheduledNotificationDetails,
   EventSessionDetails,
+  EventQrScanLogs,
 };

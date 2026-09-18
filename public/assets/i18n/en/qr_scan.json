@@ -1,0 +1,23 @@
+{
+  "qr_scan_logs": "QR Scan Logs",
+  "records": "records",
+  "search_placeholder": "Search by name, email, phone, order ID...",
+  "ticket": "Ticket",
+  "session": "Session",
+  "no_more_logs": "No more logs to display",
+  "loading_logs": "Loading logs...",
+  "id": "ID",
+  "order_id": "Order ID",
+  "type": "Type",
+  "customer": "Customer",
+  "email": "Email",
+  "phone": "Phone",
+  "device": "Device",
+  "browser": "Browser",
+  "os": "OS",
+  "ip_address": "IP Address",
+  "scanned_at": "Scanned At",
+  "referrer": "Referrer",
+  "no_logs_found": "No QR scan logs found",
+  "no_logs_found_desc": "No QR scan logs match your search criteria"
+}
