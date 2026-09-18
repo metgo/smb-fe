@@ -16,6 +16,12 @@ import { StatusChangeBtn } from "@/components/btns";
 import { ConfirmDialog } from "@/components/shared";
 import { useAppSelector } from "@/hooks/hooks";
 import { ReactSelect } from "@/components/form-fields";
+import { Switch } from "@/components/ui/switch";
+import {
+  useGetWebsiteSettingDetailsQuery,
+  useUpdateWebsiteSettingMutation,
+} from "@/store/api/websiteConfigApi";
+import { useTranslateTopicMutation } from "@/store/api/contentMutationApi";
 import ViewManagerPanel from "./ViewManagerPanel";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
@@ -118,18 +124,37 @@ const TopicBlock = ({
 
   const hasMultipleCategories = topic.groups.length > 1;
 
-  const renameTopic = (topicIndex: number, newName: string) => {
-    const updated = [...templateContents];
+  const [translateTopicName, { isLoading: isTranslatingTopicRename }] =
+    useTranslateTopicMutation();
 
-    updated[topicIndex] = {
-      ...updated[topicIndex],
-      topic: newName,
-      // Keep existing He/Ar translations; only fall back to new name if they were empty
-      topicHe: updated[topicIndex].topicHe || newName,
-      topicAr: updated[topicIndex].topicAr || newName,
+  const renameTopic = async (topicIndex: number, newName: string) => {
+    // newName is whatever language is currently on screen (en/he/ar) — the
+    // translate endpoint detects the source language on its own.
+    const applyRename = (topic: string, topicHe: string, topicAr: string) => {
+      setTemplateContent((prev) =>
+        prev.map((t, i) =>
+          i === topicIndex ? { ...t, topic, topicHe, topicAr } : t,
+        ),
+      );
     };
 
-    setTemplateContent(updated);
+    // Re-translate on rename — the old title/He/Ar belong to the previous
+    // name and must not be carried forward under the new one.
+    try {
+      const translated = await translateTopicName({
+        title: newName,
+      }).unwrap();
+      applyRename(
+        translated.title || newName,
+        translated.titleHe || newName,
+        translated.titleAr || newName,
+      );
+    } catch {
+      toast.error(
+        "Translation failed — the name was set the same in all languages. You can edit them manually.",
+      );
+      applyRename(newName, newName, newName);
+    }
   };
 
   const handleColorChange = (topicIndex: number, colors: string[]) => {
@@ -256,12 +281,15 @@ const TopicBlock = ({
               topic={{
                 index,
                 name: topic.topic,
+                nameHe: topic.topicHe,
+                nameAr: topic.topicAr,
                 isHidden: topic.isHideTopic,
                 isPrimary: topic.isPrimary,
                 colors: topic.colors,
                 icon: topic.icon,
               }}
               onRename={renameTopic}
+              isRenaming={isTranslatingTopicRename}
               onToggleVisibility={handleToggleTopic}
               onTogglePrimary={handleTogglePrimary}
               onColorChange={handleColorChange}
@@ -356,6 +384,41 @@ const ContentComposer = ({
   );
   const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
 
+  // ── AI auto-connect toggle (Content Manager control) ──────────────────────
+  // Reads/writes ExternalApi.autoAssignEnabled via /site-settings/:id. When off,
+  // the backend worker skips this website when auto-placing approved items.
+  const { data: websiteConfig, refetch: refetchWebsiteConfig } =
+    useGetWebsiteSettingDetailsQuery(externalApiId, { skip: !externalApiId });
+  const [updateWebsiteSetting, { isLoading: isSavingAutoConnect }] =
+    useUpdateWebsiteSettingMutation();
+  // Undefined ⇒ treated as enabled (matches the backend @Prop default true).
+  const autoConnectEnabled = websiteConfig?.autoAssignEnabled !== false;
+
+  // The hint names only what this website actually shows: MARKETPLACE → products,
+  // TRAVELING → businesses, anything else (DISCOUNT / OTHER) → both.
+  const autoConnectPurpose =
+    websiteConfig?.purpose ?? selectedWebsite?.purpose ?? null;
+  const autoConnectItems =
+    autoConnectPurpose === "MARKETPLACE"
+      ? t("auto_connect_items_products")
+      : autoConnectPurpose === "TRAVELING"
+        ? t("auto_connect_items_businesses")
+        : t("auto_connect_items_all");
+
+  const handleAutoConnectToggle = async (next: boolean) => {
+    if (!externalApiId) return;
+    try {
+      await updateWebsiteSetting({
+        id: externalApiId,
+        body: { autoAssignEnabled: next },
+      }).unwrap();
+      refetchWebsiteConfig();
+      toast.success(t(next ? "auto_connect_enabled" : "auto_connect_disabled"));
+    } catch {
+      toast.error(t("auto_connect_update_failed"));
+    }
+  };
+
   const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -436,6 +499,46 @@ const ContentComposer = ({
           </div>
         </div>
       </div>
+
+      {/* AI auto-connect toggle — shown only when a website is selected */}
+      {externalApiId && (
+        <div
+          className={clsx(
+            "mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2",
+            isDark
+              ? "border-gray-700 bg-gray-800/40"
+              : "border-gray-200 bg-gray-50",
+          )}
+        >
+          <label
+            className={clsx(
+              "flex items-center gap-2 text-sm font-medium select-none",
+              isDark ? "text-gray-200" : "text-gray-700",
+            )}
+          >
+            <Switch
+              checked={autoConnectEnabled}
+              onCheckedChange={handleAutoConnectToggle}
+              disabled={isSavingAutoConnect}
+              className={clsx(
+                "data-[state=checked]:bg-emerald-500!",
+                "data-[state=unchecked]:bg-gray-300!",
+                "dark:data-[state=unchecked]:bg-gray-600!",
+                "[&_[data-slot=switch-thumb]]:bg-white!",
+              )}
+            />
+            <span className="whitespace-nowrap">{t("auto_connect_label")}</span>
+          </label>
+          <span
+            className={clsx(
+              "text-xs",
+              isDark ? "text-gray-500" : "text-gray-500",
+            )}
+          >
+            {t("auto_connect_hint", { items: autoConnectItems })}
+          </span>
+        </div>
+      )}
 
       {/* View Manager — shown only when a website is selected */}
       {externalApiId && (

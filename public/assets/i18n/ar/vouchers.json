@@ -30,6 +30,8 @@
   "error_name_required": "الاسم مطلوب",
   "error_email_required": "البريد الإلكتروني مطلوب",
   "error_email_invalid": "أدخل عنوان بريد إلكتروني صالح",
+  "error_phone_invalid": "أدخل رقم هاتف صالح مكون من 10 أرقام",
+  "error_contact_required": "يرجى تقديم البريد الإلكتروني أو رقم الهاتف",
   "error_campaign_required": "الحملة مطلوبة",
   "error_amount_required": "المبلغ مطلوب",
 
@@ -224,5 +226,6 @@
   "noDataToExport": "لا توجد بيانات للتصدير",
   "remaining_balance": "الرصيد المتبقي",
   "expired": "منتهي",
-  "revenue": "الإيرادات"
+  "revenue": "الإيرادات",
+  "voucher_id": "معرف القسيمة"
 }

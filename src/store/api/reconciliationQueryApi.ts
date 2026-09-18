@@ -53,6 +53,12 @@ export interface FinalizeClosedOrdersRequest {
   confirmFinalize: boolean;
 }
 
+export interface FinalizeClosedOrdersResponse {
+  finalized: number;
+  carriedOver: number;
+  sweptMonths: string[];
+}
+
 export interface FinalizeSweepPreview {
   targetMonth: string;
   sweptMonths: { label: string; payoutAmount: number }[];
@@ -277,7 +283,10 @@ export const reconciliationQueryApi = createApi({
     }),
 
     // POST /admin/monthly-reports/finalize-closed-orders
-    finalizeClosedOrders: builder.mutation<void, FinalizeClosedOrdersRequest>({
+    finalizeClosedOrders: builder.mutation<
+      FinalizeClosedOrdersResponse,
+      FinalizeClosedOrdersRequest
+    >({
       query: (body) => ({
         url: endpoints.finaliseApprovedOrders,
         method: "POST",

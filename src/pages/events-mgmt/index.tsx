@@ -2,13 +2,7 @@ import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import {
-  Calendar,
-  Users,
-  Ticket,
-  DollarSign,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Calendar, Users, Ticket, DollarSign } from "lucide-react";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ViewModeToggle } from "@/components/shared";
@@ -34,8 +28,6 @@ export default function EventsMgmtPage() {
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
-  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
-  const [_isScrolled, setIsScrolled] = useState(false);
 
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   const [searchQuery, setSearchQuery] = useState(savedState?.searchQuery || "");
@@ -131,81 +123,6 @@ export default function EventsMgmtPage() {
     setIsCreateWizardOpen(false);
   };
 
-  // ─── Collapse the controls drawer on scroll ────────────────────────────
-  useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (
-        (target && target.scrollTop && target.scrollTop > 20) ||
-        window.scrollY > 20
-      ) {
-        setIsScrolled(true);
-        setShowControlsDrawer(false);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll, {
-      capture: true,
-      passive: true,
-    });
-    return () =>
-      window.removeEventListener("scroll", handleScroll, {
-        capture: true,
-      } as any);
-  }, []);
-
-  // ─── Active filter count (search term + any non-default filter values) ──
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (searchQuery?.trim()) count += 1;
-    if (eventTypeFilter !== "all") count += 1;
-    if (registrationFilter !== "all") count += 1;
-    if (statusFilter !== "all") count += 1;
-    if (dateRangeFilter.start || dateRangeFilter.end) count += 1;
-    return count;
-  }, [
-    searchQuery,
-    eventTypeFilter,
-    registrationFilter,
-    statusFilter,
-    dateRangeFilter,
-  ]);
-
-  // ─── Reusable icon-only filter toggle button ──────────────────────────
-  const filterToggleButton = (
-    <button
-      onClick={() => setShowControlsDrawer((prev) => !prev)}
-      className={clsx(
-        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
-        showControlsDrawer
-          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
-          : isDark
-            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
-      )}
-      title={
-        showControlsDrawer
-          ? (tc("close_options") ?? "Close Options")
-          : (tc("search_and_filters") ?? "Search & Filters")
-      }
-    >
-      <SlidersHorizontal className="w-4 h-4" />
-      {activeFilterCount > 0 && (
-        <span
-          className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
-            showControlsDrawer
-              ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white",
-          )}
-        >
-          {activeFilterCount > 9 ? "9+" : activeFilterCount}
-        </span>
-      )}
-    </button>
-  );
-
   const eventStats = [
     {
       id: 1,
@@ -254,7 +171,6 @@ export default function EventsMgmtPage() {
             onAdd={handleAddEvent}
             stats={eventStats}
             isStatsLoading={isEventStatsFetching}
-            filterToggle={filterToggleButton}
           />
         </div>
 
@@ -277,23 +193,21 @@ export default function EventsMgmtPage() {
               />
             </div>
 
-            {showControlsDrawer && (
-              <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <FilterButton value={showFilters} onChange={setShowFilters} />
-                </div>
-
-                <ViewModeToggle
-                  showCalendor
-                  onChange={setViewMode}
-                  value={viewMode}
-                  tableName="eventViewMode"
-                />
+            <div className="flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
               </div>
-            )}
+
+              <ViewModeToggle
+                showCalendor
+                onChange={setViewMode}
+                value={viewMode}
+                tableName="eventViewMode"
+              />
+            </div>
           </div>
 
-          {showControlsDrawer && (showFilters || hasSavedFilters) && (
+          {(showFilters || hasSavedFilters) && (
             <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
               {/* Collapsible Filters */}
               <div className="grid grid-cols-12 gap-2 pt-2 dark:border-gray-700">
@@ -347,45 +261,6 @@ export default function EventsMgmtPage() {
                       setStatusFilter(newStatus.status)
                     }
                   />
-                </div>
-
-                {/* Date Range */}
-                <div className="col-span-12 sm:col-span-6 lg:col-span-4">
-                  <label className={`block text-sm mb-2 ${textSecondary}`}>
-                    {t("date_range")}
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="date"
-                      value={dateRangeFilter.start}
-                      onChange={(e) =>
-                        setDateRangeFilter({
-                          ...dateRangeFilter,
-                          start: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <input
-                      type="date"
-                      value={dateRangeFilter.end}
-                      onChange={(e) =>
-                        setDateRangeFilter({
-                          ...dateRangeFilter,
-                          end: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                  </div>
                 </div>
               </div>
 

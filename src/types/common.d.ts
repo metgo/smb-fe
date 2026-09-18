@@ -207,6 +207,21 @@ interface IPagination {
   totalData: number;
 }
 
+interface IAuditUserSummary {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+interface IAuditInfo {
+  createdAt?: string;
+  createdBy?: IAuditUserSummary;
+  updatedAt?: string;
+  updatedBy?: IAuditUserSummary;
+}
+
 interface IDoucment {
   _id: string;
   title: string;

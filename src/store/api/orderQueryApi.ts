@@ -35,6 +35,45 @@ export const orderQueryApi = createApi({
         params,
       }),
     }),
+
+    getOfflineOrders: builder.query<
+      IOfflineOrdersRes,
+      { page: number; limit: number }
+    >({
+      query: (params) => ({
+        url: endpoints.offlineOrders,
+        method: "GET",
+        params,
+      }),
+    }),
+
+    createOfflineOrder: builder.mutation<IOfflineOrder, Partial<IOfflineOrder>>(
+      {
+        query: (data) => ({
+          url: endpoints.offlineOrders,
+          method: "POST",
+          data,
+        }),
+      },
+    ),
+
+    updateOfflineOrder: builder.mutation<
+      IOfflineOrder,
+      { orderId: string; data: Partial<IOfflineOrder> }
+    >({
+      query: ({ orderId, data }) => ({
+        url: `${endpoints.offlineOrders}/${orderId}`,
+        method: "PATCH",
+        data,
+      }),
+    }),
+
+    deleteOfflineOrder: builder.mutation<void, string>({
+      query: (orderId) => ({
+        url: `${endpoints.offlineOrders}/${orderId}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -43,4 +82,9 @@ export const {
   useGetAllOrderSummaryQuery,
   useGetOrderByIdQuery,
   useGetOrderStatsQuery,
+
+  useGetOfflineOrdersQuery,
+  useCreateOfflineOrderMutation,
+  useUpdateOfflineOrderMutation,
+  useDeleteOfflineOrderMutation,
 } = orderQueryApi;

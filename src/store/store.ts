@@ -22,6 +22,8 @@ import { eventQueryApi } from "./api/eventQueryApi";
 import { orderQueryApi } from "./api/orderQueryApi";
 import { orderMutationApi } from "./api/orderMutationApi";
 import { userMutationApi } from "./api/userMutationApi";
+import { miniSiteMutationApi } from "./api/miniSiteMutation";
+import { miniSiteQueryApi } from "./api/miniSiteQueryApi";
 import { userQueryApi } from "./api/userQueryApi";
 import { mediaMutationApi } from "./api/mediaMutationApi";
 import { productMutationApi } from "./api/productMutationApi";
@@ -43,12 +45,14 @@ import { documentMutationApi } from "./api/doumentMutationApi";
 import { promotionsApi } from "./api/promotionsApi";
 import { websiteConfigApi } from "./api/websiteConfigApi";
 import { websiteCrashApi } from "./api/websiteCrashApi";
+import { campaignApi } from "./api/campaignApi";
 import { sessionQueryApi } from "./api/sessionQueryApi";
 import { sessionMutationApi } from "./api/sessionMutationApi";
 import { reconciliationQueryApi } from "./api/reconciliationQueryApi";
 import { paymentQueryApi } from "./api/paymentQueryApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
 import { chatSystemApi } from "./api/chatSystemApi";
+import { utmCampaignApi } from "./api/utmCampaignApi";
 
 export const store = configureStore({
   reducer: {
@@ -66,6 +70,8 @@ export const store = configureStore({
     [masterDataApi.reducerPath]: masterDataApi.reducer,
     [mediaMutationApi.reducerPath]: mediaMutationApi.reducer,
     [commonMutationApi.reducerPath]: commonMutationApi.reducer,
+    [miniSiteMutationApi.reducerPath]: miniSiteMutationApi.reducer,
+    [miniSiteQueryApi.reducerPath]: miniSiteQueryApi.reducer,
     [orderMutationApi.reducerPath]: orderMutationApi.reducer,
 
     [productMutationApi.reducerPath]: productMutationApi.reducer,
@@ -101,11 +107,13 @@ export const store = configureStore({
     [promotionsApi.reducerPath]: promotionsApi.reducer,
     [websiteConfigApi.reducerPath]: websiteConfigApi.reducer,
     [websiteCrashApi.reducerPath]: websiteCrashApi.reducer,
+    [campaignApi.reducerPath]: campaignApi.reducer,
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
     [reconciliationQueryApi.reducerPath]: reconciliationQueryApi.reducer,
     [paymentQueryApi.reducerPath]: paymentQueryApi.reducer,
     [chatSystemApi.reducerPath]: chatSystemApi.reducer,
+    [utmCampaignApi.reducerPath]: utmCampaignApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -142,6 +150,8 @@ export const store = configureStore({
       userQueryApi.middleware,
       businessQueryApi.middleware,
       mediaMutationApi.middleware,
+      miniSiteMutationApi.middleware,
+      miniSiteQueryApi.middleware,
       productMutationApi.middleware,
       productQueryApi.middleware,
       documentMutationApi.middleware,
@@ -162,11 +172,13 @@ export const store = configureStore({
       promotionsApi.middleware,
       websiteConfigApi.middleware,
       websiteCrashApi.middleware,
+      campaignApi.middleware,
       sessionQueryApi.middleware,
       sessionMutationApi.middleware,
       reconciliationQueryApi.middleware,
       paymentQueryApi.middleware,
       chatSystemApi.middleware,
+      utmCampaignApi.middleware,
       nprogressMiddleware,
     ),
 });

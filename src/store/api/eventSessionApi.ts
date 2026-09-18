@@ -80,7 +80,13 @@ export const eventSessionApi = createApi({
 
     eventSessionRegList: builder.query<
       IRegistrationsResponse,
-      { page: number; limit: number; wrapperId: string }
+      {
+        page: number;
+        limit: number;
+        wrapperId: string;
+        search?: string;
+        date?: string;
+      }
     >({
       query: (params) => ({
         url: `${endpoints.eventSessionReg}/${params.wrapperId}`,
@@ -88,6 +94,8 @@ export const eventSessionApi = createApi({
         params: {
           page: params.page,
           limit: params.limit,
+          search: params.search || undefined,
+          date: params.date || undefined,
         },
       }),
       providesTags: ["EventSession"],
@@ -249,6 +257,26 @@ export const eventSessionApi = createApi({
       }),
       invalidatesTags: ["EventSession"],
     }),
+
+    resendSessionBookNotify: builder.mutation<any, string>({
+      query: (sessionBookingId) => ({
+        url: `${endpoints.resendConfirmSessionRegister}/${sessionBookingId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
+
+    updateRegistrationStatus: builder.mutation<
+      any,
+      { bookingId: string; status: RegistrationStatus }
+    >({
+      query: ({ bookingId, status }) => ({
+        url: `${endpoints.eventSessionReg}/${bookingId}`,
+        method: "PATCH",
+        data: { status },
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
   }),
 });
 
@@ -271,6 +299,8 @@ export const {
   useReSendSessionNotificationMutation,
   useGetSendNotificationHistoryQuery,
   useGetSendNotificationHistoryDetailsQuery,
+  useResendSessionBookNotifyMutation,
+  useUpdateRegistrationStatusMutation,
 
   useCreateLandingPageSessionMutation,
   useCreateLandingPageSessionBlockMutation,

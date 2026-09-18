@@ -18,9 +18,6 @@ import {
   Receipt,
   Megaphone,
   FileText,
-  // Rss,
-  // SlidersHorizontal,
-  // Layout,
   Users,
   File,
   UserCircle,
@@ -39,6 +36,9 @@ import {
   CalendarArrowDown,
   ShoppingBag,
   BarChart3,
+  Link2,
+  Layout,
+  WalletCards,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -121,6 +121,42 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
+      id: "events",
+      path: routes.eventsMgmt,
+      label: t("events") || "Events",
+      icon: Calendar,
+      isEnabled: true,
+    },
+    {
+      id: "vouchers",
+      path: routes.voucherMgmt,
+      label: t("vouchers") || "Vouchers",
+      icon: Ticket,
+      isEnabled: true,
+    },
+    {
+      id: "trips",
+      path: routes.tripsMgmt,
+      label: t("trips") || "Trips",
+      icon: Map,
+      isEnabled: true,
+    },
+    {
+      id: "poi",
+      path: routes.poiMgmt,
+      label: t("pois") || "Points of Interest",
+      icon: MapPin,
+      isEnabled: true,
+    },
+    {
+      id: "article",
+      path: routes.articleMgmt,
+      label: t("article") || "Article",
+      icon: FileText,
+      isEnabled: true,
+    },
+
+    {
       id: "orders",
       path: "#orders",
       label: t("orders") || "Orders",
@@ -132,6 +168,13 @@ export default function Sidebar() {
           path: routes.ordersMgmt,
           label: t("orders") || "All Orders",
           icon: ShoppingBag,
+          isEnabled: true,
+        },
+        {
+          id: "offline-orders",
+          path: routes.offlineOrdersMgmt,
+          label: t("offline_orders") || "Offline Orders",
+          icon: WalletCards,
           isEnabled: true,
         },
         {
@@ -155,83 +198,39 @@ export default function Sidebar() {
       ],
     },
     {
-      id: "events",
-      path: routes.eventsMgmt,
-      label: t("events") || "Events",
-      icon: Calendar,
-      isEnabled: true,
-    },
-    {
-      id: "notifications",
-      path: routes.notificationMgmt,
-      label: t("notifications") || "Notifications",
-      icon: BellIcon,
-      isEnabled: true,
-    },
-
-    {
-      id: "poi",
-      path: routes.poiMgmt,
-      label: t("pois") || "Points of Interest",
-      icon: MapPin,
-      isEnabled: true,
-    },
-    {
-      id: "chat",
-      path: routes.chat,
-      label: t("chat") || "Chat",
+      id: "communication-center",
+      path: "#communication_center",
+      label: t("communication_center") || "Communication Center",
       icon: MessageCircle,
-      isEnabled: true,
-    },
-    {
-      id: "article",
-      path: routes.articleMgmt,
-      label: t("article") || "Article",
-      icon: FileText,
-      isEnabled: true,
-    },
-    ...(isSuperadmin
-      ? [
-          {
-            id: "pending-approvals",
-            path: routes.pendingApprovals,
-            label: t("pending_approvals") || "Pending Approvals",
-            icon: CheckSquare,
-            isEnabled: true,
-          },
-        ]
-      : []),
-    {
-      id: "trips",
-      path: routes.tripsMgmt,
-      label: t("trips") || "Trips",
-      icon: Map,
-      isEnabled: true,
-    },
-    {
-      id: "local-economy",
-      path: "#local_economy",
-      label: t("local_economy") || "Local Economy",
-      icon: Wallet,
       isEnabled: true,
       subItems: [
         {
-          id: "vouchers",
-          path: routes.voucherMgmt,
-          label: t("vouchers") || "Vouchers",
-          icon: Ticket,
+          id: "chat",
+          path: routes.chat,
+          label: t("chat") || "Chat",
+          icon: MessageCircle,
           isEnabled: true,
         },
         {
-          id: "mini-campaign",
-          path: routes.miniCampaign,
-          label: t("mini_campaigns") || "Mini-Campaigns",
-          icon: Megaphone,
-          isEnabled: false,
+          id: "notifications",
+          path: routes.notificationMgmt,
+          label: t("notifications") || "Notifications",
+          icon: BellIcon,
+          isEnabled: true,
         },
+        ...(isSuperadmin
+          ? [
+              {
+                id: "pending-approvals",
+                path: routes.pendingApprovals,
+                label: t("pending_approvals") || "Pending Approvals",
+                icon: CheckSquare,
+                isEnabled: true,
+              },
+            ]
+          : []),
       ],
     },
-
     {
       id: "site-management",
       path: "#site_management",
@@ -244,6 +243,13 @@ export default function Sidebar() {
           path: routes.contentMgmt,
           label: t("content_mgmt") || "Content Management",
           icon: Layers2,
+          isEnabled: true,
+        },
+        {
+          id: "mini-site",
+          path: routes.miniSiteMgmt,
+          label: t("mini_site") || "Mini-site",
+          icon: Layout,
           isEnabled: true,
         },
         {
@@ -260,28 +266,13 @@ export default function Sidebar() {
           icon: Megaphone,
           isEnabled: true,
         },
-
-        // {
-        //   id: "news-feed",
-        //   path: routes.dashboard,
-        //   label: t("news_feed") || "News Feed",
-        //   icon: Rss,
-        //   isEnabled: false,
-        // },
-        // {
-        //   id: "feed-settings",
-        //   path: routes.dashboard,
-        //   label: t("feed_settings") || "Feed Settings",
-        //   icon: SlidersHorizontal,
-        //   isEnabled: false,
-        // },
-        // {
-        //   id: "mini-site",
-        //   path: routes.dashboard,
-        //   label: t("mini_site") || "Mini-site",
-        //   icon: Layout,
-        //   isEnabled: false,
-        // },
+        {
+          id: "utm-builder",
+          path: routes.utmBuilder,
+          label: t("campaign_url_builder") || "Campaign URL Builder",
+          icon: Link2,
+          isEnabled: true,
+        },
       ],
     },
     {
@@ -501,7 +492,7 @@ export default function Sidebar() {
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-45 lg:hidden"
           onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}
@@ -517,7 +508,7 @@ export default function Sidebar() {
           transition-all duration-300
           flex flex-col
           border-r
-          z-[45]
+          z-45
           ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}
           ${isRTL ? "right-0" : "left-0"}
           ${

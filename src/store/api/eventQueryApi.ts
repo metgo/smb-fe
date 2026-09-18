@@ -143,7 +143,7 @@ export const eventQueryApi = createApi({
       }),
     }),
 
-    getEventById: builder.query<any, { eventId: string | null }>({
+    getEventById: builder.query<IEventDetailsRes, { eventId: string | null }>({
       query: ({ eventId }) => ({
         url: `${endpoints.events}/${eventId}`,
         method: "GET",

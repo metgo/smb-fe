@@ -94,6 +94,8 @@ function buildGroups(
     acc[categoryName].push({
       _id: item._id,
       name: item.name,
+      nameHe: item.nameHe,
+      nameAr: item.nameAr,
       desc: item.shortDescription || item.description || "",
       imageUrl: item?.images?.[0]?.image || "",
       primaryCategory: categoryName,
@@ -132,6 +134,8 @@ function mapContents(
   return (arr ?? []).map((content) => ({
     _id: content._id,
     name: content.name,
+    nameHe: content.nameHe,
+    nameAr: content.nameAr,
     desc: content.description,
     imageUrl: content?.images[0]?.image,
     primaryCategory: content?.primaryCategoryId?.hebrewName,

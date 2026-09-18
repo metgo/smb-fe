@@ -6,10 +6,11 @@ import EventsMgmtPage from "./events-mgmt";
 import ProductsMgmtPage from "./products-mgmt";
 import BusinessesMgmtPage from "./businesses-mgmt";
 import PendingApprovalsPage from "./pending-approvals";
-import MiniCampaignsMgmtPage from "./mini-campaigns-mgmt";
 import OrdersMgmtPage from "./orders-mgmt";
 import EventDetailsPage from "./events-mgmt/details";
 import BusinessDetailsPage from "./businesses-mgmt/details";
+import MiniSiteDetailsPage from "./mini-site-mgmt/details";
+import MiniSiteMgmtPage from "./mini-site-mgmt";
 import ProductDetailsPage from "./products-mgmt/details";
 import ContentMgmtPage from "./content-mgmt";
 import NotificationsMgmtPage from "./notification-mgmt";
@@ -36,6 +37,8 @@ import ChatPage from "./chat-mgmt";
 import StatsSummaryPage from "./stats-summary";
 import { PaymentMgmtPage } from "./payment-mgmt";
 import PaymentTransactionsPage from "./payment-transactions-mgmt";
+import UtmBuilderPage from "./utm-builder";
+import OfflineOrdersMgmtPage from "./offline-orders-mgmt";
 
 export {
   ChatPage,
@@ -53,16 +56,18 @@ export {
   BusinessesMgmtPage,
   PendingApprovalsPage,
   BusinessDetailsPage,
+  MiniSiteDetailsPage,
   ProductsMgmtPage,
   ProductDetailsPage,
   EventsMgmtPage,
   EventDetailsPage,
   EventSessionMgmtPage,
-  MiniCampaignsMgmtPage,
   OrdersMgmtPage,
+  MiniSiteMgmtPage,
   NotificationsMgmtPage,
   AnalyticsDashboardPage,
   ContentMgmtPage,
+  OfflineOrdersMgmtPage,
   PromotionsMgmtPage,
   PartnersPage,
   VouchersMgmtPage,
@@ -76,4 +81,5 @@ export {
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
   StatsSummaryPage,
+  UtmBuilderPage,
 };

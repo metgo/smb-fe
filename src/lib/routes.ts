@@ -21,6 +21,7 @@ export const routes = {
   ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
   ordersSummaryMgmt: "/orders-summary-management",
+  offlineOrdersMgmt: "/offline-orders-management",
 
   contentMgmt: "/content-management",
   voucherMgmt: "/voucher-management",
@@ -36,8 +37,10 @@ export const routes = {
 
   funDays: "/fun-days",
   vouchers: "/vouchers",
-  miniCampaign: "/mini-campaign",
+  miniCampaignMgmt: "/mini-campaign-management",
   auth: "/authentication",
+  miniSiteMgmt: "/mini-site-management",
+  miniSiteDetails: "/mini-site-details",
   noInternet: "/no-internet",
   miniSite: "/mini-site",
 
@@ -51,6 +54,7 @@ export const routes = {
 
   dynamicPages: "/dynamic-pages",
   promotionMgmt: "/promotions-management",
+  utmBuilder: "/campaign-url-builder",
 
   users: "/users",
 

@@ -1,20 +1,11 @@
 import clsx from "clsx";
-import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useUserRoles } from "@/hooks/useUserRoles";
 
 import {
   Mail,
-  Phone,
-  Calendar,
-  RefreshCw,
-  Tag,
-  User,
-  Package,
-  MapPin,
-  Gift,
-  TrendingUp,
   Send,
   UserPlus,
   Clock,
@@ -22,6 +13,7 @@ import {
   Check as CheckIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+
 import { routes } from "@/lib/routes";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetVoucherByIdQuery } from "@/store/api/voucherQueryApi";
@@ -34,57 +26,13 @@ import { formatDate, getStatusColor, getStatusLabel } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Spinner, TabsSection } from "@/components/shared";
 
-import { useGetAllOrdersQuery } from "@/store/api/orderQueryApi";
 import {
   AssignVoucherModal,
   VoucherAssigneeCreator,
   VoucherOverview,
-  VoucherTransactionTable,
-  VoucherUsageTimeline,
+  VoucherUsageOrderList,
 } from "./components";
 import { voucherTabs } from "@/constants/tabs";
-
-interface TimelineEvent {
-  id: string;
-  type:
-    | "created"
-    | "assigned"
-    | "sent_email"
-    | "sent_sms"
-    | "product_purchased"
-    | "trip_used"
-    | "fun_day_used"
-    | "partial_redemption"
-    | "refund"
-    | "expiration_extended";
-  date: string;
-  description: string;
-  amount?: number;
-  linkedId?: string;
-  linkedType?: "order" | "product" | "trip" | "funday" | "campaign";
-  linkedName?: string;
-}
-
-interface Order {
-  _id: string;
-  orderId: string;
-  product: {
-    _id: string;
-    name: string;
-    image?: { image: string };
-    business_info?: { name: string };
-  };
-  status: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  totalAmount: number;
-  amount: number;
-  quantity: number;
-  paymentDate: string;
-  createdAt: string;
-  itemType: string;
-}
 
 export default function VoucherDetailsPage() {
   const { t } = useTranslation("vouchers");
@@ -138,65 +86,6 @@ export default function VoucherDetailsPage() {
     isLoading,
   } = useGetVoucherByIdQuery(voucherId ? { voucherId } : skipToken);
 
-  const { data: orders, isLoading: isOrderLoading } = useGetAllOrdersQuery(
-    { voucherId: voucher?._id },
-
-    { skip: !voucher?._id },
-  );
-  const [ordersFromVoucher, setOrdersfromVoucher] = useState<Order[]>([]);
-
-  useEffect(() => {
-    setOrdersfromVoucher(orders?.data || []);
-  }, [orders]);
-
-  const createdEvent: TimelineEvent = {
-    id: "1",
-    type: "created",
-    date: voucher?.createdAt,
-    description: t("created_byy", {
-      firstName: voucher?.creatorInfo?.id?.firstName ?? "-",
-      lastName: voucher?.creatorInfo?.id?.lastName ?? "",
-    }).trim(),
-  };
-
-  const assignedEvent: TimelineEvent = {
-    id: "2",
-    type: "assigned",
-    date: voucher?.assigneeInfo?.assignedAt,
-    description: t("assigned_to", {
-      name: voucher?.assigneeInfo?.name ?? "-",
-    }),
-  };
-
-  const sentEmailEvent: TimelineEvent = {
-    id: "3",
-    type: "sent_email",
-    date: "",
-    description: t("voucher_sent_email", {
-      email: voucher?.assigneeInfo?.email ?? "-",
-    }),
-  };
-
-  const productPurchasedEvent: TimelineEvent[] = (ordersFromVoucher ?? []).map(
-    (order) => ({
-      id: order?._id,
-      type: "product_purchased" as const,
-      date: order.createdAt,
-      description: t("purchaser_info"),
-      amount: order.amount,
-      linkedId: order._id,
-      linkedType: order?.itemType as TimelineEvent["linkedType"],
-      linkedName: order.product?.name,
-    }),
-  );
-
-  const timeline: TimelineEvent[] = [
-    createdEvent,
-    assignedEvent,
-    sentEmailEvent,
-    ...productPurchasedEvent,
-  ];
-
   const isExpiringSoon = (date: string) => {
     const daysUntilExpiry = Math.floor(
       (new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
@@ -208,40 +97,11 @@ export default function VoucherDetailsPage() {
     return new Date(date) < new Date();
   };
 
-  const getTimelineIcon = (type: string) => {
-    switch (type) {
-      case "created":
-        return <Tag className="w-4 h-4" />;
-      case "assigned":
-        return <User className="w-4 h-4" />;
-      case "sent_email":
-        return <Mail className="w-4 h-4" />;
-      case "sent_sms":
-        return <Phone className="w-4 h-4" />;
-      case "product_purchased":
-        return <Package className="w-4 h-4" />;
-      case "trip_used":
-        return <MapPin className="w-4 h-4" />;
-      case "fun_day_used":
-        return <Gift className="w-4 h-4" />;
-      case "partial_redemption":
-        return <TrendingUp className="w-4 h-4" />;
-      case "refund":
-        return <RefreshCw className="w-4 h-4" />;
-      case "expiration_extended":
-        return <Calendar className="w-4 h-4" />;
-    }
-  };
-
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
       <Spinner isLoading={isLoading} /> {/* Fixed Header */}
-      {/* Fixed Header */}
       <div className={clsx("shrink-0")}>
-        {/* Action bar */}
         <BackToListBtn navPath={routes.voucherMgmt} />
-
-        {/* Identity section */}
         <div className="px-4 pb-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -281,7 +141,7 @@ export default function VoucherDetailsPage() {
                     </>
                   )}
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(voucher?.status)}`}
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(voucher?.status, isDark)}`}
                   >
                     {getStatusLabel(voucher?.status)}
                   </span>
@@ -421,27 +281,9 @@ export default function VoucherDetailsPage() {
             />
           )}
 
-          {/* Timeline Tab */}
-          {activeTab === "timeline" && (
-            <VoucherUsageTimeline
-              timeline={timeline}
-              getTimelineIcon={getTimelineIcon}
-              formatDate={formatDate}
-              t={t}
-              isDark={isDark}
-            />
-          )}
-
           {/* Transactions Tab */}
           {activeTab === "transactions" && (
-            <VoucherTransactionTable
-              t={t}
-              isDark={isDark}
-              voucher={voucher}
-              formatDate={formatDate}
-              ordersFromVoucher={ordersFromVoucher}
-              isOrderLoading={isOrderLoading}
-            />
+            <VoucherUsageOrderList voucherId={voucher._id} />
           )}
         </div>
       </div>

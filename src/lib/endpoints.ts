@@ -46,6 +46,12 @@ export const endpoints = {
   bulkBusinessesUpdate: "/bulk-businesses-update",
   pendingApprovals: "/admin/pending-approvals",
 
+  //mini-sites
+  miniSites: "mini-sites",
+  miniSitesStats: "mini-sites/stats",
+  miniSiteVoucherUpload: "mini-site/upload-vouchers",
+  voucherUsage: "voucher-usage",
+
   //products
   products: "/products",
   contentManagementProducts: "/content-management-products",
@@ -81,6 +87,8 @@ export const endpoints = {
   exportBankTransferXlsx: "/monthly-reports/export/bank-transfer-xlsx",
   exportVendorwiseXlsx: "/vendors/monthly-reports/export/xlsx",
 
+  offlineOrders: "/offline-order",
+
   // payments
   paymentTransactions: "/payment/transactions",
 
@@ -114,6 +122,7 @@ export const endpoints = {
   eventSessionSendHistoryDetails: "/event-sessions/send-history-detail",
   eventSessionResendNotification: "/event-sessions/resend-notification",
   sendOrderNotification: "/send-order-notification",
+  resendConfirmSessionRegister: "event-sessions/resend-confirmation",
 
   // users
   users: "/users",
@@ -169,6 +178,10 @@ export const endpoints = {
 
   // cmpaings
   campaign: "/admin/campaign",
+  campaignDetails: "/campaign-details",
+
+  // UTM campaign builder
+  utmCampaigns: "/utm-campaigns",
 
   // Admin endpoints
   dynamicPage: "/settings",

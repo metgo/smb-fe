@@ -1,7 +1,6 @@
 {
   "loading_text": "Loading more items...",
   "loading_end_text": "No more items",
-
   "all_websites": "All Websites",
   "all_authorities": "All Authorities",
   "app_title": "NATI",
@@ -13,7 +12,6 @@
   "last_year": "Last Year",
   "no_data": "No data available",
   "done": "Done",
-
   "not_found": "not found",
   "all_time": "All Time",
   "no_data_available": "No data available",
@@ -25,6 +23,11 @@
   "events": "Events",
   "products": "Products",
   "businesses": "Businesses",
+  "show_columns": "Show Columns",
+  "column_settings": "Column Settings",
+  "reset_to_default": "Reset to Default",
+  "select_columns_to_display": "Select columns to display",
+  "optional_columns": "Optional Columns",
   "users": "Users",
   "content-mgmt": "Content Management",
   "delete_business": "Delete Business",
@@ -44,7 +47,6 @@
   "location_address": "Location Address",
   "address": "Address",
   "vouchers": "Vouchers",
-
   "logo": "Logo",
   "upload_logo": "Upload Logo",
   "logo_required": "Logo (Required)",
@@ -71,6 +73,8 @@
   "blog": "Blog",
   "article": "Article",
   "chat": "Chat",
+  "communication_center": "Communication Center",
+  "offline_orders": "Offline Orders",
   "news_feed": "News Feed",
   "feed_settings": "Feed Settings",
   "mini_site": "Mini-site",
@@ -93,7 +97,6 @@
   "campaigns": "Campaigns",
   "websites": "Websites",
   "partners": "Partners",
-
   "filters": "Filters",
   "previous": "Previous",
   "next": "Next",
@@ -106,7 +109,6 @@
   "csvExport": "CSV Export",
   "delete": "Delete",
   "processing": "Processing...",
-
   "confirm": "Confirm",
   "details": "Details",
   "edit": "Edit",
@@ -116,7 +118,6 @@
   "continue": "Continue",
   "send_invite": "Send Invite",
   "back_to_list": "Back to List",
-
   "pending": "Pending",
   "approved": "Approved",
   "rejected": "Rejected",
@@ -124,9 +125,13 @@
   "draft": "Draft",
   "active": "Active",
   "inactive": "Inactive",
+  "expired": "Expired",
   "export": "Export",
   "action": "Action",
   "status": "Status",
+  "minisiteUrl": "Minisite URL",
+  "status_updated": "Status updated",
+  "status_update_failed": "Failed to update status",
   "selected": "Selected",
   "clear_selection": "Clear Selection",
   "csv_export": "CSV Export",
@@ -136,15 +141,14 @@
   "required": "Required",
   "not_required": "Not Required",
   "required_field": "This field is required",
-
   "change_status": "Change Status",
   "completion_percentage": "Completion",
   "created": "Created",
   "updated": "Updated",
-
+  "preview": "Preview",
+  "audit_info": "Audit Info",
   "delete_ticket": "Delete Ticket",
   "delete_ticket_confirm": "Are you sure you want to delete this ticket?",
-
   "delete_session": "Delete Session",
   "delete_session_confirm": "Are you sure you want to delete this session?",
   "deletd_notification": "Delete Notification",
@@ -155,10 +159,8 @@
   "leave": "Leave",
   "delete_event": "Delete Event",
   "delete_event_confirm": "Are you sure you want to delete this event?",
-
   "delete_session_block": "Delete Session Block",
   "delete_session_block_confirm": "Are you sure you want to delete this session block?",
-
   "images": "Images",
   "image_upload_info": "Image upload has started. Please wait…",
   "delete_image": "Delete image",
@@ -166,17 +168,14 @@
   "image_deleted": "Image Deleted",
   "delete_station": "Delete station",
   "delete_station_confirm": "Are you sure you want to remove this station from the trip?",
-
   "image_upload_success": "Image has been uploaded successfully!",
   "image_delete_success": "Image has been deleted successfully!",
   "image_upload_failed": "Image upload failed! Please try again...",
   "image_delete_failed": "Image delete failed! Please try again...",
-
   "to": "to",
   "primary": "Primary",
   "set_as_primary": "Set as Primary",
   "primary_category": "Primary Category",
-
   "filter": "Filter",
   "sunday": "Sunday",
   "monday": "Monday",
@@ -185,7 +184,6 @@
   "thursday": "Thursday",
   "friday": "Friday",
   "saturday": "Saturday",
-
   "sun": "Sun",
   "mon": "Mon",
   "tue": "Tue",
@@ -193,7 +191,6 @@
   "thu": "Thu",
   "fri": "Fri",
   "sat": "Sat",
-
   "open": "Open",
   "holiday": "Holiday",
   "today": "Today",
@@ -204,7 +201,6 @@
   "by_appointment": "By appointment",
   "for_entire_week": "for entire week",
   "add_time_slot": "Add time slot",
-
   "all": "All",
   "select_dmo": "Select DMO",
   "your_geographic_location": "Your geographic location",
@@ -214,15 +210,12 @@
   "select_associated_websites": "Select Associated Websites",
   "select_unassociated_websites": "Select Unassociated Websites",
   "website_visibility_required": "Please select at least one associated website",
-
   "download_pdf": "Download PDF",
   "download_csv": "Download CSV",
-
   "error_title": "Oh no, something went wrong!",
   "error_description": "An unexpected error has occurred. An error report has been sent — we'll look into it and push a fix as soon as possible.",
   "go_back_home": "Go Back Home",
   "reload_page": "Reload Page",
-
   "overview": "Overview",
   "stations": "Stations",
   "step_itenary": "Itinerary",
@@ -250,7 +243,6 @@
   "assignee_and_creator": "Assignee & Creator",
   "usage_timeline": "Usage Timeline",
   "transactions_and_usage": "Transactions & Usage",
-
   "impact_score": "Impact Score",
   "location": "Location",
   "geo_coordinates": "Geo Coordinates",
@@ -264,7 +256,6 @@
   "upload_image_info": "Upload images to create your event gallery",
   "upload_up_to_10_images": "Upload up to 10 images",
   "upload_up_to_3_images": "Upload up to 3 images",
-
   "attributes_desc": "Categories, accessibility features, and suitable audience",
   "subcategories": "Subcategories",
   "subcat_desc": "{count} category selected",
@@ -276,50 +267,38 @@
   "tags_desc": "{count} tags available",
   "no_attribute_selected": "No Attributes Selected",
   "no_attribute_selected_info": "No subcategories, accessibility features, or group types have been assigned to this event",
-
   "review_your_product": "Review your product",
   "basic_info": "Basic Information",
   "pricing_stock_dates": "Pricing, Stock & Dates",
   "delivery_service": "Delivery & Service",
-
   "name": "Name (EN)",
   "name_he": "Name (HE)",
   "name_ar": "Name (AR)",
-
   "short_description_en": "Short Description (EN)",
   "short_description_he": "Short Description (HE)",
   "short_description_ar": "Short Description (AR)",
-
   "full_description_en": "Full Description (EN)",
   "full_description_he": "Full Description (HE)",
   "full_description_ar": "Full Description (AR)",
-
   "categories": "Categories",
   "sub_categories": "Sub Categories",
-
   "marked_price": "Marked Price",
   "selling_price": "Selling Price",
   "quantity": "Quantity",
   "discount": "Discount",
   "off": "off",
-
   "unlimited": "Unlimited",
-
   "start_date": "Start Date",
   "end_date": "End Date",
-
   "home_delivery": "Home Delivery",
   "store_pickup": "Store Pickup",
   "vendor_delivers": "Vendor Delivers",
   "pickup_available": "Pickup Available",
-
   "service_duration": "Service Duration",
   "delivery_area": "Delivery Area",
-
   "return_exchange_policy": "Return & Exchange Policy",
   "additional_details": "Additional Details",
   "specific_seller_delivery_info": "Specific Seller Delivery Info",
-
   "title_placeholder": "Enter title...",
   "subtitle_placeholder": "Enter subtitle...",
   "short_description_placeholder": "Enter a brief description shown in previews and search results...",
@@ -377,15 +356,12 @@
   "last_name_placeholder": "Last Name",
   "phone_number_placeholder": "Phone Number",
   "address_placeholder": "Address",
-
   "max_length_reached": "Max length reached.",
   "select_options_placeholder": "Select options",
-
   "delete_partner": "Delete Partner",
   "delete_partner_confirm": "Are you sure you want to delete this partner? This action cannot be undone.",
   "partner_deleted": "Partner deleted successfully",
   "partner_delete_failed": "Failed to delete partner",
-
   "delete_authority": "Delete Authority",
   "delete_authority_confirm": "Are you sure you want to delete this authority? This action cannot be undone.",
   "authority_deleted": "Authority deleted successfully",
@@ -393,21 +369,18 @@
   "migrate_authority_to_prod": "Migrate Authority to Production",
   "migrate_authority_to_prod_confirm": "You are about to migrate this authority to the production environment. This will make it live for all users. Are you sure you want to continue?",
   "migrate_to_prod": "Migrate to Production",
-
   "delete_dmo": "Delete DMO",
   "delete_dmo_confirm": "Are you sure you want to delete this DMO? This action cannot be undone.",
   "dmo_deleted": "DMO deleted successfully",
   "dmo_delete_failed": "Failed to delete DMO",
   "migrate_dmo_to_prod": "Migrate DMO to Production",
   "migrate_dmo_to_prod_confirm": "You are about to migrate this DMO to the production environment. This will make it live for all users. Are you sure you want to continue?",
-
   "migrate_website_to_prod": "Migrate Website to Production",
   "migrate_website_to_prod_confirm": "You are about to migrate this website to the production environment. This will make it live for all users. Are you sure you want to continue?",
   "delete_website": "Delete Website",
   "delete_website_confirm": "Are you sure you want to delete this website? This action cannot be undone.",
   "website_deleted": "Website deleted successfully",
   "website_delete_failed": "Failed to delete website",
-
   "deactivate_website": "Deactivate Website",
   "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?",
   "pending_approvals": "Pending Approvals",
@@ -437,5 +410,6 @@
   "options": "Options",
   "hide_options": "Hide Options",
   "open_in_google_maps": "Open in Google Maps",
-  "open_in_waze": "Open in Waze"
+  "open_in_waze": "Open in Waze",
+  "campaign_url_builder": "Campaign URL Builder"
 }

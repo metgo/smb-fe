@@ -5,7 +5,7 @@ import { Star, Image as ImageIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface MediaDetailsProps {
-  images: Array<ITripImage>;
+  images: any;
 }
 
 const MediaDetails: React.FC<MediaDetailsProps> = ({ images }) => {
@@ -18,7 +18,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({ images }) => {
 
       {images?.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {images?.map((img, idx) => (
+          {images?.map((img: any, idx: number) => (
             <div
               key={idx}
               className={clsx(
@@ -35,7 +35,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({ images }) => {
               <ImageWithFallback
                 src={img.image}
                 alt={`Image ${idx + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
 
               {img.isPrimary && (

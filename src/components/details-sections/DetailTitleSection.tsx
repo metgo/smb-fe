@@ -8,13 +8,13 @@ import { ImageWithFallback } from "@/components/shared";
 import BackToListBtn from "@/components/btns/BackToListBtn";
 
 interface DetailTitleSectionProps {
-  name: string;
-  nameHe: string;
-  nameAr: string;
-  impact: number;
-  createdAt: string;
-  updatedAt: string;
-  completionPercent: number;
+  name?: string;
+  nameHe?: string;
+  nameAr?: string;
+  impact?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  completionPercent?: number;
   imageSrc?: string;
   actions?: React.ReactNode;
   /** Route path for the back-to-list button. Omit to hide the button. */

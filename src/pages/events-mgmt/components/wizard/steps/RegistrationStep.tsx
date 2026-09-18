@@ -75,7 +75,7 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
   }, [customQuestions.length]);
 
   return (
-    <div className="space-y-8 max-w-3xl mx-auto">
+    <div className="space-y-8">
       {/* ── Registration toggle ──────────────────────────────────────── */}
       <div
         className={clsx(

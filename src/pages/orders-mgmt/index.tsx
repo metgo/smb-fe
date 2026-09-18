@@ -21,20 +21,13 @@ import {
   ShoppingBag,
   Truck,
   XCircle,
-  SlidersHorizontal,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { envKeys } from "@/lib/envKeys";
-import {
-  BulkActionBar,
-  ConfirmDialog,
-  FilterChips,
-  ShowColumns,
-  // ViewModeToggle,
-} from "@/components/shared";
+import { BulkActionBar, ConfirmDialog, ShowColumns } from "@/components/shared";
 import {
   FilterSelect,
   MonthFilter,
@@ -55,7 +48,9 @@ import StatsMarquee from "@/components/shared/StatsMarquee";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import { formatDateTime, formatILS } from "@/helpers/formatter";
+import { displayPaymentStatus } from "@/helpers";
 import { ORDER_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
@@ -102,7 +97,10 @@ export default function OrdersMgmtPage() {
   );
   const canUseAuthenticatedOrderApis = !isQRMode || qrSessionReady;
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = usePersistentState(
+    "orders_mgmt_search",
+    "",
+  );
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -110,8 +108,6 @@ export default function OrdersMgmtPage() {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   const [showQRScanner, setShowQRScanner] = useState(false);
-  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
-  const [_isScrolled, setIsScrolled] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
 
@@ -251,30 +247,6 @@ export default function OrdersMgmtPage() {
     };
   }, [stopCamera]);
 
-  // ─── Collapse the controls drawer on scroll ────────────────────────────
-  useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (
-        (target && target.scrollTop && target.scrollTop > 20) ||
-        window.scrollY > 20
-      ) {
-        setIsScrolled(true);
-        setShowControlsDrawer(false);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll, {
-      capture: true,
-      passive: true,
-    });
-    return () =>
-      window.removeEventListener("scroll", handleScroll, {
-        capture: true,
-      } as any);
-  }, []);
-
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
     setPage((prev) => {
@@ -283,7 +255,7 @@ export default function OrdersMgmtPage() {
   };
 
   // Filters
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = usePersistentState("orders_mgmt_filters", {
     paymentMethod: "all",
     paymentStatus: "all",
 
@@ -391,40 +363,6 @@ export default function OrdersMgmtPage() {
 
     return chips;
   }, [filters, dmosAuthorities, t]);
-
-  // ─── Reusable icon-only filter toggle button ──────────────────────────
-  const filterToggleButton = (
-    <button
-      onClick={() => setShowControlsDrawer((prev) => !prev)}
-      className={clsx(
-        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
-        showControlsDrawer
-          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
-          : isDark
-            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
-      )}
-      title={
-        showControlsDrawer
-          ? (tc("close_options") ?? "Close Options")
-          : (tc("search_and_filters") ?? "Search & Filters")
-      }
-    >
-      <SlidersHorizontal className="w-4 h-4" />
-      {activeFilterChips.length > 0 && (
-        <span
-          className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
-            showControlsDrawer
-              ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white",
-          )}
-        >
-          {activeFilterChips.length > 9 ? "9+" : activeFilterChips.length}
-        </span>
-      )}
-    </button>
-  );
 
   useEffect(() => {
     setPage(1);
@@ -602,7 +540,13 @@ export default function OrdersMgmtPage() {
     columnVisibility.paymentStatus && {
       key: "paymentStatus",
       label: t("paymentStatus"),
-      render: (order: IOrder) => getPaymentStatusBadge(order.paymentStatus),
+      render: (order: IOrder) =>
+        getPaymentStatusBadge(
+          displayPaymentStatus(
+            order.paymentStatus,
+            order.status,
+          ) as TPaymentStatus,
+        ),
     },
     columnVisibility.paymentMethod && {
       key: "paymentMethod",
@@ -829,6 +773,11 @@ export default function OrdersMgmtPage() {
           text: isDark ? "text-blue-400" : "text-blue-800",
           label: t("refunded"),
         },
+        REFUND_IN_PROCESS: {
+          bg: isDark ? "bg-orange-900/30" : "bg-orange-100",
+          text: isDark ? "text-orange-400" : "text-orange-800",
+          label: t("refund_in_process"),
+        },
         PARTIALLY_REFUNDED: {
           bg: isDark ? "bg-orange-900/30" : "bg-orange-100",
           text: isDark ? "text-orange-400" : "text-orange-800",
@@ -971,9 +920,6 @@ export default function OrdersMgmtPage() {
                   <Camera className="w-4 h-4" />
                 </button>
               )}
-              {canViewOrders && (
-                <div className="block xl:hidden">{filterToggleButton}</div>
-              )}
             </div>
           </div>
           <p
@@ -1001,13 +947,6 @@ export default function OrdersMgmtPage() {
             <UserStatsCards stats={orderStats} isLoading={isStatsLoading} />
           )}
         </div>
-
-        {/* Filters Toggle Button Next to Stats (desktop) */}
-        {canViewOrders && (
-          <div className="hidden xl:flex items-center gap-2 shrink-0">
-            {filterToggleButton}
-          </div>
-        )}
       </div>
 
       {/* Search bar (always visible) + collapsible controls on the same row */}
@@ -1035,46 +974,44 @@ export default function OrdersMgmtPage() {
               />
             </div>
 
-            {showControlsDrawer && (
-              <div
-                className={clsx(
-                  "flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap animate-in fade-in slide-in-from-top-2",
-                  isRTL && "flex-row-reverse",
-                )}
-              >
-                <div className="flex items-center gap-2 flex-wrap">
-                  <FilterButton value={showFilters} onChange={setShowFilters} />
-                  <ShowColumns
-                    t={t}
-                    viewMode="list"
-                    columnDefinitions={columnDefinitions}
-                    columnVisibility={columnVisibility}
-                    showColumnSettings={showColumnSettings}
-                    setShowColumnSettings={setShowColumnSettings}
-                    setColumnVisibility={setColumnVisibility}
-                    resetToDefault={() =>
-                      setColumnVisibility(ORDER_COLUMNS.defaultColumns)
-                    }
-                  />
-                  <ExportOrdersButton
-                    orders={combinedOrders}
-                    selectedOrders={selectedOrders}
-                    columnVisibility={columnVisibility}
-                    websiteMap={websiteMap}
-                    isSummaryMode={false}
-                    summaryData={[]}
-                    t={t}
-                    tc={tc}
-                    monthFilter={filters.month}
-                    customDateFrom={filters.startDate}
-                    customDateTo={filters.endDate}
-                  />
-                </div>
+            <div
+              className={clsx(
+                "flex items-center justify-between gap-2 w-full lg:w-auto flex-wrap",
+                isRTL && "flex-row-reverse",
+              )}
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
+                <ShowColumns
+                  t={t}
+                  viewMode="list"
+                  columnDefinitions={columnDefinitions}
+                  columnVisibility={columnVisibility}
+                  showColumnSettings={showColumnSettings}
+                  setShowColumnSettings={setShowColumnSettings}
+                  setColumnVisibility={setColumnVisibility}
+                  resetToDefault={() =>
+                    setColumnVisibility(ORDER_COLUMNS.defaultColumns)
+                  }
+                />
+                <ExportOrdersButton
+                  orders={combinedOrders}
+                  selectedOrders={selectedOrders}
+                  columnVisibility={columnVisibility}
+                  websiteMap={websiteMap}
+                  isSummaryMode={false}
+                  summaryData={[]}
+                  t={t}
+                  tc={tc}
+                  monthFilter={filters.month}
+                  customDateFrom={filters.startDate}
+                  customDateTo={filters.endDate}
+                />
               </div>
-            )}
+            </div>
           </div>
 
-          {showControlsDrawer && showFilters && (
+          {showFilters && (
             <div
               className={`flex flex-wrap items-start gap-4 pt-4 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
             >
@@ -1181,29 +1118,14 @@ export default function OrdersMgmtPage() {
                   />
                 </div>
 
-                {/* Active Filter Chips */}
-                {activeFilterChips?.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-3 mt-3">
-                    <div className="flex flex-wrap gap-2">
-                      {activeFilterChips.map((chip) => (
-                        <FilterChips
-                          key={chip.key}
-                          label={t(chip.value)}
-                          onRemove={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              [chip.key]:
-                                chip.key.includes("date") ||
-                                chip.key === "amount"
-                                  ? ""
-                                  : "all",
-                            }))
-                          }
-                        />
-                      ))}
-                    </div>
+                {/* Clear-all button at the end of the filter fields */}
+                {(activeFilterChips?.length > 0 || searchTerm) && (
+                  <div className="flex items-end">
                     <button
-                      onClick={() => setFilters(defaultFilters)}
+                      onClick={() => {
+                        setFilters(defaultFilters);
+                        setSearchTerm("");
+                      }}
                       className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                     >
                       {t("clear_all")}

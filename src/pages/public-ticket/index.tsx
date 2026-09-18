@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "sonner";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,10 +15,8 @@ import {
   Ticket,
 } from "lucide-react";
 
-import { toast } from "sonner";
-
 import { useGetPublicEventTicketQuery } from "@/store/api/eventQueryApi";
-import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi";
+import { useMarkPublicTicketAttendanceMutation } from "@/store/api/eventMutationApi";
 
 interface TicketDay {
   date: string;
@@ -46,6 +45,8 @@ interface IPublicTicket {
   paymentMode: string[];
   paymentDate: string | null;
   status: string;
+  attended?: boolean;
+  attendedAt?: string | null;
   quantity: number;
   amount: number;
   cancelled?: {
@@ -82,7 +83,7 @@ const statusConfig: Record<
 };
 
 const orderStatusConfig: Record<string, { color: string; labelKey: string }> = {
-  completed: { color: "bg-green-500 text-white", labelKey: "completed" },
+  attended: { color: "bg-green-500 text-white", labelKey: "attended" },
   canceled: { color: "bg-red-500 text-white", labelKey: "canceled" },
   pending: { color: "bg-yellow-500 text-white", labelKey: "purchased" },
 };
@@ -118,17 +119,27 @@ export default function PublicTicketPage() {
   );
   const ticket = data as IPublicTicket | undefined;
 
-  const [updateStatus, { isLoading: isUpdating }] =
-    useUpdateEventTicketStatusMutation();
+  const [markAttendance, { isLoading: isUpdating }] =
+    useMarkPublicTicketAttendanceMutation();
 
   const handleMarkCompleted = async () => {
-    if (!ticket) return;
+    if (!ticket || isTicketExpired() || !eventId || !ticketId) return;
     try {
-      await updateStatus({
-        orderId: ticket._id,
-        status: "completed",
-      }).unwrap();
-      toast.success(t("order_status_updated", { status: t("completed") }));
+      const res = (await markAttendance({ eventId, ticketId }).unwrap()) as
+        | { alreadyAttended?: boolean; data?: { alreadyAttended?: boolean } }
+        | undefined;
+      // BE returns alreadyAttended when the ticket was already checked in (a
+      // repeat scan) — it keeps the original time, so show that instead of a
+      // fresh "checked in" toast.
+      if (res?.alreadyAttended || res?.data?.alreadyAttended) {
+        toast.success(
+          t("ticket_already_scanned", {
+            defaultValue: "This ticket was already checked in",
+          }),
+        );
+      } else {
+        toast.success(t("order_status_updated", { status: t("attended") }));
+      }
       refetch();
     } catch {
       toast.error(t("failed_to_update_order_status"));
@@ -170,17 +181,24 @@ export default function PublicTicketPage() {
     statusConfig[ticket.paymentStatus?.toUpperCase()] ??
     statusConfig["PENDING"];
 
-  const orderStatus = orderStatusConfig[ticket.status?.toLowerCase()] ?? {
+  const isCanceled = ticket.status?.toLowerCase() === "canceled";
+  const isAttended = ticket.attended === true;
+
+  // check-in state is shown ahead of the order status ("completed")
+  const derivedStatusKey = isCanceled
+    ? "canceled"
+    : isAttended
+      ? "attended"
+      : ticket.status?.toLowerCase();
+
+  const orderStatus = orderStatusConfig[derivedStatusKey] ?? {
     color: "bg-gray-500 text-white",
     labelKey: ticket.status,
   };
 
   const fullName = `${ticket.firstName} ${ticket.lastName ?? ""}`.trim();
 
-  const isCompleted = ticket.status?.toLowerCase() === "completed";
-  const isCanceled = ticket.status?.toLowerCase() === "canceled";
-
-  const isExpired = (() => {
+  const isTicketExpired = () => {
     const days = ticket.ticketDayDescription?.length
       ? ticket.ticketDayDescription
       : ticket.eventDayDescription;
@@ -197,7 +215,9 @@ export default function PublicTicketPage() {
       return false;
     });
     return !hasActiveDay;
-  })();
+  };
+
+  const isExpired = isTicketExpired();
 
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 via-white to-teal-50">
@@ -220,14 +240,14 @@ export default function PublicTicketPage() {
           )}
 
           {/* Scanned banner */}
-          {isCompleted && !isCanceled && (
+          {isAttended && !isCanceled && (
             <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
               {t("ticket_scanned")}
             </div>
           )}
 
           {/* Expired banner */}
-          {isExpired && !isCompleted && !isCanceled && (
+          {isExpired && !isAttended && !isCanceled && (
             <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
               {t("ticket_expired")}
             </div>
@@ -459,16 +479,18 @@ export default function PublicTicketPage() {
             {/* Mark as Completed */}
             <button
               onClick={handleMarkCompleted}
-              disabled={isCompleted || isCanceled || isUpdating}
+              disabled={isAttended || isCanceled || isExpired || isUpdating}
               className="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-teal-600 hover:bg-teal-700 text-white"
             >
               {isUpdating
                 ? t("updating")
                 : isCanceled
                   ? t("ticket_canceled")
-                  : isCompleted
+                  : isAttended
                     ? t("completed_checkmark")
-                    : t("mark_as_completed")}
+                    : isExpired
+                      ? t("ticket_expired")
+                      : t("mark_as_completed")}
             </button>
           </div>
         </div>

@@ -436,7 +436,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                     onDragEnd={handleDragEnd}
                     onClick={() => isSortable && handleSort(field)}
                     className={clsx(
-                      "relative px-4 py-4 min-h-[52px] align-middle",
+                      "relative px-4 py-4 min-h-13 align-middle",
                       isRTL ? "text-right" : "text-left",
                       "text-xs font-semibold tracking-wider leading-normal",
                       "transition-colors duration-150 select-none group",

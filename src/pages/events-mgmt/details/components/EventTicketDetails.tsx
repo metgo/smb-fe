@@ -3,11 +3,13 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { QRCodeCanvas } from "qrcode.react";
 
 import { formatDate } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
+import { ModalWrapper } from "@/components/wrapper";
 import {
   Edit,
   Copy,
@@ -22,6 +24,7 @@ import {
   LayoutList,
   ExternalLink,
   Plus,
+  Link as LinkIcon,
 } from "lucide-react";
 import TicketSummaryCard from "./TicketSummaryCard";
 import { ActionIconButtons } from "@/components/btns";
@@ -32,9 +35,17 @@ interface EventTicketDetailsProps {
   eventId: string;
   refetch: () => void;
   tickets: ITicketPayload[];
-  eventDays: EventDay[];
+  eventDays: IEventDay[];
   hasExternalTicket: boolean;
   ticketBuyLink: string;
+  eventSlug?: string;
+  associatedWebsites?: {
+    _id: string;
+    name: string | null;
+    url: string;
+    logo: string;
+  }[];
+  associatedWebsiteIds?: string[];
 }
 const safe = (n: any) => (Number.isFinite(n) ? n : 0);
 
@@ -70,7 +81,20 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   eventDays,
   hasExternalTicket,
   ticketBuyLink,
+  eventSlug,
+  associatedWebsites,
+  associatedWebsiteIds,
 }) => {
+  // Filter associated websites to only include selected ones
+  const selectedWebsites =
+    associatedWebsites?.filter((website) =>
+      associatedWebsiteIds?.includes(website._id),
+    ) || [];
+
+  const [isHiddenLinksModalOpen, setIsHiddenLinksModalOpen] = useState(false);
+  const [selectedWebsiteForQR, setSelectedWebsiteForQR] = useState<any | null>(
+    null,
+  );
   const navigate = useNavigate();
   const { t } = useTranslation("events");
   const { isDark, borderColor, language, textPrimary, textSecondary } =
@@ -275,7 +299,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
         </div>
 
         {/* Tickets List Header + Create Button */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h3
             className={clsx(
               "text-lg font-semibold",
@@ -284,19 +308,36 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
           >
             {t("tickets")}
           </h3>
-          <button
-            type="button"
-            onClick={handleCreateTicket}
-            className={clsx(
-              "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
-              isDark
-                ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
-                : "bg-blue-600 text-white hover:bg-blue-700",
+          <div className="flex items-center gap-2">
+            {tickets.some((ticket) => ticket?.isHidden) && (
+              <button
+                type="button"
+                onClick={() => setIsHiddenLinksModalOpen(true)}
+                className={clsx(
+                  "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
+                  isDark
+                    ? "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"
+                    : "bg-purple-600 text-white hover:bg-purple-700",
+                )}
+              >
+                <LinkIcon className="w-4 h-4" />
+                {t("hidden_ticket_links")}
+              </button>
             )}
-          >
-            <Plus className="w-4 h-4" />
-            {t("create_ticket")}
-          </button>
+            <button
+              type="button"
+              onClick={handleCreateTicket}
+              className={clsx(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
+                isDark
+                  ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                  : "bg-blue-600 text-white hover:bg-blue-700",
+              )}
+            >
+              <Plus className="w-4 h-4" />
+              {t("create_ticket")}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -339,19 +380,30 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
               <div
                 key={ticket._id}
                 className={clsx(
-                  "rounded-xl border transition-colors duration-200 overflow-hidden",
+                  "rounded-xl border transition-colors duration-200 relative",
                   isDark
                     ? "bg-gray-800 border-gray-700 hover:border-gray-600"
                     : "bg-white border-gray-200 hover:border-gray-300",
                 )}
               >
+                {/* Hidden Badge - Diagonal Top Left */}
+                {ticket?.isHidden && (
+                  <div className="absolute top-0 left-0 z-10 w-28 h-28 overflow-hidden pointer-events-none">
+                    <div className="absolute top-2.5 -left-11 w-32 h-5 -rotate-45 flex items-center justify-center border-y border-white/70 bg-purple-500">
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                        {t("hidden")}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row">
                   {/* Thumbnail */}
                   <div className="relative w-full sm:w-40 h-32 sm:h-auto shrink-0 overflow-hidden">
                     <ImageWithFallback
                       src={image}
                       alt={ticket.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                     />
                     <div className="absolute bottom-1.5 left-1.5">
                       <span
@@ -643,6 +695,205 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
           setTicketToDelete(null);
         }}
       />
+
+      {/* Hidden Ticket Links Modal */}
+      {isHiddenLinksModalOpen && (
+        <ModalWrapper
+          onClose={() => setIsHiddenLinksModalOpen(false)}
+          maxWidth="max-w-4xl"
+          height="h-auto max-h-[60dvh]"
+        >
+          <div className="p-6">
+            <h3
+              className={clsx(
+                "text-xl font-semibold mb-4",
+                isDark ? "text-white" : "text-gray-900",
+              )}
+            >
+              {t("hidden_ticket_links")}
+            </h3>
+            <p
+              className={clsx(
+                "text-sm mb-6",
+                isDark ? "text-gray-400" : "text-gray-600",
+              )}
+            >
+              {t("hidden_ticket_links_description")}
+            </p>
+
+            {tickets.filter((ticket) => ticket?.isHidden).length === 0 ? (
+              <p
+                className={clsx(
+                  "text-center text-sm py-8",
+                  isDark ? "text-gray-400" : "text-gray-500",
+                )}
+              >
+                {t("no_hidden_tickets")}
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {selectedWebsites.map((website: any) => {
+                  const hiddenLink = website.url
+                    ? `${website.url}?showHidden=true`
+                    : `${import.meta.env.VITE_CUSTOMER_URL || "http://localhost:3000"}/event-details/${eventSlug || ""}?showHidden=true`;
+
+                  return (
+                    <div
+                      key={website._id}
+                      className={clsx(
+                        "flex items-center justify-between p-4 rounded-xl border transition-all duration-200",
+                        isDark
+                          ? "bg-gray-800 border-gray-700 hover:bg-liner-to-br hover:from-purple-900/50 hover:to-blue-900/50 hover:border-purple-500"
+                          : "bg-white border-gray-200 hover:bg-liner-to-br hover:from-purple-50 hover:to-blue-50 hover:border-purple-300 hover:shadow-purple-100/60",
+                      )}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div
+                          className={clsx(
+                            "p-2 rounded-lg shrink-0",
+                            isDark ? "bg-gray-700" : "bg-gray-100",
+                          )}
+                        >
+                          <ImageWithFallback
+                            src={website?.logo || website?.url}
+                            alt={website?.name}
+                            className="w-6 h-6 object-contain"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span
+                            className={clsx(
+                              "font-medium text-sm block",
+                              isDark ? "text-gray-200" : "text-gray-800",
+                            )}
+                          >
+                            {website.name}
+                          </span>
+                          <p
+                            className={clsx(
+                              "text-xs truncate mt-1",
+                              isDark ? "text-gray-400" : "text-gray-500",
+                            )}
+                          >
+                            {hiddenLink}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* QR Code Button - Commented out per frontend dev request */}
+                        {/* <button
+                          onClick={() => setSelectedWebsiteForQR({ ...website, url: hiddenLink })}
+                          className={clsx(
+                            "shrink-0 transition-colors duration-200 cursor-pointer p-2 rounded-lg",
+                            isDark
+                              ? "text-violet-400 hover:text-violet-300 bg-gray-700"
+                              : "text-violet-600 hover:text-violet-700 bg-gray-100",
+                          )}
+                          title="View QR Code"
+                        >
+                          <QrCodeIcon className="w-4 h-4" />
+                        </button> */}
+
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(hiddenLink);
+                            toast.success(t("share_special_links"));
+                          }}
+                          className={clsx(
+                            "shrink-0 transition-colors duration-200 cursor-pointer p-2 rounded-lg",
+                            isDark
+                              ? "text-blue-400 hover:text-blue-300 bg-gray-700"
+                              : "text-blue-600 hover:text-blue-700 bg-gray-100",
+                          )}
+                          title="Copy Link"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => window.open(hiddenLink, "_blank")}
+                          className={clsx(
+                            "shrink-0 transition-colors duration-200 cursor-pointer p-2 rounded-lg",
+                            isDark
+                              ? "text-green-400 hover:text-green-300 bg-gray-700"
+                              : "text-green-600 hover:text-green-700 bg-gray-100",
+                          )}
+                          title="Open Link"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </ModalWrapper>
+      )}
+
+      {/* QR Code Modal */}
+      {selectedWebsiteForQR && (
+        <ModalWrapper
+          onClose={() => setSelectedWebsiteForQR(null)}
+          maxWidth="max-w-md"
+        >
+          <div className="p-6 text-center">
+            <h3
+              className={clsx(
+                "text-xl font-semibold mb-4",
+                isDark ? "text-white" : "text-gray-900",
+              )}
+            >
+              {selectedWebsiteForQR.name}
+            </h3>
+            <div className="flex justify-center mb-4">
+              <div
+                className={clsx(
+                  "p-4 rounded-xl",
+                  isDark ? "bg-white" : "bg-white",
+                )}
+              >
+                <QRCodeCanvas
+                  value={selectedWebsiteForQR.url}
+                  size={200}
+                  level="H"
+                />
+              </div>
+            </div>
+            <p
+              className={clsx(
+                "text-sm mb-4",
+                isDark ? "text-gray-400" : "text-gray-600",
+              )}
+            >
+              Scan to visit {selectedWebsiteForQR.url}
+            </p>
+            <button
+              onClick={() => {
+                const canvas = document.querySelector(
+                  "canvas",
+                ) as HTMLCanvasElement;
+                if (canvas) {
+                  const link = document.createElement("a");
+                  link.download = `${selectedWebsiteForQR.name.replace(/\s+/g, "_")}_QR.png`;
+                  link.href = canvas.toDataURL("image/png");
+                  link.click();
+                }
+              }}
+              className={clsx(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
+                isDark
+                  ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                  : "bg-blue-600 text-white hover:bg-blue-700",
+              )}
+            >
+              <Copy className="w-4 h-4" />
+              Download QR Code
+            </button>
+          </div>
+        </ModalWrapper>
+      )}
     </>
   );
 };

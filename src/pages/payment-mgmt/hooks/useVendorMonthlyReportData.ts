@@ -69,11 +69,19 @@ export function useVendorMonthlyReportData(
     data: orderProductsData,
     isLoading,
     isFetching,
-    refetch,
+    isUninitialized,
+    refetch: refetchOrderProducts,
   } = useGetOrderProductsQuery(queryParams, {
     refetchOnMountOrArgChange: true,
     skip: !filters.businessId && adminView,
   });
+
+  // When skipped (admin view with no vendor selected), the query never
+  // starts, so RTK Query's refetch() throws "Cannot refetch a query that
+  // has not been started yet" (RTK error #38) - no-op in that case instead.
+  const refetch = useCallback(() => {
+    if (!isUninitialized) refetchOrderProducts();
+  }, [isUninitialized, refetchOrderProducts]);
 
   const {
     data: reconciliationStats,

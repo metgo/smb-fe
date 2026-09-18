@@ -1,6 +1,8 @@
 interface IContent {
   _id: string;
   name: string;
+  nameHe?: string | null;
+  nameAr?: string | null;
   desc: string;
   imageUrl: string;
   primaryCategory: string;

@@ -11,7 +11,6 @@ import {
   CheckCircle,
   Package,
   Download,
-  SlidersHorizontal,
 } from "lucide-react";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,6 +22,7 @@ import {
   SearchInput,
 } from "@/components/shared";
 import ListHeaderBar from "@/components/shared/ListHeaderBar";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import {
   formatDate,
   getStatusColor,
@@ -44,6 +44,7 @@ import {
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { routes } from "@/lib/routes";
 import TooltipWrapper from "@/components/wrapper/TooltipWrapper";
+import { formatILS } from "@/helpers/formatter";
 
 const LIMIT = 20;
 const SEARCH_STORAGE_KEY = "voucherSearchTerm";
@@ -73,7 +74,6 @@ const VouchersList = ({
   const navigate = useNavigate();
   const { t } = useTranslation("vouchers");
   const { t: tt } = useTranslation("toast");
-  const { t: tc } = useTranslation("common");
   const { isDark } = useThemeClasses();
   const { isSuperadmin } = useUserRoles();
 
@@ -95,29 +95,14 @@ const VouchersList = ({
       {
         id: 2,
         title: t("total_voucher_value"),
-        value:
-          voucherStatsResponse?.totalRevenue != null
-            ? voucherStatsResponse.totalRevenue.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
-            : "0.00",
+        value: formatILS(voucherStatsResponse?.totalRevenue),
         label: t("generated_revenue"),
         icon: <DollarSign className="w-5 h-5 text-green-500" />,
       },
       {
         id: 3,
         title: t("total_amount_to_redeem"),
-        value:
-          voucherStatsResponse?.totalRemainingBalance != null
-            ? voucherStatsResponse.totalRemainingBalance.toLocaleString(
-                "en-US",
-                {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                },
-              )
-            : "0.00",
+        value: formatILS(voucherStatsResponse?.totalRemainingBalance),
         label: t("pending_redemption"),
         icon: <Clock className="w-5 h-5 text-orange-500" />,
       },
@@ -223,9 +208,10 @@ const VouchersList = ({
             <span
               className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(
                 voucher.status,
+                isDark,
               )}`}
             >
-              {getStatusLabel(voucher.status)}
+              {getStatusLabel(voucher?.status)}
             </span>
           ),
         },
@@ -249,7 +235,7 @@ const VouchersList = ({
             <span
               className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
             >
-              ₪{voucher.remainingAmount}
+              ₪{voucher?.remainingAmount}
             </span>
           ),
         },
@@ -270,7 +256,7 @@ const VouchersList = ({
           label: t("expiry"),
           sortable: true,
           render: (voucher: IVoucherItem) => {
-            const expired = isExpired(voucher.expireDate);
+            const expired = isExpired(voucher?.expireDate);
             const expiringSoon = isExpiringSoon(voucher.expireDate);
             const textColor = expired
               ? isDark
@@ -329,14 +315,33 @@ const VouchersList = ({
   };
 
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [campaignFilter, setCampaignFilter] = useState<string>("all");
-  const [paymentFilter, setPaymentFilter] = useState<string>("all");
-  const [dateFrom, setDateFrom] = useState<string>("");
-  const [dateTo, setDateTo] = useState<string>("");
+  const [searchQuery, setSearchQuery] = usePersistentState(
+    "vouchers_mgmt_search",
+    "",
+  );
+  const [voucherFilters, setVoucherFilters] = usePersistentState(
+    "vouchers_mgmt_filters",
+    {
+      statusFilter: "all",
+      campaignFilter: "all",
+      paymentFilter: "all",
+      dateFrom: "",
+      dateTo: "",
+    },
+  );
+  const { statusFilter, campaignFilter, paymentFilter, dateFrom, dateTo } =
+    voucherFilters;
+  const setStatusFilter = (v: string) =>
+    setVoucherFilters((p) => ({ ...p, statusFilter: v }));
+  const setCampaignFilter = (v: string) =>
+    setVoucherFilters((p) => ({ ...p, campaignFilter: v }));
+  const setPaymentFilter = (v: string) =>
+    setVoucherFilters((p) => ({ ...p, paymentFilter: v }));
+  const setDateFrom = (v: string) =>
+    setVoucherFilters((p) => ({ ...p, dateFrom: v }));
+  const setDateTo = (v: string) =>
+    setVoucherFilters((p) => ({ ...p, dateTo: v }));
   const [showFilters, setShowFilters] = useState(false);
-  const [showControlsDrawer, setShowControlsDrawer] = useState(false);
 
   const [minAmountLocal, setMinAmountLocal] = useState<number>(0);
   const [maxAmountLocal, setMaxAmountLocal] = useState<number | null>(null);
@@ -449,27 +454,6 @@ const VouchersList = ({
   useEffect(() => {
     setPage(1);
   }, [minAmountDebounced, maxAmountDebounced]);
-
-  // Collapse controls on scroll
-  useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (
-        (target && target.scrollTop && target.scrollTop > 20) ||
-        window.scrollY > 20
-      ) {
-        setShowControlsDrawer(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll, {
-      capture: true,
-      passive: true,
-    });
-    return () =>
-      window.removeEventListener("scroll", handleScroll, {
-        capture: true,
-      } as any);
-  }, []);
 
   const [selectedVouchers, setSelectedVouchers] = useState<Set<string>>(
     new Set(),
@@ -620,51 +604,20 @@ const VouchersList = ({
   }, [combinedVouchers, t, isSuperadmin]);
 
   const clearAllFilters = () => {
-    setStatusFilter("all");
-    setCampaignFilter("all");
-    setPaymentFilter("all");
+    setVoucherFilters({
+      statusFilter: "all",
+      campaignFilter: "all",
+      paymentFilter: "all",
+      dateFrom: "",
+      dateTo: "",
+    });
     setSearchQuery("");
-    setDateFrom("");
-    setDateTo("");
     setHasInteractedWithAmount(false);
     setMinAmountLocal(0);
     setMaxAmountLocal(null);
     setMinAmountDebounced(0);
     setMaxAmountDebounced(0);
   };
-
-  const filterToggleButton = (
-    <button
-      onClick={() => setShowControlsDrawer((prev) => !prev)}
-      className={clsx(
-        "relative p-2 rounded-xl border transition-all cursor-pointer shrink-0",
-        showControlsDrawer
-          ? "bg-teal-600 text-white border-teal-500 shadow-teal-500/20"
-          : isDark
-            ? "bg-gray-900 border-gray-800 text-teal-400 hover:bg-gray-800 hover:border-teal-500/40"
-            : "bg-gray-100 border-gray-200 text-teal-700 hover:bg-gray-200 hover:border-teal-400",
-      )}
-      title={
-        showControlsDrawer
-          ? (tc("close_options") ?? "Close Options")
-          : (tc("search_and_filters") ?? "Search & Filters")
-      }
-    >
-      <SlidersHorizontal className="w-4 h-4" />
-      {activeFilterCount > 0 && (
-        <span
-          className={clsx(
-            "absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
-            showControlsDrawer
-              ? "bg-white text-teal-600"
-              : "bg-teal-500 text-white",
-          )}
-        >
-          {activeFilterCount > 9 ? "9+" : activeFilterCount}
-        </span>
-      )}
-    </button>
-  );
 
   return (
     <>
@@ -685,7 +638,6 @@ const VouchersList = ({
           onAdd={isSuperadmin ? onAddVoucher : undefined}
           stats={voucherStats}
           isStatsLoading={isStatsLoading}
-          filterToggle={filterToggleButton}
         />
       </div>
 
@@ -708,27 +660,25 @@ const VouchersList = ({
             />
           </div>
 
-          {showControlsDrawer && (
-            <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2">
-              <FilterButton value={showFilters} onChange={setShowFilters} />
-              <button
-                onClick={handleExportCSVVouchers}
-                className={clsx(
-                  "flex items-center gap-2 px-2.5 sm:px-4 py-2 rounded-lg border transition-colors",
-                  isDark
-                    ? "border-gray-700 text-gray-300 hover:bg-gray-800"
-                    : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700",
-                )}
-                title={t("downloadCSV")}
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">{t("downloadCSV")}</span>
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            <FilterButton value={showFilters} onChange={setShowFilters} />
+            <button
+              onClick={handleExportCSVVouchers}
+              className={clsx(
+                "flex items-center gap-2 px-2.5 sm:px-4 py-2 rounded-lg border transition-colors",
+                isDark
+                  ? "border-gray-700 text-gray-300 hover:bg-gray-800"
+                  : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700",
+              )}
+              title={t("downloadCSV")}
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">{t("downloadCSV")}</span>
+            </button>
+          </div>
         </div>
 
-        {showControlsDrawer && (showFilters || hasSavedFilters) && (
+        {(showFilters || hasSavedFilters) && (
           <div
             className={clsx(
               "px-4 pb-2 rounded-md",

@@ -22,11 +22,13 @@ i18n
       "businesses",
       "products",
       "poi",
+      "campaign",
       "trips",
       "tour",
       "content",
       "reconciliation",
       "payments",
+      "utm_campaign",
     ],
     defaultNS: "common",
 

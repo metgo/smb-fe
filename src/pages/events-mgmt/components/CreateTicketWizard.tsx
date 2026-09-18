@@ -239,6 +239,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
       images: [{ image: images[0]?.gcsURL ?? "" }],
       status: editData.status,
       type: editData.type.toUpperCase(),
+      isHidden: editData.isHidden ?? false,
     };
 
     try {
@@ -582,6 +583,31 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
               ))}
             </div>
           </div>
+
+          {/* ── Hidden Ticket Option ───────────────────────────────────── */}
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="isHidden"
+              checked={editData?.isHidden ?? false}
+              onChange={(e) => {
+                setEditData((prev: ITicketPayload) => ({
+                  ...prev,
+                  isHidden: e.target.checked,
+                }));
+              }}
+              className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+            />
+            <label
+              htmlFor="isHidden"
+              className={`text-sm ${textSecondary} cursor-pointer`}
+            >
+              {t("hidden_ticket")}
+            </label>
+          </div>
+          <p className={`text-xs ${textTertiary} -mt-2 mb-2`}>
+            {t("hidden_ticket_description")}
+          </p>
 
           {/* ── Prices (paid/vip only) ────────────────────────────────── */}
           {isPaidOrVip && (
