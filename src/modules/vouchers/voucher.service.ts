@@ -411,7 +411,9 @@ export class VoucherService {
         .map(doc => `\n${doc.code}`)
         ?.toString();
 
-      const link = `${externalApi?.themeId?.websiteUrl}/product?utm_source=sms&utm_medium=tav8&voucherId=${voucherDetails[0]?.code}`;
+      // externalApi has websiteUrl directly — themeId is a different schema
+      // (theme colors/fonts), not where the site URL lives.
+      const link = `${externalApi?.websiteUrl}/topic-products?utm_source=sms&utm_medium=tav8&voucherCode=${voucherDetails[0]?.code}`;
 
       if (voucherDetails[0]?.assigneeInfo?.email) {
         await this.sendVoucherPurchaseEmail(

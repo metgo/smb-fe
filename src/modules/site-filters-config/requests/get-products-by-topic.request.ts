@@ -92,4 +92,23 @@ export class GetProductsByTopicRequest extends LocaleFilterQuery {
   @Type(() => Number)
   @IsNumber()
     radius?: number;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Voucher code applied via a QR/email deep link — when present, only products priced at or under the voucher\'s remaining amount are returned',
+  })
+  @IsOptional()
+  @IsString()
+    voucherCode?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Frontend-only marker that a voucher is active on this request. Not read by the backend — voucherCode is the actual signal; voucherStatus in the response tells you the outcome.',
+  })
+  @ToBoolean()
+  @IsBoolean()
+  @IsOptional()
+    voucher?: boolean;
 }

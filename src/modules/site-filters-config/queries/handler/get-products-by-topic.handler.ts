@@ -6,6 +6,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 import { CommonStatus, Locale } from 'src/common/enum';
+import { checkExpireDate } from 'src/common/expireDate';
 import { paginateData } from 'src/common/pagination';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import {
@@ -27,6 +28,7 @@ import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
+import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
 
 @QueryHandler(GetProductsByTopicQuery)
 export class GetProductsByTopicHandler
@@ -48,7 +50,48 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     private ExternalApiModel: Model<ExternalApi>,
     @InjectModel(Business.name)
     private BusinessModel: Model<Business>,
+    @InjectModel(Voucher.name)
+    private VoucherModel: Model<Voucher>,
   ) {}
+
+  private async getVoucherPriceCap(voucherCode?: string): Promise<{
+    priceCap: number | null;
+    voucherStatus: 'VALID' | 'EXPIRED' | 'NOT_FOUND' | 'NONE';
+    voucherAssignee: { name: string; phone: string; email: string } | null;
+  }> {
+    if (!voucherCode) {
+      return { priceCap: null, voucherStatus: 'NONE', voucherAssignee: null };
+    }
+
+    const voucher = await this.VoucherModel.findOne({
+      code: voucherCode.trim(),
+      isDeleted: { $ne: true },
+    })
+      .select('remainingAmount expireDate assigneeInfo')
+      .lean();
+
+    if (!voucher) {
+      return { priceCap: null, voucherStatus: 'NOT_FOUND', voucherAssignee: null };
+    }
+
+    const voucherAssignee = voucher.assigneeInfo
+      ? {
+        name: voucher.assigneeInfo.name,
+        phone: voucher.assigneeInfo.phone,
+        email: voucher.assigneeInfo.email,
+      }
+      : null;
+
+    if (voucher.expireDate && !checkExpireDate(voucher.expireDate)) {
+      return { priceCap: null, voucherStatus: 'EXPIRED', voucherAssignee };
+    }
+
+    return {
+      priceCap: voucher.remainingAmount,
+      voucherStatus: 'VALID',
+      voucherAssignee,
+    };
+  }
 
   async execute({
     externalApiId,
@@ -66,9 +109,16 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       lat,
       lng,
       radius,
+      voucherCode,
     } = query;
 
     try {
+      const {
+        priceCap: voucherPriceCap,
+        voucherStatus,
+        voucherAssignee,
+      } = await this.getVoucherPriceCap(voucherCode);
+
       let searchOrConditions: any[] = [];
       const expandedTerms: string[] = [];
       let searchTerms: string[] = [];
@@ -168,8 +218,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           hasDelivery,
           searchOrConditions,
           nearbyBusinessIds,
+          voucherPriceCap,
         );
-        return fallbackResult;
+        return { ...fallbackResult, voucherStatus, voucherAssignee };
       }
 
       const productCategoryEntries = siteCategories
@@ -219,6 +270,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           { 'quantity.remaining': { $gt: 0 } },
           { 'quantity.isUnlimited': true },
         ],
+        ...(voucherPriceCap != null && {
+          'price.sellingPrice': { $lte: voucherPriceCap },
+        }),
         ...(nearbyBusinessIds !== null && {
           businessId: { $in: nearbyBusinessIds },
         }),
@@ -693,7 +747,11 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         );
       }
 
-      return paginateData(page, limit, uniqueFlatList);
+      return {
+        ...paginateData(page, limit, uniqueFlatList),
+        voucherStatus,
+        voucherAssignee,
+      };
     } catch (error) {
       this.logger.error('[SITE SETTINGS]: FAILED TO GET PRODUCTS BY TOPIC', {
         err: error.message,
@@ -718,6 +776,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     hasDelivery?: boolean,
     searchOrConditions?: any[],
     nearbyBusinessIds?: Types.ObjectId[] | null,
+    voucherPriceCap?: number | null,
   ): Promise<any> {
     const {
       groupTypesId, accessibilitiesId, tagsId, page, limit, locale,
@@ -811,6 +870,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       status: CommonStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
+      ...(voucherPriceCap != null && {
+        'price.sellingPrice': { $lte: voucherPriceCap },
+      }),
       $and: andConditions,
       ...(nearbyBusinessIds != null && {
         businessId: { $in: nearbyBusinessIds },

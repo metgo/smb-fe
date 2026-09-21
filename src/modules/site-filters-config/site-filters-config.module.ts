@@ -51,6 +51,7 @@ import {
   EventsAuditSchema,
 } from '../events/schema/events-audit.schema';
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
+import { Voucher, VoucherSchema } from '../vouchers/schema/voucher.schema';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { Trip, TripSchema } from '../trips/schema/trips.schema';
       },
       { name: EventsAudit.name, schema: EventsAuditSchema },
       { name: Trip.name, schema: TripSchema },
+      { name: Voucher.name, schema: VoucherSchema },
     ]),
     ConfigModule,
     UsersModule,
