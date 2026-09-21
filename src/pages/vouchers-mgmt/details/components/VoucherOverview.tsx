@@ -7,6 +7,7 @@ import {
   Check,
   Tag,
   CreditCard,
+  QrCode,
 } from "lucide-react";
 import { formatDate } from "@/helpers";
 import { toast } from "sonner";
@@ -25,6 +26,7 @@ interface Voucher {
   remainingAmount: number;
   expireDate: string;
   websites?: string[];
+  qrCodeUrl?: string;
 }
 
 interface VoucherOverviewProps {
@@ -398,6 +400,42 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
           </div>
         )}
       </div>
+
+      {/* QR Code */}
+      {voucher?.qrCodeUrl && (
+        <div
+          className={`rounded-xl border p-5 ${
+            isDark
+              ? "bg-gray-900 border-gray-800"
+              : "bg-white border-gray-200 shadow-sm"
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <div
+              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isDark ? "bg-teal-900/40 text-teal-400" : "bg-teal-50 text-teal-600"}`}
+            >
+              <QrCode className="w-3.5 h-3.5" />
+            </div>
+            <h3
+              className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {t("qr_code")}
+            </h3>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <img
+              src={voucher.qrCodeUrl}
+              alt={t("qr_code")}
+              className="w-48 h-48 rounded-lg"
+            />
+            <div
+              className={`font-mono text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {voucher?.code}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

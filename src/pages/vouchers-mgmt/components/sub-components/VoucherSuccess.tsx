@@ -9,6 +9,8 @@ interface IVoucherResponse {
   email: string;
   countryCode: string | null;
   phone: string;
+  code?: string;
+  qrCodeUrl?: string;
   emailSent: string;
   paymentStatus: string;
   smsSent: string;
@@ -63,7 +65,7 @@ const VoucherSuccess = ({
     const rows = response.map((v) =>
       isSuperadmin
         ? [
-            v.campCode || "-",
+            v.code || "-",
             v.name || "-",
             v.email || "-",
             v.amount ?? "-",
@@ -126,6 +128,7 @@ const VoucherSuccess = ({
                 {(isSuperadmin
                   ? [
                       "voucher_code",
+                      "qr_code",
                       "name",
                       "email",
                       "amount",
@@ -160,7 +163,7 @@ const VoucherSuccess = ({
               {!response?.length ? (
                 <tr>
                   <td
-                    colSpan={isSuperadmin ? 7 : 6}
+                    colSpan={isSuperadmin ? 8 : 6}
                     className={`px-4 py-6 text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
                   >
                     {t("no_vouchers")}
@@ -171,9 +174,22 @@ const VoucherSuccess = ({
                   <tr key={index}>
                     {isSuperadmin && (
                       <td
-                        className={`${isDark ? "text-gray-100" : "text-gray-900"} px-4 py-3 text-sm`}
+                        className={`${isDark ? "text-gray-100" : "text-gray-900"} px-4 py-3 text-sm font-mono`}
                       >
-                        {item.campCode || "-"}
+                        {item.code || "-"}
+                      </td>
+                    )}
+                    {isSuperadmin && (
+                      <td className="px-4 py-3 text-sm">
+                        {item.qrCodeUrl ? (
+                          <img
+                            src={item.qrCodeUrl}
+                            alt={t("qr_code")}
+                            className="w-12 h-12 rounded"
+                          />
+                        ) : (
+                          "-"
+                        )}
                       </td>
                     )}
                     <td

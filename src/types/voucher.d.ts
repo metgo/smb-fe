@@ -159,6 +159,7 @@ interface IVoucher {
   assigneeInfo: AssigneeInfo;
   creatorInfo: CreatorInfo;
   purchaserInfo: PurchaserInfo;
+  qrCodeUrl?: string;
 }
 
 interface IVoucherItem {
@@ -195,4 +196,5 @@ interface IVoucherItem {
 
   campId: string;
   code: string;
+  qrCodeUrl?: string;
 }
