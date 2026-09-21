@@ -130,6 +130,7 @@
   "vouchers_created_successfully": "השוברים נוצרו בהצלחה!",
   "voucher": "שובר",
   "voucher_code": "קוד שובר",
+  "qr_code": "קוד QR",
   "email_sent": "אימייל נשלח",
   "sms_sent": "SMS נשלח",
   "send_message": "שלח הודעה",

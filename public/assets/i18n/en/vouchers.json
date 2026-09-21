@@ -134,6 +134,7 @@
   "vouchers_created_successfully": "Vouchers Created Successfully!",
   "voucher": "voucher",
   "voucher_code": "Voucher Code",
+  "qr_code": "QR Code",
   "email_sent": "Email Sent",
   "sms_sent": "SMS Sent",
   "send_message": "Send Message",
