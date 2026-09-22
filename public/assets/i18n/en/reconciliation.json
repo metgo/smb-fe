@@ -209,7 +209,7 @@
   "orders_already_closed": "{{month}} orders were already closed - nothing new to finalize",
   "close_orders_failed": "Failed to close orders",
   "close_all_orders_target_month": "This will close and finalize all payable orders for {{month}}",
-  "close_all_orders_warning_desc": "This is not affected by the Month filter above - it always applies to last calendar month, regardless of what's currently shown in the list.",
+  "close_all_orders_warning_desc": "Payment to vendors should already be completed outside the platform before confirming this action.",
   "close_all_orders_ignores_filter_notice": "Payment to vendors should already be completed outside the platform before confirming this action.",
   "close_all_orders_confirm": "Close {{month}} Orders",
   "close_all_orders_checking_older_months": "Checking for older resolved months...",

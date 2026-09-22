@@ -51,6 +51,8 @@ export interface BulkMarkAsCompletedRequest {
 
 export interface FinalizeClosedOrdersRequest {
   confirmFinalize: boolean;
+  year?: number;
+  month?: number;
 }
 
 export interface FinalizeClosedOrdersResponse {
@@ -295,10 +297,14 @@ export const reconciliationQueryApi = createApi({
     }),
 
     // GET /admin/monthly-reports/finalize-closed-orders/preview
-    previewFinalizeClosedOrders: builder.query<FinalizeSweepPreview, void>({
-      query: () => ({
+    previewFinalizeClosedOrders: builder.query<
+      FinalizeSweepPreview,
+      { year?: number; month?: number }
+    >({
+      query: ({ year, month }) => ({
         url: endpoints.previewFinaliseApprovedOrders,
         method: "GET",
+        params: year && month ? { year, month } : undefined,
       }),
     }),
 
