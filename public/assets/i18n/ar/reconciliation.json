@@ -205,7 +205,7 @@
   "orders_already_closed": "طلبات {{month}} تم إغلاقها مسبقاً - لا يوجد شيء جديد لإنهائه",
   "close_orders_failed": "فشل إغلاق الطلبات",
   "close_all_orders_target_month": "سيؤدي هذا إلى إغلاق وإنهاء جميع الطلبات القابلة للدفع لشهر {{month}}",
-  "close_all_orders_warning_desc": "هذا الإجراء لا يتأثر بمرشح الشهر أعلاه - فهو يطبق دائمًا على الشهر التقويمي السابق، بغض النظر عما هو معروض حاليًا في القائمة.",
+  "close_all_orders_warning_desc": "يجب التأكد من إتمام الدفع للموردين خارج المنصة قبل تأكيد هذا الإجراء.",
   "close_all_orders_ignores_filter_notice": "يجب التأكد من إتمام الدفع للموردين خارج المنصة قبل تأكيد هذا الإجراء.",
   "close_all_orders_confirm": "إغلاق طلبات {{month}}",
   "close_all_orders_checking_older_months": "جارٍ التحقق من الأشهر القديمة التي تم حلها...",

@@ -24,6 +24,15 @@ export interface UseOrderActionsParams {
   refetch: () => void;
   refetchReconciliationStats: () => void;
   scopeParams: Record<string, any>;
+  filters: {
+    status: string;
+    reconciliationStatus: string;
+    startDate: string;
+    endDate: string;
+    month: string;
+    businessId: string;
+    amount: string;
+  };
 }
 
 export function useOrderActions({
@@ -32,6 +41,7 @@ export function useOrderActions({
   refetch,
   refetchReconciliationStats,
   scopeParams,
+  filters,
 }: UseOrderActionsParams) {
   const navigate = useNavigate();
   const { t } = useTranslation("reconciliation");
@@ -74,12 +84,41 @@ export function useOrderActions({
     useFinalizeClosedOrdersMutation();
   // only fetched while the confirmation modal is actually open - no point
   // hitting this on every page load
+  const previewParams = useMemo(() => {
+    if (!showCloseAllOrdersModal) return { year: undefined, month: undefined };
+    // Get year/month from the selected filter
+    if (filters.month === "custom" && (filters.startDate || filters.endDate)) {
+      const date = new Date(filters.startDate || filters.endDate || "");
+      return { year: date.getFullYear(), month: date.getMonth() + 1 };
+    }
+    if (
+      filters.month &&
+      filters.month !== "all" &&
+      filters.month !== "custom"
+    ) {
+      const [month, year] = filters.month.split("-").map(Number);
+      return { year, month };
+    }
+    // Default to previous calendar month if no specific filter
+    const now = new Date();
+    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return {
+      year: previousMonth.getFullYear(),
+      month: previousMonth.getMonth() + 1,
+    };
+  }, [
+    showCloseAllOrdersModal,
+    filters.month,
+    filters.startDate,
+    filters.endDate,
+  ]);
+
   const {
     data: finalizeSweepPreview,
     isFetching: isFetchingSweepPreview,
     isError: isSweepPreviewError,
     error: sweepPreviewError,
-  } = usePreviewFinalizeClosedOrdersQuery(undefined, {
+  } = usePreviewFinalizeClosedOrdersQuery(previewParams, {
     skip: !showCloseAllOrdersModal,
   });
   // surface the backend's own message when it has one (e.g. "can't
@@ -371,8 +410,39 @@ export function useOrderActions({
 
   const handleCloseAllOrders = async () => {
     try {
+      // Get year/month from the selected filter
+      let year, month;
+      if (
+        filters.month === "custom" &&
+        (filters.startDate || filters.endDate)
+      ) {
+        const date = new Date(filters.startDate || filters.endDate || "");
+        year = date.getFullYear();
+        month = date.getMonth() + 1;
+      } else if (
+        filters.month &&
+        filters.month !== "all" &&
+        filters.month !== "custom"
+      ) {
+        const [monthNum, yearNum] = filters.month.split("-").map(Number);
+        year = yearNum;
+        month = monthNum;
+      } else {
+        // Default to previous calendar month if no specific filter
+        const now = new Date();
+        const previousMonth = new Date(
+          now.getFullYear(),
+          now.getMonth() - 1,
+          1,
+        );
+        year = previousMonth.getFullYear();
+        month = previousMonth.getMonth() + 1;
+      }
+
       const result = await finalizeClosedOrders({
         confirmFinalize: true,
+        year,
+        month,
       }).unwrap();
 
       setShowCloseAllOrdersModal(false);

@@ -232,6 +232,7 @@ export const PaymentMgmtPage = () => {
     refetch,
     refetchReconciliationStats,
     scopeParams,
+    filters,
   });
 
   const columns = buildOrderColumns({

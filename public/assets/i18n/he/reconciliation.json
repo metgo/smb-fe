@@ -207,7 +207,7 @@
   "orders_already_closed": "ההזמנות של {{month}} כבר נסגרו - אין מה לסיים",
   "close_orders_failed": "סגירת הזמנות נכשלה",
   "close_all_orders_target_month": "פעולה זו תסגור ותסופסק תשלום עבור כל ההזמנות של {{month}}",
-  "close_all_orders_warning_desc": "פעולה זו אינה מושפעת ממסנן החודש למעלה - היא תמיד חלה על החודש הקלנדרי הקודם, בלי קשר למה שמוצג כרגע ברשימה.",
+  "close_all_orders_warning_desc": "יש לוודא שהתשלום לספקים כבר בוצע מחוץ למערכת לפני אישור פעולה זו.",
   "close_all_orders_ignores_filter_notice": "יש לוודא שהתשלום לספקים כבר בוצע מחוץ למערכת לפני אישור פעולה זו.",
   "close_all_orders_confirm": "סגור הזמנות {{month}}",
   "close_all_orders_checking_older_months": "בודק חודשים ישנים שנפתרו...",
