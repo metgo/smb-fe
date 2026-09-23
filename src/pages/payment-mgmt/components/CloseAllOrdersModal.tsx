@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, Loader2 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
@@ -182,10 +182,27 @@ export default function CloseAllOrdersModal({
                     <p className={`text-sm ${textTertiary}`}>
                       {t("bank_transfer_export_desc")}
                     </p>
-                    <p className={`text-xs mt-1 ${textTertiary}`}>
-                      {t("bank_transfer_export_scope_note")}
-                    </p>
                   </div>
+                </div>
+              </div>
+
+              <div className="px-4 pt-4">
+                <div
+                  className={`rounded-lg border p-3 flex items-start gap-2 ${
+                    isDark
+                      ? "bg-sky-900/20 border-sky-800"
+                      : "bg-sky-50 border-sky-200"
+                  }`}
+                >
+                  <Info
+                    className={`w-4 h-4 shrink-0 mt-0.5 ${isDark ? "text-sky-400" : "text-sky-600"}`}
+                  />
+                  <ul
+                    className={`text-xs space-y-1 list-disc ps-4 ${isDark ? "text-sky-200" : "text-sky-900"}`}
+                  >
+                    <li>{t("bank_transfer_export_scope_note")}</li>
+                    <li>{t("bank_transfer_export_merged_accounts_note")}</li>
+                  </ul>
                 </div>
               </div>
 
