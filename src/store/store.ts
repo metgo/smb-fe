@@ -53,6 +53,7 @@ import { paymentQueryApi } from "./api/paymentQueryApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
 import { chatSystemApi } from "./api/chatSystemApi";
 import { utmCampaignApi } from "./api/utmCampaignApi";
+import { punchPassesApi } from "./api/punchPassApi";
 
 export const store = configureStore({
   reducer: {
@@ -114,6 +115,7 @@ export const store = configureStore({
     [paymentQueryApi.reducerPath]: paymentQueryApi.reducer,
     [chatSystemApi.reducerPath]: chatSystemApi.reducer,
     [utmCampaignApi.reducerPath]: utmCampaignApi.reducer,
+    [punchPassesApi.reducerPath]: punchPassesApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -179,6 +181,8 @@ export const store = configureStore({
       paymentQueryApi.middleware,
       chatSystemApi.middleware,
       utmCampaignApi.middleware,
+      punchPassesApi.middleware,
+
       nprogressMiddleware,
     ),
 });

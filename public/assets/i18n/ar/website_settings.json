@@ -51,6 +51,8 @@
   "ga_property_id_placeholder": "أدخل معرّف خاصية GA",
   "platform_charge": "رسوم المنصة (%)",
   "platform_charge_placeholder": "0",
+  "is_punch_pass_eligible": "مؤهل لبطاقات الخصم",
+  "is_punch_pass_eligible_info": "سيتم عرض بطاقات الخصم ضمن هذا الموقع",
   "camp_code": "رمز الحملة",
   "camp_code_placeholder": "أدخل رمز الحملة",
   "website_logo": "شعار الموقع",

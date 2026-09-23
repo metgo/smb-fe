@@ -16,6 +16,7 @@
   "add_tag_placeholder": "إضافة وسم...",
   "events": "الفعاليات",
   "vouchers": "القسائم",
+  "punch_passes": "بطاقات الخصم",
   "done": "تم",
   "products": "المنتجات",
   "businesses": "الأعمال التجارية",
@@ -427,5 +428,7 @@
   "hide_options": "إخفاء الخيارات",
   "open_in_google_maps": "فتح في خرائط Google",
   "open_in_waze": "فتح في Waze",
-  "campaign_url_builder": "منشئ روابط الحملات"
+  "campaign_url_builder": "منشئ روابط الحملات",
+  "catalogues": "الكتالوجات",
+  "trades": "المعاملات"
 }

@@ -17,6 +17,8 @@ import NotificationsMgmtPage from "./notification-mgmt";
 import AnalyticsDashboardPage from "./analytics-dashboard";
 import VouchersMgmtPage from "./vouchers-mgmt";
 import VoucherDetailsPage from "./vouchers-mgmt/details";
+import PunchpassMgmtPage from "./punchpass-mgmt";
+import PunchPassDetailsPage from "./punchpass-mgmt/details";
 import WebsiteMgmtPage from "./website-mgmt";
 import DynamicPageMgmtPage from "./dynamic-page-mgmt";
 import PromotionsMgmtPage from "./promotions-mgmt";
@@ -72,6 +74,8 @@ export {
   PartnersPage,
   VouchersMgmtPage,
   VoucherDetailsPage,
+  PunchpassMgmtPage,
+  PunchPassDetailsPage,
   WebsiteMgmtPage,
   WebsiteConfigPage,
   DynamicPageMgmtPage,

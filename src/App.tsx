@@ -23,6 +23,8 @@ import {
   ProfilePage,
   OrdersMgmtPage,
   VouchersMgmtPage,
+  PunchpassMgmtPage,
+  PunchPassDetailsPage,
   EventDetailsPage,
   BusinessDetailsPage,
   ProductDetailsPage,
@@ -593,6 +595,11 @@ function App() {
             { path: routes.contentMgmt, element: <ContentMgmtPage /> },
             { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
             { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
+            { path: routes.punchPassMgmt, element: <PunchpassMgmtPage /> },
+            {
+              path: routes.punchPassDetails,
+              element: <PunchPassDetailsPage />,
+            },
 
             { path: routes.profile, element: <ProfilePage /> },
             { path: routes.dmoMgmt, element: <DmosMgmtPage /> },

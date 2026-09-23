@@ -47,6 +47,7 @@
   "location_address": "Location Address",
   "address": "Address",
   "vouchers": "Vouchers",
+  "punch_passes": "Punch Passes",
   "logo": "Logo",
   "upload_logo": "Upload Logo",
   "logo_required": "Logo (Required)",
@@ -412,5 +413,7 @@
   "hide_options": "Hide Options",
   "open_in_google_maps": "Open in Google Maps",
   "open_in_waze": "Open in Waze",
-  "campaign_url_builder": "Campaign URL Builder"
+  "campaign_url_builder": "Campaign URL Builder",
+  "catalogues": "Catalogues",
+  "trades": "Trades"
 }

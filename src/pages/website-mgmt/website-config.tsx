@@ -42,6 +42,7 @@ const TOTAL_STEPS = 10;
 
 const DEFAULT_FORM: ISiteSettingsFormData = {
   isActive: true,
+  isPunchpassEligible: false,
 
   /* Step 1 */
   websiteNameEn: "",
@@ -223,6 +224,7 @@ const calculateCompletionScore = (data: ISiteSettingsFormData): number => {
 
 const buildPayload = (data: ISiteSettingsFormData) => ({
   isActive: true,
+  isPunchpassEligible: !!data.isPunchpassEligible,
   score: calculateCompletionScore(data),
   websiteNameEn: data.websiteNameEn,
   websiteNameHe: data.websiteNameHe,
@@ -382,6 +384,7 @@ export default function WebsiteConfigPage() {
     const d = existingSettings;
     const hydrated: ISiteSettingsFormData = {
       isActive: true,
+      isPunchpassEligible: d.isPunchpassEligible ?? false,
       websiteNameEn: d.websiteNameEn ?? "",
       websiteNameHe: d.websiteNameHe ?? "",
       websiteNameAr: d.websiteNameAr ?? "",

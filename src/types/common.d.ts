@@ -135,7 +135,6 @@ interface IImage {
   caption?: string;
   alt?: string;
   isPrimary?: boolean;
-  subCoordinates?: SubCoordinates;
 }
 type TImages = IImage[];
 

@@ -134,6 +134,17 @@ export default function Sidebar() {
       icon: Ticket,
       isEnabled: true,
     },
+    ...(isSuperadmin
+      ? [
+          {
+            id: "punchPasses",
+            path: routes.punchPassMgmt,
+            label: t("punch_passes") || "Punch Passes",
+            icon: WalletCards,
+            isEnabled: true,
+          },
+        ]
+      : []),
     {
       id: "trips",
       path: routes.tripsMgmt,
