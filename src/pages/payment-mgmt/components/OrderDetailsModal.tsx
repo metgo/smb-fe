@@ -394,7 +394,8 @@ export default function OrderDetailsModal({
               order.status !== "completed" &&
               order.reconciliationStatus !== "approved" &&
               order.reconciliationStatus !== "rejected" &&
-              order.reconciliationStatus !== "closed" && (
+              order.reconciliationStatus !== "closed" &&
+              order.reconciliationStatus !== "paused" && (
                 <button
                   onClick={onCancel}
                   className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} ${
@@ -418,7 +419,8 @@ export default function OrderDetailsModal({
               order.status !== "canceled" &&
               order.reconciliationStatus !== "closed" &&
               order.reconciliationStatus !== "approved" &&
-              order.reconciliationStatus !== "rejected" && (
+              order.reconciliationStatus !== "rejected" &&
+              order.reconciliationStatus !== "paused" && (
                 <button
                   onClick={onDispute}
                   className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"

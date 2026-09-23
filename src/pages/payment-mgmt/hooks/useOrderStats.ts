@@ -7,6 +7,7 @@ export interface ReconciliationStatusOverview {
   cancelled: number;
   rejected: number;
   closed: number;
+  paused: number;
 }
 
 export interface OrderProductOverview {
@@ -40,6 +41,7 @@ export interface OrderStats {
   cancelled: number;
   rejected: number;
   closed: number;
+  paused: number;
   statusOverview: ReconciliationStatusOverview;
 
   // Order-product (fulfilment) breakdown
@@ -76,6 +78,7 @@ const EMPTY_STATUS_OVERVIEW: ReconciliationStatusOverview = {
   cancelled: 0,
   rejected: 0,
   closed: 0,
+  paused: 0,
 };
 
 const EMPTY_PRODUCT_OVERVIEW: OrderProductOverview = {
@@ -93,6 +96,7 @@ const EMPTY_STATS: OrderStats = {
   cancelled: 0,
   rejected: 0,
   closed: 0,
+  paused: 0,
   statusOverview: EMPTY_STATUS_OVERVIEW,
 
   orderProductPending: 0,
@@ -143,6 +147,7 @@ export function useOrderStats(
       cancelled: statusOverview.cancelled,
       rejected: statusOverview.rejected,
       closed: statusOverview.closed,
+      paused: statusOverview.paused,
       statusOverview,
 
       orderProductPending: orderProductOverview.pending,

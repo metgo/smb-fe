@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   XCircle,
   RotateCcw,
+  PauseCircle,
 } from "lucide-react";
 import clsx from "clsx";
 import { getLngWiseStr } from "@/helpers";
@@ -38,7 +39,9 @@ export function mapOrderProductList(d: any, language: Language) {
     totalPrice: d.totalAmount || 0,
     platformFee: d.fee || 0,
     deliveryFee: d.deliveryFee || 0,
-    netToVendor: (d.totalAmount || 0) - (d.fee || 0),
+    // netPayout is already 0 unless COMPLETED & not disputed/cancelled -
+    // recomputing from totalAmount+deliveryFee-fee would lose that gating.
+    netToVendor: d.netPayout || 0,
     status: d.status,
     reconciliationStatus: d.reconciliationStatus,
     // list endpoint has no real payment-status field - leave blank rather
@@ -73,10 +76,17 @@ interface OrderProductDetails {
     unitPrice: number;
     total: number;
     platformFee: number;
+    netPayout: number;
     deliveryFee: number;
     disputeId?: string;
     reconciliationStatus?:
-      "pending" | "approved" | "cancelled" | "disputed" | "rejected" | "closed";
+      | "pending"
+      | "approved"
+      | "cancelled"
+      | "disputed"
+      | "rejected"
+      | "closed"
+      | "paused";
     vendorFacingResponse?: string;
   };
   customerInformation: {
@@ -151,9 +161,9 @@ export function mapOrderProductDetails(
     deliveryFee: d?.orderInformation?.deliveryFee || 0,
     vendorFacingResponse: d?.orderInformation?.vendorFacingResponse || "",
 
-    netToVendor:
-      (d?.orderInformation?.total || 0) -
-      (d?.orderInformation?.platformFee || 0),
+    // netPayout is already 0 unless COMPLETED & not disputed/cancelled -
+    // recomputing from total+deliveryFee-platformFee would lose that gating.
+    netToVendor: d?.orderInformation?.netPayout || 0,
     status,
     reconciliationStatus,
     externalApiId: d.externalApiId || "",
@@ -249,6 +259,15 @@ export function getStatusBadge(
       text: isDark ? "text-green-400" : "text-green-800",
       icon: CheckCircle,
       label: t("paid"),
+    },
+    // permanent write-off (old carried-over items nobody will chase to
+    // completion) - neutral gray so it reads as "closed out" without
+    // implying paid (green) or refused (red)
+    paused: {
+      bg: isDark ? "bg-gray-800" : "bg-gray-200",
+      text: isDark ? "text-gray-400" : "text-gray-700",
+      icon: PauseCircle,
+      label: t("paused"),
     },
   };
 
@@ -441,6 +460,7 @@ export function buildOrderColumns({
             order.reconciliationStatus !== "approved" &&
             order.reconciliationStatus !== "rejected" &&
             order.reconciliationStatus !== "cancelled" &&
+            order.reconciliationStatus !== "paused" &&
             userRole === "traveller" && (
               <button
                 onClick={() => onOpenDispute(order)}
@@ -496,6 +516,7 @@ export function buildOrderColumns({
             order.reconciliationStatus !== "rejected" &&
             order.reconciliationStatus !== "closed" &&
             order.reconciliationStatus !== "cancelled" &&
+            order.reconciliationStatus !== "paused" &&
             order.status !== "completed" && (
               <button
                 onClick={() => onCancelOrder(order)}

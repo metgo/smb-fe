@@ -15,6 +15,7 @@
   "your_dispute_has_been": "התלונה שלך",
   "pending": "ממתין",
   "no_dispute": "אין תלונה",
+  "also_this_month": "גם החודש",
   "approved": "אושר",
   "disputed": "מוטל בספק",
   "canceled": "בוטל",
@@ -215,6 +216,7 @@
   "close_all_orders_preview_error": "לא ניתן היה לבדוק חודשים ישנים שנפתרו - נסו שוב לפני האישור.",
 
   "paid": "שולם",
+  "paused": "מושהה",
   "mark_orders_completed_confirm_title": "סימון הזמנות ממתינות כהושלמו",
   "mark_orders_completed_confirm_message": "לחיצה על אישור תשנה את סטטוס כל ההזמנות ל'הושלם', למעט הזמנות שסטטוסן 'בוטל'.",
   "close_all_orders_disputed_notice": "הזמנות שעדיין במחלוקת, או שטרם סומנו כהושלמו על ידי הספק, יועברו לחודש הבא והספק לא יקבל תשלום עבורן בשלב זה. רק הזמנות שהושלמו ואינן במחלוקת יסומנו כשולמו.",

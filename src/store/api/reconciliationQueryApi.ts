@@ -132,6 +132,7 @@ export interface VendorPaymentSummaryRow {
     rejectedCount: number;
     closedCount: number;
     disputedCount: number;
+    pausedCount: number;
   };
   amount: {
     total: number;
