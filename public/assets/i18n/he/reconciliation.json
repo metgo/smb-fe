@@ -236,6 +236,7 @@
   "bank_transfer_export_merged_accounts_note": "אם למספר עסקים של אותו ספק יש את אותו חשבון בנק, הסכומים שלהם מאוחדים לשורה אחת - התשלום מועבר לחשבון בנק אחד, לא לכל חנות בנפרד.",
   "bank_transfer_beneficiary_name_info_title": "מאיפה השם הזה מגיע",
   "bank_transfer_beneficiary_name_info_desc": "מוצג שם החשבון לחשבונית של הספק אם הוגדר; אחרת מוצג שם העסק שלו.",
+  "bank_transfer_export_month_mismatch_note": "המסנן שלכם מוגדר ל-{{selected}}, אך סגירת תשלומים תמיד מתייחסת לחודש האחרון שהסתיים - {{target}} - מכיוון ש-{{selected}} עדיין לא הסתיים.",
   "close": "סגור",
   "download": "הורדה",
   "bank_details": "פרטי בנק",

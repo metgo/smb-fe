@@ -92,6 +92,23 @@ export default function CloseAllOrdersModal({
         getYearMonthFromFilter(monthFilter, customDateFrom, customDateTo));
   const lastFetchedKeyRef = useRef<string | null>(null);
 
+  // Finalize Payouts always targets the last completed month, even when
+  // the page's own month filter still points at the current (unfinished)
+  // month - surface that gap explicitly so the same result for two
+  // different-looking filter selections doesn't read as a bug
+  const selectedYearMonth =
+    monthFilter && monthFilter !== "all" && monthFilter !== "custom"
+      ? getYearMonthFromFilter(monthFilter, customDateFrom, customDateTo)
+      : null;
+  const monthMismatch =
+    selectedYearMonth &&
+    (selectedYearMonth.year !== year || selectedYearMonth.month !== month);
+  const selectedMonthLabel = selectedYearMonth
+    ? formatMonthLabel(
+        `${String(selectedYearMonth.month).padStart(2, "0")}/${selectedYearMonth.year}`,
+      )
+    : null;
+
   useEffect(() => {
     const key = `${year}-${month}`;
     if (lastFetchedKeyRef.current === key) return;
@@ -153,39 +170,43 @@ export default function CloseAllOrdersModal({
       maxWidth={"max-w-4xl"}
       height={"h-auto max-h-[85vh]"}
     >
-      <div>
-        {/* Xlsx files */}
-        <div className="flex flex-col overflow-hidden ">
-          {isExporting ? (
-            <div className="flex flex-col items-center justify-center space-y-4 p-6">
-              <Loader2 className="w-16 h-16 animate-spin text-teal-600" />
-              <h3 className={`text-xl font-bold ${textPrimary}`}>
-                {t("loading")}
-              </h3>
-              <p className={`text-sm ${textTertiary}`}>
-                {t("bank_transfer_export_generating")}
-              </p>
-            </div>
-          ) : (
-            <>
-              <div
-                className={`border-b ${borderColor} p-6 flex items-center justify-between shrink-0`}
-              >
-                <div className="flex items-center gap-3">
-                  <CheckCircle2
-                    className={`w-8 h-8 shrink-0 ${isDark ? "text-green-400" : "text-green-600"}`}
-                  />
-                  <div>
-                    <h3 className={`text-lg font-bold ${textPrimary}`}>
-                      {t("bank_transfer_export_ready")}
-                    </h3>
-                    <p className={`text-sm ${textTertiary}`}>
-                      {t("bank_transfer_export_desc")}
-                    </p>
-                  </div>
-                </div>
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        {isExporting ? (
+          <div className="flex flex-col items-center justify-center space-y-4 p-6 shrink-0">
+            <Loader2 className="w-16 h-16 animate-spin text-teal-600" />
+            <h3 className={`text-xl font-bold ${textPrimary}`}>
+              {t("loading")}
+            </h3>
+            <p className={`text-sm ${textTertiary}`}>
+              {t("bank_transfer_export_generating")}
+            </p>
+          </div>
+        ) : (
+          <div
+            className={`border-b ${borderColor} p-6 flex items-center justify-between shrink-0`}
+          >
+            <div className="flex items-center gap-3">
+              <CheckCircle2
+                className={`w-8 h-8 shrink-0 ${isDark ? "text-green-400" : "text-green-600"}`}
+              />
+              <div>
+                <h3 className={`text-lg font-bold ${textPrimary}`}>
+                  {t("bank_transfer_export_ready")}
+                </h3>
+                <p className={`text-sm ${textTertiary}`}>
+                  {t("bank_transfer_export_desc")}
+                </p>
               </div>
+            </div>
+          </div>
+        )}
 
+        {/* Scrollable body - keeps the header pinned above and the action
+              buttons below always visible even when the info notes push
+              total content past the modal's max height */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {!isExporting && (
+            <>
               <div className="px-4 pt-4">
                 <div
                   className={`rounded-lg border p-3 flex items-start gap-2 ${
@@ -200,13 +221,21 @@ export default function CloseAllOrdersModal({
                   <ul
                     className={`text-xs space-y-1 list-disc ps-4 ${isDark ? "text-sky-200" : "text-sky-900"}`}
                   >
+                    {monthMismatch && (
+                      <li className="font-medium">
+                        {t("bank_transfer_export_month_mismatch_note", {
+                          selected: selectedMonthLabel,
+                          target: targetMonthLabel,
+                        })}
+                      </li>
+                    )}
                     <li>{t("bank_transfer_export_scope_note")}</li>
                     <li>{t("bank_transfer_export_merged_accounts_note")}</li>
                   </ul>
                 </div>
               </div>
 
-              <div className="p-4 overflow-auto">
+              <div className="p-4">
                 {parseError ? (
                   <p className={`text-sm ${textTertiary}`}>
                     {t("bank_transfer_export_preview_error")}
@@ -262,56 +291,9 @@ export default function CloseAllOrdersModal({
               </div>
             </>
           )}
-        </div>
 
-        {/* Warning info */}
-        <div className=" p-4 space-y-4 ">
-          <div
-            className={`border rounded-lg p-4 ${
-              isDark
-                ? "bg-red-900/20 border-red-800"
-                : "bg-red-50 border-red-200"
-            }`}
-          >
-            <div className="flex items-start gap-2">
-              <AlertTriangle
-                className={`w-5 h-5 shrink-0 mt-0.5 ${
-                  isDark ? "text-red-400" : "text-red-600"
-                }`}
-              />
-              <div>
-                <p
-                  className={`text-sm font-medium ${isDark ? "text-red-200" : "text-red-900"}`}
-                >
-                  {t("close_all_orders_target_month", {
-                    month: targetMonthLabel,
-                  })}
-                </p>
-                <p
-                  className={`text-xs mt-1 ${isDark ? "text-red-300" : "text-red-700"}`}
-                >
-                  {t("close_all_orders_warning_desc")}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Swept-in older months - only ever populated when a previously
-                disputed month has since fully resolved and is being folded into
-                this same click, so the CFO sees it before confirming rather than
-                discovering it afterward */}
-          {isLoadingPreview && (
-            <div className={`flex items-center gap-2 text-sm ${textTertiary}`}>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              {previewErrorMessage || t("close_all_orders_preview_error")}
-            </div>
-          )}
-
-          {/* a failed preview must never be silently treated as "nothing to
-                sweep" - the backend's finalize step still runs its own sweep
-                regardless of what this preview showed, so the CFO needs to know
-                this check didn't actually happen before confirming */}
-          {!isLoadingPreview && hasPreviewError && (
+          {/* Warning info */}
+          <div className="p-4 space-y-4">
             <div
               className={`border rounded-lg p-4 ${
                 isDark
@@ -319,50 +301,101 @@ export default function CloseAllOrdersModal({
                   : "bg-red-50 border-red-200"
               }`}
             >
-              <p
-                className={`text-sm ${isDark ? "text-red-300" : "text-red-800"}`}
-              >
-                {t("close_all_orders_preview_error")}
-              </p>
+              <div className="flex items-start gap-2">
+                <AlertTriangle
+                  className={`w-5 h-5 shrink-0 mt-0.5 ${
+                    isDark ? "text-red-400" : "text-red-600"
+                  }`}
+                />
+                <div>
+                  <p
+                    className={`text-sm font-medium ${isDark ? "text-red-200" : "text-red-900"}`}
+                  >
+                    {t("close_all_orders_target_month", {
+                      month: targetMonthLabel,
+                    })}
+                  </p>
+                  <p
+                    className={`text-xs mt-1 ${isDark ? "text-red-300" : "text-red-700"}`}
+                  >
+                    {t("close_all_orders_warning_desc")}
+                  </p>
+                </div>
+              </div>
             </div>
-          )}
 
-          {!isLoadingPreview && !hasPreviewError && sweptMonths.length > 0 && (
-            <div
-              className={`border rounded-lg p-4 ${
-                isDark
-                  ? "bg-amber-900/20 border-amber-800"
-                  : "bg-amber-50 border-amber-200"
-              }`}
-            >
-              <p
-                className={`text-sm font-medium mb-2 ${
-                  isDark ? "text-amber-200" : "text-amber-900"
+            {/* Swept-in older months - only ever populated when a previously
+                  disputed month has since fully resolved and is being folded into
+                  this same click, so the CFO sees it before confirming rather than
+                  discovering it afterward */}
+            {isLoadingPreview && (
+              <div
+                className={`flex items-center gap-2 text-sm ${textTertiary}`}
+              >
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {previewErrorMessage || t("close_all_orders_preview_error")}
+              </div>
+            )}
+
+            {/* a failed preview must never be silently treated as "nothing to
+                  sweep" - the backend's finalize step still runs its own sweep
+                  regardless of what this preview showed, so the CFO needs to know
+                  this check didn't actually happen before confirming */}
+            {!isLoadingPreview && hasPreviewError && (
+              <div
+                className={`border rounded-lg p-4 ${
+                  isDark
+                    ? "bg-red-900/20 border-red-800"
+                    : "bg-red-50 border-red-200"
                 }`}
               >
-                {t("close_all_orders_also_includes")}
-              </p>
-              <ul className="space-y-1">
-                {sweptMonths.map((month) => (
-                  <li
-                    key={month.label}
-                    className={`text-sm flex items-center justify-between ${
-                      isDark ? "text-amber-300" : "text-amber-800"
+                <p
+                  className={`text-sm ${isDark ? "text-red-300" : "text-red-800"}`}
+                >
+                  {t("close_all_orders_preview_error")}
+                </p>
+              </div>
+            )}
+
+            {!isLoadingPreview &&
+              !hasPreviewError &&
+              sweptMonths.length > 0 && (
+                <div
+                  className={`border rounded-lg p-4 ${
+                    isDark
+                      ? "bg-amber-900/20 border-amber-800"
+                      : "bg-amber-50 border-amber-200"
+                  }`}
+                >
+                  <p
+                    className={`text-sm font-medium mb-2 ${
+                      isDark ? "text-amber-200" : "text-amber-900"
                     }`}
                   >
-                    <span>{formatMonthLabel(month.label)}</span>
-                    <span className="font-medium">
-                      ₪{month.payoutAmount.toFixed(2)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                    {t("close_all_orders_also_includes")}
+                  </p>
+                  <ul className="space-y-1">
+                    {sweptMonths.map((month) => (
+                      <li
+                        key={month.label}
+                        className={`text-sm flex items-center justify-between ${
+                          isDark ? "text-amber-300" : "text-amber-800"
+                        }`}
+                      >
+                        <span>{formatMonthLabel(month.label)}</span>
+                        <span className="font-medium">
+                          ₪{month.payoutAmount.toFixed(2)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-          <p className={`text-sm ${textTertiary}`}>
-            {t("close_all_orders_disputed_notice")}
-          </p>
+            <p className={`text-sm ${textTertiary}`}>
+              {t("close_all_orders_disputed_notice")}
+            </p>
+          </div>
         </div>
       </div>
 
