@@ -82,5 +82,14 @@
   "trades_coming_soon": "Trade history for this punch pass will appear here soon.",
   "loading_punch_pass": "Loading punch pass...",
   "punch_pass_load_failed": "Failed to load punch pass",
-  "punch_pass_delete_failed": "Failed to delete punch pass"
+  "punch_pass_delete_failed": "Failed to delete punch pass",
+
+  "stats_total_punch_passes": "Total Punch Passes",
+  "stats_approved_punch_passes": "Approved Punch Passes",
+  "stats_total_sold": "Total Sold",
+  "stats_total_revenue": "Total Revenue",
+  "stats_registered": "Registered",
+  "stats_approved": "Approved",
+  "stats_sold": "Sold",
+  "stats_earned": "Earned"
 }

@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetPunchPassesQuery } from "@/store/api/punchPassApi";
+import {
+  useGetPunchPassesQuery,
+  useGetPunchPassStatsQuery,
+} from "@/store/api/punchPassApi";
 import type { PunchPassFilters } from "./usePunchPassFilters";
 
 const LIMIT = 20;
@@ -72,6 +75,8 @@ export function usePunchPassListData(
     isLoading,
   } = useGetPunchPassesQuery(queryParams, { refetchOnMountOrArgChange: true });
 
+  const { data: punchPassStatsData } = useGetPunchPassStatsQuery();
+
   useEffect(() => {
     if (!punchPassData?.data?.length) {
       setCombinedPunchPasses([]);
@@ -109,5 +114,6 @@ export function usePunchPassListData(
     hasMore: !!punchPassData?.meta?.hasNextPage,
     totalData: punchPassData?.totalData as number | undefined,
     fetchNextPage,
+    punchPassStatsData,
   };
 }

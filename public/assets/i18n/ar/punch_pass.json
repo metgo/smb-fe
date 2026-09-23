@@ -82,5 +82,14 @@
   "trades_coming_soon": "سيظهر سجل المعاملات لهذه البطاقة هنا قريبًا.",
   "loading_punch_pass": "جارٍ تحميل البطاقة...",
   "punch_pass_load_failed": "فشل تحميل البطاقة",
-  "punch_pass_delete_failed": "فشل حذف البطاقة"
+  "punch_pass_delete_failed": "فشل حذف البطاقة",
+
+  "stats_total_punch_passes": "إجمالي بطاقات الخصم",
+  "stats_approved_punch_passes": "بطاقات الخصم المعتمدة",
+  "stats_total_sold": "إجمالي المبيعات",
+  "stats_total_revenue": "إجمالي الإيرادات",
+  "stats_registered": "مسجلة",
+  "stats_approved": "معتمدة",
+  "stats_sold": "مباعة",
+  "stats_earned": "مكتسبة"
 }

@@ -53,6 +53,14 @@ export const punchPassesApi = createApi({
       }),
       providesTags: ["PunchPasses"],
     }),
+
+    getPunchPassStats: builder.query<IPunchPassStats, void>({
+      query: () => ({
+        url: endpoints.punchPassStats,
+        method: "GET",
+      }),
+      providesTags: ["PunchPasses"],
+    }),
   }),
 });
 
@@ -63,4 +71,6 @@ export const {
   useGetPunchPassByIdQuery,
   useLazyGetPunchPassByIdQuery,
   useGetPunchPassesQuery,
+
+  useGetPunchPassStatsQuery,
 } = punchPassesApi;

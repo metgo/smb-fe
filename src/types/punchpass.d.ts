@@ -108,3 +108,10 @@ interface IPunchPassDetailsRes extends IAuditInfo {
   };
   images: Array<IImage>;
 }
+
+interface IPunchPassStats {
+  totalPunchPasses: number;
+  approvedPunchPasses: number;
+  totalSold: number;
+  totalRevenue: number;
+}

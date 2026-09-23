@@ -1,15 +1,15 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Ticket } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { Banknote, CheckCircle, ShoppingCart, Ticket } from "lucide-react";
 
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
-import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import { ViewModeToggle } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import {
   CreatePunchPassWizard,
   PunchPassFiltersPanel,
@@ -21,8 +21,8 @@ import {
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
 import { FilterButton } from "@/components/btns";
-import SearchInput from "@/components/shared/SearchInput";
 import EmptyState from "@/components/shared/EmptyState";
+import SearchInput from "@/components/shared/SearchInput";
 import ListHeaderBar from "@/components/shared/ListHeaderBar";
 
 import { usePunchPassFilters } from "./hooks/usePunchPassFilters";
@@ -60,6 +60,7 @@ export default function PunchpassMgmtPage() {
     hasMore,
     totalData,
     fetchNextPage,
+    punchPassStatsData,
   } = usePunchPassListData(filters, searchTerm, urlBusinessId);
 
   // ─── UI State ─────────────────────────────────────────────────────────
@@ -152,6 +153,40 @@ export default function PunchpassMgmtPage() {
     setEditingPunchPass(null);
   }, []);
 
+  const punchPassStats = useMemo(
+    () => [
+      {
+        id: 1,
+        title: t("stats_total_punch_passes"),
+        value: punchPassStatsData?.totalPunchPasses,
+        label: t("stats_registered"),
+        icon: <Ticket className="w-5 h-5 text-purple-600" />,
+      },
+      {
+        id: 2,
+        title: t("stats_approved_punch_passes"),
+        value: punchPassStatsData?.approvedPunchPasses,
+        label: t("stats_approved"),
+        icon: <CheckCircle className="w-5 h-5 text-green-600" />,
+      },
+      {
+        id: 3,
+        title: t("stats_total_sold"),
+        value: punchPassStatsData?.totalSold,
+        label: t("stats_sold"),
+        icon: <ShoppingCart className="w-5 h-5 text-blue-600" />,
+      },
+      {
+        id: 4,
+        title: t("stats_total_revenue"),
+        value: punchPassStatsData?.totalRevenue,
+        label: t("stats_earned"),
+        icon: <Banknote className="w-5 h-5 text-orange-600" />,
+      },
+    ],
+    [punchPassStatsData, t],
+  );
+
   // ─── Render ─────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col pt-4 md:pt-0 gap-3 relative">
@@ -169,6 +204,7 @@ export default function PunchpassMgmtPage() {
           count={totalData}
           addLabel={t("create_punch_pass")}
           onAdd={handleCreateNew}
+          stats={punchPassStats}
         />
       </div>
 

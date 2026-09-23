@@ -82,5 +82,14 @@
   "trades_coming_soon": "היסטוריית העסקאות של כרטיסייה זו תופיע כאן בקרוב.",
   "loading_punch_pass": "טוען כרטיסייה...",
   "punch_pass_load_failed": "טעינת הכרטיסייה נכשלה",
-  "punch_pass_delete_failed": "מחיקת הכרטיסייה נכשלה"
+  "punch_pass_delete_failed": "מחיקת הכרטיסייה נכשלה",
+
+  "stats_total_punch_passes": "סה\"כ כרטיסיות ניקוב",
+  "stats_approved_punch_passes": "כרטיסיות ניקוב מאושרות",
+  "stats_total_sold": "סה\"כ נמכרו",
+  "stats_total_revenue": "סה\"כ הכנסות",
+  "stats_registered": "רשומות",
+  "stats_approved": "מאושרות",
+  "stats_sold": "נמכרו",
+  "stats_earned": "הכנסות"
 }
