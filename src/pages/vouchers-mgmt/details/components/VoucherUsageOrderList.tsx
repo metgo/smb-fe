@@ -4,13 +4,12 @@ import { useTranslation } from "react-i18next";
 import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { displayPaymentStatus } from "@/helpers";
-import { ConfirmDialog } from "@/components/shared";
+import { ConfirmDialog, OrderListView } from "@/components/shared";
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllOrdersQuery } from "@/store/api/orderQueryApi";
 import { OrderDetailsModal } from "@/pages/orders-mgmt/components";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
-import OrderListView from "@/pages/products-mgmt/components/sub-components/OrderListView";
 
 const limit = 20;
 

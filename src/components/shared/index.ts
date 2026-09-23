@@ -27,6 +27,8 @@ import UploadZone from "./UploadZone";
 import DmoAuthorityWebsiteIdsSelector from "./DmoAuthorityWebsiteIdsSelector";
 import { CopyableId } from "./CopyableId";
 import RichTextEditorMinimal from "./RichTextEditorMinimal";
+import OrderGridView from "./OrderGridView";
+import OrderListView from "./OrderListView";
 
 export {
   Spinner,
@@ -43,6 +45,8 @@ export {
   WebsiteSelect,
   SearchInput,
   FilterChips,
+  OrderGridView,
+  OrderListView,
   ConfirmDialog,
   BulkActionBar,
   EntityCard,

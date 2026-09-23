@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Mail, Phone } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ConfirmDialog } from "@/components/shared";
+import { ConfirmDialog, OrderListView } from "@/components/shared";
 
 import { useGetAllOrdersQuery } from "@/store/api/orderQueryApi";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
@@ -18,7 +18,6 @@ import {
 } from "@/helpers";
 import { toast } from "sonner";
 import { OrderDetailsModal } from "@/pages/orders-mgmt/components";
-import OrderListView from "@/pages/products-mgmt/components/sub-components/OrderListView";
 
 const limit = 20;
 

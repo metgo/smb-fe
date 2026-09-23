@@ -27,7 +27,12 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { envKeys } from "@/lib/envKeys";
-import { BulkActionBar, ConfirmDialog, ShowColumns } from "@/components/shared";
+import {
+  BulkActionBar,
+  ConfirmDialog,
+  OrderListView,
+  ShowColumns,
+} from "@/components/shared";
 import {
   FilterSelect,
   MonthFilter,
@@ -45,7 +50,6 @@ import { toast } from "sonner";
 import SearchInput from "@/components/shared/SearchInput";
 import AmountFilter from "@/components/shared/AmountFilter";
 import StatsMarquee from "@/components/shared/StatsMarquee";
-import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { usePersistentState } from "@/hooks/usePersistentState";
