@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
-import { uploadWithProgress } from "@/helpers";
+import { uploadWithProgress, getCurrentMonthFilterValue } from "@/helpers";
 import {
   useGetOrderProductDetailsQuery,
   useLazyGetOrderProductDetailsQuery,
@@ -91,15 +91,26 @@ export function useOrderActions({
       const date = new Date(filters.startDate || filters.endDate || "");
       return { year: date.getFullYear(), month: date.getMonth() + 1 };
     }
+    // MonthFilter displays the current month whenever filters.month is the
+    // untouched "all" default (see its selectValue fallback) - visually
+    // identical to actually picking that same month from the dropdown, but
+    // "all" falls through to the previous-month default below while an
+    // explicit "9-2026" would try (and correctly get blocked) as the
+    // current month itself. Same-looking selection, different outcome -
+    // treat an explicitly-picked current month the same as leaving it
+    // untouched, since "Close All Orders" always targets last calendar
+    // month regardless of filter (see handleOpenCloseAllOrdersModal).
     if (
       filters.month &&
       filters.month !== "all" &&
-      filters.month !== "custom"
+      filters.month !== "custom" &&
+      filters.month !== getCurrentMonthFilterValue()
     ) {
       const [month, year] = filters.month.split("-").map(Number);
       return { year, month };
     }
-    // Default to previous calendar month if no specific filter
+    // Default to previous calendar month if no specific filter (or the
+    // filter is the current month, per the comment above)
     const now = new Date();
     const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     return {
@@ -114,7 +125,15 @@ export function useOrderActions({
   ]);
 
   const {
-    data: finalizeSweepPreview,
+    // currentData, not data: RTK Query's `data` field is documented to keep
+    // "the latest returned result regardless of hook arg" - it does NOT
+    // clear when a new arg's query fails, so after switching from a
+    // resolvable month (May) to one that errors (September, not
+    // finalizable yet), `data` would keep showing May's stale successful
+    // result forever, since no new successful result ever replaces it.
+    // currentData is scoped to the current args and correctly resets to
+    // undefined the moment those args' request fails.
+    currentData: finalizeSweepPreview,
     isFetching: isFetchingSweepPreview,
     isError: isSweepPreviewError,
     error: sweepPreviewError,
@@ -422,7 +441,8 @@ export function useOrderActions({
       } else if (
         filters.month &&
         filters.month !== "all" &&
-        filters.month !== "custom"
+        filters.month !== "custom" &&
+        filters.month !== getCurrentMonthFilterValue()
       ) {
         const [monthNum, yearNum] = filters.month.split("-").map(Number);
         year = yearNum;
@@ -505,6 +525,7 @@ export function useOrderActions({
     finalizeSweepPreview,
     displayedOrder,
     closeAllOrdersTargetMonthLabel,
+    previewParams,
     closeDetails,
     handleOpenDispute,
     handleReopenDispute,

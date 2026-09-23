@@ -210,6 +210,7 @@ export const PaymentMgmtPage = () => {
     finalizeSweepPreview,
     displayedOrder,
     closeAllOrdersTargetMonthLabel,
+    previewParams,
     closeDetails,
     handleOpenDispute,
     handleReopenDispute,
@@ -633,6 +634,8 @@ export const PaymentMgmtPage = () => {
       {showCloseAllOrdersModal && (
         <CloseAllOrdersModal
           targetMonthLabel={closeAllOrdersTargetMonthLabel}
+          targetYear={previewParams.year}
+          targetMonthNumber={previewParams.month}
           monthFilter={filters.month}
           customDateFrom={filters.startDate}
           customDateTo={filters.endDate}

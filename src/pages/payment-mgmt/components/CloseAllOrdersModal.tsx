@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
+import InfoTooltip from "@/components/shared/InfoTooltip";
 import { useExportBankTransferXlsxMutation } from "@/store/api/reconciliationQueryApi";
 import { getYearMonthFromFilter } from "@/helpers";
 
@@ -15,6 +16,8 @@ interface SweptMonth {
 
 interface CloseAllOrdersModalProps {
   targetMonthLabel: string;
+  targetYear?: number;
+  targetMonthNumber?: number;
   monthFilter: string;
   customDateFrom?: string;
   customDateTo?: string;
@@ -54,6 +57,8 @@ function getYearMonthFromLabel(
 
 export default function CloseAllOrdersModal({
   targetMonthLabel,
+  targetYear,
+  targetMonthNumber,
   monthFilter,
   customDateFrom,
   customDateTo,
@@ -79,26 +84,25 @@ export default function CloseAllOrdersModal({
     useExportBankTransferXlsxMutation();
   const [sheetRows, setSheetRows] = useState<string[][]>([]);
   const [parseError, setParseError] = useState(false);
-  const hasTriggeredExportRef = useRef(false);
+  const parsedTargetMonth = getYearMonthFromLabel(targetMonthLabel);
+  const { year, month } =
+    targetYear && targetMonthNumber
+      ? { year: targetYear, month: targetMonthNumber }
+      : (parsedTargetMonth ??
+        getYearMonthFromFilter(monthFilter, customDateFrom, customDateTo));
+  const lastFetchedKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // guards against StrictMode's dev-only double-invoke of effects, which
-    // would otherwise fire this non-idempotent export mutation twice
-    if (hasTriggeredExportRef.current) return;
-    hasTriggeredExportRef.current = true;
-
-    const parsedTargetMonth = getYearMonthFromLabel(targetMonthLabel);
-    const { year, month } =
-      parsedTargetMonth ??
-      getYearMonthFromFilter(monthFilter, customDateFrom, customDateTo);
+    const key = `${year}-${month}`;
+    if (lastFetchedKeyRef.current === key) return;
+    lastFetchedKeyRef.current = key;
 
     exportBankTransferXlsx({ year, month, locale: language })
       .unwrap()
       .catch((error) => {
         console.error("Failed to export bank transfer xlsx:", error);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [year, month, language, exportBankTransferXlsx]);
 
   // Parse the returned xlsx blob into rows for an inline preview table
   useEffect(() => {
@@ -122,10 +126,6 @@ export default function CloseAllOrdersModal({
 
   const handleDownload = () => {
     if (!xlsxData) return;
-    const parsedTargetMonth = getYearMonthFromLabel(targetMonthLabel);
-    const { year, month } =
-      parsedTargetMonth ??
-      getYearMonthFromFilter(monthFilter, customDateFrom, customDateTo);
     const monthName = new Date(year, month - 1, 1).toLocaleString("en-US", {
       month: "long",
     });
@@ -182,6 +182,9 @@ export default function CloseAllOrdersModal({
                     <p className={`text-sm ${textTertiary}`}>
                       {t("bank_transfer_export_desc")}
                     </p>
+                    <p className={`text-xs mt-1 ${textTertiary}`}>
+                      {t("bank_transfer_export_scope_note")}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -204,7 +207,19 @@ export default function CloseAllOrdersModal({
                                   isDark ? "bg-gray-800" : "bg-gray-50"
                                 }`}
                               >
-                                {cell}
+                                <span className="inline-flex items-center gap-1">
+                                  {cell}
+                                  {idx === 0 && (
+                                    <InfoTooltip
+                                      title={t(
+                                        "bank_transfer_beneficiary_name_info_title",
+                                      )}
+                                      content={t(
+                                        "bank_transfer_beneficiary_name_info_desc",
+                                      )}
+                                    />
+                                  )}
+                                </span>
                               </th>
                             ))}
                           </tr>
