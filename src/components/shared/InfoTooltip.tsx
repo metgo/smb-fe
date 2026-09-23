@@ -85,11 +85,8 @@ export default function InfoTooltip({
               bgPrimary,
               borderColor,
               elevated
-                ? "fixed z-100"
-                : clsx(
-                    "absolute top-0 z-50",
-                    isRTL ? "left-0 ml-2" : "right-0 mr-2",
-                  ),
+                ? "fixed z-800"
+                : clsx("absolute top-0 z-50", isRTL ? "right-0" : "left-0"),
             )}
             style={
               elevated
@@ -107,9 +104,9 @@ export default function InfoTooltip({
                 : { marginTop: "-0.5rem" }
             }
           >
-            <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex items-start justify-between gap-2 mb-1">
               {title && (
-                <h4 className={clsx("font-medium text-sm", textPrimary)}>
+                <h4 className={clsx("font-bold text-[13px]", textPrimary)}>
                   {title}
                 </h4>
               )}
@@ -126,11 +123,11 @@ export default function InfoTooltip({
               </button>
             </div>
             {children ? (
-              <div className={clsx("text-sm leading-relaxed", textSecondary)}>
+              <div className={clsx("text-xs leading-relaxed", textSecondary)}>
                 {children}
               </div>
             ) : (
-              <p className={clsx("text-sm leading-relaxed", textSecondary)}>
+              <p className={clsx("text-xs leading-relaxed", textSecondary)}>
                 {content}
               </p>
             )}
