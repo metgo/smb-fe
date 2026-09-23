@@ -390,6 +390,7 @@ export const PaymentMgmtPage = () => {
                 <option value="rejected">{t("rejected")}</option>
                 <option value="cancelled">{t("canceled")}</option>
                 <option value="closed">{t("paid")}</option>
+                <option value="paused">{t("paused")}</option>
               </select>
             </div>
 

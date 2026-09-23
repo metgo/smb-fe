@@ -132,6 +132,7 @@ type StatusKey =
   | "cancelled"
   | "rejected"
   | "closed"
+  | "paused"
   | "processing"
   | "shipped"
   | "completed"
@@ -144,6 +145,7 @@ const STATUS_DOT: Record<StatusKey, string> = {
   cancelled: "bg-red-500",
   rejected: "bg-red-500",
   closed: "bg-gray-400",
+  paused: "bg-slate-500",
   processing: "bg-blue-500",
   shipped: "bg-indigo-500",
   completed: "bg-green-500",
@@ -159,6 +161,7 @@ const STATUS_LABEL_KEY: Record<StatusKey, string> = {
   cancelled: "canceled",
   rejected: "rejected",
   closed: "closed",
+  paused: "paused",
   processing: "processing",
   shipped: "shipped",
   completed: "completed",
@@ -169,10 +172,12 @@ function StatusInline({
   status,
   n,
   isReconciliation,
+  muted,
 }: {
   status: StatusKey;
   n: number;
   isReconciliation?: boolean;
+  muted?: boolean;
 }) {
   const { t } = useTranslation("reconciliation");
   const { isDark } = useThemeClasses();
@@ -188,10 +193,20 @@ function StatusInline({
   const dot = reconPending ? "bg-slate-400" : STATUS_DOT[status];
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs">
+    <span
+      className={`inline-flex items-center gap-1.5 text-xs ${muted ? "opacity-60" : ""}`}
+    >
       <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
       <span
-        className={`font-semibold ${isDark ? "text-gray-100" : "text-gray-900"}`}
+        className={`font-semibold ${
+          muted
+            ? isDark
+              ? "text-gray-300"
+              : "text-gray-600"
+            : isDark
+              ? "text-gray-100"
+              : "text-gray-900"
+        }`}
       >
         {n}
       </span>
@@ -210,23 +225,30 @@ const PRODUCT_STATUS_ORDER: StatusKey[] = [
   "canceled",
 ];
 
+// Explains the payable headline (pending+approved) - matches
+// PayableOrdersInfo's tooltip, which documents only these 5 statuses.
 const RECONCILIATION_STATUS_ORDER: StatusKey[] = [
   "pending",
   "approved",
   "disputed",
   "cancelled",
   "rejected",
-  "closed",
 ];
+
+// closed/paused are resolved, not payable - shown on their own muted line
+// so a big count there doesn't look like it contradicts a small payable one.
+const SECONDARY_STATUS_ORDER: StatusKey[] = ["closed", "paused"];
 
 function StatusBreakdown({
   order,
   counts,
   isReconciliation,
+  muted,
 }: {
   order: StatusKey[];
   counts: Partial<Record<StatusKey, number>>;
   isReconciliation?: boolean;
+  muted?: boolean;
 }) {
   return (
     <span className="flex flex-wrap gap-x-3 gap-y-1">
@@ -236,6 +258,7 @@ function StatusBreakdown({
           status={status}
           n={counts[status] ?? 0}
           isReconciliation={isReconciliation}
+          muted={muted}
         />
       ))}
     </span>
@@ -370,11 +393,31 @@ const HeaderStats = ({
           labelHelp={<PayableOrdersInfo t={t} />}
           value={String(stats?.pending + stats?.approved)}
           sub={
-            <StatusBreakdown
-              order={RECONCILIATION_STATUS_ORDER}
-              counts={stats?.statusOverview}
-              isReconciliation
-            />
+            <div className="flex flex-col gap-1">
+              <StatusBreakdown
+                order={RECONCILIATION_STATUS_ORDER}
+                counts={stats?.statusOverview}
+                isReconciliation
+              />
+              {((stats?.statusOverview?.closed ?? 0) > 0 ||
+                (stats?.statusOverview?.paused ?? 0) > 0) && (
+                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                  <span
+                    className={`text-[10px] uppercase tracking-wide ${
+                      isDark ? "text-gray-600" : "text-gray-400"
+                    }`}
+                  >
+                    {t("also_this_month")}:
+                  </span>
+                  <StatusBreakdown
+                    order={SECONDARY_STATUS_ORDER}
+                    counts={stats?.statusOverview}
+                    isReconciliation
+                    muted
+                  />
+                </div>
+              )}
+            </div>
           }
         />
       </section>
