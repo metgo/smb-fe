@@ -207,7 +207,7 @@ export default function CloseAllOrdersModal({
                                   isDark ? "bg-gray-800" : "bg-gray-50"
                                 }`}
                               >
-                                <span className="inline-flex items-center gap-1">
+                                <span className="inline-flex items-center gap-1 relative">
                                   {cell}
                                   {idx === 0 && (
                                     <InfoTooltip
