@@ -59,11 +59,7 @@ export default function DmoAuthorityWebsiteIdsSelector({
 
     if (!allWebsites?.length) return result;
 
-    // Discount websites are managed via "mark as supplier", not content
-    // visibility, so keep them out of the associated websites picker.
-    const selectableWebsites = allWebsites.filter(
-      (site) => site.purpose !== "DISCOUNT",
-    );
+    const selectableWebsites = allWebsites;
 
     // If nothing selected → everything is unassociated (or change if needed)
     if (!selectedDmoId && !selectedAuthorityId) {

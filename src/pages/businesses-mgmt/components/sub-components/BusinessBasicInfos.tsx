@@ -3,6 +3,7 @@ import { BadgePercent, Store } from "lucide-react";
 
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCommon } from "@/hooks/useCommon";
 import { DmoAuthorityWebsiteIdsSelector } from "@/components/shared";
 import { BusinessContentForm } from "./BusinesscontentForm";
 
@@ -76,6 +77,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 }) => {
   const { isSuperadmin, isTraveller } = useUserRoles();
   const { borderColor, isDark, isRTL } = useThemeClasses();
+  const { allWebsites } = useCommon();
+
+  const hasDiscountWebsiteSelected = websiteVisibilityIds?.some(
+    (id) => allWebsites?.find((w) => w._id === id)?.purpose === "DISCOUNT",
+  );
 
   const discountInputClasses = `w-full rounded-lg border px-3 py-2 pe-8 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 ${
     isDark
@@ -92,6 +98,12 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   useEffect(() => {
     markDirty(1);
   }, [formData, selectedDmoId]);
+
+  useEffect(() => {
+    if (!hasDiscountWebsiteSelected && formData.markedAsSupplier) {
+      setFormData((prev: any) => ({ ...prev, markedAsSupplier: false }));
+    }
+  }, [hasDiscountWebsiteSelected]);
 
   return (
     <div className="space-y-6">
@@ -114,9 +126,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         dmoSectionRef={dmoSectionRef}
       />
 
-      {/* Mark as supplier — superadmin only, independent of the vendor's
-          "provides discount" flag */}
-      {isSuperadmin && (
+      {/* Mark as supplier — superadmin only, shown only when a
+          purpose "DISCOUNT" website is selected */}
+      {isSuperadmin && hasDiscountWebsiteSelected && (
         <div
           className={`rounded-xl border p-4 transition-colors ${
             formData.markedAsSupplier
