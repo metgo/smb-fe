@@ -210,6 +210,7 @@ export const PaymentMgmtPage = () => {
     finalizeSweepPreview,
     displayedOrder,
     closeAllOrdersTargetMonthLabel,
+    previewParams,
     closeDetails,
     handleOpenDispute,
     handleReopenDispute,
@@ -232,6 +233,7 @@ export const PaymentMgmtPage = () => {
     refetch,
     refetchReconciliationStats,
     scopeParams,
+    filters,
   });
 
   const columns = buildOrderColumns({
@@ -389,6 +391,7 @@ export const PaymentMgmtPage = () => {
                 <option value="rejected">{t("rejected")}</option>
                 <option value="cancelled">{t("canceled")}</option>
                 <option value="closed">{t("paid")}</option>
+                <option value="paused">{t("paused")}</option>
               </select>
             </div>
 
@@ -631,6 +634,8 @@ export const PaymentMgmtPage = () => {
       {showCloseAllOrdersModal && (
         <CloseAllOrdersModal
           targetMonthLabel={closeAllOrdersTargetMonthLabel}
+          targetYear={previewParams.year}
+          targetMonthNumber={previewParams.month}
           monthFilter={filters.month}
           customDateFrom={filters.startDate}
           customDateTo={filters.endDate}

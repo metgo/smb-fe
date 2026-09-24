@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
-import { uploadWithProgress } from "@/helpers";
+import { uploadWithProgress, getCurrentMonthFilterValue } from "@/helpers";
 import {
   useGetOrderProductDetailsQuery,
   useLazyGetOrderProductDetailsQuery,
@@ -24,6 +24,15 @@ export interface UseOrderActionsParams {
   refetch: () => void;
   refetchReconciliationStats: () => void;
   scopeParams: Record<string, any>;
+  filters: {
+    status: string;
+    reconciliationStatus: string;
+    startDate: string;
+    endDate: string;
+    month: string;
+    businessId: string;
+    amount: string;
+  };
 }
 
 export function useOrderActions({
@@ -32,6 +41,7 @@ export function useOrderActions({
   refetch,
   refetchReconciliationStats,
   scopeParams,
+  filters,
 }: UseOrderActionsParams) {
   const navigate = useNavigate();
   const { t } = useTranslation("reconciliation");
@@ -74,12 +84,60 @@ export function useOrderActions({
     useFinalizeClosedOrdersMutation();
   // only fetched while the confirmation modal is actually open - no point
   // hitting this on every page load
+  const previewParams = useMemo(() => {
+    if (!showCloseAllOrdersModal) return { year: undefined, month: undefined };
+    // Get year/month from the selected filter
+    if (filters.month === "custom" && (filters.startDate || filters.endDate)) {
+      const date = new Date(filters.startDate || filters.endDate || "");
+      return { year: date.getFullYear(), month: date.getMonth() + 1 };
+    }
+    // MonthFilter displays the current month whenever filters.month is the
+    // untouched "all" default (see its selectValue fallback) - visually
+    // identical to actually picking that same month from the dropdown, but
+    // "all" falls through to the previous-month default below while an
+    // explicit "9-2026" would try (and correctly get blocked) as the
+    // current month itself. Same-looking selection, different outcome -
+    // treat an explicitly-picked current month the same as leaving it
+    // untouched, since "Close All Orders" always targets last calendar
+    // month regardless of filter (see handleOpenCloseAllOrdersModal).
+    if (
+      filters.month &&
+      filters.month !== "all" &&
+      filters.month !== "custom" &&
+      filters.month !== getCurrentMonthFilterValue()
+    ) {
+      const [month, year] = filters.month.split("-").map(Number);
+      return { year, month };
+    }
+    // Default to previous calendar month if no specific filter (or the
+    // filter is the current month, per the comment above)
+    const now = new Date();
+    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return {
+      year: previousMonth.getFullYear(),
+      month: previousMonth.getMonth() + 1,
+    };
+  }, [
+    showCloseAllOrdersModal,
+    filters.month,
+    filters.startDate,
+    filters.endDate,
+  ]);
+
   const {
-    data: finalizeSweepPreview,
+    // currentData, not data: RTK Query's `data` field is documented to keep
+    // "the latest returned result regardless of hook arg" - it does NOT
+    // clear when a new arg's query fails, so after switching from a
+    // resolvable month (May) to one that errors (September, not
+    // finalizable yet), `data` would keep showing May's stale successful
+    // result forever, since no new successful result ever replaces it.
+    // currentData is scoped to the current args and correctly resets to
+    // undefined the moment those args' request fails.
+    currentData: finalizeSweepPreview,
     isFetching: isFetchingSweepPreview,
     isError: isSweepPreviewError,
     error: sweepPreviewError,
-  } = usePreviewFinalizeClosedOrdersQuery(undefined, {
+  } = usePreviewFinalizeClosedOrdersQuery(previewParams, {
     skip: !showCloseAllOrdersModal,
   });
   // surface the backend's own message when it has one (e.g. "can't
@@ -371,8 +429,40 @@ export function useOrderActions({
 
   const handleCloseAllOrders = async () => {
     try {
+      // Get year/month from the selected filter
+      let year, month;
+      if (
+        filters.month === "custom" &&
+        (filters.startDate || filters.endDate)
+      ) {
+        const date = new Date(filters.startDate || filters.endDate || "");
+        year = date.getFullYear();
+        month = date.getMonth() + 1;
+      } else if (
+        filters.month &&
+        filters.month !== "all" &&
+        filters.month !== "custom" &&
+        filters.month !== getCurrentMonthFilterValue()
+      ) {
+        const [monthNum, yearNum] = filters.month.split("-").map(Number);
+        year = yearNum;
+        month = monthNum;
+      } else {
+        // Default to previous calendar month if no specific filter
+        const now = new Date();
+        const previousMonth = new Date(
+          now.getFullYear(),
+          now.getMonth() - 1,
+          1,
+        );
+        year = previousMonth.getFullYear();
+        month = previousMonth.getMonth() + 1;
+      }
+
       const result = await finalizeClosedOrders({
         confirmFinalize: true,
+        year,
+        month,
       }).unwrap();
 
       setShowCloseAllOrdersModal(false);
@@ -435,6 +525,7 @@ export function useOrderActions({
     finalizeSweepPreview,
     displayedOrder,
     closeAllOrdersTargetMonthLabel,
+    previewParams,
     closeDetails,
     handleOpenDispute,
     handleReopenDispute,

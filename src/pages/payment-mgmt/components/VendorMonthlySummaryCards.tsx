@@ -13,6 +13,7 @@ import {
   ListCollapse,
   Banknote,
   TriangleAlert,
+  PauseCircle,
 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -170,6 +171,12 @@ const VendorMonthlySummaryCards = ({
       label: t("canceled"),
       icon: XCircle,
       status: "cancelled",
+    },
+    {
+      key: "pausedCount",
+      label: t("paused"),
+      icon: PauseCircle,
+      status: "paused",
     },
   ] as const;
 

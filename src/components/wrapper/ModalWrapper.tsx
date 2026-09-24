@@ -68,7 +68,16 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ transform: `translateY(${dragY}px)` }}
+        // Only set an inline transform while actively dragging - ANY
+        // transform value (even translateY(0px)) creates a new containing
+        // block for position:fixed descendants, so it was silently
+        // breaking every `elevated` InfoTooltip rendered inside a modal:
+        // their coordinates are computed via getBoundingClientRect()
+        // (viewport-relative), but position:fixed then anchored them to
+        // this div instead of the viewport. At rest, the translate-y-0/
+        // translate-y-full classes below already handle the mount
+        // animation with no inline style needed.
+        style={dragY ? { transform: `translateY(${dragY}px)` } : undefined}
         className={clsx(
           height,
           maxWidth,
