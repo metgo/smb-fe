@@ -55,6 +55,7 @@ const PunchPassDetailsPage = () => {
     const toastId = toast.loading(tc("punch_pass_status_change_loading"));
     try {
       await updatePunchPass({
+        language,
         punchPassId,
         body: { status: status?.toUpperCase() },
       }).unwrap();

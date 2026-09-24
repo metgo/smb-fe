@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { Clock, Hash, Layers } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { getLngWiseStr } from "@/helpers";
+import { formatLocalDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const PunchPassCataloguesDetails = ({
@@ -71,12 +71,7 @@ const PunchPassCataloguesDetails = ({
                 <span
                   className={clsx("text-sm font-medium truncate", textPrimary)}
                 >
-                  {getLngWiseStr(
-                    language,
-                    item.name,
-                    item.nameHe,
-                    item.nameAr,
-                  ) || "-"}
+                  {item.name}
                 </span>
               </div>
 
@@ -90,11 +85,11 @@ const PunchPassCataloguesDetails = ({
                       {t("catalogue_quantity")}: {item.quantity}
                     </>,
                   )}
-                {item.time &&
+                {item.dateTime &&
                   badge(
                     <>
                       <Clock className="w-3 h-3" />
-                      {item.time}
+                      {formatLocalDateTime(item.dateTime, language)}
                     </>,
                   )}
               </div>

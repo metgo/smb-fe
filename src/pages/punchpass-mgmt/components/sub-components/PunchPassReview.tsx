@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
-import { getLngWiseStr } from "@/helpers";
+import { formatLocalDateTime } from "@/helpers/formatter";
+import { hasDateTimeField } from "@/pages/punchpass-mgmt/utils";
 
 interface PunchPassReviewProps {
   t: (key: string) => string;
@@ -103,18 +104,8 @@ const PunchPassReview: React.FC<PunchPassReviewProps> = ({
 
   const divider = <div className={clsx("border-t mx-5", borderColor)} />;
 
-  const name = getLngWiseStr(
-    language,
-    formData.name,
-    formData.nameHe,
-    formData.nameAr,
-  );
-  const description = getLngWiseStr(
-    language,
-    formData.description,
-    formData.descriptionHe,
-    formData.descriptionAr,
-  );
+  const name = formData.name;
+  const description = formData.description;
 
   return (
     <div className="space-y-5">
@@ -181,12 +172,7 @@ const PunchPassReview: React.FC<PunchPassReviewProps> = ({
         <div className="p-5 space-y-3">
           {formData.catalogues?.length ? (
             formData.catalogues.map((item, idx) => {
-              const catalogueName = getLngWiseStr(
-                language,
-                item.name,
-                item.nameHe,
-                item.nameAr,
-              );
+              const catalogueName = item.name;
               return (
                 <div
                   key={idx}
@@ -209,7 +195,12 @@ const PunchPassReview: React.FC<PunchPassReviewProps> = ({
                         `${t("catalogue_quantity")}: ${item.quantity}`,
                         `qty-${idx}`,
                       )}
-                    {item.time && badge(item.time, `time-${idx}`)}
+                    {item.dateTime &&
+                      hasDateTimeField(item.type) &&
+                      badge(
+                        formatLocalDateTime(item.dateTime, language),
+                        `time-${idx}`,
+                      )}
                   </div>
                 </div>
               );

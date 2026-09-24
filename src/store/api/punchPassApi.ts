@@ -8,18 +8,24 @@ export const punchPassesApi = createApi({
   tagTypes: ["PunchPasses"],
 
   endpoints: (builder) => ({
-    createPunchPass: builder.mutation<IPunchPassPayload, any>({
-      query: (body) => ({
-        url: endpoints.punchPasses,
+    createPunchPass: builder.mutation<
+      IPunchPassPayload,
+      { body: any; language: Language }
+    >({
+      query: ({ body, language }) => ({
+        url: `${endpoints.punchPasses}?locale=${language}`,
         method: "POST",
         data: body,
       }),
       invalidatesTags: ["PunchPasses"],
     }),
 
-    updatePunchPass: builder.mutation<Partial<IPunchPassPayload>, any>({
-      query: ({ punchPassId, body }) => ({
-        url: `${endpoints.punchPasses}/${punchPassId}`,
+    updatePunchPass: builder.mutation<
+      Partial<IPunchPassPayload>,
+      { body: any; punchPassId: string; language: Language }
+    >({
+      query: ({ punchPassId, body, language }) => ({
+        url: `${endpoints.punchPasses}/${punchPassId}?locale=${language}`,
         method: "PATCH",
         data: body,
       }),

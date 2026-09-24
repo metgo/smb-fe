@@ -6,8 +6,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 
 interface MediaProps {
-  theme?: Theme;
-  errors?: { logo?: string };
+  errors?: { logo?: string; images?: string };
   markDirty?: (step: number) => void;
   isBusiness?: boolean;
   logoImage?: IImageUpload | null;
@@ -266,6 +265,9 @@ const Media: FC<MediaProps> = ({
             </div>
           )}
         </div>
+        {errors?.images && (
+          <p className="text-red-500 text-sm mt-2">{errors.images}</p>
+        )}
       </div>
 
       <ConfirmDialog

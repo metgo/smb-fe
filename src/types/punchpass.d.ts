@@ -1,23 +1,18 @@
-type TPunchPassType = "ITEM" | "SERVICE" | "OTHER";
+type TPunchPassType = "PRODUCT" | "SERVICE" | "CLASS" | "EVENT" | "OTHER";
 
 interface IPunchPassPayload {
   businessId: string;
   name?: string;
-  nameHe?: string;
-  nameAr?: string;
   description?: string;
-  descriptionHe?: string;
-  descriptionAr?: string;
 
   images: Array<IImage>;
 
   catalogues: {
     name?: string;
-    nameHe?: string;
-    nameAr?: string;
     type?: TPunchPassType;
     quantity?: number;
-    time?: string;
+    dateTime?: string;
+    order?: number;
   }[];
 
   price: {
@@ -73,11 +68,7 @@ interface IPunchPassesRes extends IPagination {
 interface IPunchPassDetailsRes extends IAuditInfo {
   _id: string;
   name: string;
-  nameHe?: string;
-  nameAr?: string;
   description: string;
-  descriptionHe?: string;
-  descriptionAr?: string;
   price: {
     sellingPrice: number;
     markedPrice: number;
@@ -95,11 +86,10 @@ interface IPunchPassDetailsRes extends IAuditInfo {
   catalogues: {
     _id: string;
     name: string;
-    nameHe?: string;
-    nameAr?: string;
-    time?: string;
+    dateTime?: string;
     quantity?: number;
     type: TPunchPassType;
+    order?: number;
   }[];
   businessId: {
     _id: string;

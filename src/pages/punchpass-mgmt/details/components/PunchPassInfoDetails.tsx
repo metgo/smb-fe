@@ -10,7 +10,6 @@ import {
   Tag,
 } from "lucide-react";
 
-import { getLngWiseStr } from "@/helpers";
 import { formatILS } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
@@ -101,7 +100,7 @@ const PunchPassInfoDetails: React.FC<PunchPassInfoDetailsProps> = ({
   t,
   punchPass,
 }) => {
-  const { isDark, language } = useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   const price = punchPass?.price;
   const quantity = punchPass?.quantity;
@@ -122,12 +121,7 @@ const PunchPassInfoDetails: React.FC<PunchPassInfoDetailsProps> = ({
     <div className="space-y-6">
       <DescriptionCard
         title={t("name")}
-        content={getLngWiseStr(
-          language,
-          punchPass?.name,
-          punchPass?.nameHe,
-          punchPass?.nameAr,
-        )}
+        content={punchPass?.name || ""}
         icon={<FileText className={iconClass("blue")} />}
         iconBgClass={iconBg("blue")}
         isDark={isDark}
@@ -135,12 +129,7 @@ const PunchPassInfoDetails: React.FC<PunchPassInfoDetailsProps> = ({
 
       <DescriptionCard
         title={t("description")}
-        content={getLngWiseStr(
-          language,
-          punchPass?.description,
-          punchPass?.descriptionHe,
-          punchPass?.descriptionAr,
-        )}
+        content={punchPass?.description || ""}
         icon={<AlignLeft className={iconClass("purple")} />}
         iconBgClass={iconBg("purple")}
         isDark={isDark}

@@ -34,15 +34,6 @@ const PunchPassBasicInfo = ({
   const { textSecondary, textPrimary, bgTertiary, borderColor, language } =
     useThemeClasses();
 
-  const nameField =
-    language === "en"
-      ? "name"
-      : `name${language.charAt(0).toUpperCase()}${language.slice(1)}`;
-  const descriptionField =
-    language === "en"
-      ? "description"
-      : `description${language.charAt(0).toUpperCase()}${language.slice(1)}`;
-
   const handleChange = (updates: Partial<IPunchPassPayload>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   };
@@ -87,8 +78,8 @@ const PunchPassBasicInfo = ({
         <input
           type="text"
           dir={dir}
-          value={(formData as any)[nameField] || ""}
-          onChange={(e) => handleChange({ [nameField]: e.target.value } as any)}
+          value={formData.name || ""}
+          onChange={(e) => handleChange({ name: e.target.value })}
           placeholder={t("punch_pass_name_placeholder")}
           className={inputClasses}
         />
@@ -99,10 +90,8 @@ const PunchPassBasicInfo = ({
         <textarea
           dir={dir}
           rows={4}
-          value={(formData as any)[descriptionField] || ""}
-          onChange={(e) =>
-            handleChange({ [descriptionField]: e.target.value } as any)
-          }
+          value={formData.description || ""}
+          onChange={(e) => handleChange({ description: e.target.value })}
           placeholder={t("punch_pass_description_placeholder")}
           className={`${inputClasses} resize-none`}
         />

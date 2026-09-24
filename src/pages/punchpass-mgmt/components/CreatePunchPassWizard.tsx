@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
-
 import { Image as ImageIcon, Package, Eye, FileText } from "lucide-react";
+
 import {
   PunchPassBasicInfo,
   PunchPassCatalogue,
@@ -31,11 +31,12 @@ import {
 } from "@/store/api/businessQueryApi";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { detectLanguage, modelTitle } from "@/helpers";
+import { modelTitle } from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
+import { toCataloguePayload } from "@/pages/punchpass-mgmt/utils";
 
 interface PunchPassWizardProps {
   onClose: () => void;
@@ -45,15 +46,25 @@ interface PunchPassWizardProps {
   refetch?: any;
 }
 
+const DUPLICATE_SUFFIX: Record<string, string> = {
+  en: "(Duplicate)",
+  he: "(שכפל)",
+  ar: "(نسخ)",
+};
+
 const emptyFormData = (businessId = ""): IPunchPassPayload => ({
   businessId,
   name: "",
-  nameHe: "",
-  nameAr: "",
   description: "",
-  descriptionHe: "",
-  descriptionAr: "",
-  catalogues: [],
+  catalogues: [
+    {
+      name: "",
+      type: "PRODUCT",
+      quantity: 1,
+      dateTime: "",
+      order: 0,
+    },
+  ],
   price: {
     markedPrice: 0,
     sellingPrice: 0,
@@ -176,6 +187,7 @@ export default function CreatePunchPassWizard({
         ? (updatedImages) => {
             updatePunchPass({
               punchPassId,
+              language,
               body: { images: updatedImages },
             });
           }
@@ -189,26 +201,22 @@ export default function CreatePunchPassWizard({
   useEffect(() => {
     if (!punchPassId || !punchPass) return;
 
+    const name = punchPass.name;
     const loadedFormData: IPunchPassPayload = {
       businessId: punchPass?.businessId?._id || "",
       name:
         opMode === IOpMode.DUPLICATE
-          ? `${punchPass?.name || ""} (Duplicate)`
-          : punchPass?.name || "",
-      nameHe:
-        opMode === IOpMode.DUPLICATE
-          ? `${punchPass?.nameHe || ""} (שכפל)`
-          : punchPass?.nameHe || "",
-      nameAr:
-        opMode === IOpMode.DUPLICATE
-          ? `${punchPass?.nameAr || ""} (نسخ)`
-          : punchPass?.nameAr || "",
+          ? `${name} ${DUPLICATE_SUFFIX[language] ?? DUPLICATE_SUFFIX.en}`
+          : name,
+      description: punchPass?.description,
 
-      description: punchPass?.description || "",
-      descriptionHe: punchPass?.descriptionHe || "",
-      descriptionAr: punchPass?.descriptionAr || "",
-
-      catalogues: punchPass?.catalogues || [],
+      catalogues: [...(punchPass?.catalogues || [])]
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map(({ nameHe, nameAr, ...item }, index) => ({
+          ...item,
+          name: item.name,
+          order: index + 1,
+        })),
 
       price: {
         markedPrice: punchPass?.price?.markedPrice || 0,
@@ -248,8 +256,7 @@ export default function CreatePunchPassWizard({
     switch (step) {
       case 1:
         if (!formData.businessId) newErrors.businessId = t("field_required");
-        if (!formData.name && !formData.nameAr && !formData.nameHe)
-          newErrors.name = t("field_required");
+        if (!formData.name?.trim()) newErrors.name = t("field_required");
         if (!formData.price?.sellingPrice || formData.price.sellingPrice <= 0)
           newErrors.sellingPrice = t("invalid_price");
         if (
@@ -260,18 +267,36 @@ export default function CreatePunchPassWizard({
           newErrors.quantity = t("invalid_quantity");
         break;
       case 2:
-        if (!formData.catalogues?.length)
+        if (!formData.catalogues?.length) {
           newErrors.catalogues = t("select_at_least_one_catalogue");
+        } else if (formData.catalogues.some((item) => !item.name?.trim())) {
+          newErrors.catalogues = t("all_items_need_name");
+          newErrors.catalogueName = t("catalogue_name_missing");
+        }
+        break;
+      case 3:
+        if (!galleryImages?.length)
+          newErrors.images = t("upload_at_least_one_image");
         break;
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // Clear the media error once an image has finished uploading
+  useEffect(() => {
+    if (galleryImages?.length)
+      setErrors((prev) => {
+        if (!prev.images) return prev;
+        const { images: _images, ...rest } = prev;
+        return rest;
+      });
+  }, [galleryImages]);
+
   const completionPercent = useMemo(() => {
     const checks = [
       !!formData.businessId,
-      !!(formData.name || formData.nameHe || formData.nameAr),
+      !!formData.name?.trim(),
       !!formData.price?.sellingPrice,
       !!formData.catalogues?.length,
       !!galleryImages?.length,
@@ -281,16 +306,12 @@ export default function CreatePunchPassWizard({
   }, [formData, galleryImages]);
 
   const handleSaveDraft = async () => {
-    if (
-      !formData.name?.trim() &&
-      !formData.nameHe?.trim() &&
-      !formData.nameAr?.trim()
-    ) {
+    if (!formData.name?.trim()) {
       toast.error(tc("name_required"));
       return;
     }
     setIsDraftBtnClicked(true);
-    await saveDraft(false, detectAndAssignLanguageFields(stepPayloadMap));
+    await saveDraft(false, stepPayloadMap);
   };
 
   const handleNext = async () => {
@@ -313,7 +334,7 @@ export default function CreatePunchPassWizard({
     setIsPublishBtnClicked(true);
 
     let allValid = true;
-    for (let i = 1; i <= 2; i++) {
+    for (let i = 1; i <= 3; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -326,85 +347,17 @@ export default function CreatePunchPassWizard({
     }
 
     setIsPublishing(true);
-    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
-    await saveDraft(true, processedFormData);
+    await saveDraft(true, stepPayloadMap);
     setIsPublishing(false);
-  };
-
-  const getActiveField = (base: string, lang: string): string => {
-    if (lang === "en") return base;
-    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
-    return `${base}${suffix}`;
-  };
-
-  const detectAndAssignLanguageFields = (data: any): any => {
-    const updated = { ...data };
-
-    const fieldGroups = [
-      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
-      {
-        base: "description",
-        en: "description",
-        he: "descriptionHe",
-        ar: "descriptionAr",
-      },
-    ];
-
-    fieldGroups.forEach(({ base, en, he, ar }) => {
-      const activeField = getActiveField(base, language);
-      const text = data[activeField]?.trim();
-      if (!text) return;
-
-      const detectedLang = detectLanguage(text);
-
-      updated[en] = "";
-      updated[he] = "";
-      updated[ar] = "";
-
-      if (detectedLang === "he") {
-        updated[he] = text;
-      } else if (detectedLang === "ar") {
-        updated[ar] = text;
-      } else {
-        updated[en] = text;
-      }
-    });
-
-    // Catalogue names follow the same global-language rule
-    updated.catalogues = (data.catalogues || []).map((item: any) => {
-      const activeField = getActiveField("name", language);
-      const text = item[activeField]?.trim();
-      if (!text) return item;
-
-      const detectedLang = detectLanguage(text);
-      const updatedItem = { ...item, name: "", nameHe: "", nameAr: "" };
-
-      if (detectedLang === "he") {
-        updatedItem.nameHe = text;
-      } else if (detectedLang === "ar") {
-        updatedItem.nameAr = text;
-      } else {
-        updatedItem.name = text;
-      }
-
-      return updatedItem;
-    });
-
-    return updated;
   };
 
   const stepPayloadMap = {
     businessId: formData.businessId,
 
-    name: formData.name,
-    nameAr: formData.nameAr,
-    nameHe: formData.nameHe,
+    name: formData.name?.trim(),
+    description: formData.description?.trim(),
 
-    description: formData.description,
-    descriptionHe: formData.descriptionHe,
-    descriptionAr: formData.descriptionAr,
-
-    catalogues: formData.catalogues,
+    catalogues: toCataloguePayload(formData.catalogues),
 
     price: formData.price,
     quantity: formData.quantity,
@@ -427,14 +380,18 @@ export default function CreatePunchPassWizard({
 
       if (!existingId || opMode === IOpMode.DUPLICATE) {
         const res: any = await createPunchPass({
-          ...payload,
-          status,
+          language,
+          body: {
+            ...payload,
+            status,
+          },
         }).unwrap();
         if (opMode !== IOpMode.DUPLICATE) {
           setCreatedPunchPassId(res?._id ?? res?.id ?? null);
         }
       } else {
         await updatePunchPass({
+          language,
           punchPassId: existingId,
           body: {
             ...payload,
