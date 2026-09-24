@@ -238,7 +238,7 @@
   "bank_transfer_export_merged_accounts_note": "If several of a vendor's businesses share the same bank account, their amounts are combined into a single row - the payment goes to one bank account, not to each storefront separately.",
   "bank_transfer_beneficiary_name_info_title": "Where this name comes from",
   "bank_transfer_beneficiary_name_info_desc": "Shows the vendor's bank invoice name if one is set; otherwise falls back to their business name.",
-  "bank_transfer_export_month_mismatch_note": "Your filter is set to {{selected}}, but Finalize Payouts always targets the last completed month - {{target}} - since {{selected}} hasn't ended yet.",
+  "bank_transfer_export_month_mismatch_note": "Your filter is set to {{selected}}, but Finalize Payouts always targets the previous calendar month - {{target}} - since {{selected}} hasn't ended yet.",
   "close": "Close",
   "download": "Download",
   "bank_details": "Bank Details",

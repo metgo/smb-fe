@@ -95,9 +95,13 @@ export default function CloseAllOrdersModal({
   // Finalize Payouts always targets the last completed month, even when
   // the page's own month filter still points at the current (unfinished)
   // month - surface that gap explicitly so the same result for two
-  // different-looking filter selections doesn't read as a bug
+  // different-looking filter selections doesn't read as a bug.
+  // "all" is included here (not treated as "no selection") because
+  // MonthFilter's dropdown cosmetically displays the current month for
+  // "all" too - visually identical to an explicit current-month pick,
+  // so it must trigger the same note.
   const selectedYearMonth =
-    monthFilter && monthFilter !== "all" && monthFilter !== "custom"
+    monthFilter && monthFilter !== "custom"
       ? getYearMonthFromFilter(monthFilter, customDateFrom, customDateTo)
       : null;
   const monthMismatch =

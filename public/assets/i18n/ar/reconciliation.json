@@ -234,7 +234,7 @@
   "bank_transfer_export_merged_accounts_note": "إذا كانت عدة أعمال لنفس المورد تشترك في نفس الحساب البنكي، يتم دمج مبالغها في صف واحد - يتم تحويل الدفعة إلى حساب بنكي واحد، وليس لكل متجر على حدة.",
   "bank_transfer_beneficiary_name_info_title": "من أين يأتي هذا الاسم",
   "bank_transfer_beneficiary_name_info_desc": "يعرض اسم الفاتورة البنكية للمورد إذا تم تعيينه؛ وإلا يعرض اسم العمل الخاص به.",
-  "bank_transfer_export_month_mismatch_note": "الفلتر لديك مضبوط على {{selected}}، لكن إنهاء المدفوعات يستهدف دائمًا آخر شهر مكتمل - {{target}} - لأن {{selected}} لم ينتهِ بعد.",
+  "bank_transfer_export_month_mismatch_note": "الفلتر لديك مضبوط على {{selected}}، لكن إنهاء المدفوعات يستهدف دائمًا الشهر السابق - {{target}} - لأن {{selected}} لم ينتهِ بعد.",
   "close": "إغلاق",
   "download": "تنزيل",
   "bank_details": "بيانات البنك",
