@@ -21,6 +21,7 @@ import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
 import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
 import { formatDateTime } from "@/helpers/formatter";
 import { getLngWiseStr, sanitizeRichTextHtml } from "@/helpers";
+import { normalizeAnchorHrefs, sanitizeHtml } from "@/helpers/textSanitizer";
 
 interface BlogImage {
   image: string;
@@ -237,13 +238,26 @@ export default function ArticleDetails() {
     <div className="space-y-6">
       <div
         className={`p-6 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} prose max-w-none`}
+        // dangerouslySetInnerHTML={{
+        //   __html: sanitizeRichTextHtml(
+        //     getLngWiseStr(
+        //       language,
+        //       blogDetails?.content,
+        //       blogDetails?.contentHe,
+        //       blogDetails?.contentAr,
+        //     ),
+        //   ),
+        // }}
+
         dangerouslySetInnerHTML={{
-          __html: sanitizeRichTextHtml(
-            getLngWiseStr(
-              language,
-              blogDetails?.content,
-              blogDetails?.contentHe,
-              blogDetails?.contentAr,
+          __html: sanitizeHtml(
+            normalizeAnchorHrefs(
+              getLngWiseStr(
+                language,
+                blogDetails?.content,
+                blogDetails?.contentHe,
+                blogDetails?.contentAr,
+              ),
             ),
           ),
         }}

@@ -1,12 +1,14 @@
 import { useTranslation } from "react-i18next";
 
 import { StatusPill } from "@/components/pills";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { getPlainTextFromRichText } from "@/helpers";
+import { formatDateTime } from "@/helpers/formatter";
+import { sanitizeHtml } from "@/helpers/textSanitizer";
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useUserRoles } from "@/hooks/useUserRoles";
 
-export const defaultBlogColumns = {
+const defaultBlogColumns = {
   externalApiId: true,
   title: true,
   subTitle: true,
@@ -41,7 +43,7 @@ const BlogListView = ({
   setSelectedBlogs,
 }: BlogListViewProps) => {
   const { t } = useTranslation("article");
-  const { textPrimary, textSecondary } = useThemeClasses();
+  const { textPrimary, textSecondary, language } = useThemeClasses();
   const { isSuperadmin } = useUserRoles();
 
   const columns = [
@@ -93,9 +95,12 @@ const BlogListView = ({
       sortable: true,
       label: t("subtitle") || "Subtitle",
       render: (blog: any) => (
-        <div className={`${textSecondary} line-clamp-1 text-sm`}>
-          {blog.shortDescription || "-"}
-        </div>
+        <div
+          className={`${textSecondary} line-clamp-1 text-sm`}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(blog?.shortDescription || "-"),
+          }}
+        />
       ),
     },
 
@@ -130,7 +135,7 @@ const BlogListView = ({
       label: t("created_at") || "Created",
       render: (blog: any) => (
         <span className={textSecondary}>
-          {new Date(blog.createdAt).toLocaleDateString()}
+          {formatDateTime(blog.createdAt, language)}
         </span>
       ),
     },
@@ -142,36 +147,10 @@ const BlogListView = ({
       label: t("updated_at") || "Updated",
       render: (blog: any) => (
         <span className={textSecondary}>
-          {blog.updatedAt ? new Date(blog.updatedAt).toLocaleDateString() : "-"}
+          {formatDateTime(blog.updatedAt, language)}
         </span>
       ),
     },
-
-    // Optional: View on Site (if you have a public URL)
-    // {
-    //   key: "viewOnSite",
-    //   label: "",
-    //   width: "80px",
-    //   render: (blog: any) => {
-    //     // Replace with your actual blog URL logic
-    //     const publicUrl = blog.slug ? `/blog/${blog.slug}` : null;
-
-    //     if (!publicUrl) return null;
-
-    //     return (
-    //       <a
-    //         href={publicUrl}
-    //         target="_blank"
-    //         rel="noopener noreferrer"
-    //         onClick={(e) => e.stopPropagation()}
-    //         className="flex items-center justify-center text-teal-500 hover:text-teal-600"
-    //         title="View on site"
-    //       >
-    //         <ExternalLink className="w-4 h-4" />
-    //       </a>
-    //     );
-    //   },
-    // },
   ].filter(Boolean) as {
     key: string;
     label: string;
