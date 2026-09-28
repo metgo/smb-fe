@@ -14,6 +14,7 @@ import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
+import { CampaignType } from 'src/modules/campaign/campaign.type';
 import { Voucher } from '../../schema/voucher.schema';
 import { GetByCodeQuery } from '../get-by-code.query';
 import { ProductsService } from 'src/modules/products/products.services';
@@ -31,15 +32,13 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
 
   async execute(queries: GetByCodeQuery): Promise<GetByCodeResponse> {
     try {
-      const { queryData, code, loggedInUser } = queries;
+      const { queryData, code } = queries;
 
       const { identifierId, productId, locale } = queryData;
       const findQuery: any = {
         code: code.trim(),
         isDeleted: { $ne: true },
       };
-
-      console.log(loggedInUser);
 
       const [voucher, externalApi] = await Promise.all([
         this.VoucherModel.findOne(findQuery)
@@ -48,7 +47,7 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
           )
           .populate<{ campId: Campaign }>(
             'campId',
-            'code name dmoIds productIds businessIds',
+            'code name type dmoIds productIds businessIds',
           )
           .populate('purchaserInfo.id', 'firstName lastName email')
           .populate('assigneeInfo.id', 'firstName lastName email')
@@ -85,7 +84,11 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
         }
       }
 
-      if (productId) {
+      // This per-product/business/dmo scoping lives on the campaign document
+      // and predates website-level scoping (checked above via campIds). It
+      // still applies to MINI_SITE campaigns; CASH_IN/CASH_BACK vouchers are
+      // already fully scoped by the campIds check above.
+      if (productId && campDetails?.type === CampaignType.MINI_SITE) {
         if (
           !campDetails?.productIds?.length
           && !campDetails?.businessIds?.length

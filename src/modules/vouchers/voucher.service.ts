@@ -54,6 +54,8 @@ import { SmsService } from 'src/services/sms/sms.service';
 import { FindByIdAndPopulateQuery } from '../external-api/queries/find-by-id-and-populate.query';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 import { DocUploadService } from '../doc-upload/doc-upload.service';
+import { ExternalApiServices } from '../external-api/external-api.service';
+import { CampaignType } from '../campaign/campaign.type';
 
 @Injectable()
 export class VoucherService {
@@ -77,11 +79,14 @@ export class VoucherService {
     private cartService: CartService,
     private readonly docUploadService: DocUploadService,
     private queryBus: QueryBus,
+    private readonly externalApiService: ExternalApiServices,
   ) {}
 
   async getOneByCodeAndProduct(query: GetOneVoucherInterface) {
     try {
-      const { code, productId, locale } = query;
+      const {
+        code, productId, locale, identifierId,
+      } = query;
 
       const productDetail = await this.productService.findOne(
         productId,
@@ -95,7 +100,7 @@ export class VoucherService {
 
       const populate = {
         path: 'campId',
-        select: 'code name dmoIds productIds businessIds',
+        select: 'code name type dmoIds productIds businessIds',
       };
 
       const voucher: any = await this.VoucherModel.findOne(findQuery)
@@ -109,24 +114,46 @@ export class VoucherService {
 
       const campDetails = voucher?.campId;
 
-      if (
-        !campDetails?.productIds?.length
-        && !campDetails?.businessIds?.length
-        && !campDetails?.dmoIds?.length
-      ) {
-        throw new ForbiddenException(
-          'This voucher cannot be used for this product',
-        );
-      }
+      // MINI_SITE vouchers keep the legacy per-product/business/dmo scoping
+      // that lives on the campaign document itself. CASH_IN / CASH_BACK
+      // vouchers are instead scoped by the website the request comes from
+      // (ExternalApi.campIds), which is what the "Campaigns" selection in
+      // Website Settings actually persists to.
+      if (campDetails?.type === CampaignType.MINI_SITE) {
+        if (
+          !campDetails?.productIds?.length
+          && !campDetails?.businessIds?.length
+          && !campDetails?.dmoIds?.length
+        ) {
+          throw new ForbiddenException(
+            'This voucher cannot be used for this product',
+          );
+        }
 
-      if (
-        !campDetails.dmoIds.includes(productDetail?.dmoId?._id)
-        && !campDetails.businessIds.includes(productDetail?.businessId)
-        && !campDetails.productIds.includes(productDetail?._id)
-      ) {
-        throw new ForbiddenException(
-          'This voucher cannot be used for this product',
+        if (
+          !campDetails.dmoIds.includes(productDetail?.dmoId?._id)
+          && !campDetails.businessIds.includes(productDetail?.businessId)
+          && !campDetails.productIds.includes(productDetail?._id)
+        ) {
+          throw new ForbiddenException(
+            'This voucher cannot be used for this product',
+          );
+        }
+      } else {
+        if (!identifierId) {
+          throw new ForbiddenException(ServerErrors.VOUCHER.RESTRICTED_CAMPAIGN);
+        }
+
+        const externalApi = await this.externalApiService.findByFieldName(
+          'identifierId',
+          identifierId,
         );
+
+        const isAllowed = externalApi?.campIds?.some(campId => campId.equals(campDetails._id));
+
+        if (!isAllowed) {
+          throw new ForbiddenException(ServerErrors.VOUCHER.RESTRICTED_CAMPAIGN);
+        }
       }
 
       if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {

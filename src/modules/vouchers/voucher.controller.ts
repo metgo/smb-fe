@@ -125,6 +125,7 @@ export class VoucherController {
       code,
       productId: query.productId,
       locale: query.locale,
+      identifierId: query.identifierId,
     });
     return voucher;
   }

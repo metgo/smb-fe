@@ -10,6 +10,11 @@ export class GetVoucherQuery {
   @IsNotEmpty()
     productId: string;
 
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+  @IsString()
+    identifierId?: string;
+
   @ApiProperty({
     type: 'enum',
     enum: Locale,
