@@ -24,6 +24,7 @@ import TabsSection from "@/components/shared/TabsSection";
 import StatsMarquee from "@/components/shared/StatsMarquee";
 import { ReordableDataTable } from "@/components/shared";
 import { ViewChangesModal } from "@/components/change-tracking";
+import { formatDateTime } from "@/helpers/formatter";
 
 const LIMIT = 20;
 
@@ -310,7 +311,7 @@ export default function PendingApprovalsPage() {
           <div
             className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
-            {new Date(item.createdAt).toLocaleDateString()}
+            {formatDateTime(item.createdAt, language)}
           </div>
         ),
       },
