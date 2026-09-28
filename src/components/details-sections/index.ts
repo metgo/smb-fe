@@ -5,6 +5,7 @@ import ConnectedDmoAuthorityWebsites from "./ConnectedDmoAuthorityWebsites";
 import DeliveryPolicyOption from "./DeliveryPolicyOption";
 import DeliveryPolicyOptionDetails from "./DeliveryPolicyOptionDetails";
 import DetailTitleSection from "./DetailTitleSection";
+import DiscountWebsiteQR from "./DiscountWebsiteQR";
 import LocationDetails from "./LocationDetails";
 import LocationDetailsclosed from "./LocationDetailsclosed";
 import MediaDetails from "./MediaDetails";
@@ -23,6 +24,7 @@ export {
   AttributesDetails,
   DeliveryPolicyOption,
   DetailTitleSection,
+  DiscountWebsiteQR,
   DeliveryPolicyOptionDetails,
   ConnectedDmoAuthorityWebsites,
   QRScanListView,

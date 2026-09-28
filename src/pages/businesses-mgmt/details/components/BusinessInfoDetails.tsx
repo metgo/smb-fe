@@ -8,6 +8,7 @@ import DescriptionCard from "@/components/shared/DescriptionCard";
 import { getLngWiseStr } from "@/helpers";
 import {
   ConnectedDmoAuthorityWebsites,
+  DiscountWebsiteQR,
   LocationDetailsclosed,
 } from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
@@ -42,6 +43,10 @@ interface Business {
   dmoId: string;
   authorityId: string;
   associatedWebsiteIds: string[];
+  _id?: string;
+  providesDiscount?: boolean;
+  // Superadmin-only flag marking this business as a regional discount supplier
+  markedAsSupplier?: boolean;
 }
 
 interface BusinessInfoDetailsProps {
@@ -108,6 +113,13 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         websiteIds={business?.associatedWebsiteIds}
         pathname={clientSitePath.businessDetails + "/" + business?.slug}
       />
+
+      {/* Regional discount website QR — shown whenever the business is marked as
+          a supplier, independent of the vendor's providesDiscount flag */}
+      {business?.markedAsSupplier && (
+        <DiscountWebsiteQR businessId={business?._id} />
+      )}
+
       {/* Internal Notes */}
       {/* {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
         <div
