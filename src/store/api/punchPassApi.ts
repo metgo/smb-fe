@@ -67,6 +67,24 @@ export const punchPassesApi = createApi({
       }),
       providesTags: ["PunchPasses"],
     }),
+
+    // Punch Pass Trends
+    getPunchPassTrades: builder.query<IPunchPassTradesRes, string>({
+      query: (punchPassId) => ({
+        url: `${endpoints.punchPassTrades}?punchPassId=${punchPassId}`,
+        method: "GET",
+      }),
+      providesTags: ["PunchPasses"],
+    }),
+
+    // Punch Card Redemptions
+    getPunchCardRedemptions: builder.query<IPunchCardRedemptionsRes, string>({
+      query: (punchCardId) => ({
+        url: `${endpoints.punchCardRedemptions}?punchCardId=${punchCardId}`,
+        method: "GET",
+      }),
+      providesTags: ["PunchPasses"],
+    }),
   }),
 });
 
@@ -79,4 +97,7 @@ export const {
   useGetPunchPassesQuery,
 
   useGetPunchPassStatsQuery,
+  useGetPunchPassTradesQuery,
+
+  useGetPunchCardRedemptionsQuery,
 } = punchPassesApi;

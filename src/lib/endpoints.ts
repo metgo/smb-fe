@@ -186,6 +186,8 @@ export const endpoints = {
   // Punch Passes
   punchPasses: "/punch-passes",
   punchPassStats: "/punch-passes/stats",
+  punchPassTrades: "/punch-passes/trades",
+  punchCardRedemptions: "/punch-cards/redemptions",
 
   // UTM campaign builder
   utmCampaigns: "/utm-campaigns",

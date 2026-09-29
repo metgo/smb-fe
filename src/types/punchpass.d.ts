@@ -105,3 +105,57 @@ interface IPunchPassStats {
   totalSold: number;
   totalRevenue: number;
 }
+
+interface IPunchPassTrade {
+  _id: string;
+  createdAt: string;
+  quantity: number;
+  amount: number;
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string | null;
+  status: string;
+  orderId: string;
+  orderProductId: string;
+  punchCardId: string;
+  cardNumber: string;
+  cardStatus: string;
+  remainingItems: number;
+  totalItems: number;
+  paymentStatus: string;
+  paymentMode: string[];
+  paymentDate: string;
+}
+
+interface IPunchPassTradesRes {
+  data: IPunchPassTrade[];
+  totalData: number;
+}
+
+interface IPunchCardRedemptionsRes {
+  cardNumber: string;
+  status: string;
+  email: string;
+  phone: string;
+  items: Array<{
+    _id: string;
+    itemIndex: number;
+    label: string;
+    type: TPunchPassType;
+    quantity: number;
+    usedCount: number;
+    remainingCount: number;
+    redemptions:
+      | Array<{
+          redeemedAt: string;
+          redeemedBy: {
+            _id: string;
+            firstName: string;
+            lastName: string;
+            email: string;
+          };
+        }>
+      | [];
+  }>;
+}
