@@ -13,6 +13,10 @@ import {
   Ticket,
   ChevronDown,
   History,
+  Wrench,
+  GraduationCap,
+  CalendarDays,
+  Tag,
 } from "lucide-react";
 
 import { ModalWrapper } from "@/components/wrapper";
@@ -57,6 +61,14 @@ export const getTradeStatusColor = (status: string, isDark: boolean) => {
 
 type TRedemptionItem = IPunchCardRedemptionsRes["items"][number];
 
+const PUNCH_PASS_TYPE_ICONS: Record<TPunchPassType, React.ElementType> = {
+  PRODUCT: Package,
+  SERVICE: Wrench,
+  CLASS: GraduationCap,
+  EVENT: CalendarDays,
+  OTHER: Tag,
+};
+
 interface RedemptionItemProps {
   t: PunchPassTradeDetailModalProps["t"];
   item: TRedemptionItem;
@@ -66,6 +78,7 @@ const RedemptionItem: React.FC<RedemptionItemProps> = ({ t, item }) => {
   const {
     textPrimary,
     textTertiary,
+    textSecondary,
     borderColor,
     cardClasses,
     isDark,
@@ -73,7 +86,8 @@ const RedemptionItem: React.FC<RedemptionItemProps> = ({ t, item }) => {
   } = useThemeClasses();
   const [isOpen, setIsOpen] = useState(false);
 
-  const redemptions = item.redemptions ?? [];
+  const redemptions = [...(item.redemptions ?? [])].reverse();
+  const TypeIcon = PUNCH_PASS_TYPE_ICONS[item.type] ?? Tag;
   const isFullyUsed = item.quantity > 0 && item.usedCount >= item.quantity;
 
   const badge = (content: React.ReactNode, className?: string | false) => (
@@ -96,9 +110,17 @@ const RedemptionItem: React.FC<RedemptionItemProps> = ({ t, item }) => {
         className="w-full flex items-center justify-between gap-3 p-4 text-start"
       >
         <div className="min-w-0 flex-1">
-          <p className={clsx("font-medium text-sm truncate", textPrimary)}>
-            {item.label}
-          </p>
+          <div className="flex items-center gap-2 min-w-0">
+            <TypeIcon
+              className={clsx(
+                "w-4 h-4 shrink-0",
+                isDark ? "text-teal-300" : "text-teal-600",
+              )}
+            />
+            <p className={clsx("font-medium text-sm truncate", textPrimary)}>
+              {item.label}
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
             {item.type &&
               badge(
@@ -151,15 +173,23 @@ const RedemptionItem: React.FC<RedemptionItemProps> = ({ t, item }) => {
                   >
                     <span className="absolute -inset-s-1.25 top-1 w-2 h-2 rounded-full bg-teal-500" />
                     <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={clsx(
+                            "text-xs font-semibold",
+                            isDark ? "text-teal-300" : "text-teal-700",
+                          )}
+                        >
+                          {t("redeemed")} #{redemptions.length - idx}
+                        </span>
+                        {badge(`x${redemption.count}`)}
+                      </div>
                       <span
                         className={clsx(
-                          "text-xs font-semibold",
-                          isDark ? "text-teal-300" : "text-teal-700",
+                          "text-xs font-bold italic",
+                          textSecondary,
                         )}
                       >
-                        {t("redeemed")} #{idx + 1}
-                      </span>
-                      <span className={clsx("text-xs", textTertiary)}>
                         {redemption.redeemedAt
                           ? formatDateTime(redemption.redeemedAt, language)
                           : "-"}
@@ -292,7 +322,7 @@ const PunchPassTradeDetailModal: React.FC<PunchPassTradeDetailModalProps> = ({
   return (
     <ModalWrapper onClose={onClose} maxWidth="max-w-3xl">
       <div className="flex flex-col h-full overflow-hidden">
-        <div className="shrink-0 p-6 pb-0 sm:p-7 sm:pb-0">
+        <div className="shrink-0 p-3 pb-0 sm:p-7 sm:pb-0">
           <h1 className={clsx("text-2xl font-semibold", textPrimary)}>
             {t("trade_details")}
           </h1>
@@ -304,7 +334,7 @@ const PunchPassTradeDetailModal: React.FC<PunchPassTradeDetailModalProps> = ({
 
         <div
           className={clsx(
-            "flex border-b mt-4 px-6 sm:px-7 shrink-0",
+            "flex border-b mt-4 px-2 sm:px-7 shrink-0",
             borderColor,
           )}
         >
@@ -325,7 +355,7 @@ const PunchPassTradeDetailModal: React.FC<PunchPassTradeDetailModalProps> = ({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 sm:p-7 space-y-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-7 space-y-4">
           {activeTab === "redemptions" ? (
             isRedemptionsLoading ? (
               <div className="flex justify-center py-16">

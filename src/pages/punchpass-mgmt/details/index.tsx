@@ -107,7 +107,7 @@ const PunchPassDetailsPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative md:top-0">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative top-6 md:top-0">
       <Spinner isLoading={isLoading || isFetching} />
 
       {/* Title */}

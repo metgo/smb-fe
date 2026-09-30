@@ -155,6 +155,7 @@ interface IPunchCardRedemptionsRes {
             lastName: string;
             email: string;
           };
+          count: number;
         }>
       | [];
   }>;

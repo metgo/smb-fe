@@ -234,7 +234,7 @@ export default function NotificationsMgmtPage() {
           <div className="flex flex-col items-start gap-1 shrink-0">
             <div className="flex items-center w-full justify-between gap-2">
               <div className="flex items-center gap-1">
-                <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-purple-600 to-pink-600 whitespace-nowrap">
+                <h1 className="text-base md:text-lg font-bold bg-clip-text bg-linear-to-r text-transparent from-blue-500 via-purple-600 to-pink-600 whitespace-nowrap">
                   {t("notifications")}
                 </h1>
                 {notifications?.meta?.total !== undefined && (
