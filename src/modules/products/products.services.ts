@@ -90,7 +90,7 @@ export class ProductsService {
   async getOne(slug: string, query: GetProductsQuery) {
     try {
       const select
-        = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId';
+        = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId deliveryInfoSameAsBusiness deliveryArea deliveryAdditionalInfo deliverySpecificSellerInfo isPickUpAvailable globalDelivery globalDeliveryArea vendorDelivers vendorDeliveryArea';
       // status/isDeleted aren't in the response shape but are needed by
       // isVisible() below — select() is a projection, so they must be
       // explicitly requested or they come back undefined on the lean doc.
@@ -104,7 +104,7 @@ export class ProductsService {
       const businessPopulate = {
         path: 'businessId',
         select:
-          '_id slug logo name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location tagsId',
+          '_id slug logo name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location tagsId deliveryArea deliveryAdditionalInfo isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
       };
 
       // A doc is only servable if it's still APPROVED, not deleted, and in
@@ -138,10 +138,43 @@ export class ProductsService {
       if (!isVisible(product)) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
+      // Business delivery fields are only fetched as a fallback for the
+      // product's own delivery info — keep them out of the businessId payload.
+      const {
+        deliveryArea: businessDeliveryArea,
+        deliveryAdditionalInfo: businessDeliveryAdditionalInfo,
+        isPickUpAvailable: businessIsPickUpAvailable,
+        vendorDelivers: businessVendorDelivers,
+        vendorDeliveryArea: businessVendorDeliveryArea,
+        globalDelivery: businessGlobalDelivery,
+        globalDeliveryArea: businessGlobalDeliveryArea,
+        ...business
+      } = (product.businessId ?? {}) as any;
+
+      const useBusinessInfo = product.deliveryInfoSameAsBusiness
+        ? {
+          deliveryArea: businessDeliveryArea,
+          deliveryAdditionalInfo: businessDeliveryAdditionalInfo,
+          isPickUpAvailable: businessIsPickUpAvailable,
+          vendorDelivers: businessVendorDelivers,
+          vendorDeliveryArea: businessVendorDeliveryArea,
+          globalDelivery: businessGlobalDelivery,
+          globalDeliveryArea: businessGlobalDeliveryArea,
+        }
+        : {
+          deliveryArea: [],
+          deliveryAdditionalInfo: '',
+          isPickUpAvailable: false,
+          vendorDelivers: false,
+          vendorDeliveryArea: [],
+          globalDelivery: false,
+          globalDeliveryArea: [],
+        };
+
       const response = await this.localizeProduct(product, query.locale);
 
-      const localizedBusiness = response?.businessId
-        ? this.localizeBusinessFields(response.businessId, query.locale)
+      const localizedBusiness = product.businessId
+        ? this.localizeBusinessFields(business, query.locale)
         : undefined;
 
       return {
@@ -153,6 +186,19 @@ export class ProductsService {
         price: response?.price,
         quantity: response?.quantity,
         businessId: localizedBusiness,
+        deliveryArea: response?.deliveryArea?.length
+          ? response.deliveryArea
+          : useBusinessInfo.deliveryArea,
+        deliveryAdditionalInfo:
+          response?.deliveryAdditionalInfo
+          ?? useBusinessInfo.deliveryAdditionalInfo,
+        isPickUpAvailable:
+          response?.isPickUpAvailable ?? useBusinessInfo.isPickUpAvailable,
+        deliverySpecificSellerInfo: response?.deliverySpecificSellerInfo,
+        vendorDelivers: useBusinessInfo.vendorDelivers ?? false,
+        vendorDeliveryArea: useBusinessInfo.vendorDeliveryArea ?? [],
+        globalDelivery: useBusinessInfo.globalDelivery ?? false,
+        globalDeliveryArea: useBusinessInfo.globalDeliveryArea ?? [],
         categories: response?.categories,
         subCategories: response?.subCategories,
       };
