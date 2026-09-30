@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, Building2, ArrowLeft } from "lucide-react";
 import {
@@ -51,6 +51,10 @@ export const PaymentMgmtPage = () => {
   const adminView = userRole === "superadmin";
 
   const [searchTerm, setSearchTerm] = useState("");
+  // Vendor-summary search is stashed while drilling into a vendor's orders
+  // (it would otherwise filter that vendor's orders by the vendor name) and
+  // restored on "Back to vendor summary".
+  const vendorSummarySearchRef = useRef("");
   const [showFilters, setShowFilters] = useState(false);
   const [vendorSummaryViewMode, setVendorSummaryViewMode] = useState<
     "list" | "grid"
@@ -140,6 +144,8 @@ export const PaymentMgmtPage = () => {
     vendor: VendorPaymentSummaryRow,
     statusFilters?: { status?: string; reconciliationStatus?: string },
   ) => {
+    vendorSummarySearchRef.current = searchTerm;
+    setSearchTerm("");
     setActiveVendor(vendor);
     setFilters((prev) => ({
       ...prev,
@@ -179,6 +185,8 @@ export const PaymentMgmtPage = () => {
     setActiveVendor(null);
     setFilters((prev) => ({ ...prev, businessId: "" }));
     resetBusinessSearch();
+    setSearchTerm(vendorSummarySearchRef.current);
+    vendorSummarySearchRef.current = "";
   };
 
   const stats = useOrderStats(reconciliationStats);

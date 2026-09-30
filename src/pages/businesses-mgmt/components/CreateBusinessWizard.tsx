@@ -225,6 +225,10 @@ function CreateBusinessWizardInner({
     fullDescriptionAr: "",
     internalNotes: "",
     categories: [] as string[],
+    providesDiscount: false,
+    minDiscount: "" as number | string,
+    maxDiscount: "" as number | string,
+    markedAsSupplier: false,
 
     // Step 2
     email: "",
@@ -519,6 +523,10 @@ function CreateBusinessWizardInner({
         fullDescriptionAr:
           editData?.descriptionAr || editData?.description || "",
         internalNotes: editData?.internalNotes || "",
+        providesDiscount: editData?.providesDiscount ?? false,
+        minDiscount: editData?.minDiscount ?? "",
+        maxDiscount: editData?.maxDiscount ?? "",
+        markedAsSupplier: editData?.markedAsSupplier ?? false,
         slug: editData?.slug || "",
         //images
         logo: opMode === IOpMode.EDIT ? editData?.logo?.image : "",
@@ -664,6 +672,15 @@ function CreateBusinessWizardInner({
     descriptionAr: formData.fullDescriptionAr,
     descriptionHe: formData.fullDescriptionHe,
     internalNotes: formData.internalNotes,
+    providesDiscount: formData.providesDiscount,
+    minDiscount: formData.providesDiscount
+      ? Number(formData.minDiscount) || 0
+      : null,
+    maxDiscount: formData.providesDiscount
+      ? Number(formData.maxDiscount) || 0
+      : null,
+    // "Mark as supplier" is a superadmin toggle, independent of providesDiscount.
+    markedAsSupplier: !!formData.markedAsSupplier,
 
     // step 2
     busiEmail: formData.email,
@@ -818,6 +835,33 @@ function CreateBusinessWizardInner({
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
+  // Validate the optional traveller discount. Returns an i18n key when invalid,
+  // or null when it's fine / disabled.
+  const getDiscountError = (): string | null => {
+    if (!formData.providesDiscount) return null;
+    const { minDiscount, maxDiscount } = formData;
+    if (
+      minDiscount === "" ||
+      minDiscount == null ||
+      maxDiscount === "" ||
+      maxDiscount == null
+    ) {
+      return "traveller_discount_required";
+    }
+    const min = Number(minDiscount);
+    const max = Number(maxDiscount);
+    if (
+      Number.isNaN(min) ||
+      Number.isNaN(max) ||
+      min < 0 ||
+      max > 100 ||
+      min > max
+    ) {
+      return "traveller_discount_range_invalid";
+    }
+    return null;
+  };
+
   const handleSaveDraft = async () => {
     if (
       !formData.name?.trim() &&
@@ -825,6 +869,12 @@ function CreateBusinessWizardInner({
       !formData.nameAr?.trim()
     ) {
       toast.error(tt("name_required"));
+      return;
+    }
+    const draftDiscountError = getDiscountError();
+    if (draftDiscountError) {
+      setCurrentStep(1);
+      toast.error(t(draftDiscountError));
       return;
     }
     if (
@@ -865,6 +915,13 @@ function CreateBusinessWizardInner({
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    const publishDiscountError = getDiscountError();
+    if (publishDiscountError) {
+      setCurrentStep(1);
+      toast.error(t(publishDiscountError));
+      return;
+    }
 
     if (
       (formData.shortDescription || "").length > 150 ||
