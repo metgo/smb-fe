@@ -4,7 +4,13 @@ import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { Banknote, CheckCircle, ShoppingCart, Ticket } from "lucide-react";
+import {
+  Banknote,
+  CheckCircle,
+  ScanLine,
+  ShoppingCart,
+  Ticket,
+} from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { ViewModeToggle } from "@/components/shared";
@@ -15,6 +21,7 @@ import {
   PunchPassFiltersPanel,
   PunchPassGridView,
   PunchPassListView,
+  PunchPassScannerModal,
 } from "./components";
 import {
   useGetBusinessForProductQuery,
@@ -68,6 +75,7 @@ export default function PunchpassMgmtPage() {
   const [editingPunchPass, setEditingPunchPass] =
     useState<IPunchPassDetailsRes | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedPunchPasses, setSelectedPunchPasses] = useState<Set<string>>(
     new Set(),
@@ -231,11 +239,27 @@ export default function PunchpassMgmtPage() {
               <FilterButton value={showFilters} onChange={setShowFilters} />
             </div>
 
-            <ViewModeToggle
-              onChange={setViewMode}
-              value={viewMode}
-              tableName="punchPassViewMode"
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsScannerOpen(true)}
+                className={clsx(
+                  "px-3 py-2 rounded md:rounded-lg border transition-colors flex items-center justify-center gap-2 cursor-pointer",
+                  isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700",
+                )}
+                title={t("scan_punch_pass")}
+              >
+                <ScanLine className="w-4 h-4" />
+                <span className="hidden md:block">{t("scan_punch_pass")}</span>
+              </button>
+
+              <ViewModeToggle
+                onChange={setViewMode}
+                value={viewMode}
+                tableName="punchPassViewMode"
+              />
+            </div>
           </div>
         </div>
 
@@ -314,6 +338,10 @@ export default function PunchpassMgmtPage() {
           punchPass={editingPunchPass}
           opMode={editingPunchPass ? IOpMode.EDIT : IOpMode.CREATE}
         />
+      )}
+
+      {isScannerOpen && (
+        <PunchPassScannerModal onClose={() => setIsScannerOpen(false)} />
       )}
     </div>
   );

@@ -148,6 +148,19 @@ body {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme {
+  --animate-scan-laser: scan-laser 2s ease-in-out infinite alternate;
+
+  @keyframes scan-laser {
+    from {
+      top: 4%;
+    }
+    to {
+      top: 96%;
+    }
+  }
+}
+
 html,
 body,
 * {

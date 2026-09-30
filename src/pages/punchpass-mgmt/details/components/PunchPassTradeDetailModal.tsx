@@ -210,9 +210,12 @@ const PunchPassTradeDetailModal: React.FC<PunchPassTradeDetailModalProps> = ({
     "general",
   );
   const { data: punchCardRedemptions, isLoading: isRedemptionsLoading } =
-    useGetPunchCardRedemptionsQuery(trade.punchCardId, {
-      skip: !trade.punchCardId,
-    });
+    useGetPunchCardRedemptionsQuery(
+      { punchCardId: trade.punchCardId, language },
+      {
+        skip: !trade.punchCardId,
+      },
+    );
   const redemptionItems = punchCardRedemptions?.items ?? [];
 
   const fullName = `${trade.firstName} ${trade.lastName || ""}`.trim();

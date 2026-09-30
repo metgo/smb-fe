@@ -78,12 +78,40 @@ export const punchPassesApi = createApi({
     }),
 
     // Punch Card Redemptions
-    getPunchCardRedemptions: builder.query<IPunchCardRedemptionsRes, string>({
-      query: (punchCardId) => ({
-        url: `${endpoints.punchCardRedemptions}?punchCardId=${punchCardId}`,
+    getPunchCardRedemptions: builder.query<
+      IPunchCardRedemptionsRes,
+      { punchCardId: string; language: Language }
+    >({
+      query: ({ punchCardId, language }) => ({
+        url: `${endpoints.punchCardRedemptions}?punchCardId=${punchCardId}&locale=${language}`,
         method: "GET",
       }),
       providesTags: ["PunchPasses"],
+    }),
+
+    // Punch Card Lookup
+    getPunchCardLookup: builder.query<
+      IPunchCardLookupRes,
+      { code: string; language: Language }
+    >({
+      query: ({ code, language }) => ({
+        url: `${endpoints.punchCardLookup}?code=${encodeURIComponent(code)}&locale=${language}`,
+        method: "GET",
+      }),
+      providesTags: ["PunchPasses"],
+    }),
+
+    // Punch Card Redeem
+    redeemPunchCard: builder.mutation<
+      void,
+      { punchCardId: string; payload: IPunchCardReedemPayload }
+    >({
+      query: ({ punchCardId, payload }) => ({
+        url: `${endpoints.punchCardRedeem}?punchCardId=${punchCardId}`,
+        method: "PATCH",
+        data: payload,
+      }),
+      invalidatesTags: ["PunchPasses"],
     }),
   }),
 });
@@ -100,4 +128,7 @@ export const {
   useGetPunchPassTradesQuery,
 
   useGetPunchCardRedemptionsQuery,
+
+  useGetPunchCardLookupQuery,
+  useRedeemPunchCardMutation,
 } = punchPassesApi;

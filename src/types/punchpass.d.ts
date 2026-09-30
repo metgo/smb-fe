@@ -159,3 +159,39 @@ interface IPunchCardRedemptionsRes {
       | [];
   }>;
 }
+
+interface IPunchCardLookupRes {
+  _id: string;
+  punchCardId: string;
+  cardNumber: string;
+  punchPassName: string;
+  status: TStatus;
+  validUntil: string;
+  purchaserName: string;
+  email: string;
+  phone: string;
+  items: Array<{
+    _id: string;
+    itemIndex: number;
+    label: string;
+    type: TPunchPassType;
+    quantity: number;
+    usedCount: number;
+    remainingCount: number;
+  }>;
+}
+
+interface IPunchCardReedemPayload {
+  items: Array<{
+    itemIndex: number;
+    quantity: number;
+  }>;
+}
+
+interface IRedeemPunchCardPayload {
+  punchCardId: string;
+  items: Array<{
+    itemId: string;
+    quantity: number;
+  }>;
+}
