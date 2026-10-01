@@ -43,7 +43,7 @@ interface IWebsite {
   dmoIds: string[];
   authorityIds: string[];
   isActive?: boolean;
-  purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
+  purpose: "MARKETPLACE" | "TRAVELING" | "DISCOUNT" | "OTHER";
 }
 
 interface ITag {

@@ -24,6 +24,7 @@ import TabsSection from "@/components/shared/TabsSection";
 import StatsMarquee from "@/components/shared/StatsMarquee";
 import { ReordableDataTable } from "@/components/shared";
 import { ViewChangesModal } from "@/components/change-tracking";
+import { formatDateTime } from "@/helpers/formatter";
 
 const LIMIT = 20;
 
@@ -60,6 +61,14 @@ const getItemTypeLabel = (type: string, t: any) => {
 const stripHtmlTags = (html: string | undefined) => {
   if (!html) return "";
   return html.replace(/<[^>]*>/g, "").trim();
+};
+
+const getLocalizedField = (item: any, baseField: string, language: string) => {
+  if (language === "en") {
+    return item[baseField];
+  }
+  const localizedField = `${baseField}${language.charAt(0).toUpperCase()}${language.slice(1)}`;
+  return item[localizedField] || item[baseField];
 };
 
 export default function PendingApprovalsPage() {
@@ -122,7 +131,7 @@ export default function PendingApprovalsPage() {
       isOpen: true,
       entityType: item.type,
       entityId: item._id,
-      entityName: item.name?.[language] ?? item.name?.en ?? item.name,
+      entityName: getLocalizedField(item, "name", language),
       changeId: item._id,
     });
   };
@@ -271,9 +280,7 @@ export default function PendingApprovalsPage() {
           <div
             className={`text-sm font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}
           >
-            {item.name
-              ? (item.name?.[language] ?? item.name?.en ?? item.name)
-              : "-"}
+            {getLocalizedField(item, "name", language) ?? "-"}
           </div>
         ),
       },
@@ -284,7 +291,10 @@ export default function PendingApprovalsPage() {
           <div
             className={`text-sm truncate max-w-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}
           >
-            {stripHtmlTags(item.shortDescription || item.description) || "-"}
+            {stripHtmlTags(
+              getLocalizedField(item, "shortDescription", language) ||
+                getLocalizedField(item, "description", language),
+            ) || "-"}
           </div>
         ),
       },
@@ -301,7 +311,7 @@ export default function PendingApprovalsPage() {
           <div
             className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
-            {new Date(item.createdAt).toLocaleDateString()}
+            {formatDateTime(item.createdAt, language)}
           </div>
         ),
       },

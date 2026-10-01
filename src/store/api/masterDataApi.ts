@@ -93,6 +93,14 @@ export const masterDataApi = createApi({
       }),
     }),
 
+    getDiscountWebsites: builder.query<TAllWebsites, void>({
+      query: () => ({
+        url: endpoints.websites,
+        method: "GET",
+        params: { purpose: "DISCOUNT" },
+      }),
+    }),
+
     getUserByEmail: builder.query<any, { email: string }>({
       query: ({ email }) => ({
         url: `${endpoints.users}/${encodeURIComponent(email)}`,
@@ -145,6 +153,7 @@ export const {
   usePostUserAdminMutation,
   useLazyGetUserByEmailQuery,
   useGetAllWebsitesQuery,
+  useGetDiscountWebsitesQuery,
   useGetAllSocialMediaQuery,
   useGetAllTagsQuery,
   useGetAllCampaignsQuery,
