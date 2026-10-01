@@ -67,6 +67,7 @@ export function useVendorMonthlyReportData(
 
   const {
     data: orderProductsData,
+    currentData: currentOrderProductsData,
     isLoading,
     isFetching,
     isUninitialized,
@@ -91,21 +92,27 @@ export function useVendorMonthlyReportData(
     refetchOnMountOrArgChange: true,
   });
 
-  // Accumulate pages for infinite scroll
+  // Accumulate pages for infinite scroll. Keyed on currentData (result for
+  // the CURRENT args only), not data: RTK's `data` keeps the last result while
+  // skipped, so re-opening the same vendor served the identical cached object,
+  // this effect never re-ran after the reset effect cleared the list, and the
+  // table stayed empty despite the response arriving.
   useEffect(() => {
-    if (!orderProductsData?.data?.length) {
+    // still loading these args (e.g. next page) - keep what's shown
+    if (!currentOrderProductsData) return;
+    if (!currentOrderProductsData.data?.length) {
       setCombinedOrders([]);
       return;
     }
     setCombinedOrders((prev) => {
-      if (page === 1) return orderProductsData.data;
+      if (page === 1) return currentOrderProductsData.data;
       const existingIds = new Set(prev.map((o: any) => o._id));
-      const newItems = orderProductsData.data.filter(
+      const newItems = currentOrderProductsData.data.filter(
         (o: any) => !existingIds.has(o._id),
       );
       return newItems.length ? [...prev, ...newItems] : prev;
     });
-  }, [orderProductsData, page]);
+  }, [currentOrderProductsData, page]);
 
   const fetchNextPage = useCallback(() => {
     if (!orderProductsData?.meta?.hasNextPage || isFetching) return;
