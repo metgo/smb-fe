@@ -14,6 +14,16 @@ export const locales: { value: Language; label: string; flag?: string }[] = [
   { value: "ar", label: "العربية", flag: "🇸🇦" },
 ];
 
+export const getLogoByLanguage = (language: Language): string => {
+  switch (language) {
+    case "he":
+    case "ar":
+      return "/assets/images/nati-logo-he.png";
+    default:
+      return "/assets/images/nati-logo-en.png";
+  }
+};
+
 export const TICKET_TYPE_STYLES: Record<string, string> = {
   free: "bg-green-500/20 text-green-600 dark:text-green-400",
   vip: "bg-purple-500/20 text-purple-600 dark:text-purple-400",

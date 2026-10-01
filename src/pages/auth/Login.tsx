@@ -11,6 +11,7 @@ import { SubmitButton } from "@/components/btns";
 import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
 import { UserRole } from "@/enums/user.types";
+import { getLogoByLanguage } from "@/lib/utils";
 
 import AuthInputField from "./AuthInputField";
 import AuthHeader from "./AuthHeader";
@@ -27,9 +28,13 @@ interface RateLimitState {
 export function Login({ setCurrentTab }: LoginProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { t } = useTranslation("login");
+  const { t, i18n } = useTranslation("login");
   const { t: tt } = useTranslation("toast");
   const [login, { isLoading }] = useLoginMutation();
+  const language = (i18n.language ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem("i18nextLng")
+      : "en")) as Language;
 
   const [error, setError] = useState("");
   const [username, setUsername] = useState("");
@@ -168,13 +173,11 @@ export function Login({ setCurrentTab }: LoginProps) {
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl">
           {/* Logo & site name */}
           <div className="flex flex-col items-center">
-            <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white/20 border border-white/40 flex items-center justify-center mb-3 shadow-lg">
-              <img
-                src="/assets/images/metgologo.png"
-                alt="Metgo"
-                className="w-16 sm:w-24"
-              />
-            </div>
+            <img
+              src={getLogoByLanguage(language)}
+              alt="Metgo"
+              className="h-28 sm:h-40 w-auto object-contain mb-3"
+            />
           </div>
 
           <AuthHeader
