@@ -13,6 +13,7 @@ import {
 import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
 import { useTranslation } from "react-i18next";
+import { getLogoByLanguage } from "@/lib/utils";
 import AuthInputField from "./AuthInputField";
 import AuthHeader from "./AuthHeader";
 
@@ -23,7 +24,11 @@ interface SignupProps {
 export function Signup({ setCurrentTab }: SignupProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { t } = useTranslation("login");
+  const { t, i18n } = useTranslation("login");
+  const language = (i18n.language ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem("i18nextLng")
+      : "en")) as Language;
 
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -83,13 +88,11 @@ export function Signup({ setCurrentTab }: SignupProps) {
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl">
           {/* Logo & site name */}
           <div className="flex flex-col items-center">
-            <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white/20 border border-white/40 flex items-center justify-center mb-3 shadow-lg">
-              <img
-                src="/assets/images/metgologo.png"
-                alt="Metgo"
-                className="w-16 sm:w-24"
-              />
-            </div>
+            <img
+              src={getLogoByLanguage(language)}
+              alt="Metgo"
+              className="h-28 sm:h-40 w-auto object-contain mb-3"
+            />
           </div>
 
           <AuthHeader
