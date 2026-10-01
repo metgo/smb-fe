@@ -169,6 +169,18 @@ export class PaymentsService {
     }
   }
 
+  // Polled by the customer sites while the Cardcom iframe is open: Cardcom's
+  // redirect to this BE can't render inside the iframe (Caddy sends
+  // X-Frame-Options: DENY), so the FE closes the modal once this flips.
+  async getPaymentStatus(paymentRequestId: string) {
+    const payment = await this.PaymentModel.findOne(
+      { paymentRequestId },
+      { status: 1 },
+    ).lean();
+
+    return payment?.status ?? null;
+  }
+
   async paymentSucess(query, languagePreference) {
     try {
       const paymentRequestId = query?.LowProfileId || query?.lowprofilecode;

@@ -99,6 +99,32 @@ export class PaymentsController {
   }
 
   @ApiEndpoint({
+    operation: 'Get payment status by Cardcom LowProfileId',
+    params: [{ name: 'paymentRequestId', type: 'string', required: true }],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PAYMENT.STATUS,
+    },
+    softBlockExtraDtoFields: true,
+    tags: ['Payment'],
+  })
+  @Get('status/:paymentRequestId')
+  async getPaymentStatus(
+    @Param('paymentRequestId') paymentRequestId: string,
+    @Res() response: Response,
+  ) {
+    const status = await this.paymentService.getPaymentStatus(paymentRequestId);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PAYMENT.STATUS,
+      { status },
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
     noAuthToken: true,
     operation: 'Update Status to Success by superadmin',
     params: [{ name: 'paymentRequestId', type: 'string', required: true }],

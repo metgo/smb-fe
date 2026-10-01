@@ -355,6 +355,7 @@ export const ServerSuccess = {
     START: 'Your payment process begins',
     UPDATE: 'Your payment was successfully updated',
     SUCCESS: 'Your payment was successfully paid',
+    STATUS: 'Payment status fetched successfully',
   },
   REWARD: {
     UPDATED: 'Rewards was updated sucessfully',
