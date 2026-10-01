@@ -2,11 +2,16 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import { displayPaymentStatus } from "@/helpers";
+import { displayPaymentStatus, getLngWiseStr } from "@/helpers";
 
 interface Order {
   id: string;
-  products: { name: string; quantity: string }[];
+  products: {
+    name: string;
+    nameHe?: string;
+    nameAr?: string;
+    quantity: string;
+  }[];
   orderInitiatedDate: string;
   status: TOrderStatus;
   paymentStatus: TPaymentStatus;
@@ -16,6 +21,8 @@ interface Order {
 
 interface BusinessOrderSummary {
   businessName?: string;
+  businessNameHe?: string;
+  businessNameAr?: string;
   orders: Order[];
 }
 
@@ -33,7 +40,9 @@ export const OrdersModal = ({
   businessOrdersSummaries,
 }: OrdersModalProps) => {
   const { t } = useTranslation("orders");
-  const { isDark, textPrimary, textSecondary } = useThemeClasses();
+  const { isDark, textPrimary, textSecondary, language } = useThemeClasses();
+  const dateLocale =
+    language === "he" ? "he-IL" : language === "ar" ? "ar-EG" : "en-US";
 
   if (!isOpen) return null;
 
@@ -50,7 +59,7 @@ export const OrdersModal = ({
       <span
         className={`px-2 py-1 text-xs font-semibold rounded-full ${styles[status]}`}
       >
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {t(status?.toLowerCase(), { defaultValue: status })}
       </span>
     );
   };
@@ -72,7 +81,7 @@ export const OrdersModal = ({
           styles[status] ?? "bg-gray-100 text-gray-700"
         }`}
       >
-        {status}
+        {t(status?.toLowerCase(), { defaultValue: status })}
       </span>
     );
   };
@@ -86,7 +95,14 @@ export const OrdersModal = ({
       <div className={`p-4 flex flex-col z-100 overflow-hidden `}>
         <h2 className={clsx("text-2xl font-semibold mb-2 ", textPrimary)}>
           {t("orders")} -{" "}
-          {businessOrdersSummaries?.map((business) => business?.businessName)}
+          {businessOrdersSummaries?.map((business) =>
+            getLngWiseStr(
+              language,
+              business?.businessName,
+              business?.businessNameHe,
+              business?.businessNameAr,
+            ),
+          )}
         </h2>
         <div className="overflow-auto flex-1">
           <table
@@ -97,7 +113,7 @@ export const OrdersModal = ({
             {" "}
             <thead
               className={clsx(
-                "sticky -top-1 text-left z-10",
+                "sticky -top-1 text-start z-10",
                 isDark ? "bg-gray-800" : "bg-gray-100",
                 textSecondary,
               )}
@@ -114,12 +130,23 @@ export const OrdersModal = ({
             <tbody className={clsx(textPrimary)}>
               {businessOrdersSummaries?.map((business) =>
                 business?.orders?.map((order) => (
-                  <tr key={order.id} className="text-left">
+                  <tr key={order.id} className="text-start">
                     <td className="p-2 border ">
-                      {order?.products?.map((p) => p.name).join(", ")}
+                      {order?.products
+                        ?.map((p) =>
+                          getLngWiseStr(
+                            language,
+                            p?.name,
+                            p?.nameHe,
+                            p?.nameAr,
+                          ),
+                        )
+                        .join(", ")}
                     </td>
                     <td className="p-2 border">
-                      {new Date(order?.orderInitiatedDate).toLocaleString()}
+                      {new Date(order?.orderInitiatedDate).toLocaleString(
+                        dateLocale,
+                      )}
                     </td>
                     <td className="p-2 border">
                       {getOrderStatusBadge(order?.status)}
@@ -136,8 +163,7 @@ export const OrdersModal = ({
                       {order?.firstName} {order?.lastName}
                     </td>
                     <td className="p-2 border">
-                      {" "}
-                      {order?.products?.map((p) => p?.quantity)}
+                      {order?.products?.map((p) => p?.quantity).join(", ")}
                     </td>
                   </tr>
                 )),
