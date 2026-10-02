@@ -1,5 +1,5 @@
-import "./index.css";
 import "./i18n";
+import "./index.css";
 import { registerSW } from "virtual:pwa-register";
 
 registerSW({ immediate: true });
