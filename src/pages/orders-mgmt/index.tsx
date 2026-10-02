@@ -67,6 +67,13 @@ const PAYMENT_STATUS_FILTER_OPTIONS: { value: string; labelKey: string }[] = [
   { value: "UNPAID", labelKey: "unpaid" },
 ];
 
+const ITEM_TYPE_FILTER_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: "PRODUCT", labelKey: "products" },
+  { value: "TICKET", labelKey: "tickets" },
+  { value: "BUSINESS", labelKey: "itemTypeBusiness" },
+  { value: "PUNCH_PASS", labelKey: "punchPasses" },
+];
+
 const { defaultColumns, columnDefinitions } = ORDER_COLUMNS;
 
 type ColumnVisibility = typeof defaultColumns;
@@ -258,7 +265,7 @@ export default function OrdersMgmtPage() {
   const [filters, setFilters] = usePersistentState("orders_mgmt_filters", {
     paymentMethod: "all",
     paymentStatus: "all",
-
+    itemType: "all",
     deliveryType: "all",
     status: "all",
     startDate: "",
@@ -317,6 +324,16 @@ export default function OrdersMgmtPage() {
       chips.push({
         key: "paymentStatus",
         value: opt ? t(opt.labelKey) : filters.paymentStatus,
+      });
+    }
+
+    if (filters.itemType && filters.itemType !== "all") {
+      const opt = ITEM_TYPE_FILTER_OPTIONS.find(
+        (o) => o.value === filters.itemType,
+      );
+      chips.push({
+        key: "itemType",
+        value: opt ? t(opt.labelKey) : filters.itemType,
       });
     }
 
@@ -395,6 +412,9 @@ export default function OrdersMgmtPage() {
     }
     if (filters.status !== "all") {
       params.status = filters.status;
+    }
+    if (filters.itemType && filters.itemType !== "all") {
+      params.itemType = filters.itemType;
     }
 
     if (filters.amount !== "") {
@@ -482,6 +502,7 @@ export default function OrdersMgmtPage() {
     deliveryType: "all",
     paymentMethod: "all",
     paymentStatus: "all",
+    itemType: "all",
     vendor: "all",
     status: "all",
     campaign: "all",
@@ -1067,6 +1088,26 @@ export default function OrdersMgmtPage() {
                       { value: "all", label: t("all") },
                       { value: "pick_up", label: t("pickups") },
                       { value: "deliver", label: t("delivery") },
+                    ]}
+                  />
+                </div>
+
+                <div className="min-w-45">
+                  <FilterSelect
+                    label={t("itemType")}
+                    value={filters.itemType ?? "all"}
+                    onChange={(value) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        itemType: value,
+                      }))
+                    }
+                    options={[
+                      { value: "all", label: t("all") },
+                      ...ITEM_TYPE_FILTER_OPTIONS.map((o) => ({
+                        value: o.value,
+                        label: t(o.labelKey),
+                      })),
                     ]}
                   />
                 </div>

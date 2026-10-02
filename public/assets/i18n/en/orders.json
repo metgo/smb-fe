@@ -81,7 +81,6 @@
   "deliveryFee": "Delivery Fee",
   "price": "Total Amount",
   "totalOrderAmount": "Total Amount",
-
   "pick_up": "Pickup",
   "deliver": "Delivery",
   "card": "Credit Card",
@@ -231,7 +230,6 @@
   "vendor": "Vendor",
   "category": "Category",
   "description": "Description",
-
   "email_sent": "Email sent successfully",
   "scan_successful": "Scan Successful!",
   "scan_again": "Scan Again",
@@ -251,5 +249,9 @@
   "select_columns_to_display": "Select columns to display",
   "product_price": "Product Price",
   "bank_transfer": "Bank Transfer",
-  "credit_card": "Credit Card"
+  "credit_card": "Credit Card",
+  "itemType": "Item Type",
+  "tickets": "Tickets",
+  "itemTypeBusiness": "Business",
+  "punchPasses": "Punch Passes"
 }

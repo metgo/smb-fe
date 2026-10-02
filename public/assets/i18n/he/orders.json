@@ -249,5 +249,9 @@
   "select_columns_to_display": "בחר עמודות להצגה",
   "product_price": "מחיר המוצר",
   "bank_transfer": "העברה בנקאית",
-  "credit_card": "כרטיס אשראי"
+  "credit_card": "כרטיס אשראי",
+  "itemType": "סוג פריט",
+  "tickets": "כרטיסים",
+  "itemTypeBusiness": "עסק",
+  "punchPasses": "כרטיסיות"
 }
