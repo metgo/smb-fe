@@ -249,5 +249,9 @@
   "select_columns_to_display": "اختر الأعمدة للعرض",
   "product_price": "سعر المنتج",
   "bank_transfer": "تحويل بنكي",
-  "credit_card": "بطاقة ائتمان"
+  "credit_card": "بطاقة ائتمان",
+  "itemType": "نوع العنصر",
+  "tickets": "التذاكر",
+  "itemTypeBusiness": "نشاط تجاري",
+  "punchPasses": "بطاقات الاشتراك"
 }
