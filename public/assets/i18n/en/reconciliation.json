@@ -216,6 +216,7 @@
   "close_all_orders_checking_older_months": "Checking for older resolved months...",
   "close_all_orders_also_includes": "This will also close these older months, now fully resolved:",
   "close_all_orders_preview_error": "Couldn't check for older resolved months - please try again before confirming.",
+  "close_all_orders_not_yet_finalizable": "This month can't be finalized yet - vendors still have time to mark orders Completed or open a dispute. You can review the preview above, but closing this month will be available after the deadline passes.",
 
   "paid": "Paid",
   "paused": "Paused",

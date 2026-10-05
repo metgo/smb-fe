@@ -650,6 +650,7 @@ export const PaymentMgmtPage = () => {
           sweptMonths={finalizeSweepPreview?.sweptMonths ?? []}
           isLoadingPreview={isFetchingSweepPreview}
           hasPreviewError={isSweepPreviewError}
+          canFinalize={finalizeSweepPreview?.canFinalize ?? false}
           isConfirming={isClosingAllOrders}
           onClose={() => setShowCloseAllOrdersModal(false)}
           onConfirm={handleCloseAllOrders}
