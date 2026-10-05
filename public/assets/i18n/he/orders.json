@@ -254,7 +254,8 @@
   "tickets": "כרטיסים",
   "itemTypeBusiness": "עסק",
   "punchPasses": "כרטיסיות",
-  "card_payment_declined": "התשלום נדחה על ידי קארדקום",
+  "card_payment_declined": "התשלום לא הושלם דרך קארדקום",
   "checkout_timeout": "ההזמנה ננטשה - לא שולמה במשך 15 דקות ומעלה",
-  "payment_failed_or_abandoned": "התשלום נכשל או שההזמנה ננטשה"
+  "payment_failed_or_abandoned": "התשלום נכשל או שההזמנה ננטשה",
+  "cancelled_by_customer": "בוטל על ידי הלקוח"
 }
