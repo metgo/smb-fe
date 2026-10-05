@@ -253,5 +253,9 @@
   "itemType": "نوع العنصر",
   "tickets": "التذاكر",
   "itemTypeBusiness": "نشاط تجاري",
-  "punchPasses": "بطاقات الاشتراك"
+  "punchPasses": "بطاقات الاشتراك",
+  "card_payment_declined": "لم تكتمل عملية الدفع عبر Cardcom",
+  "checkout_timeout": "تم التخلي عن عملية الشراء - لم يتم الدفع لمدة 15 دقيقة أو أكثر",
+  "payment_failed_or_abandoned": "فشلت عملية الدفع أو تم التخلي عن عملية الشراء",
+  "cancelled_by_customer": "فتح العميل نافذة الدفع الخاصة بـ Cardcom وأغلقها دون إتمام عملية الدفع"
 }
