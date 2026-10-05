@@ -257,5 +257,5 @@
   "card_payment_declined": "Payment not completed via Cardcom",
   "checkout_timeout": "Checkout abandoned - unpaid for 15+ minutes",
   "payment_failed_or_abandoned": "Payment failed or checkout was abandoned",
-  "cancelled_by_customer": "Cancelled by the customer"
+  "cancelled_by_customer": "Customer opened the Cardcom payment modal and closed it without completing payment"
 }
