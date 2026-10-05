@@ -849,6 +849,31 @@ export class OrdersService {
         };
       }
 
+      // A late success webhook can arrive after this order was already
+      // marked CANCELED (customer closed the payment modal while Cardcom
+      // was still processing, or the 15-min expiry cron fired just before
+      // a delayed webhook landed). The payment genuinely succeeded, so
+      // soft-delete the stray CANCELED OrderProduct rows that premature
+      // cancellation created - otherwise the success flow below creates a
+      // second, real set and the order ends up with duplicates.
+      if (existingOrder.status === OrderStatus.CANCELED) {
+        const staleOrderProducts = await this.OrderProductModel.updateMany(
+          {
+            orderId: existingOrder._id,
+            status: OrderStatus.CANCELED,
+            isDeleted: { $ne: true },
+          },
+          { isDeleted: true, deletedAt: new Date() },
+        );
+        this.logger.warn(
+          '[ORDER]: LATE PAYMENT SUCCESS OVERRODE A PREMATURE CANCELLATION',
+          {
+            orderId,
+            removedStaleOrderProducts: staleOrderProducts.modifiedCount,
+          },
+        );
+      }
+
       const updatedField = {
         paymentStatus: PaymentStatus.SUCCESS,
         status: OrderStatus.PROCESSING,
@@ -975,31 +1000,41 @@ export class OrdersService {
 
               return { product, cartItem, productsInfo };
             })
-            .filter(({ cartItem, productsInfo }) => cartItem && productsInfo)
+            // A paid order must always get its orderProduct - missing
+            // productsInfo (deleted/deactivated product) is a pricing gap.
+            .filter(({ cartItem }) => cartItem)
             .map(
-              async ({ cartItem, productsInfo }) => await this.orderProductService.create({
-                itemId: new mongoose.Types.ObjectId(cartItem.id),
-                quantity: cartItem.quantity,
-                email: cartItem.email,
-                countryCode: cartItem.countryCode,
-                phone: cartItem.phone,
-                firstName: cartItem.firstName,
-                lastName: cartItem.lastName,
-                deliveryFee: cartItem.deliveryFee,
-                deliveryMethod: cartItem.deliveryMethod,
-                deliveryArea: cartItem.deliveryArea,
-                deliveryPickupLocation: cartItem.deliveryPickupLocation,
-                houseNo: cartItem.houseNo,
-                apartment: cartItem.apartment,
-                city: cartItem.city,
-                street: cartItem.street,
-                isGift: cartItem.isGift,
-                additionalInfo: cartItem.additionalInfo,
-                amount: productsInfo.price?.sellingPrice || 0,
-                loggedInUserId: updateOrder.userId,
-                orderId: updateOrder.id,
-                itemType: cartItem.itemType,
-              }),
+              async ({ cartItem, productsInfo }) => {
+                if (!productsInfo) {
+                  this.logger.warn(
+                    '[ORDER]: PRODUCT INFO NOT FOUND FOR PAID ORDER ITEM - CREATING ORDER PRODUCT WITH FALLBACK AMOUNT',
+                    { orderId: updateOrder._id, productId: cartItem.id },
+                  );
+                }
+                return this.orderProductService.create({
+                  itemId: new mongoose.Types.ObjectId(cartItem.id),
+                  quantity: cartItem.quantity,
+                  email: cartItem.email,
+                  countryCode: cartItem.countryCode,
+                  phone: cartItem.phone,
+                  firstName: cartItem.firstName,
+                  lastName: cartItem.lastName,
+                  deliveryFee: cartItem.deliveryFee,
+                  deliveryMethod: cartItem.deliveryMethod,
+                  deliveryArea: cartItem.deliveryArea,
+                  deliveryPickupLocation: cartItem.deliveryPickupLocation,
+                  houseNo: cartItem.houseNo,
+                  apartment: cartItem.apartment,
+                  city: cartItem.city,
+                  street: cartItem.street,
+                  isGift: cartItem.isGift,
+                  additionalInfo: cartItem.additionalInfo,
+                  amount: productsInfo?.price?.sellingPrice || 0,
+                  loggedInUserId: updateOrder.userId,
+                  orderId: updateOrder.id,
+                  itemType: cartItem.itemType,
+                });
+              },
             ),
         );
 
@@ -1051,8 +1086,16 @@ export class OrdersService {
 
               return { product, cartItem, ticketInfo };
             })
-            .filter(({ cartItem, ticketInfo }) => cartItem && ticketInfo)
+            // A paid order must always get its orderProduct - missing
+            // ticketInfo (deleted/deactivated ticket) is a pricing gap.
+            .filter(({ cartItem }) => cartItem)
             .map(async ({ cartItem, ticketInfo }) => {
+              if (!ticketInfo) {
+                this.logger.warn(
+                  '[ORDER]: TICKET INFO NOT FOUND FOR PAID ORDER ITEM - CREATING ORDER PRODUCT WITH FALLBACK AMOUNT',
+                  { orderId: updateOrder._id, ticketId: cartItem.id },
+                );
+              }
               // For EVENT TICKETS ONLY: create one orderProduct per ticket (quantity: 1 each)
               // This ensures each ticket has its own QR code and tracking
               // Note: This logic is ONLY for tickets (itemType === TICKET), not for products
@@ -1077,7 +1120,7 @@ export class OrdersService {
                     street: cartItem.street,
                     isGift: cartItem.isGift,
                     additionalInfo: cartItem.additionalInfo,
-                    amount: ticketInfo.price?.sellingPrice || 0,
+                    amount: ticketInfo?.price?.sellingPrice || 0,
                     loggedInUserId: updateOrder.userId,
                     orderId: updateOrder.id,
                     itemType: cartItem.itemType,
@@ -1106,7 +1149,7 @@ export class OrdersService {
                   street: cartItem.street,
                   isGift: cartItem.isGift,
                   additionalInfo: cartItem.additionalInfo,
-                  amount: ticketInfo.price?.sellingPrice || 0,
+                  amount: ticketInfo?.price?.sellingPrice || 0,
                   loggedInUserId: updateOrder.userId,
                   orderId: updateOrder.id,
                   itemType: cartItem.itemType,
@@ -1935,7 +1978,143 @@ export class OrdersService {
     );
   }
 
-  async updateAfterPaymentFailure(orderId: string): Promise<Order> {
+  // Builds OrderProduct rows for a failed/expired order from its still-linked
+  // cart snapshot - a historical record only, no stock deduction or emails.
+  private async createOrderProductsForCancelledOrder(
+    order: Order,
+    reason: string = 'payment_failed_or_abandoned',
+  ): Promise<void> {
+    if (!order?.products?.length) return;
+
+    let cart: Cart;
+    try {
+      cart = await this.cartService.findOneByOrderId(order._id.toString());
+    } catch (err) {
+      this.logger.warn(
+        '[ORDER]: NO CART FOUND FOR CANCELLED ORDER - SKIPPING ORDER PRODUCT CREATION',
+        {
+          orderId: order._id,
+          error: err instanceof Error ? err.message : String(err),
+        },
+      );
+      return;
+    }
+
+    const isVendorCart = cart?.vendorProducts?.length
+      && (!cart?.product || cart.product.length === 0);
+
+    const items = isVendorCart
+      ? cart.vendorProducts.flatMap(vendor => vendor.products.map(p => ({
+        id: p._id,
+        quantity: p.quantity,
+        itemType: p.itemType,
+        email: order.email,
+        countryCode: order.countryCode,
+        phone: order.phone,
+        firstName: order.firstName,
+        lastName: order.lastName,
+        deliveryFee: vendor.deliveryFee || 0,
+        deliveryMethod: vendor.deliveryMethod,
+        deliveryArea: vendor.deliveryArea,
+        deliveryPickupLocation: vendor.deliveryPickupLocation,
+        houseNo: vendor.houseNo?.toString() || null,
+        apartment: vendor.apartment?.toString() || null,
+        city: vendor.city?.toString() || null,
+        street: vendor.street?.toString() || null,
+        isGift: false,
+        additionalInfo: vendor.additionalInfo?.toString() || null,
+      })))
+      : cart?.product || [];
+
+    if (!items.length) return;
+
+    const productIds = items
+      .filter(item => item.itemType === OrderItemType.PRODUCT)
+      .map(item => item.id);
+    const ticketIds = items
+      .filter(item => item.itemType === OrderItemType.TICKET)
+      .map(item => item.id.toString());
+
+    const [productInfo, ticketInfo] = await Promise.all([
+      productIds.length
+        ? this.productsService
+          .getProductInformationForOrders(
+            productIds.map(id => ({
+              id,
+              quantity: 1,
+              itemType: OrderItemType.PRODUCT,
+            })),
+          )
+          .catch(() => [])
+        : [],
+      ticketIds.length
+        ? this.queryBus
+          .execute(new GetTicketByIdsQuery(ticketIds))
+          .catch(() => [])
+        : [],
+    ]);
+
+    const matches = order.products
+      .map(product => ({
+        product,
+        item: items.find(
+          item => item.id.toString() === product.id.toString(),
+        ),
+      }))
+      .filter(({ item }) => item);
+
+    await Promise.all(
+      matches.map(({ item }) => {
+        const priceInfo = item.itemType === OrderItemType.TICKET
+          ? ticketInfo.find(
+            (t: any) => t._id.toString() === item.id.toString(),
+          )
+          : productInfo.find(
+            (p: any) => p._id.toString() === item.id.toString(),
+          );
+
+        return this.orderProductService.create({
+          itemId: new mongoose.Types.ObjectId(item.id.toString()),
+          quantity: item.quantity,
+          email: item.email,
+          countryCode: item.countryCode,
+          phone: item.phone,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          deliveryFee: item.deliveryFee,
+          deliveryMethod: item.deliveryMethod,
+          deliveryArea: item.deliveryArea,
+          deliveryPickupLocation: item.deliveryPickupLocation,
+          houseNo: item.houseNo,
+          apartment: item.apartment,
+          city: item.city,
+          street: item.street,
+          isGift: item.isGift,
+          additionalInfo: item.additionalInfo,
+          amount: priceInfo?.price?.sellingPrice || 0,
+          orderId: order._id.toString(),
+          loggedInUserId: order.userId,
+          itemType: item.itemType,
+          status: OrderStatus.CANCELED,
+          cancelled: {
+            date: new Date(),
+            isAutomatic: true,
+            canceled_reason: reason,
+          },
+        });
+      }),
+    );
+
+    this.logger.info('[ORDER]: CREATED ORDER PRODUCTS FOR CANCELLED ORDER', {
+      orderId: order._id,
+      count: matches.length,
+    });
+  }
+
+  async updateAfterPaymentFailure(
+    orderId: string,
+    reason?: string,
+  ): Promise<Order> {
     try {
       const updatedField = {
         paymentStatus: PaymentStatus.FAILURE,
@@ -1963,6 +2142,23 @@ export class OrdersService {
         // update vouchers detail and add the deducted voucher amounts
         await this.voucherService.updateAmountAfterOrderFailed(
           claimedOrder.voucher,
+        );
+      }
+
+      // Leaves an OrderProduct trail for the abandoned/failed checkout -
+      // must never block the refund/cancellation above.
+      try {
+        await this.createOrderProductsForCancelledOrder(claimedOrder, reason);
+      } catch (orderProductErr) {
+        this.logger.warn(
+          '[ORDER]: FAILED TO CREATE ORDER PRODUCTS FOR CANCELLED ORDER',
+          {
+            orderId,
+            error:
+              orderProductErr instanceof Error
+                ? orderProductErr.message
+                : String(orderProductErr),
+          },
         );
       }
 

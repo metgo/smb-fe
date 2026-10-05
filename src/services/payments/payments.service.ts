@@ -397,7 +397,7 @@ export class PaymentsService {
     }
   }
 
-  async PaymentFailure(query) {
+  async PaymentFailure(query, reason: string = 'card_payment_declined') {
     try {
       const pageRequestUid = query?.LowProfileId;
 
@@ -410,6 +410,19 @@ export class PaymentsService {
       if (existingPayment?.status === PaymentStatus.SUCCESS) {
         this.logger.info(
           '[PAYMENT]: Ignoring stale failure webhook — payment already succeeded',
+          {
+            paymentRequestId: pageRequestUid,
+            orderId: existingPayment.orderId,
+          },
+        );
+        return;
+      }
+
+      // Already failed (e.g. Cardcom's webhook beat the customer's own close
+      // button here, or vice versa) - don't re-run side effects twice.
+      if (existingPayment?.status === PaymentStatus.FAILURE) {
+        this.logger.info(
+          '[PAYMENT]: Ignoring duplicate failure trigger — already failed',
           {
             paymentRequestId: pageRequestUid,
             orderId: existingPayment.orderId,
@@ -442,7 +455,10 @@ export class PaymentsService {
       }
 
       if (payments?.purpose === PaymentPurpose.ORDER) {
-        await this.ordersService.updateAfterPaymentFailure(payments.orderId);
+        await this.ordersService.updateAfterPaymentFailure(
+          payments.orderId,
+          reason,
+        );
       }
     } catch (err) {
       this.logger.error(
@@ -453,6 +469,18 @@ export class PaymentsService {
       );
       exceptionHandling(err);
     }
+  }
+
+  // Called by the FE the instant a customer explicitly closes the Cardcom
+  // payment modal/iframe (not a tab close - that sends nothing at all, see
+  // handlePaymentModalClose in Travel-FE/MarketplaceV2-FE). Gives a genuine
+  // "cancelled by the customer" signal instead of waiting on Cardcom's own
+  // webhook or the 15-minute expiry cron to eventually resolve it.
+  async cancelPaymentByUser(paymentRequestId: string) {
+    return this.PaymentFailure(
+      { LowProfileId: paymentRequestId },
+      'cancelled_by_customer',
+    );
   }
 
   async sendInvoice(command: InvoiceCommand) {

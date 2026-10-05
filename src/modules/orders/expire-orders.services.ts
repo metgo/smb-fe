@@ -41,7 +41,10 @@ export class ExpireOrderService {
       );
 
       await Promise.all(
-        expiredOrders.map(order => this.ordersService.updateAfterPaymentFailure(order._id.toString())),
+        expiredOrders.map(order => this.ordersService.updateAfterPaymentFailure(
+          order._id.toString(),
+          'checkout_timeout',
+        )),
       );
     } catch (err) {
       this.logger.error('[ORDER TASK]: Failed to expire unpaid orders', {

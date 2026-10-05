@@ -125,6 +125,33 @@ export class PaymentsController {
   }
 
   @ApiEndpoint({
+    operation: 'Customer explicitly closed the Cardcom payment modal',
+    params: [{ name: 'paymentRequestId', type: 'string', required: true }],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PAYMENT.CANCELLED,
+    },
+    softBlockExtraDtoFields: true,
+    tags: ['Payment'],
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('cancel/:paymentRequestId')
+  async cancelPayment(
+    @Param('paymentRequestId') paymentRequestId: string,
+    @Res() response: Response,
+  ) {
+    await this.paymentService.cancelPaymentByUser(paymentRequestId);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PAYMENT.CANCELLED,
+      null,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
     noAuthToken: true,
     operation: 'Update Status to Success by superadmin',
     params: [{ name: 'paymentRequestId', type: 'string', required: true }],

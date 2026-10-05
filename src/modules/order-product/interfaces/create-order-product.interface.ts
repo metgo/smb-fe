@@ -32,4 +32,9 @@ export interface CreateOrderProductCommand {
     date: Date;
     isAutomatic?: boolean;
   };
+  cancelled?: {
+    date: Date;
+    canceled_reason?: string;
+    isAutomatic?: boolean;
+  };
 }
