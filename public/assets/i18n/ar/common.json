@@ -427,5 +427,7 @@
   "hide_options": "إخفاء الخيارات",
   "open_in_google_maps": "فتح في خرائط Google",
   "open_in_waze": "فتح في Waze",
-  "campaign_url_builder": "منشئ روابط الحملات"
+  "campaign_url_builder": "منشئ روابط الحملات",
+  "email_config": "قوالب البريد الإلكتروني",
+  "email_activity": "نشاط البريد الإلكتروني"
 }

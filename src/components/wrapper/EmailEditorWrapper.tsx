@@ -38,13 +38,19 @@ const getVariableButtonId = (variable: string) =>
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Custom Plugin: Insert Variables
+// Reads its variable list from `editor.config.get("emailVariables")` so each
+// EmailEditorWrapper instance can register its own merge-tag set via the
+// `variables` prop, falling back to EMAIL_VARIABLES when none is passed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class VariablesPlugin extends Plugin {
   init() {
     const editor = this.editor;
+    const variables =
+      (editor.config.get("emailVariables") as readonly string[] | undefined) ??
+      EMAIL_VARIABLES;
 
-    EMAIL_VARIABLES.forEach((variable) => {
+    variables.forEach((variable) => {
       const buttonId = getVariableButtonId(variable);
 
       editor.ui.componentFactory.add(buttonId, (locale) => {
@@ -173,6 +179,8 @@ interface EmailEditorWrapperProps {
   onChange: (value: string) => void;
   previewData: Record<string, string>;
   isRTL?: boolean;
+  /** Per-template merge-tag list for the insert-variable toolbar buttons and preview substitution. Defaults to EMAIL_VARIABLES. */
+  variables?: readonly string[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -184,6 +192,7 @@ export default function EmailEditorWrapper({
   onChange,
   previewData,
   isRTL = false,
+  variables = EMAIL_VARIABLES,
 }: EmailEditorWrapperProps) {
   const sanitizedHTML = sanitizeEmailHTML(value);
 
@@ -202,6 +211,33 @@ export default function EmailEditorWrapper({
           data={value}
           config={{
             licenseKey: "GPL",
+            // `emailVariables` is a custom key read by VariablesPlugin, not a built-in CKEditor config option
+            ...({ emailVariables: variables } as Record<string, unknown>),
+            toolbar: {
+              items: [
+                "heading",
+                "|",
+                "bold",
+                "italic",
+                "underline",
+                "strikethrough",
+                "|",
+                "link",
+                "bulletedList",
+                "numberedList",
+                "|",
+                "blockQuote",
+                "horizontalLine",
+                "|",
+                "removeFormat",
+                "|",
+                "undo",
+                "redo",
+                "|",
+                ...variables.map(getVariableButtonId),
+              ],
+              shouldNotGroupWhenFull: true,
+            },
           }}
           onChange={(_, editor) => {
             const data = editor.getData();

@@ -439,5 +439,7 @@
   "no_connected_dmo_authority_websites": "אין DMO, רשות או אתרים מחוברים",
   "open_in_google_maps": "פתח ב-Google Maps",
   "open_in_waze": "פתח ב-Waze",
-  "campaign_url_builder": "בונה כתובות קמפיין"
+  "campaign_url_builder": "בונה כתובות קמפיין",
+  "email_config": "תבניות אימייל",
+  "email_activity": "פעילות אימייל"
 }

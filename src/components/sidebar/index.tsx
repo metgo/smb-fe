@@ -39,6 +39,8 @@ import {
   Link2,
   Layout,
   WalletCards,
+  Mail,
+  Activity,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -276,6 +278,36 @@ export default function Sidebar() {
       ],
     },
     {
+      id: "email_config",
+      path: "#email_config",
+      label: t("email_config") || "E-mail Config",
+      icon: Mail,
+      isEnabled: true,
+      subItems: [
+        {
+          id: "email-config",
+          path: routes.emailConfigMgmt,
+          label: t("email_config") || "Email Templates",
+          icon: Mail,
+          isEnabled: true,
+        },
+        {
+          id: "email-activity",
+          path: routes.emailActivityMgmt,
+          label: t("email_activity") || "Email Activity",
+          icon: Activity,
+          isEnabled: true,
+        },
+        {
+          id: "documents",
+          path: routes.documentMgmt,
+          label: t("documents") || "Documents",
+          icon: File,
+          isEnabled: true,
+        },
+      ],
+    },
+    {
       id: "website_config",
       path: "#website_config",
       label: t("website_config") || "Website Config",
@@ -338,13 +370,6 @@ export default function Sidebar() {
           path: routes.users,
           label: t("users") || "Users",
           icon: Users,
-          isEnabled: true,
-        },
-        {
-          id: "documents",
-          path: routes.documentMgmt,
-          label: t("documents") || "Documents",
-          icon: File,
           isEnabled: true,
         },
         ...(isSuperadmin

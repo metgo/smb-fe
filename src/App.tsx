@@ -55,6 +55,8 @@ import {
   MiniSiteMgmtPage,
   MiniSiteDetailsPage,
   OfflineOrdersMgmtPage,
+  EmailConfigMgmtPage,
+  EmailActivityMgmtPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -620,6 +622,14 @@ function App() {
 
             { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
             { path: routes.utmBuilder, element: <UtmBuilderPage /> },
+            {
+              path: routes.emailConfigMgmt,
+              element: <EmailConfigMgmtPage />,
+            },
+            {
+              path: routes.emailActivityMgmt,
+              element: <EmailActivityMgmtPage />,
+            },
             { path: routes.poiMgmt, element: <PoiMgmtPage /> },
             { path: routes.poiDetails, element: <PoiDetailsPage /> },
             { path: routes.users, element: <UsersMgmtPage /> },

@@ -53,6 +53,10 @@ import { paymentQueryApi } from "./api/paymentQueryApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
 import { chatSystemApi } from "./api/chatSystemApi";
 import { utmCampaignApi } from "./api/utmCampaignApi";
+import { emailConfigQueryApi } from "./api/emailConfigQueryApi";
+import { emailConfigMutationApi } from "./api/emailConfigMutationApi";
+import { emailActivityQueryApi } from "./api/emailActivityQueryApi";
+import { emailActivityMutationApi } from "./api/emailActivityMutationApi";
 
 export const store = configureStore({
   reducer: {
@@ -114,6 +118,10 @@ export const store = configureStore({
     [paymentQueryApi.reducerPath]: paymentQueryApi.reducer,
     [chatSystemApi.reducerPath]: chatSystemApi.reducer,
     [utmCampaignApi.reducerPath]: utmCampaignApi.reducer,
+    [emailConfigQueryApi.reducerPath]: emailConfigQueryApi.reducer,
+    [emailConfigMutationApi.reducerPath]: emailConfigMutationApi.reducer,
+    [emailActivityQueryApi.reducerPath]: emailActivityQueryApi.reducer,
+    [emailActivityMutationApi.reducerPath]: emailActivityMutationApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -179,6 +187,10 @@ export const store = configureStore({
       paymentQueryApi.middleware,
       chatSystemApi.middleware,
       utmCampaignApi.middleware,
+      emailConfigQueryApi.middleware,
+      emailConfigMutationApi.middleware,
+      emailActivityQueryApi.middleware,
+      emailActivityMutationApi.middleware,
       nprogressMiddleware,
     ),
 });
