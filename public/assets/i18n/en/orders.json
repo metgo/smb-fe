@@ -253,5 +253,8 @@
   "itemType": "Item Type",
   "tickets": "Tickets",
   "itemTypeBusiness": "Business",
-  "punchPasses": "Punch Passes"
+  "punchPasses": "Punch Passes",
+  "card_payment_declined": "Payment declined by Cardcom",
+  "checkout_timeout": "Checkout abandoned - unpaid for 15+ minutes",
+  "payment_failed_or_abandoned": "Payment failed or checkout was abandoned"
 }

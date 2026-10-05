@@ -18,8 +18,15 @@ export default function CancelledInfo({
 
   if (!cancelled) return null;
 
+  // Known reason codes (e.g. "card_payment_declined") translate via the
+  // "orders" namespace; free-text reasons typed by an admin fall back to
+  // showing exactly what was stored, unchanged.
+  const reasonText = cancelled?.canceledReson
+    ? t(cancelled.canceledReson, { defaultValue: cancelled.canceledReson })
+    : cancelled?.canceledReson;
+
   const rows = [
-    { label: t("cancellationReason"), value: cancelled?.canceledReson },
+    { label: t("cancellationReason"), value: reasonText },
     { label: t("additionalNotes"), value: cancelled?.additionalInfo },
     {
       label: t("cancelledOn"),
