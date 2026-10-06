@@ -263,12 +263,8 @@
   "group_types": "أنواع المجموعات",
   "group_types_desc": "مناسب لـ {count} أنواع مجموعات",
   "tags": "الوسوم",
-  "tags_desc": "{count} وسوم متاحة",
-  "no_attribute_selected": "لم يتم تحديد أي خصائص",
-  "no_attribute_selected_info": "لم يتم تعيين فئات فرعية أو ميزات وصول أو أنواع مجموعات لهذا الحدث",
 
   "impact": "الأثر",
-  "name": "الاسم",
   "shortDescription": "وصف قصير",
   "contactDetails": "تفاصيل الاتصال",
   "busiEmail": "البريد الإلكتروني للأعمال",
@@ -278,7 +274,6 @@
   "tripCount": "عدد الرحلات",
   "associatedWebsites": "المواقع المرتبطة",
   "contactPhone": "هاتف الاتصال",
-  "categories": "الفئات",
 
   "contact_phone": "هاتف جهة الاتصال",
   "column_settings": "إعدادات الأعمدة",
@@ -427,5 +422,8 @@
   "hide_options": "إخفاء الخيارات",
   "open_in_google_maps": "فتح في خرائط Google",
   "open_in_waze": "فتح في Waze",
-  "campaign_url_builder": "منشئ روابط الحملات"
+  "campaign_url_builder": "منشئ روابط الحملات",
+  "email_config": "قوالب البريد الإلكتروني",
+  "email_activity": "نشاط البريد الإلكتروني",
+  "email_templates": "قوالب البريد الإلكتروني"
 }

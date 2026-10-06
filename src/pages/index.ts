@@ -39,6 +39,8 @@ import { PaymentMgmtPage } from "./payment-mgmt";
 import PaymentTransactionsPage from "./payment-transactions-mgmt";
 import UtmBuilderPage from "./utm-builder";
 import OfflineOrdersMgmtPage from "./offline-orders-mgmt";
+import EmailConfigMgmtPage from "./email-config-mgmt";
+import EmailActivityMgmtPage from "./email-activity-mgmt";
 
 export {
   ChatPage,
@@ -82,4 +84,6 @@ export {
   WebsiteCrashDetailsPage,
   StatsSummaryPage,
   UtmBuilderPage,
+  EmailConfigMgmtPage,
+  EmailActivityMgmtPage,
 };

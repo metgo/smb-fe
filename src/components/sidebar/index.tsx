@@ -39,6 +39,9 @@ import {
   Link2,
   Layout,
   WalletCards,
+  Mail,
+  Activity,
+  MailPlus,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -276,6 +279,36 @@ export default function Sidebar() {
       ],
     },
     {
+      id: "email-config",
+      path: "#email_config",
+      label: t("email_config") || "E-mail Config",
+      icon: MailPlus,
+      isEnabled: true,
+      subItems: [
+        {
+          id: "email-activity",
+          path: routes.emailActivityMgmt,
+          label: t("email_activity") || "Email Activity",
+          icon: Activity,
+          isEnabled: true,
+        },
+        {
+          id: "email-config",
+          path: routes.emailConfigMgmt,
+          label: t("email_templates") || "Email Templates",
+          icon: Mail,
+          isEnabled: true,
+        },
+        {
+          id: "documents",
+          path: routes.documentMgmt,
+          label: t("documents") || "Documents",
+          icon: File,
+          isEnabled: true,
+        },
+      ],
+    },
+    {
       id: "website_config",
       path: "#website_config",
       label: t("website_config") || "Website Config",
@@ -338,13 +371,6 @@ export default function Sidebar() {
           path: routes.users,
           label: t("users") || "Users",
           icon: Users,
-          isEnabled: true,
-        },
-        {
-          id: "documents",
-          path: routes.documentMgmt,
-          label: t("documents") || "Documents",
-          icon: File,
           isEnabled: true,
         },
         ...(isSuperadmin
@@ -564,7 +590,9 @@ export default function Sidebar() {
               (item) =>
                 !(
                   isTraveller &&
-                  (item.id === "local-economy" || item.id === "site-management")
+                  (item.id === "local-economy" ||
+                    item.id === "site-management" ||
+                    item.id === "email-config")
                 ),
             )
             ?.filter((item) => !(isDmoOrAuthorityRole && item.id === "orders"))
@@ -575,7 +603,13 @@ export default function Sidebar() {
                   !(isTraveller && sub.id === "content-mgmt") &&
                   !(isTraveller && sub.id === "users") &&
                   !(isTraveller && sub.id === "all-orders-summary") &&
-                  !(sub.id === "dynamic-pages" && !isSuperadmin),
+                  !(sub.id === "dynamic-pages" && !isSuperadmin) &&
+                  !(sub.id === "email-activity" && !isSuperadmin) &&
+                  !(
+                    item.id === "email-config" &&
+                    sub.id === "email-config" &&
+                    !isSuperadmin
+                  ),
               ),
             }))
             ?.map((item) => renderMenuItem(item))}

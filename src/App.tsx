@@ -55,9 +55,12 @@ import {
   MiniSiteMgmtPage,
   MiniSiteDetailsPage,
   OfflineOrdersMgmtPage,
+  EmailConfigMgmtPage,
+  EmailActivityMgmtPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { IdleLogout, SplashLoader } from "./components/shared";
 import RouterProgressBar from "./components/shared/RouterProgressBar";
 import { loginSuccess } from "@/features/authSlice";
@@ -500,6 +503,16 @@ function App() {
     return children;
   };
 
+  const SuperadminRoute: React.FC<{ children: React.ReactNode }> = ({
+    children,
+  }) => {
+    const { isSuperadmin } = useUserRoles();
+    if (!isSuperadmin) {
+      return <Navigate to={routes.dashboard} replace />;
+    }
+    return children;
+  };
+
   const router = useMemo(
     () =>
       createBrowserRouter([
@@ -571,7 +584,14 @@ function App() {
             { path: routes.articleMgmt, element: <ArticlesManagement /> },
             { path: routes.articleDetails, element: <ArticleDetails /> },
 
-            { path: routes.documentMgmt, element: <DocumentsManagement /> },
+            {
+              path: routes.documentMgmt,
+              element: (
+                <SuperadminRoute>
+                  <DocumentsManagement />
+                </SuperadminRoute>
+              ),
+            },
             { path: routes.tripsMgmt, element: <TripsMgmtPage /> },
             { path: routes.tripDetails, element: <TripDetailsPage /> },
 
@@ -620,6 +640,22 @@ function App() {
 
             { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
             { path: routes.utmBuilder, element: <UtmBuilderPage /> },
+            {
+              path: routes.emailConfigMgmt,
+              element: (
+                <SuperadminRoute>
+                  <EmailConfigMgmtPage />
+                </SuperadminRoute>
+              ),
+            },
+            {
+              path: routes.emailActivityMgmt,
+              element: (
+                <SuperadminRoute>
+                  <EmailActivityMgmtPage />
+                </SuperadminRoute>
+              ),
+            },
             { path: routes.poiMgmt, element: <PoiMgmtPage /> },
             { path: routes.poiDetails, element: <PoiDetailsPage /> },
             { path: routes.users, element: <UsersMgmtPage /> },

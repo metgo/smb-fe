@@ -1,5 +1,14 @@
-import EmailEditorWrapper from "./EmailEditorWrapper";
+import EmailHtmlEditorWrapper, {
+  EmailHtmlEditor,
+  EmailHtmlPreview,
+} from "./EmailHtmlEditorWrapper";
 import ModalWrapper from "./ModalWrapper";
 import TooltipWrapper from "./TooltipWrapper";
 
-export { ModalWrapper, TooltipWrapper, EmailEditorWrapper };
+export {
+  ModalWrapper,
+  TooltipWrapper,
+  EmailHtmlEditorWrapper,
+  EmailHtmlEditor,
+  EmailHtmlPreview,
+};

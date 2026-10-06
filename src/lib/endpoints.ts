@@ -206,6 +206,12 @@ export const endpoints = {
   promotions: "/promotions",
   promotionGroups: "/promotion-groups",
 
+  // Email Config
+  emailConfig: "/admin/email-config",
+  emailActivity: "/admin/email-activity",
+  emailActivityLiveSearch: "/admin/email-activity/live-search",
+  emailActivityLiveStats: "/admin/email-activity/live-search/stats",
+
   // Website error report
   websiteCrashes: "/website-crashes",
 

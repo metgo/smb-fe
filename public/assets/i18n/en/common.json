@@ -412,5 +412,8 @@
   "hide_options": "Hide Options",
   "open_in_google_maps": "Open in Google Maps",
   "open_in_waze": "Open in Waze",
-  "campaign_url_builder": "Campaign URL Builder"
+  "campaign_url_builder": "Campaign URL Builder",
+  "email_config": "Email Config",
+  "email_templates": "Email Templates",
+  "email_activity": "Email Activity"
 }
