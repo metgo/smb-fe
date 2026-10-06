@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { AddButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -148,7 +148,6 @@ const EmailConfigMgmtPage = () => {
         </div>
         <div className="w-44">
           <FilterSelect
-            label={t("category")}
             value={category}
             onChange={(value) => {
               setCategory(value);
@@ -158,7 +157,6 @@ const EmailConfigMgmtPage = () => {
         </div>
         <div className="w-36">
           <FilterSelect
-            label={t("language")}
             value={language}
             onChange={(value) => {
               setLanguage(value);

@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
-import { ModalWrapper, EmailEditorWrapper } from "@/components/wrapper";
+import {
+  ModalWrapper,
+  EmailHtmlEditor,
+  EmailHtmlPreview,
+} from "@/components/wrapper";
 import { Switch } from "@/components/ui/switch";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -11,6 +15,8 @@ import {
 } from "@/store/api/emailConfigMutationApi";
 
 const DEFAULT_MERGE_VARS = ["Name", "Email"];
+
+type FormTab = "general" | "editor" | "preview";
 
 interface EmailConfigFormModalProps {
   emailConfig?: IEmailConfig | null;
@@ -46,6 +52,7 @@ const EmailConfigFormModal = ({
 
   const [form, setForm] = useState<IEmailConfigFormPayload>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState<FormTab>("general");
 
   useEffect(() => {
     if (!emailConfig) return;
@@ -77,6 +84,7 @@ const EmailConfigFormModal = ({
     if (!form.mailchimpTemplateName.trim())
       next.mailchimpTemplateName = t("field_required");
     setErrors(next);
+    if (Object.keys(next).length > 0) setActiveTab("general");
     return Object.keys(next).length === 0;
   };
 
@@ -106,6 +114,16 @@ const EmailConfigFormModal = ({
   const inputCls = `w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent transition`;
   const labelCls = `block text-sm font-semibold mb-1.5 ${textPrimary}`;
 
+  const previewData = Object.fromEntries(
+    DEFAULT_MERGE_VARS.map((v) => [v, `{{${v}}}`]),
+  );
+
+  const tabs: { key: FormTab; label: string }[] = [
+    { key: "general", label: t("general") },
+    { key: "editor", label: t("editor") },
+    { key: "preview", label: t("live_preview") },
+  ];
+
   return (
     <ModalWrapper
       onClose={onClose}
@@ -120,119 +138,150 @@ const EmailConfigFormModal = ({
           </h2>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>
-                {t("label")} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.label}
-                onChange={(e) => set("label", e.target.value)}
-                className={inputCls}
-              />
-              {errors.label && (
-                <p className="text-xs text-red-500 mt-1">{errors.label}</p>
-              )}
+        <div className={`flex gap-1 px-5 pt-3 border-b ${borderColor}`}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition ${
+                activeTab === tab.key
+                  ? "border-violet-500 text-violet-500"
+                  : `border-transparent ${textPrimary} opacity-60 hover:opacity-100`
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5">
+          {activeTab === "general" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>
+                    {t("label")} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.label}
+                    onChange={(e) => set("label", e.target.value)}
+                    className={inputCls}
+                  />
+                  {errors.label && (
+                    <p className="text-xs text-red-500 mt-1">{errors.label}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className={labelCls}>
+                    {t("event_key")} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    disabled={isEdit}
+                    value={form.eventKey}
+                    onChange={(e) => set("eventKey", e.target.value)}
+                    className={`${inputCls} ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
+                  />
+                  {errors.eventKey && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.eventKey}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className={labelCls}>
+                    {t("category")} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.category}
+                    onChange={(e) => set("category", e.target.value)}
+                    className={inputCls}
+                  />
+                  {errors.category && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.category}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className={labelCls}>{t("language")}</label>
+                  <select
+                    value={form.language}
+                    onChange={(e) =>
+                      set("language", e.target.value as EmailConfigLanguage)
+                    }
+                    className={inputCls}
+                  >
+                    <option value="en">EN</option>
+                    <option value="he">HE</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={labelCls}>
+                    {t("mailchimp_template_name")}{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.mailchimpTemplateName}
+                    onChange={(e) =>
+                      set("mailchimpTemplateName", e.target.value)
+                    }
+                    className={inputCls}
+                  />
+                  {errors.mailchimpTemplateName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.mailchimpTemplateName}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className={labelCls}>{t("subject")}</label>
+                  <input
+                    type="text"
+                    value={form.subject}
+                    onChange={(e) => set("subject", e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <Switch
+                  checked={form.isActive}
+                  onCheckedChange={(checked) => set("isActive", checked)}
+                />
+                <span className={`text-sm font-medium ${textPrimary}`}>
+                  {t("is_active")}
+                </span>
+              </div>
             </div>
+          )}
 
-            <div>
-              <label className={labelCls}>
-                {t("event_key")} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                disabled={isEdit}
-                value={form.eventKey}
-                onChange={(e) => set("eventKey", e.target.value)}
-                className={`${inputCls} ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
-              />
-              {errors.eventKey && (
-                <p className="text-xs text-red-500 mt-1">{errors.eventKey}</p>
-              )}
-            </div>
-
-            <div>
-              <label className={labelCls}>
-                {t("category")} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.category}
-                onChange={(e) => set("category", e.target.value)}
-                className={inputCls}
-              />
-              {errors.category && (
-                <p className="text-xs text-red-500 mt-1">{errors.category}</p>
-              )}
-            </div>
-
-            <div>
-              <label className={labelCls}>{t("language")}</label>
-              <select
-                value={form.language}
-                onChange={(e) =>
-                  set("language", e.target.value as EmailConfigLanguage)
-                }
-                className={inputCls}
-              >
-                <option value="en">EN</option>
-                <option value="he">HE</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelCls}>
-                {t("mailchimp_template_name")}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.mailchimpTemplateName}
-                onChange={(e) => set("mailchimpTemplateName", e.target.value)}
-                className={inputCls}
-              />
-              {errors.mailchimpTemplateName && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.mailchimpTemplateName}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className={labelCls}>{t("subject")}</label>
-              <input
-                type="text"
-                value={form.subject}
-                onChange={(e) => set("subject", e.target.value)}
-                className={inputCls}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Switch
-              checked={form.isActive}
-              onCheckedChange={(checked) => set("isActive", checked)}
-            />
-            <span className={`text-sm font-medium ${textPrimary}`}>
-              {t("is_active")}
-            </span>
-          </div>
-
-          <div>
-            <label className={labelCls}>{t("html_content")}</label>
-            <EmailEditorWrapper
+          {activeTab === "editor" && (
+            <EmailHtmlEditor
               value={form.htmlContent}
               onChange={(value) => set("htmlContent", value)}
-              previewData={Object.fromEntries(
-                DEFAULT_MERGE_VARS.map((v) => [v, `{{${v}}}`]),
-              )}
-              variables={DEFAULT_MERGE_VARS}
-              isRTL={isRTL}
+              height="h-[55vh]"
             />
-          </div>
+          )}
+
+          {activeTab === "preview" && (
+            <EmailHtmlPreview
+              value={form.htmlContent}
+              previewData={previewData}
+              isRTL={isRTL}
+              height="h-[55vh]"
+            />
+          )}
         </div>
 
         <div

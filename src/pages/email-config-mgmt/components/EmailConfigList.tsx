@@ -89,6 +89,11 @@ const EmailConfigList = ({
         ),
       },
       {
+        key: "mailchimpTemplateName",
+        label: t("template_name"),
+        render: (item: IEmailConfig) => <div>{item.mailchimpTemplateName}</div>,
+      },
+      {
         key: "category",
         label: t("category"),
         render: (item: IEmailConfig) => (
@@ -100,6 +105,7 @@ const EmailConfigList = ({
         label: t("subject"),
         render: (item: IEmailConfig) => <div>{item.subject}</div>,
       },
+
       {
         key: "isActive",
         label: t("is_active"),

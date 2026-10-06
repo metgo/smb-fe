@@ -41,6 +41,7 @@ import {
   WalletCards,
   Mail,
   Activity,
+  MailPlus,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -278,24 +279,24 @@ export default function Sidebar() {
       ],
     },
     {
-      id: "email_config",
+      id: "email-config",
       path: "#email_config",
       label: t("email_config") || "E-mail Config",
-      icon: Mail,
+      icon: MailPlus,
       isEnabled: true,
       subItems: [
-        {
-          id: "email-config",
-          path: routes.emailConfigMgmt,
-          label: t("email_config") || "Email Templates",
-          icon: Mail,
-          isEnabled: true,
-        },
         {
           id: "email-activity",
           path: routes.emailActivityMgmt,
           label: t("email_activity") || "Email Activity",
           icon: Activity,
+          isEnabled: true,
+        },
+        {
+          id: "email-config",
+          path: routes.emailConfigMgmt,
+          label: t("email_templates") || "Email Templates",
+          icon: Mail,
           isEnabled: true,
         },
         {
