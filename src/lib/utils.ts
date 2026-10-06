@@ -15,13 +15,19 @@ export const locales: { value: Language; label: string; flag?: string }[] = [
 ];
 
 export const getLogoByLanguage = (language: Language): string => {
-  switch (language) {
-    case "he":
-    case "ar":
-      return "/assets/images/nati-logo-he.png";
-    default:
-      return "/assets/images/nati-logo-en.png";
-  }
+  return language === "he" || language === "ar"
+    ? "/assets/images/nati_he_stacked_orange-text.svg"
+    : "/assets/images/nati_en_stacked_orange-text.svg";
+};
+
+export const getHeaderLogoByLanguage = (
+  language: Language,
+  isDark: boolean,
+): string => {
+  const suffix = language === "he" || language === "ar" ? "he" : "en";
+  return isDark
+    ? `/assets/images/nati_${suffix}_orange-text.svg`
+    : `/assets/images/nati_${suffix}_color.svg`;
 };
 
 export const TICKET_TYPE_STYLES: Record<string, string> = {
