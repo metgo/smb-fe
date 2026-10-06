@@ -32,7 +32,7 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
   scheduled: <CalendarClock className="w-4 h-4 text-violet-500" />,
 };
 
-const LIMIT = 200;
+const LIMIT = 20;
 
 const STATUS_OPTIONS: EmailActivityStatus[] = [
   "sent",

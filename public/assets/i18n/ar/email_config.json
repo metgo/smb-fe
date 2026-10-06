@@ -8,6 +8,7 @@
   "sync_from_mailchimp": "مزامنة من Mailchimp",
   "new_template": "قالب جديد",
   "label": "التسمية",
+  "template_name": "اسم القالب",
   "event_key": "مفتاح الحدث",
   "mailchimp_template_name": "اسم قالب Mailchimp",
   "subject": "الموضوع",

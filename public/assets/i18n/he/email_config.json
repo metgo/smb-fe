@@ -8,6 +8,7 @@
   "sync_from_mailchimp": "סנכרון מ-Mailchimp",
   "new_template": "תבנית חדשה",
   "label": "תווית",
+  "template_name": "שם תבנית",
   "event_key": "מפתח אירוע",
   "mailchimp_template_name": "שם תבנית ב-Mailchimp",
   "subject": "נושא",

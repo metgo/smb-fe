@@ -8,6 +8,7 @@
   "sync_from_mailchimp": "Sync from Mailchimp",
   "new_template": "New Template",
   "label": "Label",
+  "template_name": "Template name",
   "event_key": "Event key",
   "mailchimp_template_name": "Mailchimp template name",
   "subject": "Subject",
