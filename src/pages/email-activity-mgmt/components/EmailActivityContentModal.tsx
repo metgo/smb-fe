@@ -18,7 +18,7 @@ const EmailActivityContentModal = ({
   const { textPrimary, textTertiary, borderColor } = useThemeClasses();
 
   const { data, isLoading, isError } = useGetEmailActivityContentQuery(
-    activity._id,
+    activity.mandrillMessageId,
   );
 
   const html: string = data?.datas?.html ?? "";

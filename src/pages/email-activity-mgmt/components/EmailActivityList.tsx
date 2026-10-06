@@ -17,7 +17,6 @@ interface EmailActivityListProps {
   isLoading: boolean;
   hasMore?: boolean;
   next?: () => void;
-  canViewContent?: boolean;
 }
 
 const EmailActivityList = ({
@@ -25,7 +24,6 @@ const EmailActivityList = ({
   isLoading,
   hasMore,
   next,
-  canViewContent = true,
 }: EmailActivityListProps) => {
   const { t } = useTranslation("email_activity");
   const { textTertiary, language } = useThemeClasses();
@@ -153,19 +151,17 @@ const EmailActivityList = ({
         width: "110px",
         render: (item: IEmailActivity) => (
           <div className="flex items-center gap-1">
-            {canViewContent && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setContentTarget(item);
-                }}
-                title={t("view_content")}
-                className="p-1.5 rounded-lg text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition"
-              >
-                <Eye className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setContentTarget(item);
+              }}
+              title={t("view_content")}
+              className="p-1.5 rounded-lg text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
             <button
               type="button"
               disabled={resendingId === item._id}
@@ -184,13 +180,14 @@ const EmailActivityList = ({
         ),
       },
     ],
-    [t, textTertiary, canViewContent, resendingId, handleResend],
+    [t, textTertiary, resendingId, handleResend],
   );
 
   return (
     <>
       <ReordableDataTable<IEmailActivity>
         rowKey="_id"
+        storageKey="emailActivityColumnOrder"
         columns={columns}
         data={data}
         isDataLoading={isLoading}

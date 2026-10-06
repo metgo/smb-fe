@@ -2,7 +2,7 @@
   "email_activity_management": "Email Activity",
   "live_from_mailchimp": "Live from Mailchimp",
   "content": "Content",
-  "view_content": "View email content",
+  "view_content": "View Content",
   "email_content": "Email Content",
   "content_note": "Reconstructed by re-rendering the template with sample data — may not exactly match the personalized copy originally sent.",
   "content_unavailable": "Content could not be loaded for this activity.",

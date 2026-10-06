@@ -1,7 +1,8 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useCallback, useMemo, useState } from "react";
-import { Eye, Pencil, Send, Trash2 } from "lucide-react";
+import { Eye, Pencil, Send } from "lucide-react";
+// import { Trash2 } from "lucide-react"; // re-enable alongside the delete button below
 
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -155,13 +156,13 @@ const EmailConfigList = ({
             >
               <Send size={14} />
             </button>
-            <button
+            {/* <button
               title={t("delete_template")}
               onClick={() => setDeleteTarget(item)}
               className="p-1.5 rounded-md text-red-500 bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer"
             >
               <Trash2 size={14} />
-            </button>
+            </button> */}
           </div>
         ),
       },

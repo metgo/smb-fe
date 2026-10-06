@@ -68,11 +68,17 @@ const EmailActivityMgmtPage = () => {
   const [combinedActivity, setCombinedActivity] = useState<IEmailActivity[]>(
     [],
   );
+  const [livePage, setLivePage] = useState(1);
+  const [combinedLiveActivity, setCombinedLiveActivity] = useState<
+    IEmailActivity[]
+  >([]);
 
   // Reset pagination whenever filters change
   useEffect(() => {
     setPage(1);
     setCombinedActivity([]);
+    setLivePage(1);
+    setCombinedLiveActivity([]);
   }, [searchQuery, status, fromDate, toDate]);
 
   const queryParams = useMemo(
@@ -130,13 +136,14 @@ const EmailActivityMgmtPage = () => {
 
   const liveParams = useMemo(
     () => ({
+      page: livePage,
       limit: LIMIT,
       ...(searchQuery && { search: searchQuery }),
       ...(status !== "all" && { status: status as EmailActivityStatus }),
       ...(fromDate && { fromDate }),
       ...(toDate && { toDate }),
     }),
-    [searchQuery, status, fromDate, toDate],
+    [livePage, searchQuery, status, fromDate, toDate],
   );
 
   const { data: liveData, isFetching: isLiveFetching } =
@@ -144,18 +151,42 @@ const EmailActivityMgmtPage = () => {
       skip: !shouldUseLiveFallback,
     });
 
-  const liveList: IEmailActivity[] = useMemo(
-    () => liveData?.datas?.data ?? [],
-    [liveData],
-  );
+  const hasMoreLive = !!liveData?.datas?.meta?.hasNextPage;
 
-  const isUsingLiveFallback = shouldUseLiveFallback && liveList.length > 0;
-  const displayList = isUsingLiveFallback ? liveList : combinedActivity;
-  const hasMore = !isUsingLiveFallback && hasMoreFromLog;
+  // Accumulate live pages the same way the log path does
+  useEffect(() => {
+    const pageItems: IEmailActivity[] = liveData?.datas?.data ?? [];
+
+    if (!pageItems.length) {
+      if (livePage === 1) setCombinedLiveActivity([]);
+      return;
+    }
+
+    setCombinedLiveActivity((prev) => {
+      if (livePage === 1) return pageItems;
+      const existingIds = new Set(prev.map((item) => item.mandrillMessageId));
+      const newItems = pageItems.filter(
+        (item) => !existingIds.has(item.mandrillMessageId),
+      );
+      return newItems.length ? [...prev, ...newItems] : prev;
+    });
+  }, [liveData, livePage]);
+
+  const isUsingLiveFallback =
+    shouldUseLiveFallback && combinedLiveActivity.length > 0;
+  const displayList = isUsingLiveFallback
+    ? combinedLiveActivity
+    : combinedActivity;
+  const hasMore = isUsingLiveFallback ? hasMoreLive : hasMoreFromLog;
   const isListLoading =
     isLoading ||
     (page === 1 && isFetching) ||
     (shouldUseLiveFallback && isLiveFetching);
+
+  const fetchNextLivePage = useCallback(() => {
+    if (!hasMoreLive || isLiveFetching) return;
+    setLivePage((prev) => prev + 1);
+  }, [hasMoreLive, isLiveFetching]);
 
   const statsParams = useMemo(
     () => ({
@@ -273,8 +304,7 @@ const EmailActivityMgmtPage = () => {
           data={displayList}
           isLoading={isListLoading}
           hasMore={hasMore}
-          next={fetchNextPage}
-          canViewContent={!isUsingLiveFallback}
+          next={isUsingLiveFallback ? fetchNextLivePage : fetchNextPage}
         />
       )}
     </div>

@@ -590,7 +590,9 @@ export default function Sidebar() {
               (item) =>
                 !(
                   isTraveller &&
-                  (item.id === "local-economy" || item.id === "site-management")
+                  (item.id === "local-economy" ||
+                    item.id === "site-management" ||
+                    item.id === "email-config")
                 ),
             )
             ?.filter((item) => !(isDmoOrAuthorityRole && item.id === "orders"))
@@ -601,7 +603,13 @@ export default function Sidebar() {
                   !(isTraveller && sub.id === "content-mgmt") &&
                   !(isTraveller && sub.id === "users") &&
                   !(isTraveller && sub.id === "all-orders-summary") &&
-                  !(sub.id === "dynamic-pages" && !isSuperadmin),
+                  !(sub.id === "dynamic-pages" && !isSuperadmin) &&
+                  !(sub.id === "email-activity" && !isSuperadmin) &&
+                  !(
+                    item.id === "email-config" &&
+                    sub.id === "email-config" &&
+                    !isSuperadmin
+                  ),
               ),
             }))
             ?.map((item) => renderMenuItem(item))}
