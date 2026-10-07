@@ -73,7 +73,7 @@ const DetailTitleSection = ({
             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
               <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
                 <TrendingUp className="w-3 h-3" />
-                {impact?.toFixed(1)}
+                {impact != null ? Math.round(impact) : null}
               </span>
 
               {createdAt && (

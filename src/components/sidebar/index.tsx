@@ -32,6 +32,7 @@ import {
   ChevronLeft,
   CheckSquare,
   AlertTriangle,
+  Gauge,
   MessageCircle,
   CalendarArrowDown,
   ShoppingBag,
@@ -387,6 +388,13 @@ export default function Sidebar() {
                 path: routes.websiteCrashes,
                 label: "Website Crashes",
                 icon: AlertTriangle,
+                isEnabled: true,
+              },
+              {
+                id: "score-settings",
+                path: routes.scoreSettings,
+                label: t("score_settings") || "Score settings",
+                icon: Gauge,
                 isEnabled: true,
               },
               {

@@ -65,6 +65,7 @@ export const routes = {
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
   statsSummary: "/stats-summary",
+  scoreSettings: "/score-settings",
 
   qrscanLogsMgmt: "/qrscan-logs-management",
 };
