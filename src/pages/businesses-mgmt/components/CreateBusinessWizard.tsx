@@ -225,10 +225,11 @@ function CreateBusinessWizardInner({
     fullDescriptionAr: "",
     internalNotes: "",
     categories: [] as string[],
-    providesDiscount: false,
-    minDiscount: "" as number | string,
-    maxDiscount: "" as number | string,
     markedAsSupplier: false,
+
+    providesDiscount: false,
+    discountConfigType: "" as "" | "DISCOUNT" | "GIFT",
+    discountBoxes: [] as string[],
 
     // Step 2
     email: "",
@@ -524,8 +525,8 @@ function CreateBusinessWizardInner({
           editData?.descriptionAr || editData?.description || "",
         internalNotes: editData?.internalNotes || "",
         providesDiscount: editData?.providesDiscount ?? false,
-        minDiscount: editData?.minDiscount ?? "",
-        maxDiscount: editData?.maxDiscount ?? "",
+        discountConfigType: editData?.discountConfigType ?? "",
+        discountBoxes: editData?.discountBoxes ?? [],
         markedAsSupplier: editData?.markedAsSupplier ?? false,
         slug: editData?.slug || "",
         //images
@@ -673,12 +674,10 @@ function CreateBusinessWizardInner({
     descriptionHe: formData.fullDescriptionHe,
     internalNotes: formData.internalNotes,
     providesDiscount: formData.providesDiscount,
-    minDiscount: formData.providesDiscount
-      ? Number(formData.minDiscount) || 0
+    discountConfigType: formData.providesDiscount
+      ? formData.discountConfigType
       : null,
-    maxDiscount: formData.providesDiscount
-      ? Number(formData.maxDiscount) || 0
-      : null,
+    discountBoxes: formData.providesDiscount ? formData.discountBoxes : null,
     // "Mark as supplier" is a superadmin toggle, independent of providesDiscount.
     markedAsSupplier: !!formData.markedAsSupplier,
 
@@ -835,30 +834,43 @@ function CreateBusinessWizardInner({
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  // Validate the optional traveller discount. Returns an i18n key when invalid,
-  // or null when it's fine / disabled.
+  // Validate the optional traveller discount/gift config. Returns an i18n key
+  // when invalid, or null when it's fine / disabled.
   const getDiscountError = (): string | null => {
     if (!formData.providesDiscount) return null;
-    const { minDiscount, maxDiscount } = formData;
-    if (
-      minDiscount === "" ||
-      minDiscount == null ||
-      maxDiscount === "" ||
-      maxDiscount == null
-    ) {
+    const { discountConfigType, discountBoxes } = formData;
+
+    if (discountConfigType !== "DISCOUNT" && discountConfigType !== "GIFT") {
+      return "traveller_discount_type_required";
+    }
+
+    const boxes: string[] = discountBoxes ?? [];
+    if (boxes.length !== 6 || boxes.some((box) => !String(box ?? "").trim())) {
       return "traveller_discount_required";
     }
-    const min = Number(minDiscount);
-    const max = Number(maxDiscount);
-    if (
-      Number.isNaN(min) ||
-      Number.isNaN(max) ||
-      min < 0 ||
-      max > 100 ||
-      min > max
-    ) {
-      return "traveller_discount_range_invalid";
+
+    if (discountConfigType === "DISCOUNT") {
+      const hasInvalidRange = boxes.some((box) => {
+        const value = Number(box);
+        return Number.isNaN(value) || value < 1 || value > 100;
+      });
+      if (hasInvalidRange) {
+        return "traveller_discount_range_invalid";
+      }
     }
+
+    const normalized = boxes.map((box) =>
+      String(box ?? "")
+        .trim()
+        .toLowerCase(),
+    );
+    const hasDuplicates = normalized.some(
+      (value, index) => normalized.indexOf(value) !== index,
+    );
+    if (hasDuplicates) {
+      return "traveller_discount_duplicate_value";
+    }
+
     return null;
   };
 

@@ -25,8 +25,8 @@ interface BusinessFormData {
   fullDescriptionAr: string;
 
   providesDiscount?: boolean;
-  minDiscount?: number | string;
-  maxDiscount?: number | string;
+  discountConfigType?: "DISCOUNT" | "GIFT" | "";
+  discountBoxes?: string[];
   markedAsSupplier?: boolean;
 }
 
@@ -190,9 +190,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                   formData.markedAsSupplier
                     ? isRTL
                       ? "right-0.5"
-                      : "left-[22px]"
+                      : "left-5.5"
                     : isRTL
-                      ? "right-[22px]"
+                      ? "right-5.5"
                       : "left-0.5"
                 }`}
               />
@@ -224,8 +224,10 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 return {
                   ...prev,
                   providesDiscount: next,
-                  // clear the range when the owner turns the discount off
-                  ...(next ? {} : { minDiscount: "", maxDiscount: "" }),
+                  // clear the config when the owner turns the discount off
+                  ...(next
+                    ? {}
+                    : { discountConfigType: "", discountBoxes: [] }),
                 };
               })
             }
@@ -269,9 +271,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                   formData.providesDiscount
                     ? isRTL
                       ? "right-0.5"
-                      : "left-[22px]"
+                      : "left-5.5"
                     : isRTL
-                      ? "right-[22px]"
+                      ? "right-5.5"
                       : "left-0.5"
                 }`}
               />
@@ -280,69 +282,131 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 
           {formData.providesDiscount && (
             <div
-              className={`mt-4 grid grid-cols-2 gap-3 border-t pt-4 ${
+              className={`mt-4 border-t pt-4 ${
                 isDark ? "border-teal-800/40" : "border-teal-200"
               }`}
             >
-              <div>
-                <label
-                  className={`mb-1.5 block text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}
-                >
-                  {t("min_discount_percent")}{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={formData.minDiscount ?? ""}
-                    onChange={(e) =>
+              {/* Discount vs Gift picker */}
+              <div className="mb-4 flex gap-2">
+                {(["DISCOUNT", "GIFT"] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() =>
                       setFormData((prev: any) => ({
                         ...prev,
-                        minDiscount: e.target.value,
+                        discountConfigType: type,
+                        // reset boxes when switching type
+                        discountBoxes:
+                          prev.discountConfigType === type
+                            ? prev.discountBoxes
+                            : ["", "", "", "", "", ""],
                       }))
                     }
-                    placeholder="0"
-                    className={discountInputClasses}
-                  />
-                  <span
-                    className={`pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}
+                    className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                      formData.discountConfigType === type
+                        ? "border-teal-600 bg-teal-600 text-white"
+                        : isDark
+                          ? "border-gray-700 bg-gray-900 text-gray-300"
+                          : "border-gray-300 bg-white text-gray-700"
+                    }`}
                   >
-                    %
-                  </span>
-                </div>
+                    {type === "DISCOUNT" ? t("discount") : t("gift")}
+                  </button>
+                ))}
               </div>
 
-              <div>
-                <label
-                  className={`mb-1.5 block text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}
-                >
-                  {t("max_discount_percent")}{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={formData.maxDiscount ?? ""}
-                    onChange={(e) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        maxDiscount: e.target.value,
-                      }))
-                    }
-                    placeholder="0"
-                    className={discountInputClasses}
-                  />
-                  <span
-                    className={`pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}
+              {formData.discountConfigType && (
+                <>
+                  <p
+                    className={`mb-3 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
                   >
-                    %
-                  </span>
-                </div>
-              </div>
+                    {formData.discountConfigType === "DISCOUNT"
+                      ? t("discount_boxes_info")
+                      : t("gift_boxes_info")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {Array.from({ length: 6 }).map((_, index) => {
+                      const boxes = formData.discountBoxes ?? [];
+                      const value = boxes[index] ?? "";
+                      const isDiscountType =
+                        formData.discountConfigType === "DISCOUNT";
+                      const numericValue = Number(value);
+                      const hasRangeError =
+                        isDiscountType &&
+                        value !== "" &&
+                        (Number.isNaN(numericValue) ||
+                          numericValue < 1 ||
+                          numericValue > 100);
+                      const normalize = (v: string) => v.trim().toLowerCase();
+                      const hasDuplicateError =
+                        value !== "" &&
+                        boxes.some(
+                          (other, otherIndex) =>
+                            otherIndex !== index &&
+                            normalize(other ?? "") === normalize(value),
+                        );
+                      return (
+                        <div key={index}>
+                          <label
+                            className={`mb-1.5 block text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                          >
+                            {t(isDiscountType ? "discount" : "gift")}{" "}
+                            {index + 1} <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={isDiscountType ? "number" : "text"}
+                              min={isDiscountType ? 1 : undefined}
+                              max={isDiscountType ? 100 : undefined}
+                              value={value}
+                              onChange={(e) =>
+                                setFormData((prev: any) => {
+                                  const nextBoxes = [
+                                    ...(prev.discountBoxes ?? [
+                                      "",
+                                      "",
+                                      "",
+                                      "",
+                                      "",
+                                      "",
+                                    ]),
+                                  ];
+                                  nextBoxes[index] = e.target.value;
+                                  return { ...prev, discountBoxes: nextBoxes };
+                                })
+                              }
+                              placeholder={isDiscountType ? "0" : ""}
+                              className={`${discountInputClasses} ${
+                                hasRangeError || hasDuplicateError
+                                  ? "border-red-500 focus:ring-red-500"
+                                  : ""
+                              }`}
+                            />
+                            {isDiscountType && (
+                              <span
+                                className={`pointer-events-none absolute inset-e-3 top-1/2 -translate-y-1/2 text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}
+                              >
+                                %
+                              </span>
+                            )}
+                          </div>
+                          {hasRangeError && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {t("traveller_discount_range_invalid")}
+                            </p>
+                          )}
+                          {!hasRangeError && hasDuplicateError && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {t("traveller_discount_duplicate_value")}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

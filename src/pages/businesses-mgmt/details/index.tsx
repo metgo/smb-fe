@@ -1,22 +1,16 @@
 import { toast } from "sonner";
 import axios from "axios";
 
-import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
 import {
-  Bookmark,
   ChevronDown,
   Compass,
   Edit,
   Eye,
   MessageCircle,
-  MousePointer,
   Plus,
-  Share2,
-  Timer,
-  TrendingUp,
   UserCog,
-  Users,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -30,11 +24,8 @@ import {
 import { routes } from "@/lib/routes";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageStats, Spinner, TabsSection } from "@/components/shared";
-import {
-  useGetbusinessByIdQuery,
-  useGetIndividualBusinessStatsQuery,
-} from "@/store/api/businessQueryApi";
+import { Spinner, TabsSection } from "@/components/shared";
+import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
 import { StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
@@ -56,12 +47,11 @@ import { openChatPopup } from "@/features/chatPopupSlice";
 import { ChatCreatorBubble } from "@/components/chat-popup";
 
 // ─── Tour trigger (inner — needs TourProvider in scope) ───────────────────────
-
 function TourTrigger() {
   const { startTour } = useTour();
   const { t } = useTranslation("tour");
-  const { isDark } = useThemeClasses();
   const { t: tb } = useTranslation("businesses");
+  const { isDark } = useThemeClasses();
 
   const buildSteps = (): TourStep[] => [
     {
@@ -191,6 +181,7 @@ function BusinessDetailsPageInner() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   const businessId = searchParams.get("businessId") ?? "";
   const profileToken = searchParams.get("token");
 
@@ -248,58 +239,6 @@ function BusinessDetailsPageInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileToken, businessId]);
 
-  ///business detail stats
-  const {
-    data,
-    refetch,
-    isLoading: isDetailStatsLoading,
-  } = useGetIndividualBusinessStatsQuery({ businessId }, { skip: !businessId });
-
-  const businessStats = [
-    {
-      // id: "page-views",
-      icon: <Eye className="w-5 h-5 text-green-600" />,
-      title: t("page_views"),
-      value: data?.pageViews?.toLocaleString() || 0,
-    },
-    {
-      // id: "unique-visitors",
-      icon: <Users className="w-5 h-5 text-green-600" />,
-      title: t("unique_visitors"),
-      value: data?.uniqueVisitors?.toLocaleString() || 0,
-    },
-    {
-      // id: "clicks",
-      icon: <MousePointer className="w-5 h-5 text-green-600" />,
-      title: t("clicks"),
-      value: data?.clicks?.toLocaleString() || 0,
-    },
-    {
-      // id: "bookmarks",
-      icon: <Bookmark className="w-5 h-5 text-green-600" />,
-      title: t("bookmarks"),
-      value: data?.bookmarks?.toLocaleString() || 0,
-    },
-    {
-      // id: "shares",
-      icon: <Share2 className="w-5 h-5 text-green-600" />,
-      title: t("shares"),
-      value: data?.shares?.toLocaleString() || 0,
-    },
-    {
-      // id: "avg-time-on-page",
-      icon: <Timer className="w-5 h-5 text-green-600" />,
-      title: t("avg_time_on_page"),
-      value: `${data?.averageEngagementTime}`,
-    },
-    {
-      // id: "conversion-rate",
-      icon: <TrendingUp className="w-5 h-5 text-green-600" />,
-      title: t("conversion_rate"),
-      value: `${data?.conversionRate || 0}%`,
-    },
-  ];
-
   const {
     data: business,
     refetch: businessDataRefetch,
@@ -311,10 +250,10 @@ function BusinessDetailsPageInner() {
   const authUser = useAppSelector((state) => state.auth.user);
 
   const businessCreator: IChatUser = {
-    _id: business?.userId?._id,
+    _id: business?.userId?._id || "",
     name: business?.userId?.firstName + " " + business?.userId?.lastName,
-    email: business?.userId?.email,
-    role: business?.userId?.role,
+    email: business?.userId?.email || "",
+    role: business?.userId?.role || "traveller",
     dmoId: business?.dmoId,
     authorityId: business?.authorityId,
   };
@@ -377,7 +316,6 @@ function BusinessDetailsPageInner() {
       }).unwrap();
 
       toast.success(tt("business_status_update_success"));
-      refetch();
     } catch (error) {
       toast.error(tt("business_status_update_failed"));
       console.error(error);
@@ -564,14 +502,6 @@ function BusinessDetailsPageInner() {
             </>
           }
         />
-        <div data-tour="business-stats">
-          <PageStats
-            stats={businessStats}
-            isLoading={isDetailStatsLoading}
-            className="sm:grid-cols-3 lg:grid-cols-4  xl:grid-cols-7 gap-2 md:gap-3"
-            wrapperClassName=" my-2 sm:my-4"
-          />
-        </div>
       </div>
 
       {/* Content */}
@@ -584,7 +514,7 @@ function BusinessDetailsPageInner() {
           />
         </div>
         <div
-          className="details-content flex-1 overflow-y-auto min-h-0 !p-2"
+          className="details-content flex-1 overflow-y-auto min-h-0 p-2!"
           data-tour="tab-content"
         >
           {renderContent()}
@@ -607,7 +537,6 @@ function BusinessDetailsPageInner() {
             setIsEditClicked(false);
             setMissingFieldsFromToken([]);
           }}
-          refetch={refetch}
           businessDataRefetch={businessDataRefetch}
           opMode={opMode}
           missingFields={missingFieldsFromToken}
@@ -636,7 +565,6 @@ function BusinessDetailsPageInner() {
 }
 
 // ─── Exported page (wraps with TourProvider) ──────────────────────────────────
-
 export default function BusinessDetailsPage() {
   return (
     <TourProvider>

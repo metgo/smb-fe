@@ -138,3 +138,216 @@ interface IBusinessesList {
 interface IBusinessesRes extends IPagination {
   data: Array<IBusinessesList>;
 }
+
+// Not used yet
+interface IBusinessDetailsRes {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
+
+  name: string;
+  nameHe: string;
+  nameAr: string;
+
+  address: {
+    country: string;
+    city: string;
+    location: string;
+  };
+
+  phoneNumber: string;
+  busiEmail: string;
+
+  status: string;
+  isPreview: boolean;
+
+  contactDetails: {
+    name: string;
+    phone: string;
+    email: string;
+  };
+
+  collabrationUser: unknown[];
+
+  userId: {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    email: string;
+    role: string;
+    lastLogin: string;
+  };
+
+  authorityId: string;
+  dmoId: string;
+
+  geoLocation: {
+    lat: string;
+    long: string;
+  };
+
+  images: {
+    image: string;
+    isPrimary: boolean;
+  }[];
+
+  groupTypesId: string[];
+  accessibilitiesId: string[];
+  primaryCategoryId: string;
+  tagsId: string[];
+
+  openingHrs: {
+    day: string;
+    open: string;
+    close: string;
+    isHoliday: boolean;
+    byAppointment: boolean;
+  }[];
+
+  isAlwaysOpen: boolean;
+
+  slug: string;
+
+  deliveryArea: unknown[];
+
+  deliverySpecificSellerInfo: string[];
+  deliveryReturnExchange: string[];
+
+  isPickUpAvailable: boolean;
+  globalDelivery: boolean;
+  vendorDelivers: boolean;
+
+  vendorDeliveryArea: unknown[];
+  globalDeliveryArea: unknown[];
+
+  impact: number;
+  completionPercent: number;
+
+  socialMedia: unknown[];
+
+  deliveryAdditionalInfo: string;
+
+  description: string;
+  descriptionAr: string;
+  descriptionHe: string;
+
+  internalNotes: string;
+
+  logo: {
+    image: string;
+  };
+
+  shortDescription: string;
+  shortDescriptionAr: string;
+  shortDescriptionHe: string;
+
+  associatedWebsiteIds: string[];
+
+  scoreBreakdown: {
+    version: number;
+    runId: string;
+    computedAt: string;
+    total: number;
+
+    signals: {
+      sales: number;
+      loyalty: number;
+      localImpact: number;
+      engagement: number;
+      reliability: number;
+      content: number;
+      catalog: number;
+    };
+
+    boost: number;
+    configVersion: number;
+
+    weights: {
+      sales: number;
+      loyalty: number;
+      localImpact: number;
+      engagement: number;
+      reliability: number;
+      content: number;
+      catalog: number;
+    };
+
+    metrics: {
+      eventFillRate: number | null;
+      eventShowRate: number | null;
+      qrCheckins: number | null;
+      tripStops: number | null;
+      localSourcing: number | null;
+
+      pickupOrders: number;
+      deliveryOrders: number;
+      attendedTickets: number;
+
+      pickupShare: number;
+
+      visitors: number;
+      spilloverVisitors: number;
+      tripHub: number;
+
+      sitesSoldOn: number;
+      sitesListedOn: number;
+
+      siteViews: number | null;
+      viewsPercentile: number | null;
+      listImpressions: number | null;
+      listClickThrough: number | null;
+      viewConversion: number | null;
+      inStockShare: number | null;
+
+      setupDays: number | null;
+
+      chatReplyHours: number;
+
+      policyWarnings: number;
+      suspended: number;
+
+      scoredLines: number;
+      canceledOrders: number;
+      refundedOrders: number;
+
+      cancelRate: number;
+
+      avgFulfillmentDays: number | null;
+
+      imageScore: number;
+      completionPercent: number;
+
+      languageCoverage: number;
+      deliveryOptions: number;
+      deliveryAreas: number;
+      socialLinks: number;
+
+      audienceFit: number;
+
+      activeProducts: number;
+      activeEvents: number;
+      availability: number;
+    };
+
+    flags: string[];
+
+    suggestions: {
+      key: string;
+      signal: string;
+      points: number;
+      params?: {
+        count?: number;
+        percent?: number;
+      };
+    }[];
+  };
+
+  discountBoxes: string[];
+  discountConfigType: string;
+  providesDiscount: boolean;
+  bankDetailsFilled: boolean;
+}

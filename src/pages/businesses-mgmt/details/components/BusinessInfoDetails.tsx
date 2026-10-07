@@ -1,11 +1,10 @@
 import clsx from "clsx";
 import { type FC } from "react";
-import { AlignLeft, FileText } from "lucide-react";
-// import { UserRole } from "@/enums/user.types";
-// import { useAppSelector } from "@/hooks/hooks";
+import { AlignLeft, BadgePercent, FileText, Gift } from "lucide-react";
+
+import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
-import { getLngWiseStr } from "@/helpers";
 import {
   ConnectedDmoAuthorityWebsites,
   DiscountWebsiteQR,
@@ -45,6 +44,9 @@ interface Business {
   associatedWebsiteIds: string[];
   _id?: string;
   providesDiscount?: boolean;
+  discountBoxes: string[];
+  discountConfigType: string;
+
   // Superadmin-only flag marking this business as a regional discount supplier
   markedAsSupplier?: boolean;
 }
@@ -107,6 +109,62 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
           business?.geoLocation?.long ?? business?.location?.coordinates?.[1]
         }
       />
+
+      {/* Traveller discount / gift offer */}
+      {business?.providesDiscount && business?.discountBoxes?.length > 0 && (
+        <div
+          className={clsx(
+            "rounded-xl border p-4",
+            isDark
+              ? "border-teal-800/40 bg-teal-950/20"
+              : "border-teal-200 bg-teal-50/60",
+          )}
+        >
+          <div className="mb-3 flex items-center gap-2">
+            <span
+              className={clsx(
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                isDark
+                  ? "bg-teal-900/40 text-teal-300"
+                  : "bg-teal-100 text-teal-700",
+              )}
+            >
+              {business?.discountConfigType === "GIFT" ? (
+                <Gift className="h-5 w-5" />
+              ) : (
+                <BadgePercent className="h-5 w-5" />
+              )}
+            </span>
+            <h3
+              className={clsx(
+                "text-sm font-medium",
+                isDark ? "text-gray-100" : "text-gray-900",
+              )}
+            >
+              {business?.discountConfigType === "GIFT"
+                ? t("gift")
+                : t("discount")}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {business.discountBoxes.map((box, index) => (
+              <div
+                key={index}
+                className={clsx(
+                  "rounded-lg border px-3 py-2 text-sm",
+                  isDark
+                    ? "border-gray-700 bg-gray-900 text-gray-100"
+                    : "border-gray-200 bg-white text-gray-900",
+                )}
+              >
+                {business?.discountConfigType === "DISCOUNT" ? `${box}%` : box}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <ConnectedDmoAuthorityWebsites
         dmoId={business?.dmoId}
         authorityId={business?.authorityId}

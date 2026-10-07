@@ -95,6 +95,7 @@ export const businessQueryApi = createApi({
         method: "GET",
       }),
     }),
+
     getbusinessById: builder.query<any, { businessId: string | null }>({
       query: ({ businessId }) => ({
         url: `${endpoints.business}/${businessId}`,
@@ -102,6 +103,7 @@ export const businessQueryApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+
     getBusinessDeliveryInfoById: builder.query<
       any,
       { businessId: string | null }
