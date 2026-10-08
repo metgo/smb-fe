@@ -45,6 +45,8 @@ import { documentMutationApi } from "./api/doumentMutationApi";
 import { promotionsApi } from "./api/promotionsApi";
 import { websiteConfigApi } from "./api/websiteConfigApi";
 import { websiteCrashApi } from "./api/websiteCrashApi";
+import { businessScoreApi } from "./api/businessScoreApi";
+import { siteAnalyticsApi } from "./api/siteAnalyticsApi";
 import { campaignApi } from "./api/campaignApi";
 import { sessionQueryApi } from "./api/sessionQueryApi";
 import { sessionMutationApi } from "./api/sessionMutationApi";
@@ -111,6 +113,8 @@ export const store = configureStore({
     [promotionsApi.reducerPath]: promotionsApi.reducer,
     [websiteConfigApi.reducerPath]: websiteConfigApi.reducer,
     [websiteCrashApi.reducerPath]: websiteCrashApi.reducer,
+    [businessScoreApi.reducerPath]: businessScoreApi.reducer,
+    [siteAnalyticsApi.reducerPath]: siteAnalyticsApi.reducer,
     [campaignApi.reducerPath]: campaignApi.reducer,
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
@@ -180,6 +184,8 @@ export const store = configureStore({
       promotionsApi.middleware,
       websiteConfigApi.middleware,
       websiteCrashApi.middleware,
+      businessScoreApi.middleware,
+      siteAnalyticsApi.middleware,
       campaignApi.middleware,
       sessionQueryApi.middleware,
       sessionMutationApi.middleware,
