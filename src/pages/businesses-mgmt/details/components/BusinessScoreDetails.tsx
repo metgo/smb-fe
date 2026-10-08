@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import { Gauge, Info, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { Gauge, Info, RefreshCw, Sparkles } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -12,9 +13,13 @@ import {
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ScorePill from "@/components/pills/ScorePill";
+import ScoreInputsPanel from "./ScoreInputsPanel";
+import ScoreSuggestions from "./ScoreSuggestions";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import {
   useGetBusinessScoreHistoryQuery,
   useGetBusinessScoreQuery,
+  useRecalculateBusinessScoreMutation,
 } from "@/store/api/businessScoreApi";
 import {
   SCORE_METRIC_KEYS,
@@ -35,7 +40,16 @@ const formatDate = (value: string, language: string) =>
 
 const formatMetric = (key: string, value: number | null | undefined) => {
   if (value === null || value === undefined) return "–";
-  if (key === "cancelRate") return `${(value * 100).toFixed(1)}%`;
+  if (
+    [
+      "cancelRate",
+      "inStockShare",
+      "eventFillRate",
+      "listClickThrough",
+      "viewConversion",
+    ].includes(key)
+  )
+    return `${(value * 100).toFixed(1)}%`;
   if (key === "googleRating") return `${value.toFixed(1)} ★`;
   return value.toLocaleString();
 };
@@ -60,22 +74,65 @@ const BusinessScoreDetails = ({ businessId }: Props) => {
     { skip: !businessId },
   );
 
+  const { isTraveller } = useUserRoles();
+  const [recalculate, { isLoading: isRecalculating }] =
+    useRecalculateBusinessScoreMutation();
+
   if (isLoading) {
     return <div className={clsx("p-6", textTertiary)}>…</div>;
   }
 
+  // admins only - the server refuses vendors
+  const canRecalculate = !isTraveller && score?.status === "APPROVED";
+  const recalculateButton = canRecalculate && (
+    <button
+      type="button"
+      disabled={isRecalculating}
+      onClick={async () => {
+        try {
+          await recalculate({ businessId }).unwrap();
+          toast.success(t("recalculated_business"));
+        } catch (error) {
+          toast.error(
+            (error as { data?: { message?: string } })?.data?.message ||
+              t("run_failed"),
+          );
+        }
+      }}
+      className={clsx(
+        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm cursor-pointer disabled:opacity-50",
+        isDark
+          ? "border-gray-600 text-gray-200 hover:bg-gray-800"
+          : "border-gray-300 text-gray-700 hover:bg-gray-50",
+      )}
+    >
+      <RefreshCw
+        className={clsx("w-4 h-4", isRecalculating && "animate-spin")}
+      />
+      {t("recalculate_business")}
+    </button>
+  );
+
   const breakdown = score?.breakdown;
+  const inputs = {
+    policyFlags: score?.policyFlags ?? [],
+    localSourcing: score?.localSourcing ?? null,
+  };
   if (!breakdown) {
     return (
-      <div
-        className={clsx("rounded-xl p-6 flex gap-3 items-start", cardClasses)}
-      >
-        <Info className={clsx("w-5 h-5 mt-0.5 shrink-0", textTertiary)} />
-        <p className={textSecondary}>
-          {score && score.status !== "APPROVED"
-            ? t("not_approved")
-            : t("not_scored_yet")}
-        </p>
+      <div className="flex flex-col gap-4">
+        <div
+          className={clsx("rounded-xl p-6 flex gap-3 items-start", cardClasses)}
+        >
+          <Info className={clsx("w-5 h-5 mt-0.5 shrink-0", textTertiary)} />
+          <p className={clsx("flex-1", textSecondary)}>
+            {score && score.status !== "APPROVED"
+              ? t("not_approved")
+              : t("not_scored_yet")}
+          </p>
+          {recalculateButton}
+        </div>
+        <ScoreInputsPanel businessId={businessId} inputs={inputs} />
       </div>
     );
   }
@@ -86,7 +143,7 @@ const BusinessScoreDetails = ({ businessId }: Props) => {
   }));
 
   const metricEntries = SCORE_METRIC_KEYS.filter(
-    (key) => breakdown.metrics?.[key] !== undefined,
+    (key) => breakdown.metrics?.[key] != null,
   );
 
   return (
@@ -136,7 +193,13 @@ const BusinessScoreDetails = ({ businessId }: Props) => {
         <div className={clsx("text-sm ms-auto", textTertiary)}>
           {t("computed_at")}: {formatDate(breakdown.computedAt, language)}
         </div>
+        {recalculateButton}
       </div>
+
+      {/* what the owner can do next, biggest gain first */}
+      {breakdown.suggestions && (
+        <ScoreSuggestions suggestions={breakdown.suggestions} />
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* per-signal breakdown */}
@@ -259,6 +322,7 @@ const BusinessScoreDetails = ({ businessId }: Props) => {
           )}
         </div>
       </div>
+      <ScoreInputsPanel businessId={businessId} inputs={inputs} />
     </div>
   );
 };

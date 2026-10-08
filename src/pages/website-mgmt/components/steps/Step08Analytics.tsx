@@ -1,15 +1,138 @@
 import clsx from "clsx";
-import { BarChart2 } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
+import { BarChart2, KeyRound } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import {
+  useGetAnalyticsSecretStatusQuery,
+  useRemoveAnalyticsSecretMutation,
+  useSetAnalyticsSecretMutation,
+} from "@/store/api/siteAnalyticsApi";
+
+// write-only: the saved secret is never shown, only whether one is set
+const AnalyticsSecretField = ({ websiteId }: { websiteId: string | null }) => {
+  const { t } = useTranslation("website_settings");
+  const { textPrimary, textSecondary, inputClasses, borderColor } =
+    useThemeClasses();
+  const [secret, setSecret] = useState("");
+  const { data: status } = useGetAnalyticsSecretStatusQuery(websiteId ?? "", {
+    skip: !websiteId,
+  });
+  const [save, { isLoading: saving }] = useSetAnalyticsSecretMutation();
+  const [remove, { isLoading: removing }] = useRemoveAnalyticsSecretMutation();
+
+  const errorText = (error: unknown) =>
+    (
+      error as { data?: { message?: string | string[] } }
+    )?.data?.message?.toString() || t("ga_api_secret_failed");
+  const button = clsx(
+    "px-3 py-2 rounded-xl border text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+    borderColor,
+    textSecondary,
+  );
+
+  return (
+    <div className="flex flex-col gap-2 col-span-2">
+      <label
+        htmlFor="ga-api-secret"
+        className={clsx(
+          "text-sm font-medium flex items-center gap-2",
+          textPrimary,
+        )}
+      >
+        <KeyRound className="w-4 h-4" />
+        {t("ga_api_secret")}
+      </label>
+      {!websiteId ? (
+        <span className={clsx("text-xs", textSecondary)}>
+          {t("ga_api_secret_save_site_first")}
+        </span>
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <input
+              id="ga-api-secret"
+              type="password"
+              autoComplete="off"
+              value={secret}
+              onChange={(e) => setSecret(e.target.value)}
+              placeholder={
+                status?.isSet
+                  ? t("ga_api_secret_replace_placeholder")
+                  : t("ga_api_secret_placeholder")
+              }
+              className={clsx(
+                "flex-1 min-w-[14rem] px-4 py-2.5 rounded-xl border text-sm",
+                inputClasses,
+              )}
+            />
+            <button
+              type="button"
+              className={button}
+              disabled={!secret.trim() || saving}
+              onClick={async () => {
+                try {
+                  await save({
+                    websiteId,
+                    gaApiSecret: secret.trim(),
+                  }).unwrap();
+                  setSecret("");
+                  toast.success(t("ga_api_secret_saved"));
+                } catch (error) {
+                  toast.error(errorText(error));
+                }
+              }}
+            >
+              {t("ga_api_secret_save")}
+            </button>
+            {status?.isSet && (
+              <button
+                type="button"
+                className={button}
+                disabled={removing}
+                onClick={async () => {
+                  try {
+                    await remove(websiteId).unwrap();
+                    toast.success(t("ga_api_secret_removed"));
+                  } catch (error) {
+                    toast.error(errorText(error));
+                  }
+                }}
+              >
+                {t("ga_api_secret_remove")}
+              </button>
+            )}
+          </div>
+          <span className={clsx("text-xs", textSecondary)}>
+            {status?.isSet
+              ? t("ga_api_secret_is_set", {
+                  date: status.updatedAt
+                    ? new Date(status.updatedAt).toLocaleDateString()
+                    : "",
+                })
+              : t("ga_api_secret_not_set")}{" "}
+            {t("ga_api_secret_hint")}
+          </span>
+        </>
+      )}
+    </div>
+  );
+};
 
 interface Props {
+  websiteId?: string | null;
   formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
   onChange: (field: keyof ISiteSettingsFormData, value: string) => void;
 }
 
-const Step08Analytics = ({ formData, errors, onChange }: Props) => {
+const Step08Analytics = ({
+  websiteId = null,
+  formData,
+  errors,
+  onChange,
+}: Props) => {
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor } =
     useThemeClasses();
@@ -30,6 +153,12 @@ const Step08Analytics = ({ formData, errors, onChange }: Props) => {
       label: t("google_analytics_id"),
       placeholder: "G-XXXXXXXXXX",
       hint: t("google_analytics_hint"),
+    },
+    {
+      field: "gaPropertyId",
+      label: t("ga_property_id"),
+      placeholder: "123456789",
+      hint: t("ga_property_id_hint"),
     },
     {
       field: "googleAdsConvTrackId",
@@ -83,6 +212,7 @@ const Step08Analytics = ({ formData, errors, onChange }: Props) => {
             )}
           </div>
         ))}
+        <AnalyticsSecretField websiteId={websiteId} />
       </div>
 
       <div className={clsx("flex flex-col gap-5 pt-4 border-t", borderColor)}>
