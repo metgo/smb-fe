@@ -46,6 +46,7 @@ import {
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
   ScoreSettingsPage,
+  ScoreInsightsPage,
   EventSessionMgmtPage,
   TripsMgmtPage,
   TripDetailsPage,
@@ -675,6 +676,14 @@ function App() {
               element: (
                 <SuperadminRoute>
                   <ScoreSettingsPage />
+                </SuperadminRoute>
+              ),
+            },
+            {
+              path: routes.scoreInsights,
+              element: (
+                <SuperadminRoute>
+                  <ScoreInsightsPage />
                 </SuperadminRoute>
               ),
             },

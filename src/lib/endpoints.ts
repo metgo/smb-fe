@@ -47,6 +47,7 @@ export const endpoints = {
   pendingApprovals: "/admin/pending-approvals",
   businessScoreConfig: "/business-score/config",
   businessScoreRuns: "/business-score/runs",
+  businessScoreInsights: "/business-score/insights",
   businessScoreAnalyticsImport: "/business-score/analytics/import",
   businessRecalculateImpact: "/businesses/recalculate-impact",
 

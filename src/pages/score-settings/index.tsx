@@ -233,6 +233,12 @@ const ScoreSettingsPage = () => {
       if (summary.skipped)
         toast.warning(`${t("run_skipped")}: ${summary.skipped}`);
       else toast.success(t("recalculated"));
+      if (summary.analyticsImport?.failedSites.length)
+        toast.warning(
+          t("ga_import_failed_sites", {
+            sites: summary.analyticsImport.failedSites.join(", "),
+          }),
+        );
     } catch (error) {
       toast.error(errorMessage(error, t("run_failed")));
     }
@@ -509,6 +515,72 @@ const ScoreSettingsPage = () => {
             </label>
           </fieldset>
 
+          {/* refresh GA4 inside every full run */}
+          <div className="flex flex-wrap items-center gap-4">
+            <ScoreToggle
+              id="score-import-before-run"
+              checked={schedule.importAnalyticsBeforeRun !== false}
+              onChange={(on) => setSchedule({ importAnalyticsBeforeRun: on })}
+              label={t("import_before_run")}
+              {...toggleText}
+            />
+            <div className="flex-1 min-w-[14rem]">
+              <div className={clsx("font-medium", textPrimary)}>
+                {t("import_before_run")}
+              </div>
+              <div className={clsx("text-sm", textTertiary)}>
+                {t("import_before_run_desc")}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className={fieldLabel} htmlFor="ga-resync-days">
+              {t("ga_resync_days")}
+              <input
+                id="ga-resync-days"
+                type="number"
+                min={1}
+                max={30}
+                value={schedule.analyticsResyncDays ?? 3}
+                onChange={(e) =>
+                  setSchedule({
+                    analyticsResyncDays: Math.min(
+                      30,
+                      Math.max(1, Number(e.target.value) || 1),
+                    ),
+                  })
+                }
+                className={clsx(fieldInput, "tabular-nums")}
+              />
+              <span className={clsx("text-xs", textTertiary)}>
+                {t("ga_resync_days_hint")}
+              </span>
+            </label>
+            <label className={fieldLabel} htmlFor="ga-backfill-days">
+              {t("ga_backfill_days")}
+              <input
+                id="ga-backfill-days"
+                type="number"
+                min={1}
+                max={365}
+                value={schedule.analyticsBackfillDays ?? 30}
+                onChange={(e) =>
+                  setSchedule({
+                    analyticsBackfillDays: Math.min(
+                      365,
+                      Math.max(1, Number(e.target.value) || 1),
+                    ),
+                  })
+                }
+                className={clsx(fieldInput, "tabular-nums")}
+              />
+              <span className={clsx("text-xs", textTertiary)}>
+                {t("ga_backfill_days_hint")}
+              </span>
+            </label>
+          </div>
+
           {/* GA4 import - runs nightly at 02:30, before the score run */}
           <div
             className={clsx(
@@ -521,6 +593,11 @@ const ScoreSettingsPage = () => {
               <div className={clsx("font-medium", textPrimary)}>
                 {t("ga_import")}
               </div>
+              <div className={clsx("text-xs", textTertiary)}>
+                {t("ga_last_import", {
+                  date: config.status.lastAnalyticsImportOn ?? t("never"),
+                })}
+              </div>
               <div className={clsx("text-sm", textTertiary)}>
                 {t("ga_import_desc")}
               </div>
@@ -530,7 +607,9 @@ const ScoreSettingsPage = () => {
               disabled={isImporting}
               onClick={async () => {
                 try {
-                  const results = await importAnalytics({ days: 30 }).unwrap();
+                  const results = await importAnalytics({
+                    days: draft.schedule.analyticsBackfillDays ?? 30,
+                  }).unwrap();
                   const imported = results.filter((r) => r.rows > 0);
                   const failed = results.filter((r) => r.error);
                   const missing = results.filter((r) => !r.propertyId);
@@ -562,7 +641,11 @@ const ScoreSettingsPage = () => {
                 textSecondary,
               )}
             >
-              {isImporting ? t("ga_importing") : t("ga_import_now")}
+              {isImporting
+                ? t("ga_importing")
+                : t("ga_import_now", {
+                    days: draft.schedule.analyticsBackfillDays ?? 30,
+                  })}
             </button>
           </div>
         </div>

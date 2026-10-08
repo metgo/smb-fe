@@ -91,6 +91,12 @@ export interface IScoreInputs {
   localSourcing: ILocalSourcing | null;
 }
 
+// after a change the business is recalculated straight away
+export interface IScoreInputsResult extends IScoreInputs {
+  recalculated: boolean;
+  impact: number | null;
+}
+
 export interface IBusinessScore extends IScoreInputs {
   businessId: string;
   status: string;
@@ -117,6 +123,12 @@ export interface IScoreSchedule {
   // YYYY-MM-DD, inclusive; null = open-ended
   startDate: string | null;
   endDate: string | null;
+  // pull the latest GA4 numbers (last 3 days) before every full run
+  importAnalyticsBeforeRun: boolean;
+  // recent days each GA4 import refreshes (1–30)
+  analyticsResyncDays: number;
+  // how far back "Import now" reaches (1–365)
+  analyticsBackfillDays: number;
 }
 
 export interface IScoreRun {
@@ -144,6 +156,40 @@ export interface IAnalyticsImportResult {
   error: string | null;
 }
 
+export interface IScoreGroup {
+  id: string | null;
+  name: string | null;
+  average: number;
+  businesses: number;
+  high: number;
+  middle: number;
+  low: number;
+}
+
+// superadmin score dashboard
+export interface IScoreInsights {
+  approved: number;
+  scored: number;
+  notScored: number;
+  notApproved: number;
+  // every scored approved business's score, ascending
+  impacts: number[];
+  signals: { key: ScoreSignalKey; average: number; businesses: number }[];
+  flags: Record<string, number>;
+  // per DMO and per authority, with band counts
+  regions: IScoreGroup[];
+  authorities: IScoreGroup[];
+  scope: { dmoId: string | null; authorityId: string | null };
+  trend: {
+    date: string;
+    average: number;
+    median: number;
+    p25: number;
+    p75: number;
+    businesses: number;
+  }[];
+}
+
 export interface IScoreConfig {
   version: number;
   schedule: IScoreSchedule;
@@ -159,6 +205,8 @@ export interface IScoreConfig {
     nextRun: string | null;
     timeZone: string;
     lastRun: IScoreRun | null;
+    // Israel date of the last successful GA4 import
+    lastAnalyticsImportOn: string | null;
   };
 }
 
@@ -195,6 +243,8 @@ export interface IScoreRunSummary {
     signals: Partial<Record<ScoreSignalKey, number>>;
   }[];
   durationMs: number;
+  // GA4 import done just before a full run
+  analyticsImport?: { sites: number; rows: number; failedSites: string[] };
 }
 
 export const businessScoreApi = createApi({
@@ -264,7 +314,7 @@ export const businessScoreApi = createApi({
     }),
 
     addPolicyFlag: builder.mutation<
-      IScoreInputs,
+      IScoreInputsResult,
       { businessId: string; type: IPolicyFlag["type"]; reason: string }
     >({
       query: ({ businessId, ...data }) => ({
@@ -276,7 +326,7 @@ export const businessScoreApi = createApi({
     }),
 
     resolvePolicyFlag: builder.mutation<
-      IScoreInputs,
+      IScoreInputsResult,
       { businessId: string; flagId: string }
     >({
       query: ({ businessId, flagId }) => ({
@@ -287,7 +337,7 @@ export const businessScoreApi = createApi({
     }),
 
     updateLocalSourcing: builder.mutation<
-      IScoreInputs,
+      IScoreInputsResult,
       {
         businessId: string;
         localProductsPercent: number | null;
@@ -303,7 +353,7 @@ export const businessScoreApi = createApi({
     }),
 
     verifyLocalSourcing: builder.mutation<
-      IScoreInputs,
+      IScoreInputsResult,
       { businessId: string; verified: boolean }
     >({
       query: ({ businessId, verified }) => ({
@@ -325,6 +375,18 @@ export const businessScoreApi = createApi({
       }),
     }),
 
+    getScoreInsights: builder.query<
+      IScoreInsights,
+      { days?: number; dmoId?: string; authorityId?: string }
+    >({
+      query: ({ days, dmoId, authorityId }) => ({
+        url: endpoints.businessScoreInsights,
+        method: "GET",
+        params: { days, dmoId, authorityId },
+      }),
+      providesTags: ["BusinessScore"],
+    }),
+
     getScoreRuns: builder.query<IScoreRun[], { limit?: number }>({
       query: ({ limit }) => ({
         url: endpoints.businessScoreRuns,
@@ -344,6 +406,7 @@ export const {
   useRecalculateScoresMutation,
   useRecalculateBusinessScoreMutation,
   useGetScoreRunsQuery,
+  useGetScoreInsightsQuery,
   useImportAnalyticsMutation,
   useAddPolicyFlagMutation,
   useResolvePolicyFlagMutation,

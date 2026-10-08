@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { BadgeCheck, ClipboardList, ShieldAlert } from "lucide-react";
 
 import CollapsibleCard from "@/components/score/CollapsibleCard";
+import { InfoTooltip } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import {
@@ -13,6 +14,7 @@ import {
   useUpdateLocalSourcingMutation,
   useVerifyLocalSourcingMutation,
   type IPolicyFlag,
+  type IScoreInputsResult,
   type IScoreInputs,
 } from "@/store/api/businessScoreApi";
 
@@ -59,6 +61,15 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
     setEmployees(sourcing?.localEmployees?.toString() ?? "");
   }, [sourcing?.localProductsPercent, sourcing?.localEmployees]);
 
+  // the server recalculates the score after each change
+  const announce = (result: IScoreInputsResult, done: string) => {
+    if (result.recalculated && result.impact !== null)
+      toast.success(
+        `${done} · ${t("score_updated", { impact: result.impact })}`,
+      );
+    else toast.success(`${done} · ${t("score_update_next_run")}`);
+  };
+
   const activeFlags = inputs.policyFlags.filter((f) => !f.resolvedAt);
   const formatDate = (value: string) =>
     new Date(value).toLocaleDateString(i18n.language, {
@@ -101,6 +112,11 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
           >
             <ShieldAlert className="w-4 h-4" />
             {t("policy_flags")}
+            <InfoTooltip
+              title={t("policy_flags")}
+              content={t("policy_flags_info")}
+              elevated
+            />
           </h3>
           <p className={clsx("text-xs", textTertiary)}>
             {t("policy_flags_desc")}
@@ -149,11 +165,11 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
                     className={button}
                     onClick={async () => {
                       try {
-                        await resolveFlag({
+                        const result = await resolveFlag({
                           businessId,
                           flagId: flag._id,
                         }).unwrap();
-                        toast.success(t("flag_resolved"));
+                        announce(result, t("flag_resolved"));
                       } catch (error) {
                         toast.error(errorText(error, t("save_failed")));
                       }
@@ -176,13 +192,13 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
                   return;
                 }
                 try {
-                  await addFlag({
+                  const result = await addFlag({
                     businessId,
                     type: flagType,
                     reason,
                   }).unwrap();
                   setReason("");
-                  toast.success(t("flag_added"));
+                  announce(result, t("flag_added"));
                 } catch (error) {
                   toast.error(errorText(error, t("save_failed")));
                 }
@@ -230,12 +246,12 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
           onSubmit={async (event) => {
             event.preventDefault();
             try {
-              await saveSourcing({
+              const result = await saveSourcing({
                 businessId,
                 localProductsPercent: percent === "" ? null : Number(percent),
                 localEmployees: employees === "" ? null : Number(employees),
               }).unwrap();
-              toast.success(t("sourcing_saved"));
+              announce(result, t("sourcing_saved"));
             } catch (error) {
               toast.error(errorText(error, t("save_failed")));
             }
@@ -249,6 +265,12 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
           >
             <BadgeCheck className="w-4 h-4" />
             {t("local_sourcing")}
+            <InfoTooltip
+              title={t("local_sourcing")}
+              content={t("local_sourcing_info")}
+              width="w-96"
+              elevated
+            />
           </h3>
           <p className={clsx("text-xs", textTertiary)}>
             {t("local_sourcing_desc")}
@@ -268,6 +290,9 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
                 onChange={(e) => setPercent(e.target.value)}
                 className={clsx(fieldInput, "tabular-nums")}
               />
+              <span className={clsx("text-xs", textTertiary)}>
+                {t("local_products_hint")}
+              </span>
             </label>
             <label
               htmlFor="sourcing-employees"
@@ -283,6 +308,9 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
                 onChange={(e) => setEmployees(e.target.value)}
                 className={clsx(fieldInput, "tabular-nums")}
               />
+              <span className={clsx("text-xs", textTertiary)}>
+                {t("local_employees_hint")}
+              </span>
             </label>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -316,11 +344,11 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
                 className={button}
                 onClick={async () => {
                   try {
-                    await verifySourcing({
+                    const result = await verifySourcing({
                       businessId,
                       verified: !sourcing.verifiedAt,
                     }).unwrap();
-                    toast.success(t("sourcing_saved"));
+                    announce(result, t("sourcing_saved"));
                   } catch (error) {
                     toast.error(errorText(error, t("save_failed")));
                   }

@@ -31,6 +31,7 @@ import PoiDetailsPage from "./poi-mgmt/details";
 import WebsiteCrashesPage from "./website-crashes";
 import WebsiteCrashDetailsPage from "./website-crashes/details";
 import ScoreSettingsPage from "./score-settings";
+import ScoreInsightsPage from "./score-insights";
 import EventSessionMgmtPage from "./event-session-mgmt";
 import TripsMgmtPage from "./trips-mgmt";
 import TripDetailsPage from "./trips-mgmt/details";
@@ -84,6 +85,7 @@ export {
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
   ScoreSettingsPage,
+  ScoreInsightsPage,
   StatsSummaryPage,
   UtmBuilderPage,
   EmailConfigMgmtPage,

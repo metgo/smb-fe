@@ -391,6 +391,13 @@ export default function Sidebar() {
                 isEnabled: true,
               },
               {
+                id: "score-insights",
+                path: routes.scoreInsights,
+                label: t("score_insights") || "Score insights",
+                icon: BarChart3,
+                isEnabled: true,
+              },
+              {
                 id: "score-settings",
                 path: routes.scoreSettings,
                 label: t("score_settings") || "Score settings",
