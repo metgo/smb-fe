@@ -10,6 +10,7 @@ import { ExternalApiModule } from 'src/modules/external-api/external-api.module'
 import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
+import { GaMeasurementModule } from 'src/modules/ga-measurement/ga-measurement.module';
 import { BusinessModule } from 'src/modules/business/business.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ProductsModule } from 'src/modules/products/products.module';
@@ -26,6 +27,7 @@ import { DocUploadModule } from 'src/modules/doc-upload/doc-upload.module';
     forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),
     MailChimpModule,
+    GaMeasurementModule,
     DocUploadModule,
     forwardRef(() => BusinessModule),
     forwardRef(() => ProductsModule),

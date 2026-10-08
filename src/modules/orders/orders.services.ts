@@ -1,3 +1,4 @@
+import { GaMeasurementService } from 'src/modules/ga-measurement/ga-measurement.service';
 import {
   BadRequestException,
   ForbiddenException,
@@ -89,6 +90,7 @@ export class OrdersService {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
+    private readonly gaMeasurement: GaMeasurementService,
     private readonly queryBus: QueryBus,
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
@@ -633,11 +635,17 @@ export class OrdersService {
         externalApiService: this.externalApiService,
         logger: this.logger,
       });
-      return await this.createVendorSplitOrdersForVoucher(
+      const splitResult = await this.createVendorSplitOrdersForVoucher(
         savedParentOrder,
         cart,
         command?.externalApi,
       );
+      // paid entirely by voucher - no Cardcom webhook, so report the
+      // purchase to GA4 here (fire and forget)
+      this.gaMeasurement
+        .sendPurchase(savedParentOrder._id, body?.cartId)
+        .catch(() => undefined);
+      return splitResult;
     }
 
     // Log warning if both vendorProducts and product arrays exist (data inconsistency)
@@ -804,6 +812,10 @@ export class OrdersService {
         },
       );
     }
+
+    // paid entirely by voucher - no Cardcom webhook, so report the purchase
+    // to GA4 here (fire and forget)
+    this.gaMeasurement.sendPurchase(order._id, body?.cartId).catch(() => undefined);
 
     return order;
   }

@@ -1,3 +1,4 @@
+import { GaMeasurementModule } from 'src/modules/ga-measurement/ga-measurement.module';
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
@@ -42,6 +43,7 @@ import { DocUploadModule } from '../doc-upload/doc-upload.module';
 
 @Module({
   imports: [
+    GaMeasurementModule,
     CqrsModule,
     MongooseModule.forFeature([
       { name: Order.name, schema: OrderSchema },

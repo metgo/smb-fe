@@ -17,12 +17,14 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { OrdersService } from 'src/modules/orders/orders.services';
+import { GaMeasurementService } from 'src/modules/ga-measurement/ga-measurement.service';
 import { CreateOrderDto } from './dto';
 import { CreateMiniSiteOrderCommand } from './commands/create-mini-site-order.command';
 
 @Controller()
 export class OrdersController {
   constructor(
+    private readonly gaMeasurement: GaMeasurementService,
     private ordersService: OrdersService,
     private readonly commandBus: CommandBus,
   ) {}
@@ -39,6 +41,8 @@ export class OrdersController {
   @HttpCode(HttpStatus.CREATED)
   @Post('orders')
   async createOrder(@Body() body: CreateOrderDto, @Req() req) {
+    // visitor's GA4 ids (headers, never body) for the server-side purchase
+    await this.gaMeasurement.rememberCheckout(body.cartId, req?.headers);
     const orders = await this.ordersService.startCheckOutProcess(
       body,
       req?.user,
@@ -59,6 +63,7 @@ export class OrdersController {
   @HttpCode(HttpStatus.CREATED)
   @Post('orders/mini-site')
   async createOrderForMiniSite(@Body() body: CreateOrderDto, @Req() req) {
+    await this.gaMeasurement.rememberCheckout(body.cartId, req?.headers);
     return await this.commandBus.execute(
       new CreateMiniSiteOrderCommand(body, req?.user),
     );

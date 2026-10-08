@@ -9,6 +9,7 @@ import axios from 'axios';
 import { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { GaMeasurementService } from 'src/modules/ga-measurement/ga-measurement.service';
 
 import { Locale, PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
 import { EnglishTemplate } from 'src/common/mailchimp/templateId';
@@ -39,6 +40,7 @@ export class PaymentsService {
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
     private mailchimpService: MailChimpService,
+    private readonly gaMeasurement: GaMeasurementService,
   ) {}
 
   async createPayment(insertField: any) {
@@ -284,6 +286,9 @@ export class PaymentsService {
           );
           updateOrder = result.updateOrder;
           getProductInformation = result.getProductInformation;
+          // GA4 purchase from the server - fire and forget, never blocks
+          // the payment flow
+          this.gaMeasurement.sendPurchase(payments.orderId).catch(() => undefined);
         } catch (orderError) {
           this.logger.error(
             '[PAYMENT]: FAILED TO UPDATE ORDER AFTER PAYMENT SUCCESS',
@@ -455,6 +460,8 @@ export class PaymentsService {
       }
 
       if (payments?.purpose === PaymentPurpose.ORDER) {
+        // GA4 payment_failed from the server - fire and forget
+        this.gaMeasurement.sendPaymentFailed(payments.orderId, reason).catch(() => undefined);
         await this.ordersService.updateAfterPaymentFailure(
           payments.orderId,
           reason,
