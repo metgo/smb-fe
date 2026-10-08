@@ -346,6 +346,10 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                             otherIndex !== index &&
                             normalize(other ?? "") === normalize(value),
                         );
+                      const hasWordCountError =
+                        !isDiscountType &&
+                        value !== "" &&
+                        value.trim().split(/\s+/).length > 2;
                       return (
                         <div key={index}>
                           <label
@@ -378,7 +382,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                               }
                               placeholder={isDiscountType ? "0" : ""}
                               className={`${discountInputClasses} ${
-                                hasRangeError || hasDuplicateError
+                                hasRangeError ||
+                                hasDuplicateError ||
+                                hasWordCountError
                                   ? "border-red-500 focus:ring-red-500"
                                   : ""
                               }`}
@@ -396,11 +402,18 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                               {t("traveller_discount_range_invalid")}
                             </p>
                           )}
-                          {!hasRangeError && hasDuplicateError && (
+                          {!hasRangeError && hasWordCountError && (
                             <p className="mt-1 text-xs text-red-500">
-                              {t("traveller_discount_duplicate_value")}
+                              {t("traveller_gift_max_two_words")}
                             </p>
                           )}
+                          {!hasRangeError &&
+                            !hasWordCountError &&
+                            hasDuplicateError && (
+                              <p className="mt-1 text-xs text-red-500">
+                                {t("traveller_discount_duplicate_value")}
+                              </p>
+                            )}
                         </div>
                       );
                     })}

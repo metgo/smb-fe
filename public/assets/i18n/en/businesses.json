@@ -247,6 +247,7 @@
   "traveller_discount_type_required": "Please choose Discount or Gift",
   "traveller_discount_required": "All 6 fields are required",
   "traveller_discount_range_invalid": "Discount values must be between 1 and 100",
+  "traveller_gift_max_two_words": "Gift values must be at most 2 words",
   "traveller_discount_duplicate_value": "Each value must be unique",
   "discount_website": "Discount Website",
   "supplier_website": "Supplier Website",

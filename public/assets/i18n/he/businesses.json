@@ -247,6 +247,7 @@
   "traveller_discount_type_required": "יש לבחור הנחה או מתנה",
   "traveller_discount_required": "כל 6 השדות נדרשים",
   "traveller_discount_range_invalid": "ערכי ההנחה חייבים להיות בין 1 ל-100",
+  "traveller_gift_max_two_words": "ערכי המתנה חייבים להכיל לכל היותר 2 מילים",
   "traveller_discount_duplicate_value": "כל ערך חייב להיות ייחודי",
   "discount_website": "אתר ההנחות",
   "supplier_website": "אתר הספקים",

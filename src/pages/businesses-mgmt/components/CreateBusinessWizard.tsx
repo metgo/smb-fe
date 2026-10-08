@@ -759,65 +759,6 @@ function CreateBusinessWizardInner({
     stepPayloadMap,
   });
 
-  // const validateStep = (step: number): boolean => {
-  //   const newErrors: Record<string, string> = {};
-
-  //   switch (step) {
-  //     case 1:
-  //       if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
-  //       if (!selectedAuthorityId?.trim())
-  //         newErrors.authorityId = t("required_field");
-  //       if (
-  //         !formData.name?.trim() &&
-  //         !formData.nameAr?.trim() &&
-  //         !formData.nameHe?.trim()
-  //       )
-  //         newErrors.name = t("required_field");
-  //       if (
-  //         !formData.shortDescription?.trim() &&
-  //         !formData.shortDescriptionAr?.trim() &&
-  //         !formData.shortDescriptionHe?.trim()
-  //       )
-  //         newErrors.shortDescription = t("required_field");
-  //       if (
-  //         !formData.fullDescription?.trim() &&
-  //         !formData.fullDescriptionAr?.trim() &&
-  //         !formData.fullDescriptionHe?.trim()
-  //       )
-  //         newErrors.fullDescription = t("required_field");
-
-  //       break;
-  //     case 2: {
-  //       if (formData.email?.trim() === "") {
-  //         newErrors.email = t("required_field");
-  //       }
-
-  //       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  //       if (formData.email && !emailRegex.test(formData.email.trim())) {
-  //         newErrors.email = t("invalid_email_format");
-  //       }
-  //       if (formData.phone?.trim() === "")
-  //         newErrors.phone = t("required_field");
-  //       break;
-  //     }
-
-  //     case 3:
-  //       if (!addr.location) {
-  //         newErrors.address = t("required_field");
-  //       }
-  //       break;
-
-  //     case 4:
-  //       if (formData.primaryCategory?.trim() === "") {
-  //         newErrors.primaryCategory = t("primary_category_required");
-  //       }
-  //       break;
-  //   }
-  //   setErrors(newErrors);
-  //   return Object.keys(newErrors).length === 0;
-  // };
-
   const handleClose = () => {
     if (isFormDirty() && !isPublishBtnClicked && !isDraftBtnClicked) {
       setShowClosePopup(true);
@@ -838,6 +779,7 @@ function CreateBusinessWizardInner({
   // when invalid, or null when it's fine / disabled.
   const getDiscountError = (): string | null => {
     if (!formData.providesDiscount) return null;
+
     const { discountConfigType, discountBoxes } = formData;
 
     if (discountConfigType !== "DISCOUNT" && discountConfigType !== "GIFT") {
@@ -845,6 +787,7 @@ function CreateBusinessWizardInner({
     }
 
     const boxes: string[] = discountBoxes ?? [];
+
     if (boxes.length !== 6 || boxes.some((box) => !String(box ?? "").trim())) {
       return "traveller_discount_required";
     }
@@ -852,10 +795,26 @@ function CreateBusinessWizardInner({
     if (discountConfigType === "DISCOUNT") {
       const hasInvalidRange = boxes.some((box) => {
         const value = Number(box);
+
         return Number.isNaN(value) || value < 1 || value > 100;
       });
+
       if (hasInvalidRange) {
         return "traveller_discount_range_invalid";
+      }
+    }
+
+    if (discountConfigType === "GIFT") {
+      const hasMoreThanTwoWords = boxes.some((box) => {
+        const words = String(box ?? "")
+          .trim()
+          .split(/\s+/);
+
+        return words.length > 2;
+      });
+
+      if (hasMoreThanTwoWords) {
+        return "traveller_gift_max_two_words";
       }
     }
 
@@ -864,9 +823,11 @@ function CreateBusinessWizardInner({
         .trim()
         .toLowerCase(),
     );
+
     const hasDuplicates = normalized.some(
       (value, index) => normalized.indexOf(value) !== index,
     );
+
     if (hasDuplicates) {
       return "traveller_discount_duplicate_value";
     }
@@ -963,20 +924,6 @@ function CreateBusinessWizardInner({
       toast.error(tc("website_visibility_required"));
       return;
     }
-
-    // // Validate all steps
-    // let allValid = true;
-    // for (let i = 1; i <= 5; i++) {
-    //   if (!validateStep(i)) {
-    //     allValid = false;
-    //     setCurrentStep(i);
-    //     break;
-    //   }
-    // }
-    // if (!allValid) {
-    //   toast.error(tt("fill_all_fields"));
-    //   return;
-    // }
 
     setIsPublishing(true);
     const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
