@@ -202,7 +202,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       )}
 
       {/* Traveller discount */}
-      {isTraveller && (
+      {(isTraveller || isSuperadmin) && (
         <div
           className={`rounded-xl border p-4 transition-colors ${
             formData.providesDiscount
