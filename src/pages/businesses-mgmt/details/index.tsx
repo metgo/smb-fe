@@ -35,6 +35,7 @@ import {
   DetailTitleSection,
   MediaDetails,
 } from "@/components/details-sections";
+import BusinessScoreDetails from "./components/BusinessScoreDetails";
 import { businessTabs } from "@/constants/tabs";
 import { IOpMode } from "@/enums/operation.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -365,6 +366,8 @@ function BusinessDetailsPageInner() {
         );
       case "hours":
         return <BusinessOpeningHoursDetails {...commonProps} />;
+      case "score":
+        return <BusinessScoreDetails businessId={businessId} />;
       default:
         return null;
     }
