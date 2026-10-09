@@ -674,10 +674,14 @@ function CreateBusinessWizardInner({
     descriptionHe: formData.fullDescriptionHe,
     internalNotes: formData.internalNotes,
     providesDiscount: formData.providesDiscount,
-    discountConfigType: formData.providesDiscount
-      ? formData.discountConfigType
-      : null,
-    discountBoxes: formData.providesDiscount ? formData.discountBoxes : null,
+    ...(formData.providesDiscount &&
+      formData.discountConfigType != null && {
+        discountConfigType: formData.discountConfigType,
+      }),
+    ...(formData.providesDiscount &&
+      formData.discountBoxes != null && {
+        discountBoxes: formData.discountBoxes,
+      }),
     // "Mark as supplier" is a superadmin toggle, independent of providesDiscount.
     markedAsSupplier: !!formData.markedAsSupplier,
 
