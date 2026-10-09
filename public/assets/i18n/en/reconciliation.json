@@ -95,6 +95,7 @@
   "order_date": "Order Date",
   "purchase_date": "Purchase Date",
   "completed_at": "Completed At",
+  "paid_at": "Paid At",
   "unit_price": "Unit Price",
   "total": "Total",
   "total_price": "Total",

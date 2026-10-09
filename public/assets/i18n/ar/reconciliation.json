@@ -95,6 +95,7 @@
   "order_date": "تاريخ الطلب",
   "purchase_date": "تاريخ الشراء",
   "completed_at": "تم الإكمال في",
+  "paid_at": "تم الدفع في",
   "unit_price": "سعر الوحدة",
   "total": "المجموع",
   "total_price": "المجموع",

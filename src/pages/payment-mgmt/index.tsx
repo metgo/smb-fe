@@ -168,15 +168,15 @@ export const PaymentMgmtPage = () => {
       return;
     }
 
-    const now = new Date();
+    // const now = new Date();
     // "Close All Orders" always targets last calendar month; vendors keep
     // the right to mark orders Completed / open a dispute until the 10th of
     // the current month.
-    const graceCutoff = new Date(now.getFullYear(), now.getMonth(), 10);
-    if (now < graceCutoff) {
-      setShowCloseAllOrdersLockedModal(true);
-      return;
-    }
+    // const graceCutoff = new Date(now.getFullYear(), now.getMonth(), 10);
+    // if (now < graceCutoff) {
+    //   setShowCloseAllOrdersLockedModal(true);
+    //   return;
+    // }
     setShowCloseAllOrdersModal(true);
   };
 
