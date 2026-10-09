@@ -45,6 +45,8 @@ import {
   UsersMgmtPage,
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
+  ScoreSettingsPage,
+  ScoreInsightsPage,
   EventSessionMgmtPage,
   TripsMgmtPage,
   TripDetailsPage,
@@ -668,6 +670,22 @@ function App() {
             {
               path: routes.websiteCrashDetails,
               element: <WebsiteCrashDetailsPage />,
+            },
+            {
+              path: routes.scoreSettings,
+              element: (
+                <SuperadminRoute>
+                  <ScoreSettingsPage />
+                </SuperadminRoute>
+              ),
+            },
+            {
+              path: routes.scoreInsights,
+              element: (
+                <SuperadminRoute>
+                  <ScoreInsightsPage />
+                </SuperadminRoute>
+              ),
             },
             { path: "/*", element: <DashboardPage /> },
           ],

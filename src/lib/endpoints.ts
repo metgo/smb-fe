@@ -45,6 +45,11 @@ export const endpoints = {
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
   pendingApprovals: "/admin/pending-approvals",
+  businessScoreConfig: "/business-score/config",
+  businessScoreRuns: "/business-score/runs",
+  businessScoreInsights: "/business-score/insights",
+  businessScoreAnalyticsImport: "/business-score/analytics/import",
+  businessRecalculateImpact: "/businesses/recalculate-impact",
 
   //mini-sites
   miniSites: "mini-sites",
