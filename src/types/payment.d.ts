@@ -8,6 +8,7 @@ interface IMonthlyOrder {
   customerEmail: string;
   customerPhone: string;
   purchaseDate: string;
+  completedAt?: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;

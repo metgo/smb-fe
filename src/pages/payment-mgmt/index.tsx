@@ -170,9 +170,9 @@ export const PaymentMgmtPage = () => {
 
     const now = new Date();
     // "Close All Orders" always targets last calendar month; vendors keep
-    // the right to mark orders Completed / open a dispute until the 5th of
+    // the right to mark orders Completed / open a dispute until the 10th of
     // the current month.
-    const graceCutoff = new Date(now.getFullYear(), now.getMonth(), 5);
+    const graceCutoff = new Date(now.getFullYear(), now.getMonth(), 10);
     if (now < graceCutoff) {
       setShowCloseAllOrdersLockedModal(true);
       return;
