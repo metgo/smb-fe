@@ -95,6 +95,7 @@
   "order_date": "תאריך הזמנה",
   "purchase_date": "תאריך קנייה",
   "completed_at": "הושלם ב",
+  "paid_at": "שולם ב",
   "unit_price": "מחיר יחידה",
   "total": "סה\"כ",
   "total_price": "סה\"כ",

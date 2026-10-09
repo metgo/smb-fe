@@ -35,6 +35,7 @@ export function mapOrderProductList(d: any, language: Language) {
     customerPhone: d.customer?.phone || "",
     purchaseDate: d.createdAt || "",
     completedAt: d.completedAt || "",
+    finalizedAt: d.finalizedAt || "",
     quantity: d.quantity || 0,
     unitPrice: d.price || 0,
     totalPrice: d.totalAmount || 0,
@@ -461,6 +462,18 @@ export function buildOrderColumns({
         </span>
       ),
     },
+    // {
+    //   key: "finalizedAt",
+    //   sortable: true,
+    //   label: t("paid_at"),
+    //   render: (order: IMonthlyOrder) => (
+    //     <span className={textSecondary}>
+    //       {order.finalizedAt
+    //         ? formatDateTime(order.finalizedAt, language)
+    //         : "-"}
+    //     </span>
+    //   ),
+    // },
     {
       key: "actions",
       label: t("actions"),
