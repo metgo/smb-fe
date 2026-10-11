@@ -35,6 +35,7 @@ type TicketErrors = {
   description?: string;
   greeting?: string;
   ticketDays: string[];
+  noDayError?: string;
   markedPrice?: string;
   sellingPrice?: string;
   quantity?: string;
@@ -69,7 +70,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
     isDark,
   } = useThemeClasses();
 
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const [errors, setErrors] = useState<TicketErrors>({ ticketDays: [] });
 
   const isPaidOrVip = ["paid", "vip"].includes(
@@ -141,19 +142,25 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
       firstInvalidKey ??= "description";
     }
 
-    ticketDateTime.forEach((day, i) => {
-      let msg = "";
-      if (!day.date?.trim()) msg = t("date_required");
-      else if (!day.startTime) msg = t("start_time_required");
-      else if (!day.endTime) msg = t("end_time_required");
-      else if (day.startTime >= day.endTime) msg = t("end_after_start");
+    if (ticketDateTime.length === 0) {
+      newErrors.noDayError = t("at_least_one_day_required");
+      isValid = false;
+      firstInvalidKey ??= "ticketDaysSection";
+    } else {
+      ticketDateTime.forEach((day, i) => {
+        let msg = "";
+        if (!day.date?.trim()) msg = t("date_required");
+        else if (!day.startTime) msg = t("start_time_required");
+        else if (!day.endTime) msg = t("end_time_required");
+        else if (day.startTime >= day.endTime) msg = t("end_after_start");
 
-      if (msg) {
-        newErrors.ticketDays[i] = msg;
-        isValid = false;
-        firstInvalidKey ??= `day-${i}`;
-      }
-    });
+        if (msg) {
+          newErrors.ticketDays[i] = msg;
+          isValid = false;
+          firstInvalidKey ??= `day-${i}`;
+        }
+      });
+    }
 
     if (isPaidOrVip) {
       if (!editData?.price?.markedPrice || editData.price.markedPrice <= 0) {
@@ -292,7 +299,9 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
   };
 
   const removeTicketDay = (day: ITicketDateTime) => {
-    setTicketDateTime((prev) => prev.filter((d) => d !== day));
+    setTicketDateTime((prev) =>
+      prev.length <= 1 ? prev : prev.filter((d) => d !== day),
+    );
   };
 
   const handleClose = () => {
@@ -446,10 +455,17 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
           </div>
 
           {/* ── Ticket Days ───────────────────────────────────────────── */}
-          <section>
+          <section
+            ref={(el) => {
+              if (el) sectionRefs.current.ticketDaysSection = el;
+            }}
+          >
             <label className={`block text-sm mb-2 ${textSecondary}`}>
               {t("ticket_days")}
             </label>
+            {errors.noDayError && (
+              <p className="text-sm text-red-500 mb-2">{errors.noDayError}</p>
+            )}
             <div className="space-y-3">
               {ticketDateTime.map((day, index) => (
                 <div
@@ -514,8 +530,14 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
                     </div>
                     <button
                       type="button"
+                      disabled={ticketDateTime.length <= 1}
                       onClick={() => removeTicketDay(day)}
-                      className="col-span-1 p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-md flex items-center justify-center"
+                      className={clsx(
+                        "col-span-1 p-2 rounded-md flex items-center justify-center",
+                        ticketDateTime.length <= 1
+                          ? "text-gray-300 dark:text-gray-700 cursor-not-allowed"
+                          : "text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30",
+                      )}
                     >
                       <Trash2 size={18} />
                     </button>
