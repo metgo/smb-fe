@@ -589,9 +589,12 @@ export default function Step1Topics({
                   }
                   maxLength={50}
                   placeholder={t("topic_name_placeholder")}
+                  title={t("click_to_edit")}
                   className={clsx(
-                    "w-full text-sm font-semibold bg-transparent border-none outline-none",
-                    isDark ? "text-gray-200" : "text-gray-800",
+                    "w-full text-sm font-semibold bg-transparent rounded-md border border-transparent -mx-1.5 px-1.5 py-0.5 outline-none transition-colors cursor-text",
+                    isDark
+                      ? "text-gray-200 hover:border-gray-600 hover:bg-gray-700/50 focus:border-teal-500 focus:bg-gray-900 focus:ring-1 focus:ring-teal-500/30"
+                      : "text-gray-800 hover:border-gray-300 hover:bg-gray-50 focus:border-teal-500 focus:bg-white focus:ring-1 focus:ring-teal-500/30",
                   )}
                 />
                 <input
@@ -605,9 +608,12 @@ export default function Step1Topics({
                   }
                   maxLength={150}
                   placeholder={t("short_desc_placeholder")}
+                  title={t("click_to_edit")}
                   className={clsx(
-                    "w-full text-xs bg-transparent border-none outline-none",
-                    isDark ? "text-gray-500" : "text-gray-400",
+                    "w-full text-xs bg-transparent rounded-md border border-transparent -mx-1.5 px-1.5 py-0.5 outline-none transition-colors cursor-text",
+                    isDark
+                      ? "text-gray-500 hover:border-gray-600 hover:bg-gray-700/50 focus:border-teal-500 focus:bg-gray-900 focus:ring-1 focus:ring-teal-500/30"
+                      : "text-gray-400 hover:border-gray-300 hover:bg-gray-50 focus:border-teal-500 focus:bg-white focus:ring-1 focus:ring-teal-500/30",
                   )}
                 />
               </div>
