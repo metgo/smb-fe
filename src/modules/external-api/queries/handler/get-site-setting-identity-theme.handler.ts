@@ -40,11 +40,11 @@ const IDENTITY_THEME_FIELDS = {
   primaryColor: 1,
   secondaryColor: 1,
   backgroundColor: 1,
-  fontFamily: 1,
-  fontSourceUrl: 1,
-  buttonStyle: 1,
-  buttonRadius: 1,
-  darkModeEnabled: 1,
+  // fontFamily: 1,
+  // fontSourceUrl: 1,
+  // buttonStyle: 1,
+  // buttonRadius: 1,
+  // darkModeEnabled: 1,
 
   // Analytics
   googleAnalyticsId: 1,
@@ -61,6 +61,13 @@ const IDENTITY_THEME_FIELDS = {
   timezone: 1,
   currency: 1,
   dateFormat: 1,
+
+  // Contact
+  phoneNumber: 1,
+  whatsappNumber: 1,
+  whatsappMessageEn: 1,
+  whatsappMessageHe: 1,
+  whatsappMessageAr: 1,
 } as const;
 
 const LOCALE_SUFFIX_MAP: Record<string, string> = {
@@ -82,7 +89,7 @@ implements IQueryHandler<GetSiteSettingIdentityThemeQuery> {
 
     @InjectModel(ExternalApi.name)
     private readonly externalApiModel: Model<ExternalApi>,
-  ) {}
+  ) { }
 
   async execute(query: GetSiteSettingIdentityThemeQuery) {
     try {
@@ -110,6 +117,9 @@ implements IQueryHandler<GetSiteSettingIdentityThemeQuery> {
         websiteNameEn,
         websiteNameHe,
         websiteNameAr,
+        whatsappMessageEn,
+        whatsappMessageHe,
+        whatsappMessageAr,
         sloganEn,
         sloganHe,
         sloganAr,
@@ -122,6 +132,7 @@ implements IQueryHandler<GetSiteSettingIdentityThemeQuery> {
 
       return {
         ...rest,
+        whatsappMessage: siteSetting[`whatsappMessage${suffix}`] || whatsappMessageEn || '',
         websiteName: siteSetting[`websiteName${suffix}`] || websiteNameEn || '',
         slogan: siteSetting[`slogan${suffix}`] || sloganEn || '',
         desktopVideos: getActiveItem(desktopVideos),
