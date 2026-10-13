@@ -58,7 +58,7 @@ export default function ProductDetailsModal({
               {product?.business?._id && (
                 <Link
                   target="_blank"
-                  to={`${routes.businessDetails}/${product?.business?._id}`}
+                  to={`${routes.businessDetails}?businessId=${product?.business?._id}`}
                 >
                   <div className="flex items-center gap-3">
                     <p>

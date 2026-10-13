@@ -24,6 +24,7 @@ interface CloseAllOrdersModalProps {
   sweptMonths: SweptMonth[];
   isLoadingPreview: boolean;
   hasPreviewError: boolean;
+  canFinalize: boolean;
   isConfirming: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -65,6 +66,7 @@ export default function CloseAllOrdersModal({
   sweptMonths,
   isLoadingPreview,
   hasPreviewError,
+  canFinalize,
   isConfirming,
   onClose,
   onConfirm,
@@ -361,6 +363,22 @@ export default function CloseAllOrdersModal({
               </div>
             )}
 
+            {!isLoadingPreview && !hasPreviewError && !canFinalize && (
+              <div
+                className={`border rounded-lg p-4 ${
+                  isDark
+                    ? "bg-amber-900/20 border-amber-800"
+                    : "bg-amber-50 border-amber-200"
+                }`}
+              >
+                <p
+                  className={`text-sm ${isDark ? "text-amber-200" : "text-amber-800"}`}
+                >
+                  {t("close_all_orders_not_yet_finalizable")}
+                </p>
+              </div>
+            )}
+
             {!isLoadingPreview &&
               !hasPreviewError &&
               sweptMonths.length > 0 && (
@@ -428,7 +446,9 @@ export default function CloseAllOrdersModal({
         <button
           onClick={onConfirm}
           type="button"
-          disabled={isLoadingPreview || hasPreviewError || isConfirming}
+          disabled={
+            isLoadingPreview || hasPreviewError || !canFinalize || isConfirming
+          }
           className="px-4 py-2 cursor-pointer rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors inline-flex items-center gap-2"
         >
           {isConfirming && <Loader2 className="w-4 h-4 animate-spin" />}

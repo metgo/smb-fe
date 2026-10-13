@@ -14,6 +14,22 @@ export const locales: { value: Language; label: string; flag?: string }[] = [
   { value: "ar", label: "العربية", flag: "🇸🇦" },
 ];
 
+export const getLogoByLanguage = (language: Language): string => {
+  return language === "he" || language === "ar"
+    ? "/assets/images/nati_he_stacked_orange-text.svg"
+    : "/assets/images/nati_en_stacked_orange-text.svg";
+};
+
+export const getHeaderLogoByLanguage = (
+  language: Language,
+  isDark: boolean,
+): string => {
+  const suffix = language === "he" || language === "ar" ? "he" : "en";
+  return isDark
+    ? `/assets/images/nati_${suffix}_orange-text.svg`
+    : `/assets/images/nati_${suffix}_color.svg`;
+};
+
 export const TICKET_TYPE_STYLES: Record<string, string> = {
   free: "bg-green-500/20 text-green-600 dark:text-green-400",
   vip: "bg-purple-500/20 text-purple-600 dark:text-purple-400",

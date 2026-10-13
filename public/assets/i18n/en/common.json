@@ -1,4 +1,6 @@
 {
+  "score_insights": "Score insights",
+  "score_settings": "Score settings",
   "loading_text": "Loading more items...",
   "loading_end_text": "No more items",
   "all_websites": "All Websites",
@@ -415,5 +417,8 @@
   "open_in_waze": "Open in Waze",
   "campaign_url_builder": "Campaign URL Builder",
   "catalogues": "Items",
-  "trades": "Trades"
+  "trades": "Trades",
+  "email_config": "Email Config",
+  "email_templates": "Email Templates",
+  "email_activity": "Email Activity"
 }

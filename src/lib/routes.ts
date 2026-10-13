@@ -57,6 +57,8 @@ export const routes = {
   dynamicPages: "/dynamic-pages",
   promotionMgmt: "/promotions-management",
   utmBuilder: "/campaign-url-builder",
+  emailConfigMgmt: "/email-config-management",
+  emailActivityMgmt: "/email-activity",
 
   users: "/users",
 
@@ -65,6 +67,8 @@ export const routes = {
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
   statsSummary: "/stats-summary",
+  scoreSettings: "/score-settings",
+  scoreInsights: "/score-insights",
 
   qrscanLogsMgmt: "/qrscan-logs-management",
 };

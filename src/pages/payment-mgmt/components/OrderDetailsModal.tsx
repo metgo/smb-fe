@@ -198,6 +198,14 @@ export default function OrderDetailsModal({
                     </div>
                   </div>
                   <div>
+                    <div className={`${textTertiary} mb-1`}>
+                      {t("completed_at")}
+                    </div>
+                    <div className={`${textSecondary} font-medium`}>
+                      {order.completedAt ? formatDate(order.completedAt) : "-"}
+                    </div>
+                  </div>
+                  <div>
                     <div className={`${textTertiary} mb-1`}>{t("status")}</div>
                     <div className="mt-1">
                       <span

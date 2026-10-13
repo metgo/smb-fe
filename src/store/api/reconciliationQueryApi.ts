@@ -64,6 +64,7 @@ export interface FinalizeClosedOrdersResponse {
 export interface FinalizeSweepPreview {
   targetMonth: string;
   sweptMonths: { label: string; payoutAmount: number }[];
+  canFinalize: boolean;
 }
 
 export interface ReconciliationStatsParams {

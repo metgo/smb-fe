@@ -117,6 +117,7 @@ const DEFAULT_FORM: ISiteSettingsFormData = {
 
   /* Step 8 */
   googleAnalyticsId: "",
+  gaPropertyId: "",
   googleAdsConvTrackId: "",
   enableWidgetId: "",
   hotjarId: "",
@@ -196,6 +197,7 @@ const STEP_FIELDS: Record<number, (keyof ISiteSettingsFormData)[]> = {
   ],
   9: [
     "googleAnalyticsId",
+    "gaPropertyId",
     "googleAdsConvTrackId",
     "enableWidgetId",
     "hotjarId",
@@ -284,6 +286,7 @@ const buildPayload = (data: ISiteSettingsFormData) => ({
   robotsTxt: data.robotsTxt,
   sitemapUrl: data.sitemapUrl,
   googleAnalyticsId: data.googleAnalyticsId,
+  gaPropertyId: data.gaPropertyId,
   googleAdsConvTrackId: data.googleAdsConvTrackId,
   enableWidgetId: data.enableWidgetId,
   hotjarId: data.hotjarId,
@@ -447,6 +450,7 @@ export default function WebsiteConfigPage() {
       robotsTxt: d.robotsTxt ?? "User-agent: *\nAllow: /",
       sitemapUrl: d.sitemapUrl ?? "",
       googleAnalyticsId: d.googleAnalyticsId ?? "",
+      gaPropertyId: d.gaPropertyId ?? "",
       googleAdsConvTrackId: d.googleAdsConvTrackId ?? "",
       enableWidgetId: d.enableWidgetId ?? "",
       hotjarId: d.hotjarId ?? "",
@@ -829,6 +833,7 @@ export default function WebsiteConfigPage() {
       case 9:
         return (
           <Step08Analytics
+            websiteId={websiteId}
             formData={formData}
             errors={errors}
             onChange={onChange}

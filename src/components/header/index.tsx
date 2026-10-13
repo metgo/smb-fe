@@ -27,7 +27,7 @@ import {
 } from "@/features/authSlice";
 import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { locales } from "@/lib/utils";
+import { locales, getHeaderLogoByLanguage } from "@/lib/utils";
 import NotificationsBell from "./NotificationsBell";
 import ChatNotificationBell from "./ChatNotificationBell";
 
@@ -157,16 +157,16 @@ export default function Header() {
               </button>
 
               <img
-                src="/assets/images/metgologo.png"
+                src={getHeaderLogoByLanguage(language, isDark)}
                 alt="Logo image"
-                className="w-10 h-10 shrink-0"
+                className="h-14 sm:h-16 w-auto object-contain shrink-0"
               />
-              <div className="hidden sm:block">
+              {/* <div className="hidden sm:block">
                 <h1 className={clsx(textPrimary)}>{t("app_title")}</h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {t("executive_dashboard")}
                 </p>
-              </div>
+              </div> */}
             </div>
 
             {/* Center: selects — desktop only */}

@@ -214,6 +214,8 @@ interface ISiteSettingsFormData {
 
   /* Step 8 – Analytics & Tracking */
   googleAnalyticsId: string;
+  // GA4 property ID (numeric), used to import site analytics
+  gaPropertyId: string;
   googleAdsConvTrackId: string;
   enableWidgetId: string;
   hotjarId: string;
@@ -325,6 +327,8 @@ interface IWebsiteConfigRes {
   sitemapUrl: string;
 
   googleAnalyticsId: string;
+  // GA4 property ID (numeric), used to import site analytics
+  gaPropertyId: string;
   googleAdsConvTrackId: string;
   enableWidgetId: string;
   hotjarId: string;

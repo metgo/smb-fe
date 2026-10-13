@@ -45,6 +45,8 @@ import { documentMutationApi } from "./api/doumentMutationApi";
 import { promotionsApi } from "./api/promotionsApi";
 import { websiteConfigApi } from "./api/websiteConfigApi";
 import { websiteCrashApi } from "./api/websiteCrashApi";
+import { businessScoreApi } from "./api/businessScoreApi";
+import { siteAnalyticsApi } from "./api/siteAnalyticsApi";
 import { campaignApi } from "./api/campaignApi";
 import { sessionQueryApi } from "./api/sessionQueryApi";
 import { sessionMutationApi } from "./api/sessionMutationApi";
@@ -54,6 +56,10 @@ import { nprogressMiddleware } from "./nprogressMiddleware";
 import { chatSystemApi } from "./api/chatSystemApi";
 import { utmCampaignApi } from "./api/utmCampaignApi";
 import { punchPassesApi } from "./api/punchPassApi";
+import { emailConfigQueryApi } from "./api/emailConfigQueryApi";
+import { emailConfigMutationApi } from "./api/emailConfigMutationApi";
+import { emailActivityQueryApi } from "./api/emailActivityQueryApi";
+import { emailActivityMutationApi } from "./api/emailActivityMutationApi";
 
 export const store = configureStore({
   reducer: {
@@ -108,6 +114,8 @@ export const store = configureStore({
     [promotionsApi.reducerPath]: promotionsApi.reducer,
     [websiteConfigApi.reducerPath]: websiteConfigApi.reducer,
     [websiteCrashApi.reducerPath]: websiteCrashApi.reducer,
+    [businessScoreApi.reducerPath]: businessScoreApi.reducer,
+    [siteAnalyticsApi.reducerPath]: siteAnalyticsApi.reducer,
     [campaignApi.reducerPath]: campaignApi.reducer,
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
@@ -116,6 +124,10 @@ export const store = configureStore({
     [chatSystemApi.reducerPath]: chatSystemApi.reducer,
     [utmCampaignApi.reducerPath]: utmCampaignApi.reducer,
     [punchPassesApi.reducerPath]: punchPassesApi.reducer,
+    [emailConfigQueryApi.reducerPath]: emailConfigQueryApi.reducer,
+    [emailConfigMutationApi.reducerPath]: emailConfigMutationApi.reducer,
+    [emailActivityQueryApi.reducerPath]: emailActivityQueryApi.reducer,
+    [emailActivityMutationApi.reducerPath]: emailActivityMutationApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -174,6 +186,8 @@ export const store = configureStore({
       promotionsApi.middleware,
       websiteConfigApi.middleware,
       websiteCrashApi.middleware,
+      businessScoreApi.middleware,
+      siteAnalyticsApi.middleware,
       campaignApi.middleware,
       sessionQueryApi.middleware,
       sessionMutationApi.middleware,
@@ -183,6 +197,10 @@ export const store = configureStore({
       utmCampaignApi.middleware,
       punchPassesApi.middleware,
 
+      emailConfigQueryApi.middleware,
+      emailConfigMutationApi.middleware,
+      emailActivityQueryApi.middleware,
+      emailActivityMutationApi.middleware,
       nprogressMiddleware,
     ),
 });

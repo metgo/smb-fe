@@ -7,6 +7,7 @@ import {
   Calendar,
   Clock,
   FileText,
+  Gauge,
   Globe,
   History,
   ImageIcon,
@@ -32,6 +33,7 @@ export const businessTabs = [
   { id: "social", label: "social_networks", icon: Globe },
   { id: "delivery", label: "delivery_policy", icon: Truck },
   { id: "hours", label: "operating_hours", icon: Clock },
+  { id: "score", label: "score", icon: Gauge },
 ];
 export const miniSiteTabs = [
   { id: "overview", label: "overview", icon: FileText },

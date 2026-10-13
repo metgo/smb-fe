@@ -32,6 +32,8 @@ import PoiMgmtPage from "./poi-mgmt";
 import PoiDetailsPage from "./poi-mgmt/details";
 import WebsiteCrashesPage from "./website-crashes";
 import WebsiteCrashDetailsPage from "./website-crashes/details";
+import ScoreSettingsPage from "./score-settings";
+import ScoreInsightsPage from "./score-insights";
 import EventSessionMgmtPage from "./event-session-mgmt";
 import TripsMgmtPage from "./trips-mgmt";
 import TripDetailsPage from "./trips-mgmt/details";
@@ -41,6 +43,8 @@ import { PaymentMgmtPage } from "./payment-mgmt";
 import PaymentTransactionsPage from "./payment-transactions-mgmt";
 import UtmBuilderPage from "./utm-builder";
 import OfflineOrdersMgmtPage from "./offline-orders-mgmt";
+import EmailConfigMgmtPage from "./email-config-mgmt";
+import EmailActivityMgmtPage from "./email-activity-mgmt";
 
 export {
   ChatPage,
@@ -84,6 +88,10 @@ export {
   PoiDetailsPage,
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
+  ScoreSettingsPage,
+  ScoreInsightsPage,
   StatsSummaryPage,
   UtmBuilderPage,
+  EmailConfigMgmtPage,
+  EmailActivityMgmtPage,
 };

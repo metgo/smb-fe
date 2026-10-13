@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { GripVertical, Loader2 } from "lucide-react";
+import { ChevronDown, GripVertical, Loader2 } from "lucide-react";
 
 import { compareValues } from "@/helpers";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -38,6 +38,9 @@ interface DataTableProps<T> {
   hasMore?: boolean;
   t?: (key: string) => string;
   maxHeight?: string;
+  // Returns the label for the group a row belongs to (e.g. a formatted day).
+  // Consecutive rows sharing a label are rendered under one sticky separator.
+  groupBy?: (item: T) => string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -61,6 +64,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   isDataLoading = false,
   storageKey = "dataTableColumnOrder",
   maxHeight,
+  groupBy,
 }: DataTableProps<T>) {
   const { t: tc } = useTranslation("common");
   const { isDark, isRTL, textSecondary } = useThemeClasses();
@@ -175,6 +179,59 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       compareValues(a[field], b[field], sortConfig.direction as "asc" | "desc"),
     );
   }, [data, sortConfig.field, sortConfig.direction]);
+
+  // Entry computed per row only when it starts a new group (consecutive rows
+  // sharing a label collapse under one separator), so manual sorting stays
+  // intact — grouping just reflects whatever order sortedData ends up in.
+  // groupStart keys collapse state, since labels can repeat across
+  // non-contiguous runs and we only want to collapse the clicked run.
+  const groupEntries = useMemo(() => {
+    if (!groupBy) return null;
+    const labels = sortedData.map((item) => groupBy(item));
+    const counts = new Map<string, number>();
+    for (const label of labels) counts.set(label, (counts.get(label) ?? 0) + 1);
+
+    const entries: ({
+      label: string;
+      count: number;
+      groupStart: number;
+    } | null)[] = [];
+    let lastLabel: string | null = null;
+    labels.forEach((label, index) => {
+      entries.push(
+        label !== lastLabel
+          ? { label, count: counts.get(label) ?? 0, groupStart: index }
+          : null,
+      );
+      lastLabel = label;
+    });
+    return entries;
+  }, [groupBy, sortedData]);
+
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(
+    () => new Set(),
+  );
+
+  const toggleGroupCollapse = useCallback((groupStart: number) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      next.has(groupStart) ? next.delete(groupStart) : next.add(groupStart);
+      return next;
+    });
+  }, []);
+
+  // Index of the group each row belongs to (its group's start index), so we
+  // know whether a row should be hidden because its group is collapsed.
+  const rowGroupStart = useMemo(() => {
+    if (!groupEntries) return null;
+    const starts: number[] = [];
+    let current = 0;
+    groupEntries.forEach((entry, index) => {
+      if (entry) current = index;
+      starts.push(current);
+    });
+    return starts;
+  }, [groupEntries]);
 
   // Drag & Drop
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
@@ -517,83 +574,122 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             ) : (
               sortedData.map((item, index) => {
                 const isSelected = Boolean(selectedItems?.has(item[rowKey]));
+                const groupEntry = groupEntries?.[index];
+                const groupStart = rowGroupStart?.[index];
+                const isGroupCollapsed =
+                  groupStart != null && collapsedGroups.has(groupStart);
+
+                if (groupEntry == null && isGroupCollapsed) return null;
 
                 return (
-                  <tr
-                    key={index}
-                    // FIX: only fire row navigation when clicking a non-pinned cell.
-                    // We guard this at the <td> level below instead of stopping
-                    // propagation there, so the tr handler is intentionally simple.
-                    onClick={() => onRowClick?.(item)}
-                    className={clsx(
-                      "group relative transition-colors duration-100",
-                      onRowClick && "cursor-pointer",
-                      isSelected
-                        ? isDark
-                          ? "bg-teal-900/20"
-                          : "bg-teal-50/60"
-                        : isDark
-                          ? "bg-gray-900 hover:bg-gray-800/60"
-                          : "bg-white hover:bg-gray-50",
-                    )}
-                  >
-                    {columnOrder.map((colKey) => {
-                      const column = columns.find((c) => c.key === colKey);
-                      if (!column) return <td key={colKey} />;
-
-                      const isPinned = PINNED_ALL.has(colKey);
-                      const isPinnedRight = PINNED_RIGHT.has(colKey);
-
-                      return (
+                  <React.Fragment key={index}>
+                    {groupEntry != null && (
+                      <tr
+                        onClick={() =>
+                          toggleGroupCollapse(groupEntry.groupStart)
+                        }
+                        className="cursor-pointer select-none"
+                      >
                         <td
-                          key={colKey}
-                          style={getStickyStyle(colKey)}
-                          // FIX: stop propagation on the <td> for checkbox AND
-                          // actions columns so neither triggers row navigation.
-                          // Buttons inside actions already call e.stopPropagation()
-                          // on their own onClick, but this catches clicks on the
-                          // cell padding around them.
-                          onClick={
-                            colKey === "checkbox" || isPinnedRight
-                              ? (e) => e.stopPropagation()
-                              : undefined
-                          }
+                          colSpan={columnOrder.length}
                           className={clsx(
-                            "px-4 py-3 text-sm align-middle",
-                            isDark ? "text-gray-300" : "text-gray-700",
-                            // FIX: pinned cells get a solid, state-aware background
-                            isPinned && getStickyBgClass(colKey, isSelected),
-                            // FIX: mirror the row hover on pinned cells so they
-                            // don't look disconnected while the cursor moves across
-                            isPinned && !isSelected && onRowClick
-                              ? isDark
-                                ? "group-hover:bg-gray-800/60"
-                                : "group-hover:bg-gray-50"
-                              : undefined,
+                            "sticky top-13 z-20 px-4 py-2 tracking-wide flex text-sm font-bold items-center gap-2",
+                            isDark
+                              ? "bg-gray-800/80 border-b border-gray-800 hover:bg-gray-800"
+                              : "bg-gray-100/80 border-b border-gray-200 hover:bg-gray-100",
+                            textSecondary,
                           )}
                         >
-                          {colKey === "checkbox" ? (
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={() => toggleRow(item)}
-                              className={clsx(
-                                "cursor-pointer border transition-colors",
-                                isDark
-                                  ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
-                                  : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
-                              )}
-                            />
-                          ) : column.render ? (
-                            column.render(item)
-                          ) : (
-                            <span className="truncate max-w-xs block">
-                              {String(item[colKey as keyof T] ?? "—")}
-                            </span>
-                          )}
+                          <ChevronDown
+                            className={clsx(
+                              "w-4 h-4 transition-transform duration-150",
+                              collapsedGroups.has(groupEntry.groupStart) &&
+                                (isRTL ? "rotate-90" : "-rotate-90"),
+                            )}
+                          />
+                          <span>{groupEntry.label}</span>
+                          <span className="font-normal opacity-70">
+                            ({groupEntry.count})
+                          </span>
                         </td>
-                      );
-                    })}
-                  </tr>
+                      </tr>
+                    )}
+                    <tr
+                      // FIX: only fire row navigation when clicking a non-pinned cell.
+                      // We guard this at the <td> level below instead of stopping
+                      // propagation there, so the tr handler is intentionally simple.
+                      onClick={() => onRowClick?.(item)}
+                      className={clsx(
+                        "group relative transition-colors duration-100",
+                        isGroupCollapsed && "hidden",
+                        onRowClick && "cursor-pointer",
+                        isSelected
+                          ? isDark
+                            ? "bg-teal-900/20"
+                            : "bg-teal-50/60"
+                          : isDark
+                            ? "bg-gray-900 hover:bg-gray-800/60"
+                            : "bg-white hover:bg-gray-50",
+                      )}
+                    >
+                      {columnOrder.map((colKey) => {
+                        const column = columns.find((c) => c.key === colKey);
+                        if (!column) return <td key={colKey} />;
+
+                        const isPinned = PINNED_ALL.has(colKey);
+                        const isPinnedRight = PINNED_RIGHT.has(colKey);
+
+                        return (
+                          <td
+                            key={colKey}
+                            style={getStickyStyle(colKey)}
+                            // FIX: stop propagation on the <td> for checkbox AND
+                            // actions columns so neither triggers row navigation.
+                            // Buttons inside actions already call e.stopPropagation()
+                            // on their own onClick, but this catches clicks on the
+                            // cell padding around them.
+                            onClick={
+                              colKey === "checkbox" || isPinnedRight
+                                ? (e) => e.stopPropagation()
+                                : undefined
+                            }
+                            className={clsx(
+                              "px-4 py-3 text-sm align-middle",
+                              isDark ? "text-gray-300" : "text-gray-700",
+                              // FIX: pinned cells get a solid, state-aware background
+                              isPinned && getStickyBgClass(colKey, isSelected),
+                              // FIX: mirror the row hover on pinned cells so they
+                              // don't look disconnected while the cursor moves across
+                              isPinned && !isSelected && onRowClick
+                                ? isDark
+                                  ? "group-hover:bg-gray-800/60"
+                                  : "group-hover:bg-gray-50"
+                                : undefined,
+                            )}
+                          >
+                            {colKey === "checkbox" ? (
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={() => toggleRow(item)}
+                                className={clsx(
+                                  "cursor-pointer border transition-colors",
+                                  isDark
+                                    ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
+                                    : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
+                                )}
+                              />
+                            ) : column.render ? (
+                              column.render(item)
+                            ) : (
+                              <span className="truncate max-w-xs block">
+                                {String(item[colKey as keyof T] ?? "—")}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </React.Fragment>
                 );
               })
             )}

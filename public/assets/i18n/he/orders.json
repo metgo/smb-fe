@@ -249,5 +249,13 @@
   "select_columns_to_display": "בחר עמודות להצגה",
   "product_price": "מחיר המוצר",
   "bank_transfer": "העברה בנקאית",
-  "credit_card": "כרטיס אשראי"
+  "credit_card": "כרטיס אשראי",
+  "itemType": "סוג פריט",
+  "tickets": "כרטיסים",
+  "itemTypeBusiness": "עסק",
+  "punchPasses": "כרטיסיות",
+  "card_payment_declined": "התשלום לא הושלם דרך קארדקום",
+  "checkout_timeout": "ההזמנה ננטשה - לא שולמה במשך 15 דקות ומעלה",
+  "payment_failed_or_abandoned": "התשלום נכשל או שההזמנה ננטשה",
+  "cancelled_by_customer": "הלקוח פתח את חלון התשלום של קארדקום וסגר אותו מבלי להשלים את התשלום"
 }

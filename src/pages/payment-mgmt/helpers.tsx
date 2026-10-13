@@ -34,6 +34,8 @@ export function mapOrderProductList(d: any, language: Language) {
     customerEmail: d.customer?.email || "",
     customerPhone: d.customer?.phone || "",
     purchaseDate: d.createdAt || "",
+    completedAt: d.completedAt || "",
+    finalizedAt: d.finalizedAt || "",
     quantity: d.quantity || 0,
     unitPrice: d.price || 0,
     totalPrice: d.totalAmount || 0,
@@ -71,6 +73,7 @@ interface OrderProductDetails {
   orderInformation: {
     orderId: string;
     purchaseDate: string;
+    completedAt?: string;
     status: "pending" | "shipped" | "canceled" | "processing" | "completed";
     quantity: number;
     unitPrice: number;
@@ -154,6 +157,7 @@ export function mapOrderProductDetails(
     customerEmail: d?.customerInformation?.email || "",
     customerPhone: d?.customerInformation?.phone || "",
     purchaseDate: d?.orderInformation?.purchaseDate || "",
+    completedAt: d?.orderInformation?.completedAt || "",
     quantity: d?.orderInformation?.quantity || 0,
     unitPrice: d?.orderInformation?.unitPrice || 0,
     totalPrice: d?.orderInformation?.total || 0,
@@ -446,6 +450,30 @@ export function buildOrderColumns({
         );
       },
     },
+    {
+      key: "completedAt",
+      sortable: true,
+      label: t("completed_at"),
+      render: (order: IMonthlyOrder) => (
+        <span className={textSecondary}>
+          {order.completedAt
+            ? formatDateTime(order.completedAt, language)
+            : "-"}
+        </span>
+      ),
+    },
+    // {
+    //   key: "finalizedAt",
+    //   sortable: true,
+    //   label: t("paid_at"),
+    //   render: (order: IMonthlyOrder) => (
+    //     <span className={textSecondary}>
+    //       {order.finalizedAt
+    //         ? formatDateTime(order.finalizedAt, language)
+    //         : "-"}
+    //     </span>
+    //   ),
+    // },
     {
       key: "actions",
       label: t("actions"),

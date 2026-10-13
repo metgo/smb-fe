@@ -1,4 +1,6 @@
 {
+  "score_insights": "תובנות ציון",
+  "score_settings": "הגדרות ציון",
   "loading_text": "טוען פריטים נוספים...",
   "loading_end_text": "אין עוד פריטים",
   "all_websites": "כל האתרים",
@@ -442,5 +444,8 @@
   "open_in_waze": "פתח ב-Waze",
   "campaign_url_builder": "בונה כתובות קמפיין",
   "catalogues": "פריטים",
-  "trades": "עסקאות"
+  "trades": "עסקאות",
+  "email_config": "תבניות אימייל",
+  "email_activity": "פעילות אימייל",
+  "email_templates": "תבניות אימייל"
 }

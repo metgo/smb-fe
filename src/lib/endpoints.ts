@@ -45,6 +45,11 @@ export const endpoints = {
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
   pendingApprovals: "/admin/pending-approvals",
+  businessScoreConfig: "/business-score/config",
+  businessScoreRuns: "/business-score/runs",
+  businessScoreInsights: "/business-score/insights",
+  businessScoreAnalyticsImport: "/business-score/analytics/import",
+  businessRecalculateImpact: "/businesses/recalculate-impact",
 
   //mini-sites
   miniSites: "mini-sites",
@@ -213,6 +218,12 @@ export const endpoints = {
   // Promotions
   promotions: "/promotions",
   promotionGroups: "/promotion-groups",
+
+  // Email Config
+  emailConfig: "/admin/email-config",
+  emailActivity: "/admin/email-activity",
+  emailActivityLiveSearch: "/admin/email-activity/live-search",
+  emailActivityLiveStats: "/admin/email-activity/live-search/stats",
 
   // Website error report
   websiteCrashes: "/website-crashes",
