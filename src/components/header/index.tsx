@@ -1,21 +1,19 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
+// import { useLocation } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Moon,
   Sun,
-  Settings,
-  Check,
+  // Settings,
+  // Check,
   Languages,
-  Menu,
   SlidersHorizontal,
   X,
 } from "lucide-react";
 
-import { routes } from "@/lib/routes";
+// import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
-import { toggleEditMode, toggleMobileSidebar } from "@/features/uiSlice";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { setTheme } from "@/features/settingsSlice";
 import {
@@ -33,7 +31,7 @@ import ChatNotificationBell from "./ChatNotificationBell";
 
 export default function Header() {
   const dispatch = useAppDispatch();
-  const location = useLocation();
+  // const location = useLocation();
   const { t, i18n } = useTranslation("common");
 
   const { allWebsites, dmosAuthorities } = useCommon();
@@ -41,7 +39,7 @@ export default function Header() {
     (state) => state.auth,
   );
 
-  const { isEditMode } = useAppSelector((state) => state.ui);
+  // const { isEditMode } = useAppSelector((state) => state.ui);
   const { textPrimary, isDark, language } = useThemeClasses();
 
   const selectedParent = dmosAuthorities?.find((item) => item._id === dmoId);
@@ -141,21 +139,8 @@ export default function Header() {
       >
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-2">
-            {/* Left: hamburger + logo */}
+            {/* Left: logo */}
             <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => dispatch(toggleMobileSidebar())}
-                className={clsx(
-                  "lg:hidden p-2 rounded-lg transition-colors",
-                  isDark
-                    ? "text-gray-300 hover:bg-gray-800"
-                    : "text-gray-700 hover:bg-gray-100",
-                )}
-                aria-label="Open menu"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-
               <img
                 src={getHeaderLogoByLanguage(language, isDark)}
                 alt="Logo image"
@@ -223,8 +208,8 @@ export default function Header() {
                 <SlidersHorizontal className="w-5 h-5" />
               </button>
 
-              {/* Language Toggle */}
-              <div className="relative" ref={langRef}>
+              {/* Language Toggle — desktop only, moved to profile page on mobile */}
+              <div className="relative hidden lg:block" ref={langRef}>
                 <button
                   onClick={() => setLangOpen((o) => !o)}
                   className={clsx(
@@ -273,11 +258,11 @@ export default function Header() {
                 )}
               </div>
 
-              {/* Theme Toggle */}
+              {/* Theme Toggle — desktop only, moved to profile page on mobile */}
               <button
                 onClick={() => dispatch(setTheme(isDark ? "light" : "dark"))}
                 className={clsx(
-                  "p-2 cursor-pointer rounded-lg transition-colors",
+                  "hidden lg:inline-flex p-2 cursor-pointer rounded-lg transition-colors",
                   isDark ? "hover:bg-gray-700" : "hover:bg-gray-100",
                 )}
                 aria-label="Toggle theme"
@@ -290,7 +275,7 @@ export default function Header() {
               </button>
 
               {/* Edit Mode Toggle */}
-              {toggleEditMode() && location.pathname === routes.dashboard && (
+              {/* {toggleEditMode() && location.pathname === routes.dashboard && (
                 <button
                   onClick={() => dispatch(toggleEditMode())}
                   className={clsx(
@@ -307,7 +292,7 @@ export default function Header() {
                     <Settings className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                   )}
                 </button>
-              )}
+              )} */}
 
               <ChatNotificationBell />
               <NotificationsBell />

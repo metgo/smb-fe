@@ -19,6 +19,11 @@ interface SavedLinksPanelProps {
   onDuplicate: (link: IUtmCampaign) => void;
   onEdit: (link: IUtmCampaign) => void;
   onDelete: (id: string) => void;
+  onViewAnalytics: (
+    link: IUtmCampaign,
+    gaDataStudioId: string,
+    pageId: string,
+  ) => void;
 }
 
 const SavedLinksPanel = ({
@@ -29,6 +34,7 @@ const SavedLinksPanel = ({
   onDuplicate,
   onEdit,
   onDelete,
+  onViewAnalytics,
 }: SavedLinksPanelProps) => {
   const { t } = useTranslation("utm_campaign");
   const { cardClasses, textPrimary, textSecondary, textTertiary, borderColor } =
@@ -119,6 +125,7 @@ const SavedLinksPanel = ({
               onDuplicate={onDuplicate}
               onEdit={onEdit}
               onDelete={onDelete}
+              onViewAnalytics={onViewAnalytics}
             />
           ))}
         </ul>

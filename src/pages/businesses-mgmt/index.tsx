@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import {
   BulkActionBar,
   ConfirmDialog,
@@ -82,7 +83,7 @@ function BusinessesMgmtPageInner() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useViewMode("businessViewMode");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [_isStatsCollapsed, setIsStatsCollapsed] = useState(false);

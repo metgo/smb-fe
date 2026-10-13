@@ -5,6 +5,7 @@ import UtmParametersSection from "./UtmParametersSection";
 import InfluencerSection from "./InfluencerSection";
 import GeneratedUrlCard from "./GeneratedUrlCard";
 import SavedLinksPanel from "./SavedLinksPanel";
+import UtmAnalyticsModal from "./UtmAnalyticsModal";
 
 export {
   UtmPageHeader,
@@ -14,4 +15,5 @@ export {
   InfluencerSection,
   GeneratedUrlCard,
   SavedLinksPanel,
+  UtmAnalyticsModal,
 };

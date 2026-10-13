@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import { mockBusinesses } from "@/helpers/mockBusinesses";
 import {
   ContentComposer,
@@ -123,9 +124,7 @@ export default function ContentMgmtPage() {
   );
 
   const [externalApiId, setExternalApiId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<TViewMode>(
-    (localStorage.getItem("contentViewMode") as TViewMode) ?? "grid",
-  );
+  const [viewMode, setViewMode] = useViewMode("contentViewMode", "grid");
 
   // ── Hooks ────────────────────────────────────────────────────────────────────
 

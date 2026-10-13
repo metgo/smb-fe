@@ -3,7 +3,7 @@ import { BarChart3, ExternalLink } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 import { useAppSelector } from "@/hooks/hooks";
-import { websitesAnalyticsReport } from "@/lib/utils";
+import { getDataStudioReportUrl, websitesAnalyticsReport } from "@/lib/utils";
 import { Spinner } from "@/components/shared";
 
 const AnalyticsDashboardPage = () => {
@@ -88,9 +88,7 @@ const AnalyticsDashboardPage = () => {
     );
   }
 
-  const reportUrl =
-    website &&
-    `https://datastudio.google.com/embed/reporting/${website.gaDataStudioId}/page/kIV1C`;
+  const reportUrl = website && getDataStudioReportUrl(website.gaDataStudioId);
 
   return (
     <div className={`relative h-[95vh] w-full ${bgPrimary}`}>

@@ -15,6 +15,7 @@ import type { Dispatch, SetStateAction } from "react";
 
 import ColumnSettingsDropdown from "@/components/shared/ColumnSettingsDropdown";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import {
   CreateMinisiteWizard,
   MinisiteGridView,
@@ -77,7 +78,7 @@ export default function MiniSiteMgmtPage() {
     setColumnVisibility(defaultColumns);
   };
 
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useViewMode();
   const [showWizard, setShowWizard] = useState(false);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<string>("");

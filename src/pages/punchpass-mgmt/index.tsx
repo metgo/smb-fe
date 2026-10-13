@@ -15,6 +15,7 @@ import {
 import { useAppSelector } from "@/hooks/hooks";
 import { ViewModeToggle } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import {
   CreatePunchPassWizard,
@@ -76,7 +77,7 @@ export default function PunchpassMgmtPage() {
     useState<IPunchPassDetailsRes | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useViewMode("punchPassViewMode");
   const [selectedPunchPasses, setSelectedPunchPasses] = useState<Set<string>>(
     new Set(),
   );

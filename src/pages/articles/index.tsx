@@ -12,6 +12,7 @@ import BlogGridView from "./components/sub-components/BlogGridView";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import {
   ShowColumns,
   BulkActionBar,
@@ -85,7 +86,7 @@ export default function ArticlesManagement() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useViewMode("blogViewMode");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedBlogs, setSelectedBlogs] = useState<Set<string>>(new Set());

@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ConfirmDialog } from "@/components/shared";
@@ -11,6 +12,7 @@ import {
   InfluencerSection,
   GeneratedUrlCard,
   SavedLinksPanel,
+  UtmAnalyticsModal,
 } from "./components";
 import { useUtmBuilder } from "./hooks/useUtmBuilder";
 
@@ -18,6 +20,11 @@ const UtmBuilderPage = () => {
   const { t } = useTranslation("utm_campaign");
   const { cardClasses } = useThemeClasses();
   const builder = useUtmBuilder();
+
+  const [analyticsTarget, setAnalyticsTarget] = useState<{
+    gaDataStudioId: string;
+    pageId: string;
+  } | null>(null);
 
   return (
     <div className="flex flex-col h-full overflow-y-auto xl:overflow-hidden pt-10 md:pt-0">
@@ -74,6 +81,9 @@ const UtmBuilderPage = () => {
             onDuplicate={builder.handleDuplicate}
             onEdit={builder.handleEdit}
             onDelete={builder.setDeleteTarget}
+            onViewAnalytics={(_link, gaDataStudioId, pageId) =>
+              setAnalyticsTarget({ gaDataStudioId, pageId })
+            }
           />
         </div>
       </div>
@@ -87,6 +97,14 @@ const UtmBuilderPage = () => {
         onConfirm={builder.handleDelete}
         onCancel={() => builder.setDeleteTarget(null)}
       />
+
+      {analyticsTarget && (
+        <UtmAnalyticsModal
+          gaDataStudioId={analyticsTarget.gaDataStudioId}
+          pageId={analyticsTarget.pageId}
+          onClose={() => setAnalyticsTarget(null)}
+        />
+      )}
     </div>
   );
 };

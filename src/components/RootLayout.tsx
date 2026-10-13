@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 
 import Header from "./header";
 import Sidebar from "./sidebar";
+import MobileBottomNav from "./mobile-bottom-nav";
 import { useAppSelector } from "@/hooks/hooks";
 import RouterProgressBar from "./shared/RouterProgressBar";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -28,7 +29,7 @@ const RootLayout = () => {
         {/* Main Content Area - With left margin for fixed sidebar */}
         <div
           className={clsx(
-            `flex-1 transition-all duration-300 py-4 px-2 sm:px-6 lg:px-8`,
+            `flex-1 transition-all duration-300 py-4 px-2 sm:px-6 lg:px-8 pb-20 lg:pb-4`,
             isRTL
               ? isSidebarCollapsed
                 ? "lg:mr-16"
@@ -42,6 +43,7 @@ const RootLayout = () => {
         </div>
       </div>
 
+      <MobileBottomNav />
       <ChatPopupManager />
     </main>
   );

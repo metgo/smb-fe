@@ -1,7 +1,7 @@
 type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
 
-type TViewMode = "list" | "grid";
+type TViewMode = "list" | "grid" | "calendar";
 type TUserRole = "superadmin" | "dmo" | "authority" | "traveller";
 
 type TStatus =

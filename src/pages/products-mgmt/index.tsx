@@ -16,6 +16,7 @@ import {
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
+import { useViewMode } from "@/hooks/useViewMode";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import {
   BulkActionBar,
@@ -93,7 +94,7 @@ function ProductsMgmtPageInner() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useViewMode("productViewMode");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(

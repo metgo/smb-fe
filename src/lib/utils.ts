@@ -368,6 +368,17 @@ export const ORDER_SUMMARY_COLUMNS = {
   }>,
 };
 
+// Google Analytics - Data Studio Report page id for the overview tab (shared across all reports)
+export const DATA_STUDIO_PAGES = {
+  OVERVIEW: "kIV1C",
+};
+
+export const getDataStudioReportUrl = (
+  gaDataStudioId: string,
+  pageId: string = DATA_STUDIO_PAGES.OVERVIEW,
+) =>
+  `https://datastudio.google.com/embed/reporting/${gaDataStudioId}/page/${pageId}`;
+
 // Google Analytics - Data Studio Report URLs
 export const websitesAnalyticsReport = [
   {
@@ -377,6 +388,7 @@ export const websitesAnalyticsReport = [
     websiteUrl: "https://tav-8.co.il",
     logo: "https://storage.googleapis.com/tav8-sderot20w3s71w1n/logo/company.svg",
     gaDataStudioId: "bf4a74b7-2461-4171-aac6-e65649f69839",
+    utmCampaignResultsPageId: "p_1z3873p67d",
   },
   {
     _id: "689aca6896fc4dd7086c8834",
@@ -385,6 +397,7 @@ export const websitesAnalyticsReport = [
     websiteUrl: "https://negevtime.co.il",
     logo: "https://storage.googleapis.com/bnei-fo5gz43xdb6i5t/images/logo/black.svg",
     gaDataStudioId: "15c71d0b-29ee-4d8c-9ba1-0764bc22de35",
+    utmCampaignResultsPageId: "p_9al8oiob7d",
   },
   {
     _id: "69fc87cc2add117312a6bfb5",

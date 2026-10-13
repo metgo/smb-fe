@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Mail,
@@ -10,11 +10,15 @@ import {
   Plus,
   Building2,
   User,
+  Moon,
+  Sun,
+  Languages,
 } from "lucide-react";
 import clsx from "clsx";
 
 import { routes } from "@/lib/routes";
-import { useAppSelector } from "@/hooks/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { setTheme } from "@/features/settingsSlice";
 import { AssignBankAccountModal } from "./components";
 import { useNavigate } from "react-router-dom";
 import { useGetUserInfoQuery } from "@/store/api/userQueryApi";
@@ -22,6 +26,7 @@ import { formatDate } from "@/helpers/formatter";
 import { Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { getInitials } from "@/helpers";
+import { locales } from "@/lib/utils";
 
 export default function ProfilePage() {
   const { t } = useTranslation("profile");
@@ -32,6 +37,27 @@ export default function ProfilePage() {
   const { isDark, textSecondary, language, isRTL } = useThemeClasses();
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { i18n } = useTranslation();
+
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleLanguageChange = (lng: Language) => {
+    i18n.changeLanguage(lng).catch((error) => {
+      console.error("Failed to change language", error);
+    });
+  };
 
   const {
     data: userInfo,
@@ -108,6 +134,83 @@ export default function ProfilePage() {
                   {t("logout")}
                 </>
               )}
+            </button>
+          </div>
+        </div>
+
+        {/* Preferences — mobile only; desktop keeps these in the header */}
+        <div
+          className={`lg:hidden ${
+            isDark ? "bg-gray-800" : "bg-white"
+          } rounded-2xl shadow-lg p-5 sm:p-8 mb-6`}
+        >
+          <h2 className={clsx("text-xl mb-4", textSecondary)}>
+            {t("preferences") || "Preferences"}
+          </h2>
+
+          <div className="flex items-center gap-3">
+            {/* Language Toggle */}
+            <div className="relative" ref={langRef}>
+              <button
+                onClick={() => setLangOpen((o) => !o)}
+                className={clsx(
+                  "flex items-center gap-2 border rounded-lg px-3 py-2",
+                  isDark
+                    ? "border-gray-700 text-gray-200"
+                    : "border-gray-300 text-gray-700",
+                )}
+              >
+                <Languages size={20} />
+                <span className="text-sm">
+                  {locales.find((l) => l.value === language)?.label}
+                </span>
+              </button>
+              {langOpen && (
+                <div
+                  className={clsx(
+                    "absolute top-full mt-1 ltr:left-0 rtl:right-0 z-50 rounded-lg border shadow-lg min-w-37.5",
+                    isDark
+                      ? "bg-gray-800 border-gray-700"
+                      : "bg-white border-gray-200",
+                  )}
+                >
+                  {locales.map((lang) => (
+                    <button
+                      key={lang.value}
+                      onClick={() => {
+                        handleLanguageChange(lang.value);
+                        setLangOpen(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 w-full px-3 py-2 text-sm text-start first:rounded-t-lg last:rounded-b-lg",
+                        isDark ? "hover:bg-gray-700" : "hover:bg-teal-50",
+                        language === lang.value &&
+                          (isDark ? "bg-gray-700" : "bg-teal-50"),
+                        isDark ? "text-gray-200" : "text-gray-700",
+                      )}
+                    >
+                      <div>{lang.flag}</div>
+                      <span>{lang.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={() => dispatch(setTheme(isDark ? "light" : "dark"))}
+              className={clsx(
+                "flex items-center gap-2 border rounded-lg px-3 py-2",
+                isDark
+                  ? "border-gray-700 text-gray-200"
+                  : "border-gray-300 text-gray-700",
+              )}
+            >
+              {isDark ? <Moon size={20} /> : <Sun size={20} />}
+              <span className="text-sm">
+                {isDark ? t("dark_mode") || "Dark" : t("light_mode") || "Light"}
+              </span>
             </button>
           </div>
         </div>

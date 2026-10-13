@@ -62,6 +62,8 @@
   "action_duplicate": "Duplicate for another influencer",
   "action_edit": "Edit link",
   "action_delete": "Delete link",
+  "action_view_analytics": "View UTM campaign analytics",
+  "utm_campaign_results_title": "UTM Campaign Results",
   "delete_dialog_title": "Delete saved link",
   "delete_dialog_message": "Remove this UTM link? This permanently deletes it.",
   "delete_confirm": "Delete",

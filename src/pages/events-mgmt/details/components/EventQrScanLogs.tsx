@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import EmptyState from "@/components/shared/EmptyState";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import SearchInput from "@/components/shared/SearchInput";
 import { ViewModeToggle } from "@/components/shared";
 import { QRScanGridView, QRScanListView } from "@/components/details-sections";
@@ -18,7 +19,7 @@ const EventQrScanLogs = ({ eventId }: { eventId: string }) => {
   const { isDark, bgSecondary, borderColor } = useThemeClasses();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useViewMode("qrScanLogsViewMode");
   const [scanType, setScanType] = useState<"TICKET" | "SESSION">("TICKET");
 
   const { combinedLogs, isLoading, isFetching, hasMore, fetchNextPage } =
