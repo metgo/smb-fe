@@ -147,6 +147,12 @@ export const contentMutationApi = createApi({
         businesses: IAiSuggestedEntity[];
         products: IAiSuggestedEntity[];
         aiUnavailable?: boolean;
+        aiUnavailableReason?:
+          | "QUOTA_EXHAUSTED"
+          | "TIMEOUT"
+          | "RATE_LIMITED"
+          | "UNKNOWN"
+          | "BACKEND_ERROR";
       },
       {
         categoryName: string;

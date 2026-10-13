@@ -424,12 +424,24 @@ const TopicCategoryCard = ({
         timestamp: Date.now(),
       };
 
-      // AI service was unavailable (quota exhausted, timeout, etc.)
+      // AI service was unavailable — show the actual reason instead of one
+      // generic message, so "we're out of Gemini credits" doesn't look the
+      // same as "the request timed out" or "try again".
       if (result.aiUnavailable) {
-        toast.error(
-          "AI service is temporarily unavailable. Please try again later.",
-          { duration: 5000 },
-        );
+        const reasonMessages: Record<string, string> = {
+          QUOTA_EXHAUSTED:
+            "AI quota exhausted — the Gemini billing credits are depleted. Contact an admin to top up.",
+          TIMEOUT: "AI request timed out. Please try again.",
+          RATE_LIMITED:
+            "AI service is rate-limited right now. Please try again shortly.",
+          UNKNOWN:
+            "AI service is temporarily unavailable. Please try again later.",
+          BACKEND_ERROR:
+            "Something went wrong loading content for this suggestion. Please try again.",
+        };
+        toast.error(reasonMessages[result.aiUnavailableReason ?? "UNKNOWN"], {
+          duration: 5000,
+        });
         return;
       }
 
