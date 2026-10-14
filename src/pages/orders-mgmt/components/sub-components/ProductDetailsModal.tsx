@@ -40,14 +40,26 @@ export default function ProductDetailsModal({
           <div
             className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
           >
-            <h2 className={`text-2xl ${textPrimary}`}>{product.name}</h2>
+            <h2 className={`text-2xl ${textPrimary}`}>
+              {getLngWiseStr(
+                language,
+                product?.name,
+                product?.nameHe,
+                product?.nameAr,
+              )}
+            </h2>
           </div>
         </div>
         <div className="p-6">
           <div className="flex items-center gap-4">
             <ImageWithFallback
               src={product?.image}
-              alt={product?.name}
+              alt={getLngWiseStr(
+                language,
+                product?.name,
+                product?.nameHe,
+                product?.nameAr,
+              )}
               className={`w-20 h-20 object-cover rounded-lg ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
             />
             <div>
@@ -72,7 +84,14 @@ export default function ProductDetailsModal({
                     <div>
                       <img
                         src={product?.business?.logoUrl}
-                        alt={product?.business?.nameEn || "Business logo"}
+                        alt={
+                          getLngWiseStr(
+                            language,
+                            product?.business?.nameEn,
+                            product?.business?.nameHe,
+                            product?.business?.nameAr,
+                          ) || "Business logo"
+                        }
                         className="w-6 h-6 rounded-lg object-cover"
                       />
                     </div>

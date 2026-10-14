@@ -15,7 +15,7 @@ import {
   useUpdateOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
 import { envKeys } from "@/lib/envKeys";
-import { getPlainTextFromRichText } from "@/helpers";
+import { getPlainTextFromRichText, getLngWiseStr } from "@/helpers";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
 import { useGetOrderByIdQuery } from "@/store/api/orderQueryApi";
@@ -35,7 +35,8 @@ function OrderDetailsModal({
   isQRMode,
   qrToken,
 }: OrderDetailsModalProps) {
-  const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
+  const { textTertiary, textPrimary, isRTL, isDark, language } =
+    useThemeClasses();
 
   const {
     data: orderDetails,
@@ -259,7 +260,12 @@ function OrderDetailsModal({
                   >
                     <ImageWithFallback
                       src={product?.image}
-                      alt={product?.name}
+                      alt={getLngWiseStr(
+                        language,
+                        product?.name,
+                        product?.nameHe,
+                        product?.nameAr,
+                      )}
                       className={clsx(
                         "w-24 h-22 rounded-xl object-cover border-2",
                         isDark ? "border-gray-600" : "border-gray-300",
@@ -278,7 +284,12 @@ function OrderDetailsModal({
                     <p
                       className={`${textPrimary} ${product?.status === "canceled" ? "line-through" : ""}`}
                     >
-                      {product?.name}
+                      {getLngWiseStr(
+                        language,
+                        product?.name,
+                        product?.nameHe,
+                        product?.nameAr,
+                      )}
                     </p>
                     <p className={`text-sm line-clamp-2 ${textTertiary}`}>
                       {" "}

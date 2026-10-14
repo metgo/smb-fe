@@ -2,6 +2,7 @@ import clsx from "clsx";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  BarChart3,
   Check,
   Copy,
   CopyPlus,
@@ -14,6 +15,7 @@ import {
 
 import { ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { websitesAnalyticsReport } from "@/lib/utils";
 import type { IUtmCampaign } from "@/store/api/utmCampaignApi";
 import { toReadableUrl } from "../utils/utm";
 
@@ -61,6 +63,11 @@ interface SavedLinkItemProps {
   onDuplicate: (link: IUtmCampaign) => void;
   onEdit: (link: IUtmCampaign) => void;
   onDelete: (id: string) => void;
+  onViewAnalytics: (
+    link: IUtmCampaign,
+    gaDataStudioId: string,
+    pageId: string,
+  ) => void;
 }
 
 const SavedLinkItem = ({
@@ -72,10 +79,17 @@ const SavedLinkItem = ({
   onDuplicate,
   onEdit,
   onDelete,
+  onViewAnalytics,
 }: SavedLinkItemProps) => {
   const { t } = useTranslation("utm_campaign");
   const { isDark, textPrimary, textTertiary, borderColor } = useThemeClasses();
   const campaignCopyId = `campaign:${link._id}`;
+
+  const analyticsReport = website
+    ? websitesAnalyticsReport.find((site) => site._id === website._id)
+    : undefined;
+  const gaDataStudioId = analyticsReport?.gaDataStudioId;
+  const utmCampaignResultsPageId = analyticsReport?.utmCampaignResultsPageId;
 
   return (
     <li
@@ -140,6 +154,20 @@ const SavedLinkItem = ({
           </div>
 
           <div className="flex items-center gap-0.5 shrink-0">
+            {gaDataStudioId && utmCampaignResultsPageId && (
+              <ActionButton
+                title={t("action_view_analytics")}
+                onClick={() =>
+                  onViewAnalytics(
+                    link,
+                    gaDataStudioId,
+                    utmCampaignResultsPageId,
+                  )
+                }
+              >
+                <BarChart3 className="w-4 h-4" />
+              </ActionButton>
+            )}
             <ActionButton
               title={t("action_duplicate")}
               onClick={() => onDuplicate(link)}

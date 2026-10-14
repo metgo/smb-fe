@@ -21,6 +21,7 @@ i18n
       "events",
       "businesses",
       "products",
+      "punch_pass",
       "poi",
       "campaign",
       "trips",

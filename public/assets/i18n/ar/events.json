@@ -222,6 +222,7 @@
   "duplicate_ticket": "نسخ التذكرة",
   "ticket_days": "أيام التذكرة",
   "ticket_name_required": "اسم التذكرة مطلوب",
+  "at_least_one_day_required": "مطلوب يوم واحد على الأقل للتذكرة - وإلا لن يتمكن العملاء من شرائها",
   "date_required": "التاريخ مطلوب",
   "start_time_required": "وقت البدء مطلوب",
   "end_time_required": "وقت الانتهاء مطلوب",

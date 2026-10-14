@@ -66,7 +66,7 @@ export default function CancelledInfo({
             className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
           >
             <dt className="shrink-0 opacity-80">{row.label}:</dt>
-            <dd className="font-medium break-words">{row.value}</dd>
+            <dd className="font-medium wrap-break-word">{row.value}</dd>
           </div>
         ))}
       </dl>

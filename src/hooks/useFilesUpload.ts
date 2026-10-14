@@ -79,6 +79,11 @@ export function useFilesUpload({
     async (files: FileList) => {
       const fileArray = Array.from(files);
 
+      // Local images now drive state — stop hydrating from `initialImages`,
+      // otherwise the first finished upload (synced back via `onChange`) would
+      // re-hydrate and drop the placeholders still uploading.
+      hasHydratedRef.current = true;
+
       const placeholders: IImageUpload[] = fileArray.map((file, index) => ({
         id: Date.now() + index,
         file,

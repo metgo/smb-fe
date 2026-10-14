@@ -210,6 +210,7 @@
   "duplicate_ticket": "Duplicate Ticket",
   "ticket_days": "Ticket Days",
   "ticket_name_required": "Ticket name is required",
+  "at_least_one_day_required": "At least one ticket day is required — customers won't be able to buy this ticket without one",
   "date_required": "Date is required",
   "start_time_required": "Start time is required",
   "end_time_required": "End time is required",

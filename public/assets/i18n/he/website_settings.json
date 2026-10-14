@@ -51,6 +51,8 @@
   "ga_property_id_placeholder": "הזן מזהה נכס GA",
   "platform_charge": "עמלת פלטפורמה (%)",
   "platform_charge_placeholder": "0",
+  "is_punch_pass_eligible": "זכאי לכרטיסיות ניקוב",
+  "is_punch_pass_eligible_info": "כרטיסיות הניקוב יוצגו תחת אתר זה",
   "camp_code": "קוד קמפיין",
   "camp_code_placeholder": "הזן קוד קמפיין",
   "website_logo": "לוגו האתר",

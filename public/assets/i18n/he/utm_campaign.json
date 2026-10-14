@@ -62,6 +62,8 @@
   "action_duplicate": "שכפול עבור משפיען נוסף",
   "action_edit": "עריכת קישור",
   "action_delete": "מחיקת קישור",
+  "action_view_analytics": "צפייה בנתוני קמפיין UTM",
+  "utm_campaign_results_title": "תוצאות קמפיין UTM",
   "delete_dialog_title": "מחיקת קישור שמור",
   "delete_dialog_message": "להסיר את קישור הקמפיין הזה? הפעולה מוחקת אותו לצמיתות.",
   "delete_confirm": "מחיקה",

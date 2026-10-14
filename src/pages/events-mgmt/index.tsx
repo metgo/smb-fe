@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Calendar, Users, Ticket, DollarSign } from "lucide-react";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import { ViewModeToggle } from "@/components/shared";
 import ListHeaderBar from "@/components/shared/ListHeaderBar";
 import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
@@ -121,9 +122,7 @@ export default function EventsMgmtPage() {
   const { data: eventStatsData, isLoading: isEventStatsFetching } =
     useGetEventsStatsQuery(statsQueryParams);
 
-  const [viewMode, setViewMode] = useState<"list" | "grid" | "calendar">(
-    (localStorage.getItem("eventViewMode") as "list" | "grid") ?? "list",
-  );
+  const [viewMode, setViewMode] = useViewMode("eventViewMode");
 
   const handleAddEvent = () => {
     setIsCreateWizardOpen(true);

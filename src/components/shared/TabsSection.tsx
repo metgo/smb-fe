@@ -22,6 +22,48 @@ const TabsSection = ({ tabs, activeTab, setActiveTab }: TabsSectionProps) => {
   const { isDark } = useThemeClasses();
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
+  const hashSyncedRef = useRef(false);
+
+  const getHashTab = () => decodeURIComponent(window.location.hash.slice(1));
+
+  // Restore the active tab from the URL hash (e.g. #overview) once tabs are available
+  useEffect(() => {
+    if (hashSyncedRef.current || tabs.length === 0) return;
+    hashSyncedRef.current = true;
+
+    const hashTab = getHashTab();
+    if (
+      hashTab &&
+      hashTab !== activeTab &&
+      tabs.some((tab) => tab.id === hashTab)
+    ) {
+      setActiveTab(hashTab);
+    }
+  }, [tabs, activeTab, setActiveTab]);
+
+  // Reflect the active tab in the URL hash
+  useEffect(() => {
+    if (!hashSyncedRef.current || !activeTab) return;
+    if (getHashTab() === activeTab) return;
+
+    const { pathname, search } = window.location;
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${pathname}${search}#${encodeURIComponent(activeTab)}`,
+    );
+  }, [activeTab, tabs]);
+
+  // Switch tabs when the hash is edited manually
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hashTab = getHashTab();
+      if (tabs.some((tab) => tab.id === hashTab)) setActiveTab(hashTab);
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [tabs, setActiveTab]);
 
   // Auto-scroll to center the active tab
   useEffect(() => {

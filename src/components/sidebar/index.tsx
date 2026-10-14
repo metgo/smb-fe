@@ -200,7 +200,13 @@ export default function Sidebar() {
       icon: FileText,
       isEnabled: true,
     },
-
+    // {
+    //   id: "punchPasses",
+    //   path: routes.punchPassMgmt,
+    //   label: t("punch_passes") || "Punch Passes",
+    //   icon: WalletCards,
+    //   isEnabled: true,
+    // },
     {
       id: "communication-center",
       path: "#communication_center",
@@ -460,7 +466,7 @@ export default function Sidebar() {
 
   const isExpanded = (path: string) => expandedItems.includes(path);
 
-  const renderMenuItem = (item: MenuItem, level: number = 0) => {
+  const renderMenuItem = (item: MenuItem, index: number, level: number = 0) => {
     const Icon = item.icon;
     const hasSubItems = item.subItems && item.subItems.length > 0;
     const expanded = isExpanded(item.path);
@@ -476,7 +482,7 @@ export default function Sidebar() {
         : ChevronRight;
 
     return (
-      <div key={item.id}>
+      <div key={index}>
         <button
           onClick={() => handleItemClick(item, hasSubItems as boolean)}
           disabled={isDisabled}
@@ -519,8 +525,8 @@ export default function Sidebar() {
             }}
             className={`${isDark ? "bg-gray-900/30" : "bg-gray-50/50"}`}
           >
-            {item.subItems!.map((subItem) =>
-              renderMenuItem(subItem, level + 1),
+            {item.subItems!.map((subItem, index) =>
+              renderMenuItem(subItem, index, level + 1),
             )}
           </div>
         )}
@@ -627,7 +633,7 @@ export default function Sidebar() {
                   ),
               ),
             }))
-            ?.map((item) => renderMenuItem(item))}
+            ?.map((item, index) => renderMenuItem(item, index))}
         </nav>
 
         {/* Footer */}

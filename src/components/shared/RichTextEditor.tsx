@@ -290,6 +290,16 @@ const DANGEROUS_TAGS = new Set([
   "LINK",
   "META",
   "BASE",
+  "SVG",
+  "CANVAS",
+  "VIDEO",
+  "AUDIO",
+  "TRACK",
+  "SOURCE",
+  "MAP",
+  "AREA",
+  "PARAM",
+  "APPLET",
 ]);
 
 /**
@@ -297,7 +307,9 @@ const DANGEROUS_TAGS = new Set([
  * - Removes dangerous tags and their children
  * - Strips all event-handler attributes (on*)
  * - Strips href="javascript:..." links
+ * - Strips data-* attributes
  * - Keeps only allowed CSS properties in inline styles
+ * - Removes any unknown/unsafe attributes
  */
 function sanitizePastedHTML(html: string): string {
   const root = document.createElement("div");
@@ -317,15 +329,43 @@ function sanitizePastedHTML(html: string): string {
         // Strip dangerous attributes
         const attrs = Array.from(el.attributes);
         for (const attr of attrs) {
+          // Remove event handlers
           if (attr.name.startsWith("on")) {
             el.removeAttribute(attr.name);
-          } else if (
+            continue;
+          }
+
+          // Remove data-* attributes (can be used for XSS)
+          if (attr.name.startsWith("data-")) {
+            el.removeAttribute(attr.name);
+            continue;
+          }
+
+          // Remove other potentially dangerous attributes
+          if (
+            ["id", "class", "name", "title", "accesskey", "tabindex"].includes(
+              attr.name,
+            )
+          ) {
+            el.removeAttribute(attr.name);
+            continue;
+          }
+
+          // Sanitize URL-based attributes
+          if (
             attr.name === "href" ||
             attr.name === "src" ||
-            attr.name === "action"
+            attr.name === "action" ||
+            attr.name === "background" ||
+            attr.name === "poster"
           ) {
             const val = attr.value.trim().toLowerCase().replace(/\s/g, "");
-            if (val.startsWith("javascript:") || val.startsWith("data:")) {
+            if (
+              val.startsWith("javascript:") ||
+              val.startsWith("data:") ||
+              val.startsWith("vbscript:") ||
+              val.startsWith("file:")
+            ) {
               el.removeAttribute(attr.name);
             }
           }
@@ -537,35 +577,45 @@ const RichTextEditor = ({
     const plainData = e.clipboardData.getData("text/plain");
     const current = getPlainText(editorRef.current?.innerHTML ?? "");
 
-    if (htmlData) {
-      // Rich paste: sanitize and insert HTML preserving styles
-      const sanitized = sanitizePastedHTML(htmlData);
-      if (maxLength) {
-        // Rough check: count plain-text length of sanitized content
-        const pastedPlain = getPlainText(sanitized);
-        const allowed = maxLength - current.length;
-        if (allowed <= 0) return;
-        if (pastedPlain.length <= allowed) {
-          document.execCommand("insertHTML", false, sanitized);
+    // If plain text contains HTML tags, parse it as HTML
+    let contentToInsert: string;
+    let isHTML = false;
+
+    if (htmlData && htmlData.trim()) {
+      // Clipboard has HTML data - sanitize and use it
+      contentToInsert = sanitizePastedHTML(htmlData);
+      isHTML = true;
+    } else if (plainData && /<[a-z][\s\S]*>/i.test(plainData)) {
+      // Plain text contains HTML tags - parse it as HTML
+      contentToInsert = sanitizePastedHTML(plainData);
+      isHTML = true;
+    } else {
+      // Plain text without HTML
+      contentToInsert = plainData;
+      isHTML = false;
+    }
+
+    if (maxLength) {
+      const pastedPlain = getPlainText(contentToInsert);
+      const allowed = maxLength - current.length;
+      if (allowed <= 0) return;
+
+      if (pastedPlain.length <= allowed) {
+        if (isHTML) {
+          document.execCommand("insertHTML", false, contentToInsert);
         } else {
-          // Fall back to truncated plain text when over limit
-          document.execCommand(
-            "insertText",
-            false,
-            plainData.slice(0, allowed),
-          );
+          document.execCommand("insertText", false, contentToInsert);
         }
       } else {
-        document.execCommand("insertHTML", false, sanitized);
+        // Truncate to fit
+        const truncated = contentToInsert.slice(0, allowed);
+        document.execCommand("insertText", false, truncated);
       }
     } else {
-      // Plain-text paste
-      if (maxLength) {
-        const allowed = maxLength - current.length;
-        if (allowed <= 0) return;
-        document.execCommand("insertText", false, plainData.slice(0, allowed));
+      if (isHTML) {
+        document.execCommand("insertHTML", false, contentToInsert);
       } else {
-        document.execCommand("insertText", false, plainData);
+        document.execCommand("insertText", false, contentToInsert);
       }
     }
     handleInput();

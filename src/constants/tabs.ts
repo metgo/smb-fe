@@ -1,6 +1,7 @@
 import {
   Accessibility,
   AlertTriangle,
+  ArrowLeftRight,
   Bell,
   Box,
   Calendar,
@@ -10,6 +11,7 @@ import {
   Globe,
   History,
   ImageIcon,
+  Layers,
   LayoutList,
   Logs,
   MapPin,
@@ -88,6 +90,14 @@ export const tripTabs = [
   { id: "stations", label: "stations", icon: MapPin },
   { id: "itenary", label: "step_itenary", icon: Clock },
   { id: "media", label: "media", icon: ImageIcon },
+];
+
+export const punchPassTabs = [
+  { id: "overview", label: "overview", icon: FileText },
+  { id: "catalogues", label: "catalogues", icon: Layers },
+  { id: "media", label: "media", icon: ImageIcon },
+  { id: "trades", label: "trades", icon: ArrowLeftRight },
+  { id: "audit_info", label: "audit_info", icon: History },
 ];
 
 export const voucherTabs = [

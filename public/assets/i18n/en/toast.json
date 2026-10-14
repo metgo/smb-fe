@@ -2,6 +2,7 @@
   "business_published": "Business Published successfully",
   "product_published": "Product Published successfully",
   "event_published": "Event Published successfully",
+  "punch_pass_published": "Punch Pass Published successfully",
 
   "required_fill_up_info": "Please fill up all required information",
 
@@ -51,6 +52,9 @@
   "product_quantity_change_loading": "Please wait. Product quantity is updating...",
   "product_quantity_update_success": "Product quantity updated successfully",
   "product_quantity_update_failed": "Failed to update product quantity",
+  "punch_pass_status_change_loading": "Please wait. Punch pass status is changing...",
+  "punch_pass_status_update_success": "Punch pass status updated successfully",
+  "punch_pass_status_update_failed": "Failed to change punch pass status",
 
   "promotion_created_success": "Promotion created successfully",
   "promotion_create_failed": "Failed to create promotion",

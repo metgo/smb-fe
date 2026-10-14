@@ -16,7 +16,7 @@ import {
 
 import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ShowColumns } from "@/components/shared";
+import { OrderListView, ShowColumns } from "@/components/shared";
 import {
   FilterSelect,
   MonthFilter,
@@ -30,7 +30,6 @@ import { FilterButton } from "@/components/btns";
 import SearchInput from "@/components/shared/SearchInput";
 import AmountFilter from "@/components/shared/AmountFilter";
 import StatsMarquee from "@/components/shared/StatsMarquee";
-import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import { getLngWiseStr } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
@@ -528,7 +527,7 @@ export default function OrdersSummaryMgmtPage() {
                 isRTL && "flex-row-reverse",
               )}
             >
-              <h1 className="text-base md:text-lg font-bold bg-clip-text bg-gradient-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
+              <h1 className="text-base md:text-lg font-bold bg-clip-text bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600 whitespace-nowrap">
                 {t("online_orders_summary_management")}
               </h1>
             </div>

@@ -2,6 +2,7 @@
   "business_published": "העסק פורסם בהצלחה",
   "product_published": "המוצר פורסם בהצלחה",
   "event_published": "האירוע פורסם בהצלחה",
+  "punch_pass_published": "כרטיסיית הניקוב פורסמה בהצלחה",
   "draft_saved": "הטיוטה נשמרה",
   "draft_failed": "שמירת הטיוטה נכשלה",
   "fill_all_fields": "יש למלא את כל השדות הנדרשים לפני ההמשך",
@@ -47,6 +48,9 @@
   "product_quantity_change_loading": "אנא המתן. כמות המוצר מתעדכנת…",
   "product_quantity_update_success": "כמות המוצר עודכנה בהצלחה",
   "product_quantity_update_failed": "עדכון כמות המוצר נכשל",
+  "punch_pass_status_change_loading": "אנא המתן. סטטוס כרטיסיית הניקוב מתעדכן...",
+  "punch_pass_status_update_success": "סטטוס כרטיסיית הניקוב עודכן בהצלחה",
+  "punch_pass_status_update_failed": "עדכון סטטוס כרטיסיית הניקוב נכשל",
 
   "promotion_created_success": "המבצע נוצר בהצלחה",
   "promotion_create_failed": "יצירת המבצע נכשלה",

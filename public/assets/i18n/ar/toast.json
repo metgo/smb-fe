@@ -2,6 +2,7 @@
   "business_published": "تم نشر النشاط التجاري بنجاح",
   "product_published": "تم نشر المنتج بنجاح",
   "event_published": "تم نشر الحدث بنجاح",
+  "punch_pass_published": "تم نشر بطاقة الخصم بنجاح",
   "draft_saved": "تم حفظ المسودة",
   "draft_failed": "فشل حفظ المسودة",
   "fill_all_fields": "يرجى ملء جميع الحقول المطلوبة قبل المتابعة",
@@ -48,6 +49,9 @@
   "product_quantity_change_loading": "يرجى الانتظار. جاري تحديث كمية المنتج…",
   "product_quantity_update_success": "تم تحديث كمية المنتج بنجاح",
   "product_quantity_update_failed": "فشل تحديث كمية المنتج",
+  "punch_pass_status_change_loading": "يرجى الانتظار. جارٍ تغيير حالة بطاقة الخصم...",
+  "punch_pass_status_update_success": "تم تحديث حالة بطاقة الخصم بنجاح",
+  "punch_pass_status_update_failed": "فشل تغيير حالة بطاقة الخصم",
 
   "promotion_created_success": "تم إنشاء الترويج بنجاح",
   "promotion_create_failed": "فشل إنشاء الترويج",

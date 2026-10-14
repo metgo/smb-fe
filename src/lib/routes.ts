@@ -26,6 +26,8 @@ export const routes = {
   contentMgmt: "/content-management",
   voucherMgmt: "/voucher-management",
   voucherDetails: "/voucher-details",
+  punchPassMgmt: "/punch-pass-management",
+  punchPassDetails: "/punch-pass-details",
   vendorReconciliationMgmt: "/vendor-reconciliation",
   paymentTransactions: "/payment-transactions",
   pointOfInterest: "/point-of-interest",

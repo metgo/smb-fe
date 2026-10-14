@@ -17,6 +17,7 @@ import { CheckCircle, AlertCircle, MapPin, Landmark } from "lucide-react";
 
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import {
   BulkActionBar,
   ConfirmDialog,
@@ -72,7 +73,7 @@ export default function PoiMgmtPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useViewMode("poiViewMode");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedPois, setSelectedPois] = useState<Set<string>>(new Set());

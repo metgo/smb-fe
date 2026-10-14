@@ -7,6 +7,7 @@ import { UserRole } from "@/enums/user.types";
 import EmptyState from "@/components/shared/EmptyState";
 import SearchInput from "@/components/shared/SearchInput";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import { useGetUsersQuery } from "@/store/api/userQueryApi";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useDeleteUserMutation } from "@/store/api/userMutationApi";
@@ -67,9 +68,7 @@ const UsersMgmtPage = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
 
-  const [viewMode, setViewMode] = useState<"grid" | "list">(
-    () => (localStorage.getItem("usersViewMode") as "grid" | "list") ?? "grid",
-  );
+  const [viewMode, setViewMode] = useViewMode("usersViewMode", "grid");
 
   const [allUsers, setAllUsers] = useState<IUser[]>([]);
 

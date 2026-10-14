@@ -16,6 +16,7 @@ import {
 import clsx from "clsx";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useViewMode } from "@/hooks/useViewMode";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import type { VendorPaymentSummaryRow } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
@@ -56,12 +57,9 @@ export const PaymentMgmtPage = () => {
   // restored on "Back to vendor summary".
   const vendorSummarySearchRef = useRef("");
   const [showFilters, setShowFilters] = useState(false);
-  const [vendorSummaryViewMode, setVendorSummaryViewMode] = useState<
+  const [vendorSummaryViewMode, setVendorSummaryViewMode] = useViewMode<
     "list" | "grid"
-  >(
-    (localStorage.getItem("vendorMonthlySummaryViewMode") as "list" | "grid") ||
-      "list",
-  );
+  >("vendorMonthlySummaryViewMode");
   const [showCloseAllOrdersLockedModal, setShowCloseAllOrdersLockedModal] =
     useState(false);
 
@@ -168,15 +166,15 @@ export const PaymentMgmtPage = () => {
       return;
     }
 
-    const now = new Date();
+    // const now = new Date();
     // "Close All Orders" always targets last calendar month; vendors keep
-    // the right to mark orders Completed / open a dispute until the 5th of
+    // the right to mark orders Completed / open a dispute until the 10th of
     // the current month.
-    const graceCutoff = new Date(now.getFullYear(), now.getMonth(), 5);
-    if (now < graceCutoff) {
-      setShowCloseAllOrdersLockedModal(true);
-      return;
-    }
+    // const graceCutoff = new Date(now.getFullYear(), now.getMonth(), 10);
+    // if (now < graceCutoff) {
+    //   setShowCloseAllOrdersLockedModal(true);
+    //   return;
+    // }
     setShowCloseAllOrdersModal(true);
   };
 

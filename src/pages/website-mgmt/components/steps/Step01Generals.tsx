@@ -9,7 +9,7 @@ interface Props {
   errors: SiteSettingsErrors;
   onChange: (
     field: keyof ISiteSettingsFormData,
-    value: string | number,
+    value: string | number | boolean,
   ) => void;
 }
 
@@ -20,7 +20,8 @@ const Step01Generals = ({
   onChange,
 }: Props) => {
   const { t } = useTranslation("website_settings");
-  const { inputClasses, textPrimary } = useThemeClasses();
+  const { inputClasses, textPrimary, textSecondary, borderColor } =
+    useThemeClasses();
 
   return (
     <div className="flex flex-col gap-4">
@@ -209,6 +210,31 @@ const Step01Generals = ({
           />
         </div>
       </div>
+
+      {/* Punch Pass Eligibility */}
+      <label
+        className={clsx(
+          "flex items-start gap-3 p-4 rounded-xl border cursor-pointer",
+          borderColor,
+        )}
+      >
+        <input
+          type="checkbox"
+          checked={!!formData.isPunchpassEligible}
+          onChange={(e) => onChange("isPunchpassEligible", e.target.checked)}
+          className="mt-0.5 w-4 h-4 rounded accent-teal-500 cursor-pointer"
+        />
+        <div className="flex flex-col gap-1">
+          <span className={clsx("text-sm font-medium", textPrimary)}>
+            {t("is_punch_pass_eligible")}
+          </span>
+          <span
+            className={clsx("flex items-center gap-1.5 text-xs", textSecondary)}
+          >
+            {t("is_punch_pass_eligible_info")}
+          </span>
+        </div>
+      </label>
     </div>
   );
 };
