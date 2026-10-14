@@ -1,5 +1,5 @@
 import { useEffect, useRef, type FC } from "react";
-import { BadgePercent, Store } from "lucide-react";
+// import { BadgePercent, Store } from "lucide-react";
 
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -75,19 +75,18 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   isEditMode = false,
   onAvailabilityStatusChange,
 }) => {
-  const { isSuperadmin, isTraveller } = useUserRoles();
-  const { borderColor, isDark, isRTL } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
+  const { borderColor, isDark } = useThemeClasses();
   const { allWebsites } = useCommon();
 
   const hasDiscountWebsiteSelected = websiteVisibilityIds?.some(
     (id) => allWebsites?.find((w) => w._id === id)?.purpose === "DISCOUNT",
   );
 
-  const discountInputClasses = `w-full rounded-lg border px-3 py-2 pe-8 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-    isDark
-      ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
-      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-  }`;
+  // const discountInputClasses = `w-full rounded-lg border px-3 py-2 pe-8 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 ${isDark
+  //     ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
+  //     : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+  //   }`;
 
   const handleChange = (updates: Partial<BusinessFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
@@ -128,7 +127,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 
       {/* Mark as supplier — superadmin only, shown only when a
           purpose "DISCOUNT" website is selected */}
-      {isSuperadmin && hasDiscountWebsiteSelected && (
+      {/*     {isSuperadmin && hasDiscountWebsiteSelected && (
         <div
           className={`rounded-xl border p-4 transition-colors ${
             formData.markedAsSupplier
@@ -200,8 +199,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           </button>
         </div>
       )}
+*/}
 
-      {/* Traveller discount */}
+      {/* Traveller discount 
       {(isTraveller || isSuperadmin) && (
         <div
           className={`rounded-xl border p-4 transition-colors ${
@@ -286,7 +286,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 isDark ? "border-teal-800/40" : "border-teal-200"
               }`}
             >
-              {/* Discount vs Gift picker */}
+           
               <div className="mb-4 flex gap-2">
                 {(["DISCOUNT", "GIFT"] as const).map((type) => (
                   <button
@@ -423,7 +423,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
             </div>
           )}
         </div>
-      )}
+      )}*/}
 
       <BusinessContentForm
         formData={formData}

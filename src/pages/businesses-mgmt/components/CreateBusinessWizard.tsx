@@ -1001,14 +1001,6 @@ function CreateBusinessWizardInner({
           />
         );
 
-      // case 2:
-      //   return (
-      //     <BusinessTranslateButton
-      //       formData={formData}
-      //       onChange={handleChange}
-      //     />
-      //   );p
-
       case 2:
         return <BusinessContactOwership {...commonProps} />;
       case 3:
