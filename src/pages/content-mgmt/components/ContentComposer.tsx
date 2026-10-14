@@ -395,15 +395,17 @@ const ContentComposer = ({
   const autoConnectEnabled = websiteConfig?.autoAssignEnabled !== false;
 
   // The hint names only what this website actually shows: MARKETPLACE → products,
-  // TRAVELING → businesses, anything else (DISCOUNT / OTHER) → both.
+  // TRAVELING → businesses, DISCOUNT → discount businesses, anything else (OTHER) → both.
   const autoConnectPurpose =
     websiteConfig?.purpose ?? selectedWebsite?.purpose ?? null;
-  const autoConnectItems =
-    autoConnectPurpose === "MARKETPLACE"
-      ? t("auto_connect_items_products")
-      : autoConnectPurpose === "TRAVELING"
-        ? t("auto_connect_items_businesses")
-        : t("auto_connect_items_all");
+  let autoConnectItems = t("auto_connect_items_all");
+  if (autoConnectPurpose === "MARKETPLACE") {
+    autoConnectItems = t("auto_connect_items_products");
+  } else if (autoConnectPurpose === "TRAVELING") {
+    autoConnectItems = t("auto_connect_items_businesses");
+  } else if (autoConnectPurpose === "DISCOUNT") {
+    autoConnectItems = t("auto_connect_items_discount");
+  }
 
   const handleAutoConnectToggle = async (next: boolean) => {
     if (!externalApiId) return;
