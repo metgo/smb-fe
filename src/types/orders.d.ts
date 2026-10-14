@@ -66,12 +66,14 @@ class IProductDto {
   _id: string;
   orderedProductId: string;
   name: string;
+  nameHe?: string;
+  nameAr?: string;
   description: string;
   image: string;
   quantity: number;
   amount: number;
   status: string;
-  itemType: "PRODUCT" | "TICKET";
+  itemType: "PRODUCT" | "TICKET" | "BUSINESS";
 
   receiverEmail: string;
   receiverCountryCode: string;
