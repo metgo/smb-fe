@@ -52,6 +52,7 @@ import {
 } from '../events/schema/events-audit.schema';
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
 import { Voucher, VoucherSchema } from '../vouchers/schema/voucher.schema';
+import { PromotionOrdersModule } from '../promotion-orders/promotion-orders.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { Voucher, VoucherSchema } from '../vouchers/schema/voucher.schema';
     AuthorityModule,
     DMOModule,
     forwardRef(() => ProductsModule),
+    PromotionOrdersModule,
   ],
   providers: [
     GetSiteFiltersConfigByIdentifierIdHandler,

@@ -31,6 +31,7 @@ import {
   ProductsAudit,
   ProductsAuditSchema,
 } from './schema/products-audit.schema';
+import { PromotionOrdersModule } from '../promotion-orders/promotion-orders.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import {
     forwardRef(() => MediaModule),
     forwardRef(() => CampaignModule),
     forwardRef(() => ExternalApiModule),
+    PromotionOrdersModule,
   ],
   providers: [
     ProductsService,

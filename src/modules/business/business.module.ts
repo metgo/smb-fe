@@ -51,6 +51,7 @@ import {
   CampaignSchema,
 } from 'src/modules/campaign/schema/campaign.schema';
 import { CreateBusinessHandler } from './command/handler/create-business.handler';
+import { PromotionOrdersModule } from 'src/modules/promotion-orders/promotion-orders.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { CreateBusinessHandler } from './command/handler/create-business.handler
     forwardRef(() => UsersModule),
     forwardRef(() => DMOModule),
     forwardRef(() => ProductsModule),
+    forwardRef(() => PromotionOrdersModule),
   ],
   controllers: [
     BusinessMarketplaceController,

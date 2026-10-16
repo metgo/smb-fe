@@ -59,6 +59,16 @@ export class PaymentsService {
     }
   }
 
+  async findByOrderId(orderId: string): Promise<Payment | null> {
+    try {
+      const payment = await this.PaymentModel.findOne({ orderId });
+
+      return payment;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
   async generateLink(command: GenerateLinkCommand) {
     const {
       amount,

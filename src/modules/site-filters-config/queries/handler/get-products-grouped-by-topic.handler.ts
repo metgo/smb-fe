@@ -19,6 +19,7 @@ import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { CacheService } from 'src/services/cache/cache.service';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { PromotionOrdersService } from 'src/modules/promotion-orders/promotion-orders.service';
 
 const PRODUCTS_PER_TOPIC = 4;
 const CACHE_TTL = 20;
@@ -38,7 +39,26 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     @InjectModel(Campaign.name)
     private CampaignModel: Model<Campaign>,
     private readonly cacheService: CacheService,
+    private readonly promotionOrdersService: PromotionOrdersService,
   ) {}
+
+  // isAlreadyRedeemed is baked into this cached response like every other
+  // business field here (price, approval status, etc.) - same CACHE_TTL
+  // staleness window applies, not a special exception for this one field.
+  private async getRedeemedBusinessIds(products: any[]): Promise<Set<string>> {
+    const businessIds = [...new Set(
+      products
+        .map(p => (p.businessId as any)?._id?.toString())
+        .filter(Boolean),
+    )];
+
+    if (!businessIds.length) return new Set();
+
+    const statuses = await this.promotionOrdersService.getStatusForBusinesses(businessIds);
+    return new Set(
+      statuses.filter(s => s.status === 'REDEEMED').map(s => s.businessId),
+    );
+  }
 
   async execute({
     siteSettingId,
@@ -149,6 +169,8 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       filteredProducts.map(p => [p.productId.toString(), p]),
     );
 
+    const redeemedBusinessIds = await this.getRedeemedBusinessIds(filteredProducts);
+
     const tempMap = new Map<number, any[]>();
     activeTopics.forEach((_, i) => tempMap.set(i, []));
 
@@ -158,7 +180,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
       tempMap
         .get(topicIndex)
-        .push(this.formatProduct(product, category, locale));
+        .push(this.formatProduct(product, category, locale, redeemedBusinessIds));
     });
 
     const topicProductsMap = new Map<number, any[]>();
@@ -266,6 +288,8 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       groupMap.get(catId).push(product);
     });
 
+    const redeemedBusinessIds = await this.getRedeemedBusinessIds(filteredProducts);
+
     // eslint-disable-next-line no-unused-vars
     return [...groupMap.entries()].map(([_, items]) => {
       const shuffled = shuffleArray(items).slice(0, PRODUCTS_PER_TOPIC);
@@ -276,12 +300,17 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
             ? items[0].primaryCategoryId?.hebrewName
               || items[0].primaryCategoryId?.name
             : items[0].primaryCategoryId?.name,
-        products: shuffled.map(p => this.formatProduct(p, null, locale)),
+        products: shuffled.map(p => this.formatProduct(p, null, locale, redeemedBusinessIds)),
       };
     });
   }
 
-  private formatProduct(product: any, category: any, locale: Locale) {
+  private formatProduct(
+    product: any,
+    category: any,
+    locale: Locale,
+    redeemedBusinessIds?: Set<string>,
+  ) {
     const { productId: pid, ...rest } = product;
 
     let selectedImage = null;
@@ -313,6 +342,10 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       rest.businessId.globalDelivery = rest.businessId.globalDelivery ?? false;
       rest.businessId.globalDeliveryArea
         = rest.businessId.globalDeliveryArea ?? [];
+
+      // Lion Coin badge per spec - from DB status, not manual. Computed once per request via getRedeemedBusinessIds.
+      rest.businessId.isAlreadyRedeemed
+        = redeemedBusinessIds?.has(rest.businessId._id?.toString()) ?? false;
     }
 
     const localizedBase = localizeFields({ ...rest, _id: pid }, locale);

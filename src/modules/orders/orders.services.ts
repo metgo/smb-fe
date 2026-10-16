@@ -14,7 +14,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 import { ServerErrors } from 'src/common/constant';
-import { Currency, Locale, PaymentStatus } from 'src/common/enum';
+import {
+  Currency, Locale, PaymentStatus,
+} from 'src/common/enum';
 import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
@@ -27,6 +29,8 @@ import { BusinessService } from 'src/modules/business/shared/services/business.s
 import { CartService } from 'src/modules/cart/cart.service';
 import { Cart } from 'src/modules/cart/cart.schema';
 import { CartProductResponse, CartStatus } from 'src/modules/cart/cart.types';
+import { PromotionOrdersService } from 'src/modules/promotion-orders/promotion-orders.service';
+import { PromotionOrder } from 'src/modules/promotion-orders/schema/promotion-order.schema';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { EventTicketAnswer } from 'src/modules/event-ticket-answers/schema/event-ticket-answer.schema';
 import { ProductsService } from 'src/modules/products/products.services';
@@ -98,6 +102,8 @@ export class OrdersService {
     private OrderProductModel: Model<OrderProduct>,
     @InjectModel(EventTicketAnswer.name)
     private readonly eventTicketAnswerModel: Model<EventTicketAnswer>,
+    @InjectModel(PromotionOrder.name)
+    private PromotionOrderModel: Model<PromotionOrder>,
     private readonly businessService: BusinessService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
@@ -109,6 +115,7 @@ export class OrdersService {
     private readonly paymentService: PaymentsService,
     private readonly externalApiService: ExternalApiServices,
     private readonly cartService: CartService,
+    private readonly promotionOrdersService: PromotionOrdersService,
     private readonly qrCodeService: QRCodeService,
     private readonly qrTokenService: QrTokenService,
     private readonly configService: ConfigService,
@@ -353,7 +360,7 @@ export class OrdersService {
       return order;
     } catch (error) {
       this.logger.error('[ORDER]: FAILED TO CREATE ORDER', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
       });
       exceptionHandling(error);
     }
@@ -366,10 +373,24 @@ export class OrdersService {
   ): Promise<any> {
     const { vendorProducts } = cartDetails;
 
+    // Adopts drawer-won holds (keyed by lionCoinSessionId). Drawer click is the consent signal;
+    // checkout only attaches cartId to existing holds. No cart mutations.
+    const lionCoinHolderId
+      = body.lionCoinSessionId || loggedInUser?.id || cartDetails._id.toString();
+    const lionCoinResults = await this.promotionOrdersService.applyToVendorCart(
+      vendorProducts,
+      cartDetails._id.toString(),
+      lionCoinHolderId,
+    );
+    const lionCoinDiscountByBusinessId = new Map(
+      lionCoinResults.map(result => [result.businessId, result.vouchers?.remainingAmount || 0]),
+    );
+
     const payableAmount
       = Math.round(
         vendorProducts.reduce(
-          (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
+          (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0)
+            - (lionCoinDiscountByBusinessId.get(vendor._id.toString()) || 0),
           0,
         ) * 100,
       ) / 100;
@@ -385,8 +406,16 @@ export class OrdersService {
     let totalAmountToPay = payableAmount;
     let redeemedVouchers;
 
-    if (body?.voucher?.length) {
-      const voucherIds = body.voucher.map(voucher => voucher.id);
+    // Collect Lion Coin vouchers to process them through the voucher system
+    const lionCoinVoucherIds = lionCoinResults
+      .filter(result => result.vouchers?._id)
+      .map(result => result.vouchers!._id);
+
+    if (body?.voucher?.length || lionCoinVoucherIds.length) {
+      const voucherIds = [
+        ...(body?.voucher?.map(voucher => voucher.id) || []),
+        ...lionCoinVoucherIds,
+      ];
       const vouchers = await this.voucherService.findByValidIds(voucherIds);
 
       if (vouchers?.length) {
@@ -545,7 +574,7 @@ export class OrdersService {
       );
     } catch (error) {
       this.logger.error('[EXTERNAL_API_ORDERS]: FAILED TO CREATE ORDER', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
       });
       exceptionHandling(error);
     }
@@ -1195,6 +1224,48 @@ export class OrdersService {
         }
       }
 
+      // Finalize Lion Coin redemption for regular (non-vendor-split) orders
+      if (cart && !cart.vendorProducts?.length) {
+        try {
+          const businessId = updateOrder.vendorId?.toString();
+          if (businessId) {
+            // Adopt drawer reservation to cart if not already linked
+            const existing = await this.PromotionOrderModel.findOne({
+              businessId,
+              redeemCode: 'LION_COIN',
+              status: 'RESERVED',
+              reservedCartId: null,
+            });
+            if (existing) {
+              await this.PromotionOrderModel.findByIdAndUpdate(
+                existing._id,
+                { reservedCartId: cart._id },
+              );
+            }
+
+            const claimed = await this.PromotionOrderModel.findOne({
+              businessId,
+              redeemCode: 'LION_COIN',
+              status: 'RESERVED',
+            }).lean();
+            if (claimed) {
+              await this.finalizeLionCoinRedemption(
+                { _id: businessId, totalAmount: updateOrder.totalAmount + (updateOrder.deliveryFee || 0) } as any,
+                claimed,
+                updateOrder,
+                updateOrder,
+                externalApi,
+              );
+            }
+          }
+        } catch (lionCoinErr) {
+          this.logger.warn('[ORDER]: FAILED TO FINALIZE LION COIN ON REGULAR ORDER', {
+            orderId: updateOrder._id,
+            err: lionCoinErr instanceof Error ? lionCoinErr.message : String(lionCoinErr),
+          });
+        }
+      }
+
       return {
         updateOrder,
         getProductInformation: [
@@ -1204,9 +1275,89 @@ export class OrdersService {
       };
     } catch (err) {
       this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
-        err: err.message,
+        err: err instanceof Error ? err.message : String(err),
       });
       exceptionHandling(err);
+    }
+  }
+
+  /**
+   * RESERVED -> REDEEMED after payment confirmation (spec rule). Inside Promise.all -
+   * if throws, rejects whole batch and discards other vendors' work. Must never throw
+   * (same pattern as QR-code try/catch).
+   */
+  private async finalizeLionCoinRedemption(
+    vendor: Cart['vendorProducts'][number],
+    claimedPromotionOrder: PromotionOrder | undefined,
+    savedOrder: Order,
+    parentOrder: Order,
+    externalApi: any,
+  ): Promise<void> {
+    if (!claimedPromotionOrder) return;
+
+    try {
+      // Cardcom reference on PARENT order's Payment (charge was against combined cart,
+      // not per-vendor). Looked up before redeem() for atomic persistence.
+      const payment = await this.paymentService.findByOrderId(parentOrder._id.toString());
+
+      const redeemed = await this.promotionOrdersService.redeem(
+        claimedPromotionOrder._id.toString(),
+        savedOrder._id.toString(),
+        payment?.paymentRequestId,
+      );
+
+      if (!redeemed) {
+        // Lost the race or already finalized by a retried webhook - no
+        // email, no error, same idempotency contract as the rest of this
+        // handler.
+        return;
+      }
+
+      const [business] = (await this.businessService.findBusinessEmailByIds([
+        vendor._id as any,
+      ])) || [];
+
+      // Spec's email table wants "details of the products or services, and
+      // quantity" - best-effort, folded into the same outer catch below.
+      let productsSummary = '';
+      const productItems = vendor.products.filter(p => p.itemType === OrderItemType.PRODUCT);
+      if (productItems.length) {
+        const productInfo = await this.productsService.getProductInformationForOrders(
+          productItems.map(p => ({ id: p._id, quantity: p.quantity, itemType: p.itemType })),
+        );
+        const infoById = new Map(productInfo.map((p: any) => [p._id.toString(), p]));
+        productsSummary = productItems
+          .map(p => `${infoById.get(p._id.toString())?.name || p._id.toString()} x${p.quantity}`)
+          .join(', ');
+      }
+      const nonProductCount = vendor.products.length - productItems.length;
+      if (nonProductCount > 0) {
+        productsSummary += `${productsSummary ? ', ' : ''}${nonProductCount} other item(s)`;
+      }
+
+      await this.promotionOrdersService.sendRedemptionEmails(redeemed, {
+        orderId: savedOrder._id.toString(),
+        orderNumber: savedOrder._id.toString(),
+        businessName: (business as any)?.name || vendor._id.toString(),
+        buyerName: `${parentOrder.firstName || ''} ${parentOrder.lastName || ''}`.trim(),
+        buyerEmail: parentOrder.email,
+        buyerPhone: parentOrder.phone,
+        productsSummary,
+        // vendor.totalAmount is original undiscounted amount (Cart never mutated).
+        // amountPaid is what vendorOrder was saved with.
+        amountBeforeDiscount: vendor.totalAmount,
+        amountPaid: Math.round((vendor.totalAmount - redeemed.value) * 100) / 100,
+        paymentRequestId: payment?.paymentRequestId,
+        redeemedAt: redeemed.redeemedAt,
+      }, externalApi);
+    } catch (err) {
+      // Redemption may have already committed (atomic). Logged for manual follow-up,
+      // never re-thrown - order must not be sacrificed over Lion Coin side effect.
+      this.logger.error('[ORDER]: FAILED TO FINALIZE LION COIN REDEMPTION', {
+        orderId: savedOrder._id,
+        promotionOrderId: claimedPromotionOrder._id,
+        err: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -1215,8 +1366,39 @@ export class OrdersService {
     cart: Cart,
     externalApi: any,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
+    // Claims against this cart (keyed by businessId). Cart never written to,
+    // so this is the only source for redemption info.
+    const redeemedByBusinessId = await this.promotionOrdersService.findByCartId(
+      cart._id.toString(),
+    );
+
+    // For any RESERVED Lion Coin without a cartId, adopt it to this cart
+    // (drawer reservations don't set reservedCartId initially)
+    await Promise.all(
+      cart.vendorProducts.map(async vendor => {
+        const businessId = vendor._id.toString();
+        const existing = await this.PromotionOrderModel.findOne({
+          businessId,
+          redeemCode: 'LION_COIN',
+          status: 'RESERVED',
+          reservedCartId: null,
+        });
+        if (existing) {
+          await this.PromotionOrderModel.findByIdAndUpdate(
+            existing._id,
+            { reservedCartId: cart._id },
+          );
+          // Update the map for this iteration
+          redeemedByBusinessId.set(businessId, existing);
+        }
+      }),
+    );
+
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
+        const claimed = redeemedByBusinessId.get(vendor._id.toString());
+        const lionCoinDiscountAmount = claimed?.value || 0;
+
         const vendorOrder = new this.OrderModel({
           products: vendor.products.map(p => ({ id: p._id })),
           userId: parentOrder.userId,
@@ -1230,7 +1412,8 @@ export class OrdersService {
           status: OrderStatus.PROCESSING,
           paymentMode: parentOrder.paymentMode,
           voucher: parentOrder.voucher,
-          totalAmount: vendor.totalAmount,
+          totalAmount:
+            Math.round((vendor.totalAmount - lionCoinDiscountAmount) * 100) / 100,
           creditCardPayment: 0,
           deliveryFee: vendor.deliveryFee || 0,
           externalApiId: parentOrder.externalApiId,
@@ -1261,6 +1444,8 @@ export class OrdersService {
             error: qrError instanceof Error ? qrError.message : String(qrError),
           });
         }
+
+        await this.finalizeLionCoinRedemption(vendor, claimed, savedOrder, parentOrder, externalApi);
 
         return savedOrder;
       }),
@@ -1393,16 +1578,51 @@ export class OrdersService {
     cart: Cart,
     externalApi: any,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
+    // Claims against this cart (keyed by businessId). Cart never written to,
+    // so this is the only source for redemption info.
+    const redeemedByBusinessId = await this.promotionOrdersService.findByCartId(
+      cart._id.toString(),
+    );
+
+    // For any RESERVED Lion Coin without a cartId, adopt it to this cart
+    // (drawer reservations don't set reservedCartId initially)
+    await Promise.all(
+      cart.vendorProducts.map(async vendor => {
+        const businessId = vendor._id.toString();
+        const existing = await this.PromotionOrderModel.findOne({
+          businessId,
+          redeemCode: 'LION_COIN',
+          status: 'RESERVED',
+          reservedCartId: null,
+        });
+        if (existing) {
+          await this.PromotionOrderModel.findByIdAndUpdate(
+            existing._id,
+            { reservedCartId: cart._id },
+          );
+          // Update the map for this iteration
+          redeemedByBusinessId.set(businessId, existing);
+        }
+      }),
+    );
+
+    // Discounted totals (not raw cart.vendorProducts). creditCardPayment denominator was
+    // computed from discounted payableAmount, so split must use same basis.
     const totalVendorsAmount = cart.vendorProducts.reduce(
-      (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
+      (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0)
+        - (redeemedByBusinessId.get(vendor._id.toString())?.value || 0),
       0,
     );
 
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
+        const claimed = redeemedByBusinessId.get(vendor._id.toString());
+        const lionCoinDiscountAmount = claimed?.value || 0;
+
         const vendorGrossAmount
-          = Math.round((vendor.totalAmount + (vendor.deliveryFee || 0)) * 100)
-          / 100;
+          = Math.round(
+            (vendor.totalAmount + (vendor.deliveryFee || 0) - lionCoinDiscountAmount) * 100,
+          ) / 100;
         const vendorCreditCardPayment
           = totalVendorsAmount > 0
             ? Math.round(
@@ -1458,6 +1678,8 @@ export class OrdersService {
             error: qrError instanceof Error ? qrError.message : String(qrError),
           });
         }
+
+        await this.finalizeLionCoinRedemption(vendor, claimed, savedOrder, parentOrder, externalApi);
 
         return savedOrder;
       }),
@@ -1756,11 +1978,28 @@ export class OrdersService {
       emailToGroupMap[email].totalDeliveryFee += deliveryFee;
     });
 
+    // Lion Coin discount on per-vendor Order - fetch from PromotionOrder instead of Order field
+    const lionCoinDiscountByVendorId = new Map(
+      await Promise.all(
+        vendorOrders.map(async vo => {
+          const discount = await this.promotionOrdersService.getDiscountAmountByOrderId(vo._id.toString());
+          return [vo.vendorId.toString(), discount] as [string, number];
+        }),
+      ),
+    );
+
     await Promise.all(
       Object.entries(emailToGroupMap).map(([email, group]) => {
+        let groupLionCoinDiscount = 0;
         const vendorsWithQrHtml = group.vendorGroups
           .map(vendor => {
-            const vendorTotal = vendor.subtotal + vendor.vendorDeliveryFee;
+            const lionCoinDiscount = lionCoinDiscountByVendorId.get(vendor.vendorId) || 0;
+            groupLionCoinDiscount += lionCoinDiscount;
+            const vendorTotal
+              = vendor.subtotal + vendor.vendorDeliveryFee - lionCoinDiscount;
+            const lionCoinDiscountHtml = lionCoinDiscount
+              ? `<span style="display: block; font-size: 13px; color: #2e7d32; margin-bottom: 6px;">מטבע הארי: -₪${lionCoinDiscount}</span>`
+              : '';
             return `
             <div style="margin-bottom: 30px; padding: 20px; background: #ffffff; border-radius: 10px; border: 1px solid #e0e0e0;">
               <div style="border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 15px;">
@@ -1782,6 +2021,7 @@ export class OrdersService {
     ? `₪${vendor.perUnitDeliveryFee} × ${vendor.totalQuantity} = ₪${vendor.vendorDeliveryFee}`
     : `₪${vendor.vendorDeliveryFee}`
 }</span>
+                ${lionCoinDiscountHtml}
                 <span style="display: block; font-size: 16px; font-weight: bold; color: #333333;">סה״כ עבור ${vendor.vendorName
 }: ₪${vendorTotal}</span>
               </div>
@@ -1826,7 +2066,8 @@ export class OrdersService {
             VENDORS_WITH_QR_HTML: vendorsWithQrHtml,
             DELIVERY_FEE_SUMMARY: totalDeliveryFeeHtml,
             BUYERNAME: group.buyerName || '',
-            TOTALAMOUNT: group.totalAmount + group.totalDeliveryFee || 0,
+            TOTALAMOUNT:
+              group.totalAmount + group.totalDeliveryFee - groupLionCoinDiscount || 0,
             CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
             ORDER_HISTORY_LINK: `${externalApi?.websiteUrl}/order-history`,
             COLOR: externalApi?.primaryColor || '#000000',
@@ -2157,6 +2398,24 @@ export class OrdersService {
         );
       }
 
+      // No per-vendor split orders exist yet at this point - those are only
+      // created on payment SUCCESS - so any Lion Coins reserved against
+      // this cart need releasing here, not via a redeemedOrderId lookup.
+      try {
+        const cart = await this.cartService.findOneByOrderId(orderId);
+        if (cart?._id) {
+          await this.promotionOrdersService.releaseByCartId(cart._id.toString());
+        }
+      } catch (lionCoinErr) {
+        this.logger.warn('[ORDER]: FAILED TO RELEASE LION COIN RESERVATIONS', {
+          orderId,
+          error:
+            lionCoinErr instanceof Error
+              ? lionCoinErr.message
+              : String(lionCoinErr),
+        });
+      }
+
       // Leaves an OrderProduct trail for the abandoned/failed checkout -
       // must never block the refund/cancellation above.
       try {
@@ -2183,7 +2442,7 @@ export class OrdersService {
       return updateOrder;
     } catch (err) {
       this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT FAILURE', {
-        err: err.message,
+        err: err instanceof Error ? err.message : String(err),
       });
       exceptionHandling(err);
     }
@@ -2213,10 +2472,41 @@ export class OrdersService {
 
       this.logger.info('[ORDER]: UPDATED', { message: updateOrder });
 
+      // Admin/vendor cancellation of already-paid order with Lion Coin - full cancellation only
+      // (partial refunds manual per spec §1).
+      if (
+        body.status === OrderStatus.CANCELED
+        && orderExists.paymentStatus === PaymentStatus.SUCCESS
+      ) {
+        try {
+          const released = await this.promotionOrdersService.releaseByOrderId(id);
+          if (released) {
+            const [business] = (await this.businessService.findBusinessEmailByIds([
+              orderExists.vendorId as any,
+            ])) || [];
+            await this.promotionOrdersService.sendCancellationEmail(released, {
+              orderId: id,
+              orderNumber: id,
+              businessName: (business as any)?.name || orderExists.vendorId?.toString(),
+              buyerName: `${orderExists.firstName || ''} ${orderExists.lastName || ''}`.trim(),
+              amountPaid: orderExists.totalAmount,
+            });
+          }
+        } catch (lionCoinErr) {
+          this.logger.warn('[ORDER]: FAILED TO RELEASE LION COIN ON CANCELLATION', {
+            orderId: id,
+            error:
+              lionCoinErr instanceof Error
+                ? lionCoinErr.message
+                : String(lionCoinErr),
+          });
+        }
+      }
+
       return updateOrder;
     } catch (err) {
       this.logger.error('[ORDER]: FAILED TO UPDATE', {
-        err: err.message,
+        err: err instanceof Error ? err.message : String(err),
       });
       exceptionHandling(err);
     }
@@ -2324,7 +2614,7 @@ export class OrdersService {
       this.logger.error(
         '[EXTERNAL_API_ORDER]: FAILED TO PROCESS VOUCHER FOR ORDER',
         {
-          err: err.message,
+          err: err instanceof Error ? err.message : String(err),
         },
       );
       exceptionHandling(err);

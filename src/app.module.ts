@@ -42,6 +42,7 @@ import winstonConfig from 'src/services/winston/winston';
 import { WinstonLoggerModule } from 'src/services/winston/winston.module';
 import { LoggingMiddleware } from 'src/services/middleware/logger';
 import { CartModule } from 'src/modules/cart/cart.modules';
+import { PromotionOrdersModule } from 'src/modules/promotion-orders/promotion-orders.module';
 import { SmsModule } from 'src/services/sms/sms.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 import { ThemeModule } from './modules/themes/theme.module';
@@ -105,6 +106,7 @@ import { EventTicketAnswersModule } from './modules/event-ticket-answers/event-t
     WinstonLoggerModule,
     BankAccountModule,
     CartModule,
+    PromotionOrdersModule,
     SmsModule,
     QRCodeModule,
     ThemeModule,

@@ -150,7 +150,7 @@ implements ICommandHandler<CreateMiniSiteOrderCommand> {
       return order;
     } catch (error) {
       this.logger.error('[MINI-SITE-ORDER]: FAILED TO CREATE ORDER', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
       });
       exceptionHandling(error);
     }
@@ -309,7 +309,7 @@ implements ICommandHandler<CreateMiniSiteOrderCommand> {
       return order;
     } catch (error) {
       this.logger.error('[EXTERNAL_API_ORDERS]: FAILED TO CREATE ORDER', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
       });
       exceptionHandling(error);
     }

@@ -13,6 +13,7 @@ import { sanitizeImages } from 'src/core/helper/image.util';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
+import { PromotionOrdersService } from 'src/modules/promotion-orders/promotion-orders.service';
 
 @QueryHandler(GetBusinessDetailForTourismQuery)
 export class GetBusinessDetailForTourismHandler
@@ -27,6 +28,7 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
     @InjectModel(EventsAudit.name)
     private EventsAuditModel: Model<EventsAudit>,
     private readonly businessService: BusinessService,
+    private readonly promotionOrdersService: PromotionOrdersService,
   ) {}
 
   async execute(queries: GetBusinessDetailForTourismQuery): Promise<any> {
@@ -115,6 +117,11 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           ]);
         }
 
+        // Lion Coin badge per spec - from DB status, not manual. Single business lookup (no batching unlike listings).
+        const [promotionStatus] = await this.promotionOrdersService.getStatusForBusinesses(
+          [businessId.toString()],
+        );
+
         const mappedData = {
           ...rest,
           _id: businessId,
@@ -130,6 +137,7 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           hasProducts,
           hasTrips,
           hasEvents,
+          isAlreadyRedeemed: promotionStatus?.status === 'REDEEMED',
         };
 
         const response = await this.businessService.localizeBusiness(

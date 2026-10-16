@@ -78,4 +78,12 @@ export class CreateOrderDto {
     required: true,
   })
     identifierId: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    required: false,
+    description: 'Client-generated session id used to hold Lion Coin reservations made in the cart drawer before this order existed.',
+  })
+    lionCoinSessionId: string;
 }

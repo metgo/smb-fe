@@ -88,11 +88,6 @@ export class VoucherService {
         code, productId, locale, identifierId,
       } = query;
 
-      const productDetail = await this.productService.findOne(
-        productId,
-        locale,
-      );
-
       const findQuery: any = {
         code: code.trim(),
         isDeleted: { $ne: true },
@@ -120,24 +115,32 @@ export class VoucherService {
       // (ExternalApi.campIds), which is what the "Campaigns" selection in
       // Website Settings actually persists to.
       if (campDetails?.type === CampaignType.MINI_SITE) {
-        if (
-          !campDetails?.productIds?.length
-          && !campDetails?.businessIds?.length
-          && !campDetails?.dmoIds?.length
-        ) {
-          throw new ForbiddenException(
-            'This voucher cannot be used for this product',
+        // Only validate product scope if productId is provided
+        if (productId) {
+          const productDetail = await this.productService.findOne(
+            productId,
+            locale,
           );
-        }
 
-        if (
-          !campDetails.dmoIds.includes(productDetail?.dmoId?._id)
-          && !campDetails.businessIds.includes(productDetail?.businessId)
-          && !campDetails.productIds.includes(productDetail?._id)
-        ) {
-          throw new ForbiddenException(
-            'This voucher cannot be used for this product',
-          );
+          if (
+            !campDetails?.productIds?.length
+            && !campDetails?.businessIds?.length
+            && !campDetails?.dmoIds?.length
+          ) {
+            throw new ForbiddenException(
+              'This voucher cannot be used for this product',
+            );
+          }
+
+          if (
+            !campDetails.dmoIds.includes(productDetail?.dmoId?._id)
+            && !campDetails.businessIds.includes(productDetail?.businessId)
+            && !campDetails.productIds.includes(productDetail?._id)
+          ) {
+            throw new ForbiddenException(
+              'This voucher cannot be used for this product',
+            );
+          }
         }
       } else {
         if (!identifierId) {
@@ -170,6 +173,19 @@ export class VoucherService {
 
       if (!voucher.remainingAmount) {
         throw new UnprocessableEntityException(ServerErrors.VOUCHER.NO_BALANCE);
+      }
+
+      // Security: Prevent Lion Coin vouchers from being used via normal voucher entry
+      // Lion Coin vouchers must only be used through the Lion Coin promotion flow (threshold check)
+      // Same criteria as findAvailableGALILVoucher in promotion-orders.service.ts
+      if (
+        voucher.assigneeInfo?.name === 'Lion Coin'
+        && voucher.assigneeInfo?.email === 'support@metgo.app'
+        && voucher.amount === 2500
+      ) {
+        throw new ForbiddenException(
+          'This voucher can only be used through the Lion Coin promotion flow. Please use the Lion Coin button in your cart.',
+        );
       }
 
       return {
@@ -209,61 +225,64 @@ export class VoucherService {
 
       const campDetails = voucher?.campId;
 
-      if (
-        !campDetails?.whitelist?.event?.length
-        && !campDetails?.whitelist?.business?.length
-      ) {
-        throw new ForbiddenException(
-          'This voucher cannot be used for this event',
+      // Only validate ticket scope if ticketId is provided
+      if (ticketId) {
+        if (
+          !campDetails?.whitelist?.event?.length
+          && !campDetails?.whitelist?.business?.length
+        ) {
+          throw new ForbiddenException(
+            'This voucher cannot be used for this event',
+          );
+        }
+
+        const ticketDetail = await this.TicketModel.findById(ticketId).select(
+          'eventId',
         );
-      }
 
-      const ticketDetail = await this.TicketModel.findById(ticketId).select(
-        'eventId',
-      );
+        if (!ticketDetail || !ticketDetail.eventId) {
+          throw new NotFoundException('Ticket not found');
+        }
 
-      if (!ticketDetail || !ticketDetail.eventId) {
-        throw new NotFoundException('Ticket not found');
-      }
-
-      const { eventId } = ticketDetail;
-      const eventDetail = await this.EventModel.findById(eventId).select(
-        'businessId',
-      );
-
-      if (!eventDetail) {
-        throw new NotFoundException('Event not found');
-      }
-
-      const eventIdStr = eventId.toString();
-      const businessIdStr = eventDetail?.businessId?.toString();
-
-      const isEventWhitelisted = campDetails.whitelist.event?.some(
-        (id: any) => id.toString() === eventIdStr,
-      );
-
-      const isBusinessWhitelisted = campDetails.whitelist.business?.some(
-        (id: any) => id.toString() === businessIdStr,
-      );
-
-      const isEventBlacklisted = campDetails.blacklist?.event?.some(
-        (id: any) => id.toString() === eventIdStr,
-      );
-
-      const isBusinessBlacklisted = campDetails.blacklist?.business?.some(
-        (id: any) => id.toString() === businessIdStr,
-      );
-
-      if (isEventBlacklisted || isBusinessBlacklisted) {
-        throw new ForbiddenException(
-          'This voucher cannot be used for this event',
+        const { eventId } = ticketDetail;
+        const eventDetail = await this.EventModel.findById(eventId).select(
+          'businessId',
         );
-      }
 
-      if (!isEventWhitelisted && !isBusinessWhitelisted) {
-        throw new ForbiddenException(
-          'This voucher cannot be used for this event',
+        if (!eventDetail) {
+          throw new NotFoundException('Event not found');
+        }
+
+        const eventIdStr = eventId.toString();
+        const businessIdStr = eventDetail?.businessId?.toString();
+
+        const isEventWhitelisted = campDetails.whitelist.event?.some(
+          (id: any) => id.toString() === eventIdStr,
         );
+
+        const isBusinessWhitelisted = campDetails.whitelist.business?.some(
+          (id: any) => id.toString() === businessIdStr,
+        );
+
+        const isEventBlacklisted = campDetails.blacklist?.event?.some(
+          (id: any) => id.toString() === eventIdStr,
+        );
+
+        const isBusinessBlacklisted = campDetails.blacklist?.business?.some(
+          (id: any) => id.toString() === businessIdStr,
+        );
+
+        if (isEventBlacklisted || isBusinessBlacklisted) {
+          throw new ForbiddenException(
+            'This voucher cannot be used for this event',
+          );
+        }
+
+        if (!isEventWhitelisted && !isBusinessWhitelisted) {
+          throw new ForbiddenException(
+            'This voucher cannot be used for this event',
+          );
+        }
       }
 
       if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
@@ -280,6 +299,19 @@ export class VoucherService {
 
       if (!voucher.remainingAmount) {
         throw new UnprocessableEntityException(ServerErrors.VOUCHER.NO_BALANCE);
+      }
+
+      // Security: Prevent Lion Coin vouchers from being used via normal voucher entry
+      // Lion Coin vouchers must only be used through the Lion Coin promotion flow (threshold check)
+      // Same criteria as findAvailableGALILVoucher in promotion-orders.service.ts
+      if (
+        voucher.assigneeInfo?.name === 'Lion Coin'
+        && voucher.assigneeInfo?.email === 'support@metgo.app'
+        && voucher.amount === 2500
+      ) {
+        throw new ForbiddenException(
+          'This voucher can only be used through the Lion Coin promotion flow. Please use the Lion Coin button in your cart.',
+        );
       }
 
       return {
@@ -325,6 +357,19 @@ export class VoucherService {
 
       if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
         throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
+      }
+
+      // Security: Prevent Lion Coin vouchers from being used via normal voucher entry
+      // Lion Coin vouchers must only be used through the Lion Coin promotion flow (threshold check)
+      // Same criteria as findAvailableGALILVoucher in promotion-orders.service.ts
+      if (
+        voucher.assigneeInfo?.name === 'Lion Coin'
+        && voucher.assigneeInfo?.email === 'support@metgo.app'
+        && voucher.amount === 2500
+      ) {
+        throw new ForbiddenException(
+          'This voucher can only be used through the Lion Coin promotion flow. Please use the Lion Coin button in your cart.',
+        );
       }
 
       return {

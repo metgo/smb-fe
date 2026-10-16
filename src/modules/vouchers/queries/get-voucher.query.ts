@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsString, IsNotEmpty, IsOptional, IsEnum,
+  IsString, IsOptional, IsEnum,
 } from 'class-validator';
 import { Locale } from 'src/common/enum';
 
 export class GetVoucherQuery {
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-    productId: string;
+    productId?: string;
 
   @ApiProperty({ type: String, required: false })
   @IsOptional()

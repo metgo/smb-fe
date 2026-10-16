@@ -29,6 +29,7 @@ import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
+import { PromotionOrdersService } from 'src/modules/promotion-orders/promotion-orders.service';
 
 @QueryHandler(GetProductsByTopicQuery)
 export class GetProductsByTopicHandler
@@ -52,7 +53,23 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     private BusinessModel: Model<Business>,
     @InjectModel(Voucher.name)
     private VoucherModel: Model<Voucher>,
+    private readonly promotionOrdersService: PromotionOrdersService,
   ) {}
+
+  private async getRedeemedBusinessIds(products: any[]): Promise<Set<string>> {
+    const businessIds = [...new Set(
+      products
+        .map(p => (p.businessId as any)?._id?.toString())
+        .filter(Boolean),
+    )];
+
+    if (!businessIds.length) return new Set();
+
+    const statuses = await this.promotionOrdersService.getStatusForBusinesses(businessIds);
+    return new Set(
+      statuses.filter(s => s.status === 'REDEEMED').map(s => s.businessId),
+    );
+  }
 
   private async getVoucherPriceCap(voucherCode?: string): Promise<{
     priceCap: number | null;
@@ -582,6 +599,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         filteredProducts.length,
       );
 
+      const redeemedBusinessIds = await this.getRedeemedBusinessIds(filteredProducts);
+
       const flatList = productCategoryEntries
         .map(({ productId, category }) => {
           const product = productMap.get(productId);
@@ -630,6 +649,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               = rest.businessId.globalDelivery ?? false;
             rest.businessId.globalDeliveryArea
               = rest.businessId.globalDeliveryArea ?? [];
+            rest.businessId.isAlreadyRedeemed
+              = redeemedBusinessIds.has(rest.businessId._id?.toString());
           }
 
           const localizedBase = localizeFields(
@@ -898,6 +919,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       ])
       .lean();
 
+    const redeemedBusinessIds = await this.getRedeemedBusinessIds(products);
+
     const flatList = products.map(product => {
       const {
         _id,
@@ -938,6 +961,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           = rest.businessId.globalDelivery ?? false;
         rest.businessId.globalDeliveryArea
           = rest.businessId.globalDeliveryArea ?? [];
+        rest.businessId.isAlreadyRedeemed
+          = redeemedBusinessIds.has(rest.businessId._id?.toString());
       }
 
       return {

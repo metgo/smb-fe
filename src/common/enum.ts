@@ -30,6 +30,13 @@ export enum VoucherPaymentStatus {
   FAILED = 'FAILED',
 }
 
+// Generic across promotion types (redeemCode discriminates). Not renamed per-feature - shared infrastructure.
+export enum PromotionOrderStatus {
+  AVAILABLE = 'AVAILABLE',
+  RESERVED = 'RESERVED',
+  REDEEMED = 'REDEEMED',
+}
+
 export enum ItemStatus {
   ALL = 'ALL',
   PENDING = 'PENDING',

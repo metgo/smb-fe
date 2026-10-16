@@ -31,6 +31,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { CartModule } from 'src/modules/cart/cart.modules';
+import { PromotionOrdersModule } from 'src/modules/promotion-orders/promotion-orders.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
@@ -40,6 +41,7 @@ import { SmsModule } from 'src/services/sms/sms.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-order.handler';
 import { DocUploadModule } from '../doc-upload/doc-upload.module';
+import { PromotionOrder, PromotionOrderSchema } from '../promotion-orders/schema/promotion-order.schema';
 
 @Module({
   imports: [
@@ -50,6 +52,7 @@ import { DocUploadModule } from '../doc-upload/doc-upload.module';
       { name: QrVerificationToken.name, schema: QrVerificationTokenSchema },
       { name: OrderProduct.name, schema: OrderProductSchema },
       { name: EventTicketAnswer.name, schema: EventTicketAnswerSchema },
+      { name: PromotionOrder.name, schema: PromotionOrderSchema },
     ]),
     forwardRef(() => AuthorityModule),
     BusinessModule,
@@ -65,6 +68,7 @@ import { DocUploadModule } from '../doc-upload/doc-upload.module';
     DocUploadModule,
     OrderProductModule,
     CartModule,
+    PromotionOrdersModule,
     QRCodeModule,
     QrTokenModule,
     SmsModule,

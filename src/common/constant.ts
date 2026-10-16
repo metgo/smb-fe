@@ -152,6 +152,8 @@ export const ServerErrors = {
       'This voucher was just redeemed by another request. Please try again.',
   },
 
+  LION_COIN: {},
+
   CAMPAIGN: {
     NOT_FOUND: 'Invalid campaign',
     EXISTS: 'Campaign already exists',

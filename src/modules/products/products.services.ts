@@ -22,6 +22,7 @@ import { Business } from '../business/shared/schema/business.schema';
 import { Product } from './schema/products.schema';
 import { ProductsAudit } from './schema/products-audit.schema';
 import { sanitizeImages } from 'src/core/helper/image.util';
+import { PromotionOrdersService } from '../promotion-orders/promotion-orders.service';
 
 @Injectable()
 export class ProductsService {
@@ -32,6 +33,7 @@ export class ProductsService {
     private ProductModel: Model<Product>,
     @InjectModel(ProductsAudit.name)
     private ProductsAuditModel: Model<ProductsAudit>,
+    private readonly promotionOrdersService: PromotionOrdersService,
   ) {}
 
   async findOne(
@@ -177,6 +179,20 @@ export class ProductsService {
         ? this.localizeBusinessFields(business, query.locale)
         : undefined;
 
+      // Check Lion Coin status for this business
+      let isAlreadyRedeemed = false;
+      if (product.businessId?._id) {
+        const [promotionStatus] = await this.promotionOrdersService.getStatusForBusinesses(
+          [product.businessId._id.toString()],
+        );
+        isAlreadyRedeemed = promotionStatus?.status === 'REDEEMED';
+      }
+
+      // Add isAlreadyRedeemed to businessId object
+      const businessIdWithLionCoin = localizedBusiness
+        ? { ...localizedBusiness, isAlreadyRedeemed }
+        : undefined;
+
       return {
         _id: response?.productId,
         name: response?.name,
@@ -185,7 +201,7 @@ export class ProductsService {
         images: sanitizeImages(response?.images),
         price: response?.price,
         quantity: response?.quantity,
-        businessId: localizedBusiness,
+        businessId: businessIdWithLionCoin,
         deliveryArea: response?.deliveryArea?.length
           ? response.deliveryArea
           : useBusinessInfo.deliveryArea,
