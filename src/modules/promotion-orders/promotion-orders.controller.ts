@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { PromotionApplyDto, PromotionReleaseDto } from './dto/promotion-apply.dto';
+import { PromotionApplyDto, PromotionListDto, PromotionReleaseDto } from './dto/promotion-apply.dto';
 import { PromotionOrdersService } from './promotion-orders.service';
 
 @Controller('promotions')
@@ -96,5 +96,22 @@ export class PromotionOrdersController {
     await this.promotionOrdersService.release(body.businessId, body.sessionId);
 
     return { businessId: body.businessId, status: 'AVAILABLE' };
+  }
+
+    @ApiEndpoint({
+      tags: ['HOLD AND RESERVE'],
+      operation: 'LIST the Businesses that have Lion Coin reserved and hold',
+      response: {
+        status: HttpStatus.OK,
+        description: 'Lion Coin reserved and Holded Businesses listed',
+      },
+      softBlockExtraDtoFields: true,
+    })
+  @HttpCode(HttpStatus.OK)
+  @Post('list')
+  async List(
+    @Body() body: PromotionListDto,
+  ) {
+    return await this.promotionOrdersService.list(body.businessIds);
   }
 }

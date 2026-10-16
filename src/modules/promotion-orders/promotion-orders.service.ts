@@ -675,4 +675,21 @@ export class PromotionOrdersService {
       });
     }
   }
+
+  async list(businessIds: string[]) {
+    try {
+      const records = await this.PromotionOrderModel.find(
+        {
+          businessId: { $in: businessIds },
+          redeemCode: LION_COIN_REDEEM_CODE,
+        },
+        { _id: 1, businessId: 1, status: 1 },
+      ).lean();
+      return records;
+    } catch (error) {
+      this.logger.error('[LION_COIN]: FAILED TO LIST RESERVED/REDEEMED ORDERS', {
+        err: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 }

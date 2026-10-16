@@ -1,4 +1,6 @@
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -45,4 +47,15 @@ export class PromotionReleaseDto {
     required: false,
   })
     sessionId?: string;
+}
+
+export class PromotionListDto {
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  @ApiProperty({
+    description: 'Business IDs to look up reserved/redeemed Lion Coin status for.',
+    type: [String],
+  })
+    businessIds: string[];
 }
