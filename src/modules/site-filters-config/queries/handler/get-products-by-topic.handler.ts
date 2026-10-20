@@ -30,6 +30,8 @@ import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
 import { PromotionOrdersService } from 'src/modules/promotion-orders/promotion-orders.service';
+import { PromotionStatusResponse } from 'src/modules/promotion-orders/promotion-orders.type';
+import { applyLionCoinStatus } from 'src/modules/promotion-orders/promotion-orders.utils';
 
 @QueryHandler(GetProductsByTopicQuery)
 export class GetProductsByTopicHandler
@@ -56,19 +58,19 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     private readonly promotionOrdersService: PromotionOrdersService,
   ) {}
 
-  private async getRedeemedBusinessIds(products: any[]): Promise<Set<string>> {
+  private async getLionCoinStatusByBusinessId(
+    products: any[],
+  ): Promise<Map<string, PromotionStatusResponse>> {
     const businessIds = [...new Set(
       products
         .map(p => (p.businessId as any)?._id?.toString())
         .filter(Boolean),
     )];
 
-    if (!businessIds.length) return new Set();
+    if (!businessIds.length) return new Map();
 
     const statuses = await this.promotionOrdersService.getStatusForBusinesses(businessIds);
-    return new Set(
-      statuses.filter(s => s.status === 'REDEEMED').map(s => s.businessId),
-    );
+    return new Map(statuses.map(status => [status.businessId, status]));
   }
 
   private async getVoucherPriceCap(voucherCode?: string): Promise<{
@@ -599,7 +601,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         filteredProducts.length,
       );
 
-      const redeemedBusinessIds = await this.getRedeemedBusinessIds(filteredProducts);
+      const lionCoinStatusByBusinessId = await this.getLionCoinStatusByBusinessId(filteredProducts);
 
       const flatList = productCategoryEntries
         .map(({ productId, category }) => {
@@ -649,8 +651,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               = rest.businessId.globalDelivery ?? false;
             rest.businessId.globalDeliveryArea
               = rest.businessId.globalDeliveryArea ?? [];
-            rest.businessId.isAlreadyRedeemed
-              = redeemedBusinessIds.has(rest.businessId._id?.toString());
+            // Lion Coin counter ("N of 5 left") + all-redeemed badge - from DB, never manual.
+            applyLionCoinStatus(rest.businessId, lionCoinStatusByBusinessId.get(rest.businessId._id?.toString()));
           }
 
           const localizedBase = localizeFields(
@@ -919,7 +921,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       ])
       .lean();
 
-    const redeemedBusinessIds = await this.getRedeemedBusinessIds(products);
+    const lionCoinStatusByBusinessId = await this.getLionCoinStatusByBusinessId(products);
 
     const flatList = products.map(product => {
       const {
@@ -961,8 +963,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           = rest.businessId.globalDelivery ?? false;
         rest.businessId.globalDeliveryArea
           = rest.businessId.globalDeliveryArea ?? [];
-        rest.businessId.isAlreadyRedeemed
-          = redeemedBusinessIds.has(rest.businessId._id?.toString());
+        // Lion Coin counter ("N of 5 left") + all-redeemed badge - from DB, never manual.
+        applyLionCoinStatus(rest.businessId, lionCoinStatusByBusinessId.get(rest.businessId._id?.toString()));
       }
 
       return {

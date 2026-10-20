@@ -23,6 +23,7 @@ import { Product } from './schema/products.schema';
 import { ProductsAudit } from './schema/products-audit.schema';
 import { sanitizeImages } from 'src/core/helper/image.util';
 import { PromotionOrdersService } from '../promotion-orders/promotion-orders.service';
+import { applyLionCoinStatus } from '../promotion-orders/promotion-orders.utils';
 
 @Injectable()
 export class ProductsService {
@@ -179,18 +180,15 @@ export class ProductsService {
         ? this.localizeBusinessFields(business, query.locale)
         : undefined;
 
-      // Check Lion Coin status for this business
-      let isAlreadyRedeemed = false;
-      if (product.businessId?._id) {
-        const [promotionStatus] = await this.promotionOrdersService.getStatusForBusinesses(
+      // Lion Coin status for this business (all-redeemed flag + coins-left counter)
+      const [promotionStatus] = product.businessId?._id
+        ? await this.promotionOrdersService.getStatusForBusinesses(
           [product.businessId._id.toString()],
-        );
-        isAlreadyRedeemed = promotionStatus?.status === 'REDEEMED';
-      }
+        )
+        : [];
 
-      // Add isAlreadyRedeemed to businessId object
       const businessIdWithLionCoin = localizedBusiness
-        ? { ...localizedBusiness, isAlreadyRedeemed }
+        ? applyLionCoinStatus({ ...localizedBusiness }, promotionStatus)
         : undefined;
 
       return {

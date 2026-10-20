@@ -20,6 +20,8 @@ import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { CacheService } from 'src/services/cache/cache.service';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { PromotionOrdersService } from 'src/modules/promotion-orders/promotion-orders.service';
+import { PromotionStatusResponse } from 'src/modules/promotion-orders/promotion-orders.type';
+import { applyLionCoinStatus } from 'src/modules/promotion-orders/promotion-orders.utils';
 
 const PRODUCTS_PER_TOPIC = 4;
 const CACHE_TTL = 20;
@@ -45,19 +47,19 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
   // isAlreadyRedeemed is baked into this cached response like every other
   // business field here (price, approval status, etc.) - same CACHE_TTL
   // staleness window applies, not a special exception for this one field.
-  private async getRedeemedBusinessIds(products: any[]): Promise<Set<string>> {
+  private async getLionCoinStatusByBusinessId(
+    products: any[],
+  ): Promise<Map<string, PromotionStatusResponse>> {
     const businessIds = [...new Set(
       products
         .map(p => (p.businessId as any)?._id?.toString())
         .filter(Boolean),
     )];
 
-    if (!businessIds.length) return new Set();
+    if (!businessIds.length) return new Map();
 
     const statuses = await this.promotionOrdersService.getStatusForBusinesses(businessIds);
-    return new Set(
-      statuses.filter(s => s.status === 'REDEEMED').map(s => s.businessId),
-    );
+    return new Map(statuses.map(status => [status.businessId, status]));
   }
 
   async execute({
@@ -169,7 +171,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       filteredProducts.map(p => [p.productId.toString(), p]),
     );
 
-    const redeemedBusinessIds = await this.getRedeemedBusinessIds(filteredProducts);
+    const lionCoinStatusByBusinessId = await this.getLionCoinStatusByBusinessId(filteredProducts);
 
     const tempMap = new Map<number, any[]>();
     activeTopics.forEach((_, i) => tempMap.set(i, []));
@@ -180,7 +182,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
       tempMap
         .get(topicIndex)
-        .push(this.formatProduct(product, category, locale, redeemedBusinessIds));
+        .push(this.formatProduct(product, category, locale, lionCoinStatusByBusinessId));
     });
 
     const topicProductsMap = new Map<number, any[]>();
@@ -288,7 +290,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       groupMap.get(catId).push(product);
     });
 
-    const redeemedBusinessIds = await this.getRedeemedBusinessIds(filteredProducts);
+    const lionCoinStatusByBusinessId = await this.getLionCoinStatusByBusinessId(filteredProducts);
 
     // eslint-disable-next-line no-unused-vars
     return [...groupMap.entries()].map(([_, items]) => {
@@ -300,7 +302,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
             ? items[0].primaryCategoryId?.hebrewName
               || items[0].primaryCategoryId?.name
             : items[0].primaryCategoryId?.name,
-        products: shuffled.map(p => this.formatProduct(p, null, locale, redeemedBusinessIds)),
+        products: shuffled.map(p => this.formatProduct(p, null, locale, lionCoinStatusByBusinessId)),
       };
     });
   }
@@ -309,7 +311,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     product: any,
     category: any,
     locale: Locale,
-    redeemedBusinessIds?: Set<string>,
+    lionCoinStatusByBusinessId?: Map<string, PromotionStatusResponse>,
   ) {
     const { productId: pid, ...rest } = product;
 
@@ -343,9 +345,8 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       rest.businessId.globalDeliveryArea
         = rest.businessId.globalDeliveryArea ?? [];
 
-      // Lion Coin badge per spec - from DB status, not manual. Computed once per request via getRedeemedBusinessIds.
-      rest.businessId.isAlreadyRedeemed
-        = redeemedBusinessIds?.has(rest.businessId._id?.toString()) ?? false;
+      // Lion Coin counter ("N of 5 left") + all-redeemed badge - from DB, never manual.
+      applyLionCoinStatus(rest.businessId, lionCoinStatusByBusinessId?.get(rest.businessId._id?.toString()));
     }
 
     const localizedBase = localizeFields({ ...rest, _id: pid }, locale);

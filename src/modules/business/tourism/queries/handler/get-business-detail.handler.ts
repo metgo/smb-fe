@@ -138,6 +138,12 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           hasTrips,
           hasEvents,
           isAlreadyRedeemed: promotionStatus?.status === 'REDEEMED',
+          // Coins-left counter ("3 of 5 Lion Coins left"); reserved vouchers are not counted.
+          lionCoinVouchersLeft: promotionStatus?.vouchersAvailable ?? null,
+          lionCoinVouchersTotal: promotionStatus?.vouchersTotal ?? null,
+          // For the "₪500 off for every ₪2,000 you spend here" line.
+          lionCoinVoucherValue: promotionStatus?.value ?? null,
+          lionCoinVoucherStepAmount: promotionStatus?.minThreshold ?? null,
         };
 
         const response = await this.businessService.localizeBusiness(

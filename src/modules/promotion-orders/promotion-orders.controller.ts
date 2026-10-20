@@ -10,7 +10,13 @@ import {
 } from '@nestjs/common';
 
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { PromotionApplyDto, PromotionListDto, PromotionReleaseDto } from './dto/promotion-apply.dto';
+import {
+  PromotionApplyDto,
+  PromotionListDto,
+  PromotionReleaseDto,
+  PromotionReleaseSessionDto,
+  PromotionStateDto,
+} from './dto/promotion-apply.dto';
 import { PromotionOrdersService } from './promotion-orders.service';
 
 @Controller('promotions')
@@ -19,7 +25,7 @@ export class PromotionOrdersController {
 
   @ApiEndpoint({
     tags: ['Promotions'],
-    operation: 'Get Lion Coin status for a list of businesses',
+    operation: 'Get Lion Coin status and voucher counters for a list of businesses',
     response: {
       status: HttpStatus.OK,
       description: 'Lion Coin status listed',
@@ -39,10 +45,33 @@ export class PromotionOrdersController {
 
   @ApiEndpoint({
     tags: ['Promotions'],
-    operation: 'Reserve a business\'s Lion Coin from the cart drawer ("Enable Discount")',
+    operation: 'Per-business promotion voucher state for the cart strip (no reservation)',
     response: {
       status: HttpStatus.OK,
-      description: 'Lion Coin reserved',
+      description: 'Promotion voucher states listed',
+    },
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('state')
+  async state(
+    @Body() body: PromotionStateDto,
+  ) {
+    return this.promotionOrdersService.getVoucherStates(
+      body.businesses.map(business => ({
+        businessId: business.businessId,
+        businessSubtotal: business.totalAmount,
+      })),
+      body.sessionId,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Promotions'],
+    operation: 'Opt in for a business ("Apply N Lion Coins") and re-sync it on every cart change',
+    response: {
+      status: HttpStatus.OK,
+      description: 'Promotion vouchers reserved to match the subtotal',
     },
     softBlockExtraDtoFields: true,
   })
@@ -51,40 +80,25 @@ export class PromotionOrdersController {
   async apply(
     @Body() body: PromotionApplyDto,
   ) {
-    const { promotionOrder, sessionId } = await this.promotionOrdersService.applyAtDrawer(
+    const result = await this.promotionOrdersService.applyAtDrawer(
       body.businessId,
       body.sessionId,
       body.totalAmount,
     );
 
-    if (!promotionOrder) {
-      return { businessId: body.businessId };
-    }
-
-    // Fetch full voucher details from database
-    const voucher = await this.promotionOrdersService.getVoucherById(promotionOrder.voucherId?.toString());
-
+    // Voucher codes are never exposed to the browser - checkout only needs the ids.
     return {
-      businessId: body.businessId,
-      _id: promotionOrder._id.toString(),
-      status: promotionOrder.status,
-      sessionId, // Return the sessionId (generated or provided)
-      vouchers: voucher ? {
-        _id: voucher._id?.toString(),
-        code: '',
-        remainingAmount: voucher.remainingAmount,
-        expireDate: voucher.expireDate,
-        paymentStatus: voucher.paymentStatus,
-      } : null,
+      ...result,
+      vouchers: result.vouchers.map(voucher => ({ ...voucher, code: '' })),
     };
   }
 
   @ApiEndpoint({
     tags: ['Promotions'],
-    operation: 'Release a held Lion Coin from the cart drawer ("Cancellation of Use")',
+    operation: 'Opt out for a business ("Cancel") - releases this session\'s promotion vouchers',
     response: {
       status: HttpStatus.OK,
-      description: 'Lion Coin released',
+      description: 'Promotion vouchers released',
     },
     softBlockExtraDtoFields: true,
   })
@@ -93,14 +107,33 @@ export class PromotionOrdersController {
   async release(
     @Body() body: PromotionReleaseDto,
   ) {
-    await this.promotionOrdersService.release(body.businessId, body.sessionId);
+    const released = await this.promotionOrdersService.release(body.businessId, body.sessionId);
 
-    return { businessId: body.businessId, status: 'AVAILABLE' };
+    return { businessId: body.businessId, released };
+  }
+
+  @ApiEndpoint({
+    tags: ['Promotions'],
+    operation: 'Buyer closed the payment page - release every promotion voucher this session holds',
+    response: {
+      status: HttpStatus.OK,
+      description: 'Promotion vouchers released',
+    },
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('release-session')
+  async releaseSession(
+    @Body() body: PromotionReleaseSessionDto,
+  ) {
+    const released = await this.promotionOrdersService.releaseSession(body.sessionId);
+
+    return { released };
   }
 
     @ApiEndpoint({
       tags: ['HOLD AND RESERVE'],
-      operation: 'LIST the Businesses that have Lion Coin reserved and hold',
+      operation: 'Lion Coin status and voucher counters for the given businesses',
       response: {
         status: HttpStatus.OK,
         description: 'Lion Coin reserved and Holded Businesses listed',

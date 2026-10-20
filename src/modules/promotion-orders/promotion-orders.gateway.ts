@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { PromotionOrderStatus } from 'src/common/enum';
+import { PromotionStatusResponse } from './promotion-orders.type';
 
 // Generic namespace/events (/promotions) for reuse across promotion types.
 // Rooms scoped by (businessId, redeemCode) prevent cross-promotion leaks.
@@ -90,15 +90,14 @@ export class PromotionOrdersGateway implements OnGatewayConnection, OnGatewayDis
    * Can't race reservation logic - lost events just mean stale drawer until next apply attempt.
    */
   emitStatusChange(
-    businessId: string,
-    status: PromotionOrderStatus,
+    status: PromotionStatusResponse,
     redeemCode = 'LION_COIN',
   ): void {
+    const { businessId } = status;
     try {
       this.server.to(PromotionOrdersGateway.roomKey(businessId, redeemCode)).emit('promotion-updated', {
-        businessId,
+        ...status,
         redeemCode,
-        status,
         updatedAt: new Date(),
       });
     } catch (err) {

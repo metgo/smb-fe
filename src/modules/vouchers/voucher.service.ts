@@ -25,6 +25,7 @@ import {
 import { PaymentRequiredException } from 'src/common/exception/payment-required';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
+import { isLionCoinVoucher } from 'src/modules/promotion-orders/promotion-orders.utils';
 import {
   findManyByFilter,
   queryhandler,
@@ -177,12 +178,8 @@ export class VoucherService {
 
       // Security: Prevent Lion Coin vouchers from being used via normal voucher entry
       // Lion Coin vouchers must only be used through the Lion Coin promotion flow (threshold check)
-      // Same criteria as findAvailableGALILVoucher in promotion-orders.service.ts
-      if (
-        voucher.assigneeInfo?.name === 'Lion Coin'
-        && voucher.assigneeInfo?.email === 'support@metgo.app'
-        && voucher.amount === 2500
-      ) {
+      // Any voucher from the Lion Coin pool, whatever its amount (v1.1 ₪2,500 or v2 ₪500).
+      if (isLionCoinVoucher(voucher)) {
         throw new ForbiddenException(
           'This voucher can only be used through the Lion Coin promotion flow. Please use the Lion Coin button in your cart.',
         );
@@ -303,12 +300,8 @@ export class VoucherService {
 
       // Security: Prevent Lion Coin vouchers from being used via normal voucher entry
       // Lion Coin vouchers must only be used through the Lion Coin promotion flow (threshold check)
-      // Same criteria as findAvailableGALILVoucher in promotion-orders.service.ts
-      if (
-        voucher.assigneeInfo?.name === 'Lion Coin'
-        && voucher.assigneeInfo?.email === 'support@metgo.app'
-        && voucher.amount === 2500
-      ) {
+      // Any voucher from the Lion Coin pool, whatever its amount (v1.1 ₪2,500 or v2 ₪500).
+      if (isLionCoinVoucher(voucher)) {
         throw new ForbiddenException(
           'This voucher can only be used through the Lion Coin promotion flow. Please use the Lion Coin button in your cart.',
         );
@@ -361,12 +354,8 @@ export class VoucherService {
 
       // Security: Prevent Lion Coin vouchers from being used via normal voucher entry
       // Lion Coin vouchers must only be used through the Lion Coin promotion flow (threshold check)
-      // Same criteria as findAvailableGALILVoucher in promotion-orders.service.ts
-      if (
-        voucher.assigneeInfo?.name === 'Lion Coin'
-        && voucher.assigneeInfo?.email === 'support@metgo.app'
-        && voucher.amount === 2500
-      ) {
+      // Any voucher from the Lion Coin pool, whatever its amount (v1.1 ₪2,500 or v2 ₪500).
+      if (isLionCoinVoucher(voucher)) {
         throw new ForbiddenException(
           'This voucher can only be used through the Lion Coin promotion flow. Please use the Lion Coin button in your cart.',
         );

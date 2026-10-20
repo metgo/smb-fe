@@ -5,7 +5,8 @@ import { PromotionOrderStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 // Generic promotion redemption record (Lion Coin is first consumer). Shared across promotion types
-// via redeemCode. One doc per (businessId, redeemCode) - business can do multiple promotions, not same one twice.
+// via redeemCode. Lion Coin v2: one doc per promotion voucher - (businessId, redeemCode, voucherNumber) is unique,
+// so each promotion voucher is reserved, redeemed and released independently and atomically.
 @Schema()
 export class PromotionOrder extends AuditableSchema {
   @Prop({
@@ -28,10 +29,17 @@ export class PromotionOrder extends AuditableSchema {
   @Prop({ type: String, required: true, default: 'LION_COIN' })
     redeemCode: string;
 
-  @Prop({ type: Number, required: true, default: 2500 })
+  // 1..vouchersPerBusiness. Null only on v1.1 records that were never migrated.
+  @Prop({ type: Number, default: null })
+    voucherNumber: number;
+
+  // Stored per promotion voucher so redeemed/reserved promotion vouchers keep their value if the setting changes.
+  @Prop({ type: Number, required: true, default: 500 })
     value: number;
 
-  @Prop({ type: Number, required: true, default: 9500 })
+  // voucher_step_amount when the promotion voucher was last reserved
+  // (one promotion voucher per full step of the business subtotal).
+  @Prop({ type: Number, required: true, default: 2000 })
     minThreshold: number;
 
   @Prop({
@@ -55,6 +63,15 @@ export class PromotionOrder extends AuditableSchema {
   @Prop({ type: Date, default: null })
     reservedAt: Date;
 
+  // reservedAt + reservation_minutes; restarted whenever the promotion voucher count is adjusted or payment starts.
+  @Prop({ type: Date, default: null })
+    reservedUntil: Date;
+
+  // Set while the buyer is on the processor's page. The expiry job skips these promotion vouchers - only the
+  // processor's failure/timeout callback releases them (with a long backstop for lost callbacks).
+  @Prop({ type: Boolean, default: false })
+    paymentInProgress: boolean;
+
   // Links to the actual Voucher document used for this Lion Coin redemption.
   // Required for voucher-based payment approach (Barak's Oct 15 decision).
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Voucher', default: null })
@@ -74,6 +91,11 @@ export class PromotionOrder extends AuditableSchema {
   @Prop({ type: Date, default: null })
     redeemedAt: Date;
 
+  // Snapshot of the business subtotal (before discount, incl. VAT) the promotion voucher was redeemed against.
+  // Promotion vouchers sharing redeemedOrderId + businessId together form the order x business record.
+  @Prop({ type: Number, default: null })
+    businessSubtotal: number;
+
   // Cardcom paymentRequestId for the charge. Lives on PARENT order's Payment (combined charge),
   // not per-vendor split Order. Set here so admin/reporting doesn't hop Order -> parentOrderId -> Payment.
   @Prop({ type: String, default: null })
@@ -91,11 +113,17 @@ export class PromotionOrder extends AuditableSchema {
 export type PromotionOrderDocument = HydratedDocument<PromotionOrder>;
 export const PromotionOrderSchema = SchemaFactory.createForClass(PromotionOrder);
 
-// Compound index: one record per (businessId, redeemCode). Business can do multiple promotions,
-// never same one twice. Prevents duplicate Lion Coin bugs, enforced by MongoDB.
-PromotionOrderSchema.index({ businessId: 1, redeemCode: 1 }, { unique: true });
-PromotionOrderSchema.index({ status: 1 });
+// One doc per promotion voucher. Legacy v1.1 docs without voucherNumber index as null - at most one per business,
+// which the old (businessId, redeemCode) unique index already guaranteed.
+PromotionOrderSchema.index({ businessId: 1, redeemCode: 1, voucherNumber: 1 }, { unique: true });
+PromotionOrderSchema.index({ businessId: 1, status: 1 });
+PromotionOrderSchema.index({ status: 1, reservedUntil: 1 });
 PromotionOrderSchema.index({ reservedCartId: 1 }, { sparse: true });
 PromotionOrderSchema.index({ reservedBy: 1 }, { sparse: true });
-PromotionOrderSchema.index({ voucherId: 1 }, { sparse: true });
+PromotionOrderSchema.index({ redeemedOrderId: 1 }, { sparse: true });
+// A voucher backs at most one promotion voucher - stops two concurrent reservations picking the same voucher.
+PromotionOrderSchema.index(
+  { voucherId: 1 },
+  { unique: true, partialFilterExpression: { voucherId: { $type: 'objectId' } } },
+);
 PromotionOrderSchema.index({ voucherCode: 1 }, { sparse: true });

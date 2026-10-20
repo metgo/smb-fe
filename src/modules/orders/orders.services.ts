@@ -1,6 +1,7 @@
 import { GaMeasurementService } from 'src/modules/ga-measurement/ga-measurement.service';
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -29,7 +30,11 @@ import { BusinessService } from 'src/modules/business/shared/services/business.s
 import { CartService } from 'src/modules/cart/cart.service';
 import { Cart } from 'src/modules/cart/cart.schema';
 import { CartProductResponse, CartStatus } from 'src/modules/cart/cart.types';
-import { PromotionOrdersService } from 'src/modules/promotion-orders/promotion-orders.service';
+import {
+  PromotionOrdersService,
+  PromotionRedemptionEntry,
+  isLionCoinVoucher,
+} from 'src/modules/promotion-orders/promotion-orders.service';
 import { PromotionOrder } from 'src/modules/promotion-orders/schema/promotion-order.schema';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { EventTicketAnswer } from 'src/modules/event-ticket-answers/schema/event-ticket-answer.schema';
@@ -102,8 +107,6 @@ export class OrdersService {
     private OrderProductModel: Model<OrderProduct>,
     @InjectModel(EventTicketAnswer.name)
     private readonly eventTicketAnswerModel: Model<EventTicketAnswer>,
-    @InjectModel(PromotionOrder.name)
-    private PromotionOrderModel: Model<PromotionOrder>,
     private readonly businessService: BusinessService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
@@ -302,9 +305,33 @@ export class OrdersService {
 
       let redeemedVouchers;
 
-      if (body?.voucher?.length) {
-        const voucherIds = body.voucher.map(voucher => voucher.id);
+      // Payment initiation - same as the vendor-cart flow: final server-side Lion Coin
+      // recalculation per business of the products in this cart, linked to the cart and
+      // protected as "payment in progress" (released by the processor's failure callback).
+      const lionCoinHolderId
+        = body.lionCoinSessionId || loggedInUser?.id || cartDetails._id.toString();
+      const lionCoinResults = await this.promotionOrdersService.applyToVendorCart(
+        this.getBusinessSubtotals(cartItems, productsFromDB),
+        cartDetails._id.toString(),
+        lionCoinHolderId,
+      );
+      const lionCoinVoucherIds = new Set(
+        lionCoinResults.flatMap(result => result.vouchers.map(voucher => voucher._id)),
+      );
+
+      if (body?.voucher?.length || lionCoinVoucherIds.size) {
+        const voucherIds = [...new Set([
+          ...(body?.voucher?.map(voucher => voucher.id) || []),
+          ...lionCoinVoucherIds,
+        ])];
         const vouchers = await this.voucherService.findByValidIds(voucherIds);
+        // The buyer expected a Lion Coin discount they no longer hold: refuse before any
+        // order exists instead of charging a different total than the one on screen.
+        if (vouchers?.some(voucher => isLionCoinVoucher(voucher)
+          && !lionCoinVoucherIds.has(voucher._id.toString()))) {
+          await this.promotionOrdersService.endPaymentInProgress(cartDetails._id.toString());
+          throw new ConflictException(ServerErrors.LION_COIN.EXPIRED);
+        }
 
         if (vouchers?.length) {
           const sortedVoucher = sortByPriorityAndHighest(
@@ -373,8 +400,9 @@ export class OrdersService {
   ): Promise<any> {
     const { vendorProducts } = cartDetails;
 
-    // Adopts drawer-won holds (keyed by lionCoinSessionId). Drawer click is the consent signal;
-    // checkout only attaches cartId to existing holds. No cart mutations.
+    // Payment initiation: final server-side recalculation of the buyer's Lion Coin vouchers per
+    // business (keyed by lionCoinSessionId - the cart click is the consent signal). Links them
+    // to the cart, restarts the timer and flags the payment as in progress. No cart mutations.
     const lionCoinHolderId
       = body.lionCoinSessionId || loggedInUser?.id || cartDetails._id.toString();
     const lionCoinResults = await this.promotionOrdersService.applyToVendorCart(
@@ -382,15 +410,13 @@ export class OrdersService {
       cartDetails._id.toString(),
       lionCoinHolderId,
     );
-    const lionCoinDiscountByBusinessId = new Map(
-      lionCoinResults.map(result => [result.businessId, result.vouchers?.remainingAmount || 0]),
-    );
 
+    // Gross amount: the Lion Coin discount is paid by its backing vouchers, processed below
+    // together with the buyer's own vouchers. Subtracting it here as well would apply it twice.
     const payableAmount
       = Math.round(
         vendorProducts.reduce(
-          (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0)
-            - (lionCoinDiscountByBusinessId.get(vendor._id.toString()) || 0),
+          (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
           0,
         ) * 100,
       ) / 100;
@@ -406,17 +432,34 @@ export class OrdersService {
     let totalAmountToPay = payableAmount;
     let redeemedVouchers;
 
-    // Collect Lion Coin vouchers to process them through the voucher system
-    const lionCoinVoucherIds = lionCoinResults
-      .filter(result => result.vouchers?._id)
-      .map(result => result.vouchers!._id);
+    // Lion Coin vouchers come only from the server's recalculation above; any the browser
+    // sends on its own are ignored.
+    const lionCoinVoucherIds = new Set(
+      lionCoinResults.flatMap(result => result.vouchers.map(voucher => voucher._id)),
+    );
 
-    if (body?.voucher?.length || lionCoinVoucherIds.length) {
-      const voucherIds = [
+    // The buyer expected a Lion Coin discount they no longer hold (reservation expired, or
+    // fewer vouchers than shown): refuse before any order exists, so they never pay a total
+    // different from the one on screen. Their remaining holds go back to normal expiry.
+    if (body?.voucher?.length) {
+      const clientVouchers = await this.voucherService.findByValidIds(
+        body.voucher.map(voucher => voucher.id),
+      );
+      if (clientVouchers?.some(voucher => isLionCoinVoucher(voucher)
+        && !lionCoinVoucherIds.has(voucher._id.toString()))) {
+        await this.promotionOrdersService.endPaymentInProgress(cartDetails._id.toString());
+        throw new ConflictException(ServerErrors.LION_COIN.EXPIRED);
+      }
+    }
+
+    if (body?.voucher?.length || lionCoinVoucherIds.size) {
+      const voucherIds = [...new Set([
         ...(body?.voucher?.map(voucher => voucher.id) || []),
         ...lionCoinVoucherIds,
-      ];
-      const vouchers = await this.voucherService.findByValidIds(voucherIds);
+      ])];
+      const vouchers = (await this.voucherService.findByValidIds(voucherIds))
+        ?.filter(voucher => !isLionCoinVoucher(voucher)
+          || lionCoinVoucherIds.has(voucher._id.toString()));
 
       if (vouchers?.length) {
         const sortedVoucher = sortByPriorityAndHighest(
@@ -1227,36 +1270,43 @@ export class OrdersService {
       // Finalize Lion Coin redemption for regular (non-vendor-split) orders
       if (cart && !cart.vendorProducts?.length) {
         try {
-          const businessId = updateOrder.vendorId?.toString();
-          if (businessId) {
-            // Adopt drawer reservation to cart if not already linked
-            const existing = await this.PromotionOrderModel.findOne({
-              businessId,
-              redeemCode: 'LION_COIN',
-              status: 'RESERVED',
-              reservedCartId: null,
-            });
-            if (existing) {
-              await this.PromotionOrderModel.findByIdAndUpdate(
-                existing._id,
-                { reservedCartId: cart._id },
-              );
-            }
+          // Keyed by the vouchers' own businesses - these orders carry no vendorId.
+          const lionCoinsByBusinessId = await this.findLionCoinsForPaidCart(cart, updateOrder);
+          if (lionCoinsByBusinessId.size) {
+            const cartProductItems = (cart.product || [])
+              .filter(item => item.itemType === OrderItemType.PRODUCT);
+            // Products may have been deactivated since checkout (findManyById then throws) -
+            // fall back to the order total rather than skip recording the redemption.
+            const productsFromDB = cartProductItems.length
+              ? await this.productsService.findManyById(
+                cartProductItems.map(item => item.id.toString()),
+              ).catch(() => [])
+              : [];
+            const productById = new Map(productsFromDB.map((product: any) => [product._id?.toString(), product]));
+            const subtotalByBusinessId = new Map(
+              this.getBusinessSubtotals(cartProductItems, productsFromDB)
+                .map(business => [business._id.toString(), business.totalAmount]),
+            );
 
-            const claimed = await this.PromotionOrderModel.findOne({
-              businessId,
-              redeemCode: 'LION_COIN',
-              status: 'RESERVED',
-            }).lean();
-            if (claimed) {
-              await this.finalizeLionCoinRedemption(
-                { _id: businessId, totalAmount: updateOrder.totalAmount + (updateOrder.deliveryFee || 0) } as any,
-                claimed,
+            const entries = await Promise.all(
+              [...lionCoinsByBusinessId].map(([businessId, lionCoins]) => this.finalizeLionCoinRedemption(
+                {
+                  _id: businessId,
+                  totalAmount: subtotalByBusinessId.get(businessId) ?? updateOrder.totalAmount,
+                  // For the report's product summary - this business's lines only.
+                  products: cartProductItems
+                    .filter(item => {
+                      const product: any = productById.get(item.id.toString());
+                      return (product?.businessId?._id ?? product?.businessId)?.toString() === businessId;
+                    })
+                    .map(item => ({ _id: item.id, quantity: item.quantity, itemType: item.itemType })),
+                } as any,
+                lionCoins,
                 updateOrder,
                 updateOrder,
-                externalApi,
-              );
-            }
+              )),
+            );
+            await this.sendLionCoinRedemptionReport(entries.filter(Boolean), updateOrder, externalApi);
           }
         } catch (lionCoinErr) {
           this.logger.warn('[ORDER]: FAILED TO FINALIZE LION COIN ON REGULAR ORDER', {
@@ -1282,35 +1332,76 @@ export class OrdersService {
   }
 
   /**
-   * RESERVED -> REDEEMED after payment confirmation (spec rule). Inside Promise.all -
-   * if throws, rejects whole batch and discards other vendors' work. Must never throw
-   * (same pattern as QR-code try/catch).
+   * Business subtotals (before discount, excl. delivery) of a single-cart checkout - the
+   * products' own businesses decide which business each Lion Coin line belongs to.
+   */
+  private getBusinessSubtotals(
+    items: { id: any; quantity: number; amount?: number; itemType?: string }[],
+    productsFromDB: any[],
+  ): { _id: mongoose.Types.ObjectId; totalAmount: number }[] {
+    const productById = new Map((productsFromDB || []).map((product: any) => [product._id?.toString(), product]));
+    const totals = new Map<string, number>();
+
+    (items || []).forEach(item => {
+      if (item.itemType && item.itemType !== OrderItemType.PRODUCT) return;
+      const product: any = productById.get(item.id?.toString());
+      const businessId = (product?.businessId?._id ?? product?.businessId)?.toString();
+      if (!businessId) return;
+      const price = Number(item.amount ?? product?.price?.sellingPrice ?? 0);
+      totals.set(businessId, (totals.get(businessId) || 0) + price * Number(item.quantity || 0));
+    });
+
+    return [...totals].map(([businessId, total]) => ({
+      _id: new mongoose.Types.ObjectId(businessId),
+      totalAmount: Math.round(total * 100) / 100,
+    }));
+  }
+
+  /**
+   * Lion Coin vouchers charged in this cart's payment, keyed by businessId - matched by the
+   * cart link set at payment initiation and by the vouchers redeemed on the order.
+   */
+  private async findLionCoinsForPaidCart(
+    cart: Cart,
+    order: Order,
+  ): Promise<Map<string, PromotionOrder[]>> {
+    const voucherIds = (order.voucher || [])
+      .map((voucher: any) => voucher?.id?.toString())
+      .filter(Boolean);
+    return this.promotionOrdersService.findPromoVouchersForCart(cart._id.toString(), voucherIds);
+  }
+
+  /**
+   * RESERVED -> REDEEMED after payment confirmation (spec rule), every Lion Coin voucher of
+   * this business individually. Inside Promise.all - if throws, rejects whole batch and
+   * discards other vendors' work. Must never throw (same pattern as QR-code try/catch).
+   * Returns the business's report lines, or null when nothing was newly redeemed.
    */
   private async finalizeLionCoinRedemption(
     vendor: Cart['vendorProducts'][number],
-    claimedPromotionOrder: PromotionOrder | undefined,
+    lionCoins: PromotionOrder[],
     savedOrder: Order,
     parentOrder: Order,
-    externalApi: any,
-  ): Promise<void> {
-    if (!claimedPromotionOrder) return;
+  ): Promise<PromotionRedemptionEntry | null> {
+    if (!lionCoins.length) return null;
 
     try {
       // Cardcom reference on PARENT order's Payment (charge was against combined cart,
-      // not per-vendor). Looked up before redeem() for atomic persistence.
+      // not per-vendor). Looked up before redeem for atomic persistence.
       const payment = await this.paymentService.findByOrderId(parentOrder._id.toString());
 
-      const redeemed = await this.promotionOrdersService.redeem(
-        claimedPromotionOrder._id.toString(),
+      const { promoVouchers, newlyRedeemed } = await this.promotionOrdersService.redeemVouchers(
+        lionCoins.map(lionCoin => lionCoin._id.toString()),
         savedOrder._id.toString(),
+        vendor.totalAmount,
         payment?.paymentRequestId,
       );
 
-      if (!redeemed) {
+      if (!newlyRedeemed) {
         // Lost the race or already finalized by a retried webhook - no
         // email, no error, same idempotency contract as the rest of this
         // handler.
-        return;
+        return null;
       }
 
       const [business] = (await this.businessService.findBusinessEmailByIds([
@@ -1320,7 +1411,8 @@ export class OrdersService {
       // Spec's email table wants "details of the products or services, and
       // quantity" - best-effort, folded into the same outer catch below.
       let productsSummary = '';
-      const productItems = vendor.products.filter(p => p.itemType === OrderItemType.PRODUCT);
+      const products = vendor.products || [];
+      const productItems = products.filter(p => p.itemType === OrderItemType.PRODUCT);
       if (productItems.length) {
         const productInfo = await this.productsService.getProductInformationForOrders(
           productItems.map(p => ({ id: p._id, quantity: p.quantity, itemType: p.itemType })),
@@ -1330,35 +1422,56 @@ export class OrdersService {
           .map(p => `${infoById.get(p._id.toString())?.name || p._id.toString()} x${p.quantity}`)
           .join(', ');
       }
-      const nonProductCount = vendor.products.length - productItems.length;
+      const nonProductCount = products.length - productItems.length;
       if (nonProductCount > 0) {
         productsSummary += `${productsSummary ? ', ' : ''}${nonProductCount} other item(s)`;
       }
 
-      await this.promotionOrdersService.sendRedemptionEmails(redeemed, {
-        orderId: savedOrder._id.toString(),
-        orderNumber: savedOrder._id.toString(),
-        businessName: (business as any)?.name || vendor._id.toString(),
-        buyerName: `${parentOrder.firstName || ''} ${parentOrder.lastName || ''}`.trim(),
-        buyerEmail: parentOrder.email,
-        buyerPhone: parentOrder.phone,
-        productsSummary,
+      const businessId = vendor._id.toString();
+      return {
+        businessId,
+        businessName: (business as any)?.name || businessId,
         // vendor.totalAmount is original undiscounted amount (Cart never mutated).
-        // amountPaid is what vendorOrder was saved with.
-        amountBeforeDiscount: vendor.totalAmount,
-        amountPaid: Math.round((vendor.totalAmount - redeemed.value) * 100) / 100,
-        paymentRequestId: payment?.paymentRequestId,
-        redeemedAt: redeemed.redeemedAt,
-      }, externalApi);
+        businessSubtotal: vendor.totalAmount,
+        promoVouchers,
+        discountAmount: promoVouchers.reduce((sum, promoVoucher) => sum + (promoVoucher.value || 0), 0),
+        vouchersLeft: await this.promotionOrdersService.getVouchersLeft(businessId),
+        productsSummary,
+      };
     } catch (err) {
       // Redemption may have already committed (atomic). Logged for manual follow-up,
       // never re-thrown - order must not be sacrificed over Lion Coin side effect.
       this.logger.error('[ORDER]: FAILED TO FINALIZE LION COIN REDEMPTION', {
         orderId: savedOrder._id,
-        promotionOrderId: claimedPromotionOrder._id,
+        promotionVoucherIds: lionCoins.map(lionCoin => lionCoin._id),
         err: err instanceof Error ? err.message : String(err),
       });
+      return null;
     }
+  }
+
+  /** One Lion Coin report email per order, listing every business that redeemed vouchers. */
+  private async sendLionCoinRedemptionReport(
+    entries: PromotionRedemptionEntry[],
+    parentOrder: Order,
+    externalApi: any,
+  ): Promise<void> {
+    if (!entries.length) return;
+
+    const payment = await this.paymentService.findByOrderId(parentOrder._id.toString())
+      .catch(() => null);
+    const totalSubtotal = entries.reduce((sum, entry) => sum + entry.businessSubtotal, 0);
+    const totalDiscount = entries.reduce((sum, entry) => sum + entry.discountAmount, 0);
+
+    await this.promotionOrdersService.sendRedemptionEmails(entries, {
+      orderNumber: parentOrder._id.toString(),
+      buyerName: `${parentOrder.firstName || ''} ${parentOrder.lastName || ''}`.trim(),
+      buyerEmail: parentOrder.email,
+      buyerPhone: parentOrder.phone,
+      amountPaid: Math.round((totalSubtotal - totalDiscount) * 100) / 100,
+      paymentRequestId: payment?.paymentRequestId,
+      redeemedAt: new Date(),
+    }, externalApi);
   }
 
   private async createVendorSplitOrdersForVoucher(
@@ -1366,38 +1479,16 @@ export class OrdersService {
     cart: Cart,
     externalApi: any,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
-    // Claims against this cart (keyed by businessId). Cart never written to,
+    // Lion Coin vouchers charged in this payment (keyed by businessId). Cart never written to,
     // so this is the only source for redemption info.
-    const redeemedByBusinessId = await this.promotionOrdersService.findByCartId(
-      cart._id.toString(),
-    );
-
-    // For any RESERVED Lion Coin without a cartId, adopt it to this cart
-    // (drawer reservations don't set reservedCartId initially)
-    await Promise.all(
-      cart.vendorProducts.map(async vendor => {
-        const businessId = vendor._id.toString();
-        const existing = await this.PromotionOrderModel.findOne({
-          businessId,
-          redeemCode: 'LION_COIN',
-          status: 'RESERVED',
-          reservedCartId: null,
-        });
-        if (existing) {
-          await this.PromotionOrderModel.findByIdAndUpdate(
-            existing._id,
-            { reservedCartId: cart._id },
-          );
-          // Update the map for this iteration
-          redeemedByBusinessId.set(businessId, existing);
-        }
-      }),
-    );
+    const lionCoinsByBusinessId = await this.findLionCoinsForPaidCart(cart, parentOrder);
+    const lionCoinDiscountFor = (businessId: string) => (lionCoinsByBusinessId.get(businessId) || [])
+      .reduce((sum, lionCoin) => sum + (lionCoin.value || 0), 0);
 
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
-        const claimed = redeemedByBusinessId.get(vendor._id.toString());
-        const lionCoinDiscountAmount = claimed?.value || 0;
+        const lionCoins = lionCoinsByBusinessId.get(vendor._id.toString()) || [];
+        const lionCoinDiscountAmount = lionCoinDiscountFor(vendor._id.toString());
 
         const vendorOrder = new this.OrderModel({
           products: vendor.products.map(p => ({ id: p._id })),
@@ -1445,11 +1536,23 @@ export class OrdersService {
           });
         }
 
-        await this.finalizeLionCoinRedemption(vendor, claimed, savedOrder, parentOrder, externalApi);
+        const lionCoinEntry = await this.finalizeLionCoinRedemption(
+          vendor,
+          lionCoins,
+          savedOrder,
+          parentOrder,
+        );
 
-        return savedOrder;
+        return { savedOrder, lionCoinEntry };
       }),
-    );
+    ).then(async results => {
+      await this.sendLionCoinRedemptionReport(
+        results.map(result => result.lionCoinEntry).filter(Boolean),
+        parentOrder,
+        externalApi,
+      );
+      return results.map(result => result.savedOrder);
+    });
 
     this.logger.info(
       '[ORDER]: VENDOR SPLIT ORDERS CREATED FROM VOUCHER PAYMENT',
@@ -1578,46 +1681,24 @@ export class OrdersService {
     cart: Cart,
     externalApi: any,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
-    // Claims against this cart (keyed by businessId). Cart never written to,
+    // Lion Coin vouchers charged in this payment (keyed by businessId). Cart never written to,
     // so this is the only source for redemption info.
-    const redeemedByBusinessId = await this.promotionOrdersService.findByCartId(
-      cart._id.toString(),
-    );
-
-    // For any RESERVED Lion Coin without a cartId, adopt it to this cart
-    // (drawer reservations don't set reservedCartId initially)
-    await Promise.all(
-      cart.vendorProducts.map(async vendor => {
-        const businessId = vendor._id.toString();
-        const existing = await this.PromotionOrderModel.findOne({
-          businessId,
-          redeemCode: 'LION_COIN',
-          status: 'RESERVED',
-          reservedCartId: null,
-        });
-        if (existing) {
-          await this.PromotionOrderModel.findByIdAndUpdate(
-            existing._id,
-            { reservedCartId: cart._id },
-          );
-          // Update the map for this iteration
-          redeemedByBusinessId.set(businessId, existing);
-        }
-      }),
-    );
+    const lionCoinsByBusinessId = await this.findLionCoinsForPaidCart(cart, parentOrder);
+    const lionCoinDiscountFor = (businessId: string) => (lionCoinsByBusinessId.get(businessId) || [])
+      .reduce((sum, lionCoin) => sum + (lionCoin.value || 0), 0);
 
     // Discounted totals (not raw cart.vendorProducts). creditCardPayment denominator was
     // computed from discounted payableAmount, so split must use same basis.
     const totalVendorsAmount = cart.vendorProducts.reduce(
       (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0)
-        - (redeemedByBusinessId.get(vendor._id.toString())?.value || 0),
+        - lionCoinDiscountFor(vendor._id.toString()),
       0,
     );
 
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
-        const claimed = redeemedByBusinessId.get(vendor._id.toString());
-        const lionCoinDiscountAmount = claimed?.value || 0;
+        const lionCoins = lionCoinsByBusinessId.get(vendor._id.toString()) || [];
+        const lionCoinDiscountAmount = lionCoinDiscountFor(vendor._id.toString());
 
         const vendorGrossAmount
           = Math.round(
@@ -1679,11 +1760,23 @@ export class OrdersService {
           });
         }
 
-        await this.finalizeLionCoinRedemption(vendor, claimed, savedOrder, parentOrder, externalApi);
+        const lionCoinEntry = await this.finalizeLionCoinRedemption(
+          vendor,
+          lionCoins,
+          savedOrder,
+          parentOrder,
+        );
 
-        return savedOrder;
+        return { savedOrder, lionCoinEntry };
       }),
-    );
+    ).then(async results => {
+      await this.sendLionCoinRedemptionReport(
+        results.map(result => result.lionCoinEntry).filter(Boolean),
+        parentOrder,
+        externalApi,
+      );
+      return results.map(result => result.savedOrder);
+    });
 
     this.logger.info(
       '[ORDER]: VENDOR SPLIT ORDERS CREATED AFTER PAYMENT SUCCESS',
@@ -2479,15 +2572,13 @@ export class OrdersService {
         && orderExists.paymentStatus === PaymentStatus.SUCCESS
       ) {
         try {
-          const released = await this.promotionOrdersService.releaseByOrderId(id);
-          if (released) {
-            const [business] = (await this.businessService.findBusinessEmailByIds([
-              orderExists.vendorId as any,
-            ])) || [];
+          // Cancelling a parent order releases the Lion Coin vouchers of all its vendor orders.
+          const childOrderIds = (await this.OrderModel.find({ parentOrderId: id }, { _id: 1 }).lean())
+            .map(childOrder => childOrder._id.toString());
+          const released = await this.promotionOrdersService.releaseByOrderIds([id, ...childOrderIds]);
+          if (released.length) {
             await this.promotionOrdersService.sendCancellationEmail(released, {
-              orderId: id,
               orderNumber: id,
-              businessName: (business as any)?.name || orderExists.vendorId?.toString(),
               buyerName: `${orderExists.firstName || ''} ${orderExists.lastName || ''}`.trim(),
               amountPaid: orderExists.totalAmount,
             });

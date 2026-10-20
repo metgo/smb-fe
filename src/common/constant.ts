@@ -152,7 +152,10 @@ export const ServerErrors = {
       'This voucher was just redeemed by another request. Please try again.',
   },
 
-  LION_COIN: {},
+  LION_COIN: {
+    // Stable code (not prose) - the marketplace maps it to its own copy.
+    EXPIRED: 'LION_COINS_EXPIRED',
+  },
 
   CAMPAIGN: {
     NOT_FOUND: 'Invalid campaign',

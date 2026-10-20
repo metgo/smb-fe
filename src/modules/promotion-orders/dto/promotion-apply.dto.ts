@@ -1,11 +1,15 @@
 import {
+  ArrayMaxSize,
   ArrayNotEmpty,
   IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PromotionApplyDto {
@@ -26,8 +30,9 @@ export class PromotionApplyDto {
 
   @IsNumber()
   @IsNotEmpty()
+  @Min(0)
   @ApiProperty({
-    description: 'This vendor\'s current cart subtotal, checked server-side against the Lion Coin threshold.',
+    description: 'This business\'s current cart subtotal (before discount). The server decides how many promotion vouchers it unlocks.',
   })
     totalAmount: number;
 }
@@ -41,12 +46,11 @@ export class PromotionReleaseDto {
     businessId: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty({
-    description: 'Optional session id. If not provided, any reservation for this business will be released.',
-    required: false,
+    description: 'Session id returned by apply. Only this session\'s promotion vouchers are released.',
   })
-    sessionId?: string;
+    sessionId: string;
 }
 
 export class PromotionListDto {
@@ -58,4 +62,44 @@ export class PromotionListDto {
     type: [String],
   })
     businessIds: string[];
+}
+
+export class PromotionStateBusinessDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ description: 'Business ID.' })
+    businessId: string;
+
+  @IsNumber()
+  @Min(0)
+  @ApiProperty({ description: 'This business\'s current cart subtotal (before discount).' })
+    totalAmount: number;
+}
+
+export class PromotionStateDto {
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMaxSize(100)
+  @ValidateNested({ each: true })
+  @Type(() => PromotionStateBusinessDto)
+  @ApiProperty({ type: [PromotionStateBusinessDto] })
+    businesses: PromotionStateBusinessDto[];
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Session id, so the state includes the promotion vouchers this session holds.',
+    required: false,
+  })
+    sessionId?: string;
+}
+
+// Sent with navigator.sendBeacon (form-encoded) when the buyer closes the payment page.
+export class PromotionReleaseSessionDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Session id whose held promotion vouchers are released (except during a payment).',
+  })
+    sessionId: string;
 }
