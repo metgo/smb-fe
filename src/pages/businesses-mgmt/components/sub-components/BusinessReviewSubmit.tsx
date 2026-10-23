@@ -141,14 +141,14 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
 
           {/* Short description */}
           <div className="grid grid-cols-1 gap-4">
-            {row(tc("short_description_en"), formData.shortDescription)}
+            {row(tc("short_description"), formData.shortDescription)}
           </div>
 
           {divider}
 
           {/* Full description */}
           <div className="grid grid-cols-1 gap-4">
-            {row(tc("full_description_en"), formData.fullDescription)}
+            {row(tc("full_description"), formData.fullDescription)}
           </div>
         </div>
       </div>

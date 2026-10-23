@@ -54,9 +54,19 @@ export const BusinessContentForm = ({
     slug: string;
   } | null>(null);
 
-  const titleField = "name";
-  const shortDescField = "shortDescription";
-  const fullDescField = "fullDescription";
+  // Get correct field name based on current global language
+  const getFieldName = (baseField: string): string => {
+    if (language === "en") {
+      return baseField; // name, shortDescription, fullDescription
+    }
+    // For he → nameHe, shortDescriptionHe, etc.
+    const suffix = language.charAt(0).toUpperCase() + language.slice(1);
+    return `${baseField}${suffix}`;
+  };
+
+  const titleField = getFieldName("name");
+  const shortDescField = getFieldName("shortDescription");
+  const fullDescField = getFieldName("fullDescription");
 
   // Reset availability status when name changes
   const handleNameChange = (value: string) => {

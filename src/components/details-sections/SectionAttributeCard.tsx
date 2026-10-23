@@ -1,6 +1,4 @@
-import React from "react";
 import clsx from "clsx";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Row {
   label: string;
@@ -12,7 +10,7 @@ interface SectionAttributeCardProps {
   title?: string;
   step?: string | number;
   rows?: Row[];
-  tags: ITags[];
+  tags: string[];
   isDark?: boolean;
 }
 
@@ -24,7 +22,6 @@ const SectionAttributeCard: React.FC<SectionAttributeCardProps> = ({
   tags,
   isDark = false,
 }) => {
-  const { language } = useThemeClasses();
   return (
     <div className="section-card border rounded-none shadow-sm p-4">
       {/* Header */}
@@ -57,21 +54,19 @@ const SectionAttributeCard: React.FC<SectionAttributeCardProps> = ({
         <span className={clsx("text-sm text-gray-400")}>Tags</span>
         {tags?.length > 0 ? (
           <div className="flex items-center flex-wrap gap-1 mt-1">
-            {tags
-              .filter((tag) => tag?.[language]?.trim())
-              .map((tag, idx) => (
-                <span
-                  key={idx}
-                  className={clsx(
-                    "px-2 py-1 rounded-md flex items-center gap-2 text-sm font-medium border transition-all mt-2",
-                    isDark
-                      ? "bg-black text-gray-200 border-gray-800 shadow-sm"
-                      : "bg-white text-gray-900 border-gray-700 shadow-sm",
-                  )}
-                >
-                  {tag[language]}
-                </span>
-              ))}
+            {tags.map((tag, idx) => (
+              <span
+                key={idx}
+                className={clsx(
+                  "px-2 py-1 rounded-md flex items-center gap-2 text-sm font-medium border transition-all mt-2",
+                  isDark
+                    ? "bg-black text-gray-200 border-gray-800 shadow-sm"
+                    : "bg-white text-gray-900 border-gray-700 shadow-sm",
+                )}
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         ) : (
           <div

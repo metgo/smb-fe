@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { X, Sparkles, Loader2 } from "lucide-react";
+import { X, Sparkles, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState, type FC } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
@@ -92,6 +92,13 @@ const Attributes: FC<AttributesProps> = ({
       );
     }) ?? [];
 
+  const clearTags = () => {
+    setFormData({
+      ...formData,
+      tags: [],
+    });
+  };
+
   /* ---------------- Reset generated flag on record change ---------------- */
   useEffect(() => {
     hasGeneratedRef.current = false;
@@ -104,6 +111,7 @@ const Attributes: FC<AttributesProps> = ({
     getGeneratedTags({
       name: nameForGen,
       description: descriptionForGen,
+      locale: language,
     })
       .then((res: any) => {
         if (!res?.data?.length) return;
@@ -147,9 +155,10 @@ const Attributes: FC<AttributesProps> = ({
   };
 
   const handleRemoveTag = (index: number) => {
+    const newTags = formData.tags.filter((_, i) => i !== index);
     setFormData({
       ...formData,
-      tags: formData.tags.filter((_, i) => i !== index),
+      tags: newTags,
     });
   };
 
@@ -251,22 +260,35 @@ const Attributes: FC<AttributesProps> = ({
             >
               {t("tags")}
             </label>
-            {nameForGen !== "-" && descriptionForGen !== "-" ? (
-              <button
-                type="button"
-                onClick={handleGenerateTags}
-                disabled={isLoading}
-                title={t("generate_tags_with_ai")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Sparkles className="w-3.5 h-3.5" />
-                )}
-                {isLoading ? t("generating_tags") : t("generate_tags")}
-              </button>
-            ) : null}
+            <div className="flex items-center gap-2">
+              {formData?.tags?.length > 0 && (
+                <button
+                  type="button"
+                  onClick={clearTags}
+                  title={t("clear_tags")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {t("clear_tags")}
+                </button>
+              )}
+              {nameForGen !== "-" && descriptionForGen !== "-" ? (
+                <button
+                  type="button"
+                  onClick={handleGenerateTags}
+                  disabled={isLoading}
+                  title={t("generate_tags_with_ai")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3.5 h-3.5" />
+                  )}
+                  {isLoading ? t("generating_tags") : t("generate_tags")}
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div
