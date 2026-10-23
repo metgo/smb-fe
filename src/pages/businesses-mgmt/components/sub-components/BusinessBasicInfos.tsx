@@ -13,16 +13,8 @@ interface BusinessFormData {
   internalNotes: string;
 
   name: string;
-  nameHe: string;
-  nameAr: string;
-
   shortDescription: string;
-  shortDescriptionHe: string;
-  shortDescriptionAr: string;
-
   fullDescription: string;
-  fullDescriptionHe: string;
-  fullDescriptionAr: string;
 
   providesDiscount?: boolean;
   discountConfigType?: "DISCOUNT" | "GIFT" | "";

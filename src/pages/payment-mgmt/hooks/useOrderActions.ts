@@ -65,10 +65,13 @@ export function useOrderActions({
     useState(false);
 
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
-    useGetOrderProductDetailsQuery(detailsOrderId as string, {
-      skip: !detailsOrderId,
-      refetchOnMountOrArgChange: true,
-    });
+    useGetOrderProductDetailsQuery(
+      { id: detailsOrderId as string, language },
+      {
+        skip: !detailsOrderId,
+        refetchOnMountOrArgChange: true,
+      },
+    );
   const { data: vendorBankDetails } = useGetUserInfoQuery(undefined, {
     skip: userRole === "superadmin",
   });
@@ -149,11 +152,11 @@ export function useOrderActions({
 
   const displayedOrder = useMemo(() => {
     if (orderDetailsData && detailsOrderId === selectedOrder?._id) {
-      return mapOrderProductDetails(orderDetailsData, language);
+      return mapOrderProductDetails(orderDetailsData);
     }
     // Handle case when navigating from URL with orderProductId
     if (orderDetailsData && detailsOrderId && !selectedOrder) {
-      return mapOrderProductDetails(orderDetailsData, language);
+      return mapOrderProductDetails(orderDetailsData);
     }
     return selectedOrder;
   }, [orderDetailsData, detailsOrderId, selectedOrder, language]);
@@ -205,8 +208,11 @@ export function useOrderActions({
     }
     setReopenFetchingId(order._id);
     try {
-      const details = await fetchOrderDetailsForReopen(order._id).unwrap();
-      const mapped = mapOrderProductDetails(details, language);
+      const details = await fetchOrderDetailsForReopen({
+        id: order._id,
+        language,
+      }).unwrap();
+      const mapped = mapOrderProductDetails(details);
       handleReopenDispute({
         ...order,
         ...mapped,

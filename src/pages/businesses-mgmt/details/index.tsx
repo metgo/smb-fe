@@ -42,7 +42,6 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { envKeys } from "@/lib/envKeys";
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
-import { getLngWiseStr } from "@/helpers";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { openChatPopup } from "@/features/chatPopupSlice";
 import { ChatCreatorBubble } from "@/components/chat-popup";
@@ -244,7 +243,9 @@ function BusinessDetailsPageInner() {
     data: business,
     refetch: businessDataRefetch,
     isLoading,
-  } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
+  } = useGetbusinessByIdQuery(
+    businessId ? { businessId, language } : skipToken,
+  );
 
   // ── Chat with business creator ──────────────────────────────────────────
   const dispatch = useAppDispatch();
@@ -280,25 +281,13 @@ function BusinessDetailsPageInner() {
   }, [isEditClicked]);
 
   const onCreateProduct = () => {
-    const displayName = getLngWiseStr(
-      language,
-      business?.name,
-      business?.nameHe,
-      business?.nameAr,
-    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessName=${encodeURIComponent(displayName || "")}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${encodeURIComponent(business.name || "")}`,
     );
   };
   const onViewProduct = () => {
-    const displayName = getLngWiseStr(
-      language,
-      business?.name,
-      business?.nameHe,
-      business?.nameAr,
-    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${encodeURIComponent(displayName || "")}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${encodeURIComponent(business?.name || "")}`,
     );
   };
 
@@ -312,6 +301,7 @@ function BusinessDetailsPageInner() {
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBusiness({
+        language,
         businessId,
         body: { status: status.toUpperCase() },
       }).unwrap();

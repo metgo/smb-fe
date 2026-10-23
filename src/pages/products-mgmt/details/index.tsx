@@ -56,7 +56,9 @@ export default function ProductDetailsPage() {
     data: product,
     isLoading,
     refetch,
-  } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
+  } = useGetProductbyIdQuery(
+    productId ? { productId: productId, language } : skipToken,
+  );
   //individual stats
   const { data: productStats, isLoading: isStatsLoading } =
     useGetProductStatsByIdQuery(productId ?? skipToken);
@@ -124,6 +126,7 @@ export default function ProductDetailsPage() {
     if (productId)
       try {
         await updateProduct({
+          language,
           productId,
           body: { status: status.toUpperCase() },
         }).unwrap();

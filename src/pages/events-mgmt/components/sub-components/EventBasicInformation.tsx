@@ -13,7 +13,6 @@ import {
 } from "@/components/form-fields";
 import { useCommon } from "@/hooks/useCommon";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { getLngWiseStr } from "@/helpers";
 import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
 
 interface EventBasicInformationProps {
@@ -70,7 +69,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 }) => {
   const { t } = useTranslation("events");
   const { isSuperadmin } = useUserRoles();
-  const { inputClasses, language } = useThemeClasses();
+  const { inputClasses } = useThemeClasses();
 
   const { groupTypes, accessibility } = useCommon();
 
@@ -114,12 +113,9 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   useEffect(() => {
     markDirty(1);
   }, [
-    formData.nameHe,
-    formData.shortDescriptionHe,
-    formData.fullDescriptionHe,
-    formData.nameAr,
-    formData.shortDescriptionAr,
-    formData.fullDescriptionAr,
+    formData.name,
+    formData.shortDescription,
+    formData.fullDescription,
     selectedAuthorityId,
     selectedDmoId,
     selectedAccessiblitiesId,
@@ -155,7 +151,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           items={
             businesses?.map((biz) => ({
               _id: biz._id,
-              name: getLngWiseStr(language, biz.name, biz.nameHe, biz.nameAr),
+              name: biz.name,
             })) || []
           }
           isLoading={isBusinessLoading}

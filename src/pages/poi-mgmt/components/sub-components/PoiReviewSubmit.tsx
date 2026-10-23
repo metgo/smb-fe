@@ -23,24 +23,14 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
   images,
   setCurrentStep,
 }) => {
-  const { isDark, borderColor, language } = useThemeClasses();
+  const { isDark, borderColor } = useThemeClasses();
 
   const sectionClass = `p-4 rounded-xl border ${borderColor} ${isDark ? "bg-gray-800/50" : "bg-gray-50"} space-y-3`;
   const labelClass = `text-xs uppercase tracking-wide ${isDark ? "text-gray-400" : "text-gray-500"}`;
   const valueClass = `text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`;
 
-  const name =
-    (language === "he"
-      ? formData.titleHe
-      : language === "ar"
-        ? formData.titleAr
-        : formData.title) || "-";
-  const shortDesc =
-    (language === "he"
-      ? formData.shortDescriptionHe
-      : language === "ar"
-        ? formData.shortDescriptionAr
-        : formData.shortDescription) || "-";
+  const name = formData.title || "-";
+  const shortDesc = formData.shortDescription || "-";
 
   return (
     <div className="space-y-6  mx-auto">

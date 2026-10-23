@@ -17,9 +17,12 @@ export const blogQueryApi = createApi({
     }),
 
     // GET /blogs/{blogId}
-    getBlogById: builder.query<any, { blogId: string | null }>({
-      query: ({ blogId }) => ({
-        url: `${endpoints.blogs}/${blogId}`,
+    getBlogById: builder.query<
+      any,
+      { blogId: string | null; language: Language }
+    >({
+      query: ({ blogId, language }) => ({
+        url: `${endpoints.blogs}/${blogId}?locale=${language}`,
         method: "GET",
       }),
       keepUnusedDataFor: 0,

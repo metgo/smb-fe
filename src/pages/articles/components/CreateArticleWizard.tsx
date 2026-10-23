@@ -19,7 +19,6 @@ import { useAppSelector } from "@/hooks/hooks";
 import { ReactSelect } from "@/components/form-fields";
 
 import Media from "@/components/details-sections/Media";
-import { detectLanguage, getLngWiseStr } from "@/helpers";
 import { getPlainText } from "@/components/shared/RichTextEditor";
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
@@ -34,26 +33,12 @@ const EMPTY_FORM: IArticleFormData = {
     url: "",
   },
   title: "",
-  titleHe: "",
-  titleAr: "",
   shortDescription: "",
-  shortDescriptionHe: "",
-  shortDescriptionAr: "",
   content: "",
-  contentHe: "",
-  contentAr: "",
   tags: [],
-  tagsHe: [],
-  tagsAr: [],
   summary: "",
-  summaryHe: "",
-  summaryAr: "",
   metaTitle: "",
-  metaTitleHe: "",
-  metaTitleAr: "",
   metaDescription: "",
-  metaDescriptionHe: "",
-  metaDescriptionAr: "",
   status: "DRAFT",
 };
 
@@ -64,26 +49,12 @@ function buildFormFromArticle(article: any): IArticleFormData {
   return {
     externalApiId: article?.externalApiId?.id || "",
     title: str(article.title),
-    titleHe: article.titleHe || "",
-    titleAr: article.titleAr || "",
     shortDescription: str(article.shortDescription),
-    shortDescriptionHe: article.shortDescriptionHe || "",
-    shortDescriptionAr: article.shortDescriptionAr || "",
     content: article.content || "",
-    contentHe: article.contentHe || "",
-    contentAr: article.contentAr || "",
     tags: arr(article.tags),
-    tagsHe: arr(article.tagsHe),
-    tagsAr: arr(article.tagsAr),
     summary: article.summary || "",
-    summaryHe: article.summaryHe || "",
-    summaryAr: article.summaryAr || "",
     metaTitle: article.metaTitle || "",
-    metaTitleHe: article.metaTitleHe || "",
-    metaTitleAr: article.metaTitleAr || "",
     metaDescription: article.metaDescription || "",
-    metaDescriptionHe: article.metaDescriptionHe || "",
-    metaDescriptionAr: article.metaDescriptionAr || "",
     status:
       (article?.status?.toUpperCase() as IArticleFormData["status"]) || "DRAFT",
   };
@@ -95,12 +66,6 @@ interface CreateArticleWizardProps {
   onClose: () => void;
   existingArticle?: any;
   refetch: () => void;
-}
-
-function getTagsField(lang: Language): keyof IArticleFormData {
-  if (lang === "en") return "tags";
-  if (lang === "he") return "tagsHe";
-  return "tagsAr";
 }
 
 const CreateArticleWizard = ({
@@ -116,7 +81,6 @@ const CreateArticleWizard = ({
   const [currentStep, setCurrentStep] = useState(1);
   const steps = [
     { number: 1, title: t("form"), icon: FileText },
-    // { number: 2, title: t("translation"), icon: LanguagesIcon },
     { number: 2, title: t("media"), icon: ImageIcon },
     { number: 3, title: t("seo"), icon: BarChart },
     { number: 4, title: t("review"), icon: Eye },
@@ -151,13 +115,7 @@ const CreateArticleWizard = ({
         ? (updatedImages) => {
             const mapped = updatedImages.map((img) => ({
               image: img.image,
-              alt:
-                getLngWiseStr(
-                  language,
-                  existingArticle.title,
-                  existingArticle.titleHe,
-                  existingArticle.titleAr,
-                ) || "",
+              alt: existingArticle.title || "",
               isPrimary: img.isPrimary,
             }));
             updateBlog({
@@ -204,26 +162,19 @@ const CreateArticleWizard = ({
     setFormData((prev) => ({
       ...prev,
       tags: prev.tags.includes(tag) ? prev.tags : [...prev.tags, tag],
-      tagsHe: prev.tagsHe.includes(tag) ? prev.tagsHe : [...prev.tagsHe, tag],
-      tagsAr: prev.tagsAr.includes(tag) ? prev.tagsAr : [...prev.tagsAr, tag],
     }));
 
     setTagInput("");
   };
 
-  const removeTag = (tag: string, lang: Language) => {
-    const field = getTagsField(lang);
+  const removeTag = (tag: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: (prev[field] as string[]).filter((t) => t !== tag),
+      tags: prev.tags.filter((t) => t !== tag),
     }));
   };
 
   const handleNext = async () => {
-    if (currentStep === 1) {
-      const processed = detectAndAssignLanguageFields(formData);
-      setFormData(processed);
-    }
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -232,27 +183,15 @@ const CreateArticleWizard = ({
   };
   // ─── Validation ───────────────────────────────────────────────────────────────
   const validateArticle = () => {
-    const hasTitle =
-      formData.title.trim() ||
-      formData.titleHe.trim() ||
-      formData.titleAr.trim();
-    if (!hasTitle) {
+    if (!formData.title.trim()) {
       toast.error(t("validation_title_required"));
       return false;
     }
-    const hasShortDescription =
-      formData.shortDescription.trim() ||
-      formData.shortDescriptionHe.trim() ||
-      formData.shortDescriptionAr.trim();
-    if (!hasShortDescription) {
+    if (!formData.shortDescription.trim()) {
       toast.error(t("validation_short_desc_required"));
       return false;
     }
-    if (
-      getPlainText(formData.shortDescription || "").length > 150 ||
-      getPlainText(formData.shortDescriptionHe || "").length > 150 ||
-      getPlainText(formData.shortDescriptionAr || "").length > 150
-    ) {
+    if (getPlainText(formData.shortDescription || "").length > 150) {
       toast.error(tc("exceeds_char_limit", { limit: 150 }));
       return false;
     }
@@ -263,30 +202,10 @@ const CreateArticleWizard = ({
   // ─── SEO generation ───────────────────────────────────────────────────────────
   const handleGenerateSeo = async () => {
     try {
-      // Get the first available language content
-      const titleText = getLngWiseStr(
-        language,
-        formData.title,
-        formData.titleHe,
-        formData.titleAr,
-      );
-      const descText = getLngWiseStr(
-        language,
-        formData.shortDescription,
-        formData.shortDescriptionHe,
-        formData.shortDescriptionAr,
-      );
-      const contentText = getLngWiseStr(
-        language,
-        formData.content,
-        formData.contentHe,
-        formData.contentAr,
-      );
-
       const result = await generateBlogSeo({
-        title: titleText,
-        shortDescription: descText,
-        content: contentText,
+        title: formData.title,
+        shortDescription: formData.shortDescription,
+        content: formData.content,
       }).unwrap();
 
       setFormData((prev) => ({
@@ -295,14 +214,6 @@ const CreateArticleWizard = ({
         metaTitle: result.metaTitle ?? prev.metaTitle,
         metaDescription: result.metaDescription ?? prev.metaDescription,
         tags: result.tags?.length ? result.tags : prev.tags,
-        summaryHe: result.summaryHe ?? prev.summaryHe,
-        metaTitleHe: result.metaTitleHe ?? prev.metaTitleHe,
-        metaDescriptionHe: result.metaDescriptionHe ?? prev.metaDescriptionHe,
-        tagsHe: result.tagsHe?.length ? result.tagsHe : prev.tagsHe,
-        summaryAr: result.summaryAr ?? prev.summaryAr,
-        metaTitleAr: result.metaTitleAr ?? prev.metaTitleAr,
-        metaDescriptionAr: result.metaDescriptionAr ?? prev.metaDescriptionAr,
-        tagsAr: result.tagsAr?.length ? result.tagsAr : prev.tagsAr,
       }));
       toast.success(t("seo_generated_success"));
     } catch (err: any) {
@@ -310,78 +221,22 @@ const CreateArticleWizard = ({
     }
   };
 
-  /**
-   * Detects the language of non-empty fields and assigns them to the correct language-specific fields
-   * Priority: title > shortDescription > content
-   */
-  const getActiveField = (base: string, lang: string): string => {
-    if (lang === "en") return base;
-    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
-    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
-  };
-
-  const detectAndAssignLanguageFields = (data: any): any => {
-    const updated = { ...data };
-
-    const fieldGroups = [
-      { base: "title", en: "title", he: "titleHe", ar: "titleAr" },
-      {
-        base: "shortDescription",
-        en: "shortDescription",
-        he: "shortDescriptionHe",
-        ar: "shortDescriptionAr",
-      },
-      {
-        base: "content",
-        en: "content",
-        he: "contentHe",
-        ar: "contentAr",
-      },
-    ];
-
-    fieldGroups.forEach(({ base, en, he, ar }) => {
-      // Whichever field the user was actually typing into for THIS group,
-      // based on the global language at the time of entry
-      const activeField = getActiveField(base, language);
-      const text = data[activeField]?.trim();
-      if (!text) return;
-
-      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
-
-      // Clear all three first, then assign to wherever it actually belongs
-      updated[en] = "";
-      updated[he] = "";
-      updated[ar] = "";
-
-      if (detectedLang === "he") {
-        updated[he] = text;
-      } else if (detectedLang === "ar") {
-        updated[ar] = text;
-      } else {
-        updated[en] = text;
-      }
-    });
-
-    return updated;
-  };
-
   const saveArticle = useCallback(
-    async (isPublish: boolean = false, processedData?: IArticleFormData) => {
+    async (isPublish: boolean = false) => {
       if (!formData?.externalApiId) {
         toast.error(t("please_select_website"));
         return;
       }
       if (!validateArticle()) return;
 
-      const dataToSave = processedData || formData;
       const mapped = galleryImages.map((img) => ({
         image: img.image,
-        alt: dataToSave.title || dataToSave.titleHe || dataToSave.titleAr || "",
+        alt: formData.title || "",
         isPrimary: img.isPrimary,
       }));
 
       const payload = {
-        ...dataToSave,
+        ...formData,
         status: isPublish ? "APPROVED" : "PENDING",
         images: mapped,
       };
@@ -493,11 +348,7 @@ const CreateArticleWizard = ({
     }
     setIsPublishing(true);
     try {
-      // Step 1: Detect language and assign to correct fields
-      const processedFormData = detectAndAssignLanguageFields(formData);
-
-      // Step 2: Save with processed data
-      await saveArticle(true, processedFormData);
+      await saveArticle(true);
       refetch();
     } finally {
       setIsPublishing(false);

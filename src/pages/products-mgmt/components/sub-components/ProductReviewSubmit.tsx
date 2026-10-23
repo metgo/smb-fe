@@ -45,7 +45,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     isDark,
     bgTertiary,
     bgSecondary,
-    language,
   } = useThemeClasses();
   const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");
@@ -134,33 +133,21 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
         <div className="p-5 space-y-4">
           {/* Name */}
           <div className="grid grid-cols-1 gap-4">
-            {language === "en" && row(t("name"), formData.name)}
-            {language === "he" && row(t("name_he"), formData.nameHe)}
-            {language === "ar" && row(t("name_ar"), formData.nameAr)}
+            {row(t("name"), formData.name)}
           </div>
 
           {divider}
 
           {/* Short description */}
           <div className="grid grid-cols-1 gap-4">
-            {language === "en" &&
-              row(t("short_description_en"), formData.shortDescription)}
-            {language === "he" &&
-              row(t("short_description_he"), formData.shortDescriptionHe)}
-            {language === "ar" &&
-              row(t("short_description_ar"), formData.shortDescriptionAr)}
+            {row(t("short_description_en"), formData.shortDescription)}
           </div>
 
           {divider}
 
           {/* Full description */}
           <div className="grid grid-cols-1 gap-4">
-            {language === "en" &&
-              row(t("full_description_en"), formData.fullDescription)}
-            {language === "he" &&
-              row(t("full_description_he"), formData.fullDescriptionHe)}
-            {language === "ar" &&
-              row(t("full_description_ar"), formData.fullDescriptionAr)}
+            {row(t("full_description_en"), formData.fullDescription)}
           </div>
         </div>
       </div>

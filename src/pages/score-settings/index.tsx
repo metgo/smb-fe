@@ -39,6 +39,7 @@ import {
   type IScoreSchedule,
   type ScheduleState,
 } from "@/store/api/businessScoreApi";
+import { ScoreSettingsSkeleton } from "@/components/skeletons";
 
 const errorMessage = (error: unknown, fallback: string) =>
   (
@@ -148,7 +149,7 @@ const ScoreSettingsPage = () => {
   const hasLiveSignal = Object.keys(effective).length > 0;
 
   if (isLoading || !draft || !config) {
-    return <div className={clsx("p-6", textTertiary)}>…</div>;
+    return <ScoreSettingsSkeleton />;
   }
 
   const formatSlot = (slot: string | null) => {
@@ -391,7 +392,7 @@ const ScoreSettingsPage = () => {
               label={t("automatic_runs")}
               {...toggleText}
             />
-            <div className="flex-1 min-w-[14rem]">
+            <div className="flex-1 min-w-56">
               <div className={clsx("font-medium", textPrimary)}>
                 {automatic ? t("mode_automatic") : t("mode_manual")}
               </div>
@@ -524,7 +525,7 @@ const ScoreSettingsPage = () => {
               label={t("import_before_run")}
               {...toggleText}
             />
-            <div className="flex-1 min-w-[14rem]">
+            <div className="flex-1 min-w-56">
               <div className={clsx("font-medium", textPrimary)}>
                 {t("import_before_run")}
               </div>
@@ -589,7 +590,7 @@ const ScoreSettingsPage = () => {
             )}
           >
             <BarChart3 className={sectionIcon} />
-            <div className="flex-1 min-w-[14rem]">
+            <div className="flex-1 min-w-56">
               <div className={clsx("font-medium", textPrimary)}>
                 {t("ga_import")}
               </div>
@@ -670,7 +671,7 @@ const ScoreSettingsPage = () => {
                 label={t(`signal_${key}`)}
                 {...toggleText}
               />
-              <div className="flex-1 min-w-[12rem]">
+              <div className="flex-1 min-w-48">
                 <div
                   className={clsx(
                     "font-medium",
@@ -803,7 +804,7 @@ const ScoreSettingsPage = () => {
                 label={t(`param_${key}`)}
                 {...toggleText}
               />
-              <div className="flex-1 min-w-[12rem]">
+              <div className="flex-1 min-w-48">
                 <label
                   htmlFor={`param-${key}`}
                   className={clsx(

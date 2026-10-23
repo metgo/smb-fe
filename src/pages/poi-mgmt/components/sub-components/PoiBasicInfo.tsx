@@ -4,15 +4,9 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { DmoAuthorityWebsiteIdsSelector } from "@/components/shared";
 
 interface PoiFormData {
-  nameEn: string;
-  nameHe: string;
-  nameAr: string;
-  shortDescriptionEn: string;
-  shortDescriptionHe: string;
-  shortDescriptionAr: string;
-  fullDescriptionEn: string;
-  fullDescriptionHe: string;
-  fullDescriptionAr: string;
+  name: string;
+  shortDescription: string;
+  fullDescription: string;
   internalNotes: string;
 }
 

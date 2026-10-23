@@ -1,14 +1,14 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader, Package, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Loader, Package, Pencil } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { getPlainTextFromRichText, getLngWiseStr } from "@/helpers";
+import { getPlainTextFromRichText } from "@/helpers";
 import { StatusPill } from "@/components/pills";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 import { formatDate } from "@/helpers/formatter";
@@ -215,6 +215,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
     const toastId = toast.loading(tc("product_status_change_loading"));
     try {
       await updateProduct({
+        language,
         productId,
         body: { status: status.toUpperCase() },
       }).unwrap();
@@ -237,6 +238,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
     try {
       await updateProduct({
         productId,
+        language,
         body: { quantity: { remaining, isUnlimited: false } },
       }).unwrap();
       toast.success(tc("product_quantity_update_success"), { id: toastId });
@@ -278,9 +280,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       render: (product: any) => (
         <div>
           <div className={`${textPrimary} line-clamp-1`}>
-            {product.name
-              ? (product.name?.[language] ?? product.name?.en ?? product.name)
-              : "-"}
+            {product.name || "-"}
           </div>
         </div>
       ),
@@ -316,12 +316,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       label: t("business_name"),
       render: (product: any) => (
         <div className={`${textPrimary} line-clamp-1`}>
-          {getLngWiseStr(
-            language,
-            product.businessId?.nameHe,
-            product?.businessId?.name,
-            product?.businessId?.nameAr,
-          )}{" "}
+          {product?.businessId?.name}{" "}
         </div>
       ),
     },

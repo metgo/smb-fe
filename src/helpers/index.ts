@@ -353,6 +353,15 @@ export function getMatchedItems(originalList: any, selectedIds?: string[]) {
   return matchedItems ?? [];
 }
 
+export function getMatchedTags(originalList: any, selectedIds?: string[]) {
+  if (!originalList?.length || !selectedIds?.length) return [];
+
+  const matchedItems = originalList?.filter((item: any) =>
+    selectedIds?.includes(item._id),
+  );
+  return matchedItems ?? [];
+}
+
 export function removeNulls(arr: string[]) {
   return arr?.filter((item) => item !== null);
 }

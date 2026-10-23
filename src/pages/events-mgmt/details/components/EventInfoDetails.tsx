@@ -8,7 +8,6 @@ import {
   BriefcaseBusinessIcon,
 } from "lucide-react";
 
-import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import {
@@ -26,19 +25,14 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
   t,
   eventDetails,
 }) => {
-  const { isDark, language } = useThemeClasses();
+  const { isDark } = useThemeClasses();
   const { t: tp } = useTranslation("products");
 
   return (
     <div className="space-y-6">
       <DescriptionCard
         title={t("short_description")}
-        content={getLngWiseStr(
-          language,
-          eventDetails?.shortDescription,
-          eventDetails?.shortDescriptionHe,
-          eventDetails?.shortDescriptionAr,
-        )}
+        content={eventDetails?.shortDescription}
         icon={
           <FileText
             className={clsx(
@@ -54,12 +48,7 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
       <DescriptionCard
         isEvent
         title={t("full_description")}
-        content={getLngWiseStr(
-          language,
-          eventDetails?.description,
-          eventDetails?.descriptionHe,
-          eventDetails?.descriptionAr,
-        )}
+        content={eventDetails?.description}
         icon={
           <AlignLeft
             className={clsx(

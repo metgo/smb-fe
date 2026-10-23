@@ -14,9 +14,12 @@ export const productQueryApi = createApi({
         params,
       }),
     }),
-    getProductbyId: builder.query<any, { productId: string | null }>({
-      query: ({ productId }) => ({
-        url: `${endpoints.products}/${productId}`,
+    getProductbyId: builder.query<
+      any,
+      { productId: string | null; language: Language }
+    >({
+      query: ({ productId, language }) => ({
+        url: `${endpoints.products}/${productId}?locale=${language}`,
         method: "GET",
       }),
       keepUnusedDataFor: 0,

@@ -6,7 +6,7 @@ import CancelledInfo from "./CancelledInfo";
 import { ModalWrapper } from "@/components/wrapper";
 import { ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { getLngWiseStr, getPlainTextFromRichText } from "@/helpers";
+import { getPlainTextFromRichText } from "@/helpers";
 
 interface ProductDetailsModalProps {
   product: IProductDto;
@@ -18,9 +18,7 @@ export default function ProductDetailsModal({
   onClose,
 }: ProductDetailsModalProps) {
   const { t } = useTranslation("orders");
-  const { isRTL, isDark, language } = useThemeClasses();
-
-  const { textPrimary, textTertiary } = useThemeClasses();
+  const { isRTL, isDark, textPrimary, textTertiary } = useThemeClasses();
 
   return (
     <ModalWrapper
@@ -40,26 +38,14 @@ export default function ProductDetailsModal({
           <div
             className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
           >
-            <h2 className={`text-2xl ${textPrimary}`}>
-              {getLngWiseStr(
-                language,
-                product?.name,
-                product?.nameHe,
-                product?.nameAr,
-              )}
-            </h2>
+            <h2 className={`text-2xl ${textPrimary}`}>{product?.name}</h2>
           </div>
         </div>
         <div className="p-6">
           <div className="flex items-center gap-4">
             <ImageWithFallback
               src={product?.image}
-              alt={getLngWiseStr(
-                language,
-                product?.name,
-                product?.nameHe,
-                product?.nameAr,
-              )}
+              alt={product?.name}
               className={`w-20 h-20 object-cover rounded-lg ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
             />
             <div>
@@ -73,25 +59,11 @@ export default function ProductDetailsModal({
                   to={`${routes.businessDetails}?businessId=${product?.business?._id}`}
                 >
                   <div className="flex items-center gap-3">
-                    <p>
-                      {getLngWiseStr(
-                        language,
-                        product?.business?.nameEn,
-                        product?.business?.nameHe,
-                        product?.business?.nameAr,
-                      )}
-                    </p>
+                    <p>{product?.business?.nameEn}</p>
                     <div>
                       <img
                         src={product?.business?.logoUrl}
-                        alt={
-                          getLngWiseStr(
-                            language,
-                            product?.business?.nameEn,
-                            product?.business?.nameHe,
-                            product?.business?.nameAr,
-                          ) || "Business logo"
-                        }
+                        alt={product?.business?.nameEn || "Business logo"}
                         className="w-6 h-6 rounded-lg object-cover"
                       />
                     </div>

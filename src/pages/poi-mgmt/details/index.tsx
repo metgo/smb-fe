@@ -40,7 +40,7 @@ export default function PoiDetailsPage() {
   const { t } = useTranslation("poi");
   const { t: tt } = useTranslation("toast");
 
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -102,7 +102,7 @@ export default function PoiDetailsPage() {
     data: poi,
     refetch: poiDataRefetch,
     isLoading,
-  } = useGetPoiByIdQuery(poiId ? { poiId } : skipToken);
+  } = useGetPoiByIdQuery(poiId ? { poiId, language } : skipToken);
   const [updatePoi] = useUpdatePoiMutation();
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditClicked, setIsEditClicked] = useState(false);

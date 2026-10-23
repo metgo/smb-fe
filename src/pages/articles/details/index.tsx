@@ -20,7 +20,7 @@ import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
 import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
 import { formatDateTime } from "@/helpers/formatter";
-import { getLngWiseStr, sanitizeRichTextHtml } from "@/helpers";
+import { sanitizeRichTextHtml } from "@/helpers";
 
 interface BlogImage {
   image: string;
@@ -35,25 +35,13 @@ function mapBlogDetailsToArticle(blogDetails: any): IBlogDetails {
     _id: blogDetails?._id,
     status: blogDetails?.status?.toLowerCase() ?? "draft",
     title: blogDetails?.title ?? "",
-    titleHe: blogDetails?.titleHe ?? "",
-    titleAr: blogDetails?.titleAr ?? "",
     shortDescription: blogDetails?.shortDescription ?? "",
-    shortDescriptionHe: blogDetails?.shortDescriptionHe ?? "",
-    shortDescriptionAr: blogDetails?.shortDescriptionAr ?? "",
 
     content: blogDetails?.content ?? "",
-    contentHe: blogDetails?.contentHe ?? "",
-    contentAr: blogDetails?.contentAr ?? "",
     summary: blogDetails?.summary ?? "",
-    summaryHe: blogDetails?.summaryHe ?? "",
-    summaryAr: blogDetails?.summaryAr ?? "",
     slug: blogDetails?.slug ?? "",
     metaTitle: blogDetails?.metaTitle ?? "",
-    metaTitleHe: blogDetails?.metaTitleHe ?? "",
-    metaTitleAr: blogDetails?.metaTitleAr ?? "",
     metaDescription: blogDetails?.metaDescription ?? "",
-    metaDescriptionHe: blogDetails?.metaDescriptionHe ?? "",
-    metaDescriptionAr: blogDetails?.metaDescriptionAr ?? "",
     tags: blogDetails?.tags ?? [],
     tagsHe: blogDetails?.tagsHe ?? [],
     tagsAr: blogDetails?.tagsAr ?? [],
@@ -91,7 +79,7 @@ export default function ArticleDetails() {
     data: blogDetailsRaw,
     isLoading: isDetailLoading,
     refetch,
-  } = useGetBlogByIdQuery({ blogId }, { skip: !blogId });
+  } = useGetBlogByIdQuery({ blogId, language }, { skip: !blogId });
 
   // Prefer API data; fall back to passed article prop
   const blogDetails: IBlogDetails | null = blogDetailsRaw
@@ -170,15 +158,7 @@ export default function ArticleDetails() {
         <div
           className={textPrimary}
           dangerouslySetInnerHTML={{
-            __html:
-              sanitizeRichTextHtml(
-                getLngWiseStr(
-                  language,
-                  blogDetails?.shortDescription,
-                  blogDetails?.shortDescriptionHe,
-                  blogDetails?.shortDescriptionAr,
-                ),
-              ) || "-",
+            __html: sanitizeRichTextHtml(blogDetails?.shortDescription || ""),
           }}
         />
       </div>
@@ -187,14 +167,7 @@ export default function ArticleDetails() {
       {blogDetails?.summary && (
         <div>
           <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("summary")}</h3>
-          <p className={textSecondary}>
-            {getLngWiseStr(
-              language,
-              blogDetails?.summary,
-              blogDetails?.summaryHe,
-              blogDetails?.summaryAr,
-            ) || "-"}
-          </p>
+          <p className={textSecondary}>{blogDetails?.summary || "-"}</p>
         </div>
       )}
 
@@ -238,14 +211,7 @@ export default function ArticleDetails() {
       <div
         className={`p-6 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} prose max-w-none`}
         dangerouslySetInnerHTML={{
-          __html: sanitizeRichTextHtml(
-            getLngWiseStr(
-              language,
-              blogDetails?.content,
-              blogDetails?.contentHe,
-              blogDetails?.contentAr,
-            ),
-          ),
+          __html: sanitizeRichTextHtml(blogDetails?.content || ""),
         }}
       />
     </div>
@@ -269,14 +235,7 @@ export default function ArticleDetails() {
       {/* Meta Title */}
       <div>
         <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("meta_title")}</h3>
-        <p className={textSecondary}>
-          {getLngWiseStr(
-            language,
-            blogDetails?.metaTitle,
-            blogDetails?.metaTitleHe,
-            blogDetails?.metaTitleAr,
-          ) || "-"}
-        </p>
+        <p className={textSecondary}>{blogDetails?.metaTitle || "-"}</p>
       </div>
 
       {/* Meta Description */}
@@ -284,26 +243,14 @@ export default function ArticleDetails() {
         <h3 className={`text-sm mb-2 ${textTertiary}`}>
           {t("meta_description")}
         </h3>
-        <p className={textSecondary}>
-          {getLngWiseStr(
-            language,
-            blogDetails?.metaDescription,
-            blogDetails?.metaDescriptionHe,
-            blogDetails?.metaDescriptionAr,
-          ) || "-"}
-        </p>
+        <p className={textSecondary}>{blogDetails?.metaDescription || "-"}</p>
       </div>
 
       {/* Summary */}
       <div>
         <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("summary")}</h3>
         <p className={`${textSecondary} leading-relaxed`}>
-          {getLngWiseStr(
-            language,
-            blogDetails?.summary,
-            blogDetails?.summaryHe,
-            blogDetails?.summaryAr,
-          ) || "-"}
+          {blogDetails?.summary || "-"}
         </p>
       </div>
     </div>
@@ -371,14 +318,7 @@ export default function ArticleDetails() {
         <div className="flex items-center gap-3 mt-2">
           <ImageWithFallback
             src={primaryImage}
-            alt={
-              getLngWiseStr(
-                language,
-                blogDetails?.title,
-                blogDetails?.titleHe,
-                blogDetails?.titleAr,
-              ) || "-"
-            }
+            alt={blogDetails?.title || "-"}
             className={clsx(
               "w-14 h-14 rounded-xl object-cover border shrink-0",
               isDark ? "border-gray-600" : "border-gray-200",
@@ -391,12 +331,7 @@ export default function ArticleDetails() {
                   isDark ? "text-gray-100" : "text-gray-900"
                 }`}
               >
-                {getLngWiseStr(
-                  language,
-                  blogDetails?.title,
-                  blogDetails?.titleHe,
-                  blogDetails?.titleAr,
-                ) || "-"}
+                {blogDetails?.title || "-"}
               </h1>
               <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
                 {blogDetails?.createdAt && (

@@ -15,55 +15,12 @@ export default function ProductContentForm({
   const { t: tc } = useTranslation("common");
   const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
-  // Detect which language actually has content, prioritize that
-  const detectPrimaryLang = (): "en" | "he" | "ar" => {
-    if (
-      formData.name?.trim() ||
-      formData.shortDescription?.trim() ||
-      formData.fullDescription?.trim()
-    )
-      return "en";
-    if (
-      formData.nameHe?.trim() ||
-      formData.shortDescriptionHe?.trim() ||
-      formData.fullDescriptionHe?.trim()
-    )
-      return "he";
-    if (
-      formData.nameAr?.trim() ||
-      formData.shortDescriptionAr?.trim() ||
-      formData.fullDescriptionAr?.trim()
-    )
-      return "ar";
-    return "en";
-  };
 
-  const primaryLang = detectPrimaryLang();
+  const titleField = "name";
+  const shortDescField = "shortDescription";
+  const descField = "fullDescription";
 
-  const FIELD_MAP = {
-    en: {
-      name: "name",
-      shortDesc: "shortDescription",
-      fullDescription: "fullDescription",
-    },
-    he: {
-      name: "nameHe",
-      shortDesc: "shortDescriptionHe",
-      fullDescription: "fullDescriptionHe",
-    },
-    ar: {
-      name: "nameAr",
-      shortDesc: "shortDescriptionAr",
-      fullDescription: "fullDescriptionAr",
-    },
-  };
-
-  const fields = FIELD_MAP[primaryLang];
-  const titleField = fields.name;
-  const shortDescField = fields.shortDesc;
-  const descField = fields.fullDescription;
-
-  const dir = primaryLang === "he" || primaryLang === "ar" ? "rtl" : "ltr";
+  const dir = "ltr";
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

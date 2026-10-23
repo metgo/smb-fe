@@ -1,7 +1,6 @@
 import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { getLngWiseStr } from "@/helpers";
-import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
+import ProductContentForm from "./ProductContentForm";
 
 interface ProductBasicInfoProps {
   t: (key: string) => string;
@@ -10,16 +9,8 @@ interface ProductBasicInfoProps {
   formData: {
     businessId: string;
     name: string;
-    nameHe: string;
-    nameAr: string;
-
     shortDescription: string;
-    shortDescriptionHe: string;
-    shortDescriptionAr: string;
-
     fullDescription: string;
-    fullDescriptionHe: string;
-    fullDescriptionAr: string;
   };
   setBusinessId: (data: string) => void;
   setFormData: (data: any) => void;
@@ -37,8 +28,6 @@ interface ProductBasicInfoProps {
 const ProductBasicInfo = ({
   t,
   isLoading,
-  // selectedFormLanguage,
-  // setSelectedFormLanguage,
   formData,
   setFormData,
   errors,
@@ -47,7 +36,7 @@ const ProductBasicInfo = ({
   searchBusiness,
   presetBusinessId,
 }: ProductBasicInfoProps) => {
-  const { textSecondary, language } = useThemeClasses();
+  const { textSecondary } = useThemeClasses();
   const handleChange = (updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   };
@@ -74,7 +63,7 @@ const ProductBasicInfo = ({
           items={
             businesses?.map((biz) => ({
               _id: biz._id,
-              name: getLngWiseStr(language, biz.name, biz.nameHe, biz.nameAr),
+              name: biz.name,
             })) || []
           }
           onSearch={searchBusiness}
@@ -85,8 +74,7 @@ const ProductBasicInfo = ({
           <p className="text-red-500 text-sm mt-1">{errors.businessId}</p>
         )}
       </div>
-      {/* Language Selector */}
-      <BusinessContentForm formData={formData} onChange={handleChange} />
+      <ProductContentForm formData={formData} onChange={handleChange} />
     </div>
   );
 };

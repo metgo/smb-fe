@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Copy, X, ImageOff } from "lucide-react";
 
-import { getLngWiseStr } from "@/helpers";
 import { ImageWithFallback } from "@/components/shared";
 import { getPlainText } from "@/components/shared/RichTextEditor";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -36,7 +35,6 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
 }) => {
   const { t } = useTranslation("minisites");
   const {
-    language,
     isRTL,
     isDark,
     textPrimary,
@@ -237,12 +235,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                           <h4
                             className={`text-sm font-medium truncate ${textPrimary}`}
                           >
-                            {getLngWiseStr(
-                              language,
-                              product?.name,
-                              product?.nameHe,
-                              product?.nameAr,
-                            )}
+                            {product?.name}
                           </h4>
                           <p
                             className={clsx(

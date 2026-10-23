@@ -7,11 +7,10 @@ import {
   PauseCircle,
 } from "lucide-react";
 import clsx from "clsx";
-import { getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";
 import { ImageWithFallback } from "@/components/shared";
 
-export function mapOrderProductList(d: any, language: Language) {
+export function mapOrderProductList(d: any) {
   const customerName =
     [d.customer?.firstName, d.customer?.lastName]
       .filter(Boolean)
@@ -21,12 +20,7 @@ export function mapOrderProductList(d: any, language: Language) {
   return {
     _id: d._id,
     orderId: d.orderId,
-    productName: getLngWiseStr(
-      language,
-      d.product?.name,
-      d.product?.nameHe,
-      d.product?.nameAr,
-    ),
+    productName: d.product?.name,
     productImage: d.product?.image?.image || "",
     productCategory: "",
     customerName,
@@ -118,10 +112,7 @@ interface OrderProductDetails {
   disputeId?: string;
 }
 
-export function mapOrderProductDetails(
-  d: OrderProductDetails,
-  language: Language,
-) {
+export function mapOrderProductDetails(d: OrderProductDetails) {
   const address = [
     d.deliveryInformation?.address?.houseNo,
     d.deliveryInformation?.address?.apartment,
@@ -145,12 +136,7 @@ export function mapOrderProductDetails(
   return {
     _id: d._id,
     orderId: d.orderId,
-    productName: getLngWiseStr(
-      language,
-      d?.productInformation?.name,
-      d?.productInformation?.nameHe,
-      d?.productInformation?.nameAr,
-    ),
+    productName: d?.productInformation?.name,
     productImage: d?.productInformation?.image || "",
     productCategory: d?.productInformation?.category?.name || "",
     customerName: d?.customerInformation?.name?.trim() || "",

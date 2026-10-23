@@ -179,9 +179,12 @@ export const reconciliationQueryApi = createApi({
     }),
 
     // GET /order-products/details/:id
-    getOrderProductDetails: builder.query<any, string>({
-      query: (id) => ({
-        url: `${endpoints.orderProductsDetails}/${id}`,
+    getOrderProductDetails: builder.query<
+      any,
+      { id: string; language: Language }
+    >({
+      query: ({ id, language }) => ({
+        url: `${endpoints.orderProductsDetails}/${id}?locale=${language}`,
         method: "GET",
       }),
     }),

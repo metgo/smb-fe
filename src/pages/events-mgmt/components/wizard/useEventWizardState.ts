@@ -18,7 +18,7 @@ import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import { detectLanguage, type ParsedAddressParts } from "@/helpers";
+import { type ParsedAddressParts } from "@/helpers";
 
 interface UseEventWizardStateProps {
   isOpen: boolean;
@@ -83,14 +83,8 @@ export function useEventWizardState({
 
   // ─── Step 1: Basic Information ───────────────────────────────────────
   const [eventName, setEventName] = useState("");
-  const [eventNameHe, setEventNameHe] = useState("");
-  const [eventNameAr, setEventNameAr] = useState("");
   const [shortDescription, setShortDescription] = useState("");
-  const [shortDescriptionHe, setShortDescriptionHe] = useState("");
-  const [shortDescriptionAr, setShortDescriptionAr] = useState("");
   const [fullDescription, setFullDescription] = useState("");
-  const [fullDescriptionHe, setFullDescriptionHe] = useState("");
-  const [fullDescriptionAr, setFullDescriptionAr] = useState("");
   const [eventLanguage, setEventLanguage] = useState<Language>("en");
   const [eventStatus, setEventStatus] = useState<EventStatus>("draft");
   const [internalNotes, setInternalNotes] = useState("");
@@ -228,40 +222,18 @@ export function useEventWizardState({
   const translationFormData = useMemo(
     () => ({
       name: eventName,
-      nameHe: eventNameHe,
-      nameAr: eventNameAr,
       shortDescription,
-      shortDescriptionHe,
-      shortDescriptionAr,
       fullDescription,
-      fullDescriptionHe,
-      fullDescriptionAr,
     }),
-    [
-      eventName,
-      eventNameHe,
-      eventNameAr,
-      shortDescription,
-      shortDescriptionHe,
-      shortDescriptionAr,
-      fullDescription,
-      fullDescriptionHe,
-      fullDescriptionAr,
-    ],
+    [eventName, shortDescription, fullDescription],
   );
 
   // ─── Payload builders ────────────────────────────────────────────────
   const buildBasicInfoPayload = useCallback(
     () => ({
       name: eventName,
-      nameHe: eventNameHe,
-      nameAr: eventNameAr,
       shortDescription,
-      shortDescriptionHe,
-      shortDescriptionAr,
       description: fullDescription,
-      descriptionHe: fullDescriptionHe,
-      descriptionAr: fullDescriptionAr,
       authorityId: selectedAuthorityId,
       dmoId: selectedDmoId,
       associatedWebsiteIds: selectAssociatedWebsiteIds,
@@ -274,14 +246,8 @@ export function useEventWizardState({
     }),
     [
       eventName,
-      eventNameHe,
-      eventNameAr,
       shortDescription,
-      shortDescriptionHe,
-      shortDescriptionAr,
       fullDescription,
-      fullDescriptionHe,
-      fullDescriptionAr,
       selectedAuthorityId,
       selectedDmoId,
       selectedBusinessId,
@@ -473,14 +439,8 @@ export function useEventWizardState({
     setLastSaved(null);
     setErrors({});
     setEventName("");
-    setEventNameHe("");
-    setEventNameAr("");
     setShortDescription("");
-    setShortDescriptionHe("");
-    setShortDescriptionAr("");
     setFullDescription("");
-    setFullDescriptionHe("");
-    setFullDescriptionAr("");
     setSelectedBusinessId("");
     setEventLanguage("en");
     setEventStatus("draft");
@@ -526,14 +486,8 @@ export function useEventWizardState({
     initialImagesCountRef.current = editData?.images?.length ?? 0;
 
     setEventName(editData.name ?? "");
-    setEventNameHe(editData.nameHe ?? "");
-    setEventNameAr(editData.nameAr ?? "");
     setShortDescription(editData.shortDescription ?? "");
-    setShortDescriptionHe(editData.shortDescriptionHe ?? "");
-    setShortDescriptionAr(editData.shortDescriptionAr ?? "");
     setFullDescription(editData.description ?? "");
-    setFullDescriptionHe(editData.descriptionHe ?? "");
-    setFullDescriptionAr(editData.descriptionAr ?? "");
     setSelectedBusinessId(editData.businessId?._id ?? "");
     setEventStatus((editData.status?.toLowerCase() as EventStatus) ?? "draft");
     setAccessiblitiesId(editData.accessibilitiesId ?? []);
@@ -631,17 +585,8 @@ export function useEventWizardState({
       switch (step) {
         case 1:
           if (!selectedDmoId?.trim()) newErrors.dmoId = tc("required_field");
-          if (
-            !eventName?.trim() &&
-            !eventNameHe?.trim() &&
-            !eventNameAr?.trim()
-          )
-            newErrors.eventName = tc("required_field");
-          if (
-            !shortDescription?.trim() &&
-            !shortDescriptionHe?.trim() &&
-            !shortDescriptionAr?.trim()
-          )
+          if (!eventName?.trim()) newErrors.eventName = tc("required_field");
+          if (!shortDescription?.trim())
             newErrors.shortDescription = tc("required_field");
           if (hasAssociatedWebsites && !selectAssociatedWebsiteIds?.length)
             newErrors.websiteVisibilityIds = tc("website_visibility_required");
@@ -671,11 +616,7 @@ export function useEventWizardState({
       selectAssociatedWebsiteIds,
       hasAssociatedWebsites,
       eventName,
-      eventNameHe,
-      eventNameAr,
       shortDescription,
-      shortDescriptionHe,
-      shortDescriptionAr,
       isMultiDay,
       startDate,
       eventDays,
@@ -712,20 +653,10 @@ export function useEventWizardState({
   const handleTranslateChange = useCallback(
     (updates: Record<string, any>) => {
       if ("name" in updates) setEventName(updates.name);
-      if ("nameHe" in updates) setEventNameHe(updates.nameHe);
-      if ("nameAr" in updates) setEventNameAr(updates.nameAr);
       if ("shortDescription" in updates)
         setShortDescription(updates.shortDescription);
-      if ("shortDescriptionHe" in updates)
-        setShortDescriptionHe(updates.shortDescriptionHe);
-      if ("shortDescriptionAr" in updates)
-        setShortDescriptionAr(updates.shortDescriptionAr);
       if ("fullDescription" in updates)
         setFullDescription(updates.fullDescription);
-      if ("fullDescriptionHe" in updates)
-        setFullDescriptionHe(updates.fullDescriptionHe);
-      if ("fullDescriptionAr" in updates)
-        setFullDescriptionAr(updates.fullDescriptionAr);
       handleMarkDirty(2);
     },
     [handleMarkDirty],
@@ -765,7 +696,7 @@ export function useEventWizardState({
   ]);
 
   const handleSaveDraft = useCallback(async () => {
-    if (!eventName?.trim() && !eventNameHe?.trim() && !eventNameAr?.trim()) {
+    if (!eventName?.trim()) {
       toast.error(tc("name_required"));
       return;
     }
@@ -784,8 +715,6 @@ export function useEventWizardState({
     eventDataRefetch?.();
   }, [
     eventName,
-    eventNameHe,
-    eventNameAr,
     hasAssociatedWebsites,
     selectAssociatedWebsiteIds,
     tc,
@@ -794,56 +723,7 @@ export function useEventWizardState({
     refetch,
     eventDataRefetch,
   ]);
-  const getActiveField = (base: string, lang: string): string => {
-    if (lang === "en") return base;
-    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
-    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
-  };
 
-  const detectAndAssignLanguageFields = (data: any): any => {
-    const updated = { ...data };
-
-    const fieldGroups = [
-      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
-      {
-        base: "shortDescription",
-        en: "shortDescription",
-        he: "shortDescriptionHe",
-        ar: "shortDescriptionAr",
-      },
-      {
-        base: "description",
-        en: "description",
-        he: "descriptionHe",
-        ar: "descriptionAr",
-      },
-    ];
-
-    fieldGroups.forEach(({ base, en, he, ar }) => {
-      // Whichever field the user was actually typing into for THIS group,
-      // based on the global language at the time of entry
-      const activeField = getActiveField(base, language);
-      const text = data[activeField]?.trim();
-      if (!text) return;
-
-      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
-
-      // Clear all three first, then assign to wherever it actually belongs
-      updated[en] = "";
-      updated[he] = "";
-      updated[ar] = "";
-
-      if (detectedLang === "he") {
-        updated[he] = text;
-      } else if (detectedLang === "ar") {
-        updated[ar] = text;
-      } else {
-        updated[en] = text;
-      }
-    });
-
-    return updated;
-  };
   const handlePublish = useCallback(async () => {
     setIsPublishBtnClicked(true);
     let allValid = true;
@@ -859,18 +739,8 @@ export function useEventWizardState({
       return;
     }
     setIsPublishing(true);
-    const processed = detectAndAssignLanguageFields(buildBasicInfoPayload());
-    setEventName(processed.name);
-    setEventNameHe(processed.nameHe);
-    setEventNameAr(processed.nameAr);
-    setShortDescription(processed.shortDescription);
-    setShortDescriptionHe(processed.shortDescriptionHe);
-    setShortDescriptionAr(processed.shortDescriptionAr);
-    setFullDescription(processed.description);
-    setFullDescriptionHe(processed.descriptionHe);
-    setFullDescriptionAr(processed.descriptionAr);
     handleMarkDirty(1);
-    await saveDraft(true, processed);
+    await saveDraft(true, buildBasicInfoPayload());
     setIsPublishing(false);
     onClose();
     refetch?.();

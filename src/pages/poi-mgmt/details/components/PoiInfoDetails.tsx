@@ -1,16 +1,14 @@
 import clsx from "clsx";
 import { type FC } from "react";
 import { AlignLeft, FileText } from "lucide-react";
-import { UserRole } from "@/enums/user.types";
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
-import { getLngWiseStr } from "@/helpers";
 import {
   ConnectedDmoAuthorityWebsites,
   LocationDetailsclosed,
 } from "@/components/details-sections";
 import { clientSitePath } from "@/lib/clientSitePathnames";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface PoiInfoDetailsProps {
   t: (key: string) => string;
@@ -18,19 +16,14 @@ interface PoiInfoDetailsProps {
 }
 
 const PoiInfoDetails: FC<PoiInfoDetailsProps> = ({ t, poi }) => {
-  const { isDark, language } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { isDark } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
 
   return (
     <div className="space-y-6">
       <DescriptionCard
         title={t("short_description")}
-        content={getLngWiseStr(
-          language,
-          poi?.shortDescription,
-          poi?.shortDescriptionHe,
-          poi?.shortDescriptionAr,
-        )}
+        content={poi?.shortDescription}
         icon={
           <FileText
             className={clsx(
@@ -44,12 +37,7 @@ const PoiInfoDetails: FC<PoiInfoDetailsProps> = ({ t, poi }) => {
       />
       <DescriptionCard
         title={t("full_description")}
-        content={getLngWiseStr(
-          language,
-          poi?.description,
-          poi?.descriptionHe,
-          poi?.descriptionAr,
-        )}
+        content={poi?.description}
         icon={
           <AlignLeft
             className={clsx(
@@ -77,7 +65,7 @@ const PoiInfoDetails: FC<PoiInfoDetailsProps> = ({ t, poi }) => {
         pathname={clientSitePath.poiDetails + "/" + poi?.slug}
       />
 
-      {userRole === UserRole.SUPERADMIN && poi?.internalNotes && (
+      {isSuperadmin && poi?.internalNotes && (
         <div
           className={`p-4 rounded-lg ${isDark ? "bg-yellow-900/20 border border-yellow-800" : "bg-yellow-50 border border-yellow-200"}`}
         >

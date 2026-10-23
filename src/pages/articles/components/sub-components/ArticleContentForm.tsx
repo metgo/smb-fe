@@ -18,28 +18,12 @@ export default function ArticleContentForm({
 }: ArticleContentFormProps) {
   const { t } = useTranslation("article");
   const { t: tc } = useTranslation("common");
-  const {
-    bgSecondary,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-    language,
-  } = useThemeClasses();
+  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
 
-  // Get correct field name based on current global language
-  const getFieldName = (baseField: string): string => {
-    if (language === "en") {
-      return baseField; // title, shortDescription, content
-    }
-    // For he → titleHe, shortDescriptionHe, etc.
-    const suffix = language.charAt(0).toUpperCase() + language.slice(1);
-    return `${baseField}${suffix}`;
-  };
-
-  const titleField = getFieldName("title");
-  const shortDescField = getFieldName("shortDescription");
-  const contentField = getFieldName("content");
+  const titleField = "title";
+  const shortDescField = "shortDescription";
+  const contentField = "content";
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

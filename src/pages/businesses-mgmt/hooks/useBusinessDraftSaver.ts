@@ -1,12 +1,13 @@
 import { toast } from "sonner";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+
+import { routes } from "@/lib/routes";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
-import { routes } from "@/lib/routes";
-import { useNavigate } from "react-router-dom";
-import { getLngWiseStr } from "@/helpers";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface UseBusinessDraftSaverProps {
   opMode: IOpMode;
@@ -15,7 +16,11 @@ interface UseBusinessDraftSaverProps {
   businessId: string;
   setBusinessId: (id: string) => void;
   initBusinessCreate: (v: { name: string }) => any;
-  updateBusiness: (args: { businessId: string; body: any }) => any;
+  updateBusiness: (args: {
+    businessId: string;
+    body: any;
+    language: Language;
+  }) => any;
   stepPayloadMap: any;
 }
 
@@ -30,9 +35,11 @@ export function useBusinessDraftSaver({
   stepPayloadMap,
 }: UseBusinessDraftSaverProps) {
   const navigate = useNavigate();
-  const { isTraveller } = useUserRoles();
-  const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   const { t } = useTranslation("toast");
+  const { isTraveller } = useUserRoles();
+  const { language } = useThemeClasses();
+
+  const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
 
   const markDirty = useCallback((step: number) => {
     setDirtySteps((prev) => new Set(prev).add(step));
@@ -51,11 +58,7 @@ export function useBusinessDraftSaver({
         // which caused a second "create" call (with a deduped name) even
         // after the availability check had already created one.
         if (opMode !== IOpMode.EDIT && !internalBusinessId) {
-          const name = getLngWiseStr(
-            stepPayloadMap.name,
-            stepPayloadMap.nameHe,
-            stepPayloadMap.nameAr,
-          );
+          const name = stepPayloadMap.name;
           if (!name) {
             toast.error(t("name_required"));
             return;
@@ -86,6 +89,7 @@ export function useBusinessDraftSaver({
         // 4️⃣ Update (patch) — this now always targets the SAME business
         // whether it was created here or during the availability check.
         await updateBusiness({
+          language,
           businessId: internalBusinessId,
           body: payload,
         }).unwrap();

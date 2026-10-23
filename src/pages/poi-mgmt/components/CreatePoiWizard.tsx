@@ -32,11 +32,7 @@ import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { usePoiDraftSaver } from "../hooks/usePoiDraftSaver";
-import {
-  detectLanguage,
-  getLngWiseStr,
-  type ParsedAddressParts,
-} from "@/helpers";
+import { type ParsedAddressParts } from "@/helpers";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
 import Attributes from "@/components/details-sections/Attributes";
@@ -87,14 +83,8 @@ export default function CreatePoiWizard({
 
   const [formData, setFormData] = useState<any>({
     title: "",
-    titleHe: "",
-    titleAr: "",
     shortDescription: "",
-    shortDescriptionHe: "",
-    shortDescriptionAr: "",
     content: "",
-    contentHe: "",
-    contentAr: "",
     internalNotes: "",
     tags: [],
     email: "",
@@ -103,18 +93,8 @@ export default function CreatePoiWizard({
     videoUrl: "",
     virtualTourUrl: "",
   });
-  const nameForGen = getLngWiseStr(
-    language,
-    formData.title,
-    formData.titleHe,
-    formData.titleAr,
-  );
-  const descriptionForGen = getLngWiseStr(
-    language,
-    formData.shortDescription,
-    formData.shortDescriptionHe,
-    formData.shortDescriptionAr,
-  );
+  const nameForGen = formData.title;
+  const descriptionForGen = formData.shortDescription;
 
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
@@ -182,27 +162,15 @@ export default function CreatePoiWizard({
     const checks = [
       {
         weight: 15,
-        filled: !!(
-          formData.title?.trim() ||
-          formData.titleHe?.trim() ||
-          formData.titleAr?.trim()
-        ),
+        filled: !!formData.title?.trim(),
       },
       {
         weight: 15,
-        filled: !!(
-          formData.shortDescription?.trim() ||
-          formData.shortDescriptionHe?.trim() ||
-          formData.shortDescriptionAr?.trim()
-        ),
+        filled: !!formData.shortDescription?.trim(),
       },
       {
         weight: 15,
-        filled: !!(
-          formData.content?.trim() ||
-          formData.contentHe?.trim() ||
-          formData.contentAr?.trim()
-        ),
+        filled: !!formData.content?.trim(),
       },
       { weight: 20, filled: !!address?.trim() },
       { weight: 15, filled: !!logoUpload.gcsUrl },
@@ -231,22 +199,10 @@ export default function CreatePoiWizard({
           opMode === IOpMode.DUPLICATE
             ? `${editData?.name || ""} (Duplicate)`
             : editData?.name || "",
-        titleHe:
-          opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameHe || ""} (שכפל)`
-            : editData?.nameHe || "",
-        titleAr:
-          opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameAr || ""} (נسخ)`
-            : editData?.nameAr || "",
         primaryCategory: editData?.primaryCategoryId || "",
 
         shortDescription: editData?.shortDescription || "",
-        shortDescriptionHe: editData?.shortDescriptionHe || "",
-        shortDescriptionAr: editData?.shortDescriptionAr || "",
         content: editData?.description || "",
-        contentHe: editData?.descriptionHe || "",
-        contentAr: editData?.descriptionAr || "",
         internalNotes: editData?.internalNotes || "",
         tags: editData?.tagsId || [],
         email: editData?.busiEmail || "",
@@ -313,14 +269,8 @@ export default function CreatePoiWizard({
     authorityId: selectedAuthorityId,
     associatedWebsiteIds: websiteVisibilityIds,
     name: formData.title,
-    nameHe: formData.titleHe,
-    nameAr: formData.titleAr,
     shortDescription: formData.shortDescription,
-    shortDescriptionHe: formData.shortDescriptionHe,
-    shortDescriptionAr: formData.shortDescriptionAr,
     description: formData.content,
-    descriptionHe: formData.contentHe,
-    descriptionAr: formData.contentAr,
     internalNotes: formData.internalNotes,
     primaryCategoryId: "6566e256a77d2a477266d2c0",
 
@@ -360,23 +310,10 @@ export default function CreatePoiWizard({
     const newErrors: Record<string, string> = {};
     switch (step) {
       case 1:
-        if (
-          !formData.title?.trim() &&
-          !formData.titleAr?.trim() &&
-          !formData.titleHe?.trim()
-        )
-          newErrors.name = t("required_field");
-        if (
-          !formData.shortDescription?.trim() &&
-          !formData.shortDescriptionAr?.trim() &&
-          !formData.shortDescriptionHe?.trim()
-        )
+        if (!formData.title?.trim()) newErrors.name = t("required_field");
+        if (!formData.shortDescription?.trim())
           newErrors.shortDescription = t("required_field");
-        if (
-          !formData.content?.trim() &&
-          !formData.contentAr?.trim() &&
-          !formData.contentHe?.trim()
-        )
+        if (!formData.content?.trim())
           newErrors.fullDescription = t("required_field");
         if (!selectedDmoId) newErrors.dmo = t("required_field");
         if (!selectedAuthorityId) newErrors.authority = t("required_field");
@@ -425,73 +362,15 @@ export default function CreatePoiWizard({
       refetch?.();
     }
   };
-  const getActiveField = (base: string, lang: string): string => {
-    if (lang === "en") return base;
-    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
-    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
-  };
-
-  const detectAndAssignLanguageFields = (data: any): any => {
-    const updated = { ...data };
-
-    const fieldGroups = [
-      { base: "title", en: "title", he: "titleHe", ar: "titleAr" },
-      {
-        base: "shortDescription",
-        en: "shortDescription",
-        he: "shortDescriptionHe",
-        ar: "shortDescriptionAr",
-      },
-      {
-        base: "content",
-        en: "content",
-        he: "contentHe",
-        ar: "contentAr",
-      },
-    ];
-
-    fieldGroups.forEach(({ base, en, he, ar }) => {
-      // Whichever field the user was actually typing into for THIS group,
-      // based on the global language at the time of entry
-      const activeField = getActiveField(base, language);
-      const text = data[activeField]?.trim();
-      if (!text) return;
-
-      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
-
-      // Clear all three first, then assign to wherever it actually belongs
-      updated[en] = "";
-      updated[he] = "";
-      updated[ar] = "";
-
-      if (detectedLang === "he") {
-        updated[he] = text;
-      } else if (detectedLang === "ar") {
-        updated[ar] = text;
-      } else {
-        updated[en] = text;
-      }
-    });
-
-    return updated;
-  };
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
 
-    if (
-      (formData.shortDescription || "").length > 150 ||
-      (formData.shortDescriptionHe || "").length > 150 ||
-      (formData.shortDescriptionAr || "").length > 150
-    ) {
+    if ((formData.shortDescription || "").length > 150) {
       setCurrentStep(1);
       toast.error(tc("exceeds_char_limit", { limit: 150 }));
       return;
     }
-    if (
-      (formData.content || "").length > 500 ||
-      (formData.contentHe || "").length > 500 ||
-      (formData.contentAr || "").length > 500
-    ) {
+    if ((formData.content || "").length > 500) {
       setCurrentStep(1);
       toast.error(tc("exceeds_char_limit", { limit: 500 }));
       return;
@@ -510,21 +389,8 @@ export default function CreatePoiWizard({
       return;
     }
     setIsPublishing(true);
-    const corrected = detectAndAssignLanguageFields(formData);
 
-    const processedFormData = {
-      ...stepPayloadMap,
-      name: corrected.title,
-      nameHe: corrected.titleHe,
-      nameAr: corrected.titleAr,
-      shortDescription: corrected.shortDescription,
-      shortDescriptionHe: corrected.shortDescriptionHe,
-      shortDescriptionAr: corrected.shortDescriptionAr,
-      description: corrected.content,
-      descriptionHe: corrected.contentHe,
-      descriptionAr: corrected.contentAr,
-    };
-    const resolvedPoiId = await saveDraft(true, processedFormData);
+    const resolvedPoiId = await saveDraft(true);
     if (resolvedPoiId) {
       await Promise.all([poiDataRefetch?.(), refetch?.()]);
     }
@@ -559,10 +425,6 @@ export default function CreatePoiWizard({
             <PoiContentForm formData={formData} setFormData={setFormData} />
           </div>
         );
-      // case 2:
-      //   return (
-      //     <PoiTranslateButton formData={formData} onChange={handleChange} />
-      //   );
       case 2:
         return (
           <PoiContactInfo

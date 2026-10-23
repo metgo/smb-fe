@@ -23,9 +23,12 @@ export const productMutationApi = createApi({
       invalidatesTags: ["Product"],
     }),
 
-    updateProduct: builder.mutation<any, { body: any; productId: string }>({
-      query: ({ body, productId }) => ({
-        url: `${endpoints.products}/${productId}`,
+    updateProduct: builder.mutation<
+      any,
+      { body: any; productId: string; language: Language }
+    >({
+      query: ({ body, productId, language }) => ({
+        url: `${endpoints.products}/${productId}?locale=${language}`,
         method: "PATCH",
         data: body,
       }),

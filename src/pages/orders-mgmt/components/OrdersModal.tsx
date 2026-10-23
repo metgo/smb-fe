@@ -2,14 +2,12 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import { displayPaymentStatus, getLngWiseStr } from "@/helpers";
+import { displayPaymentStatus } from "@/helpers";
 
 interface Order {
   id: string;
   products: {
     name: string;
-    nameHe?: string;
-    nameAr?: string;
     quantity: string;
   }[];
   orderInitiatedDate: string;
@@ -21,8 +19,6 @@ interface Order {
 
 interface BusinessOrderSummary {
   businessName?: string;
-  businessNameHe?: string;
-  businessNameAr?: string;
   orders: Order[];
 }
 
@@ -95,14 +91,7 @@ export const OrdersModal = ({
       <div className={`p-4 flex flex-col z-100 overflow-hidden `}>
         <h2 className={clsx("text-2xl font-semibold mb-2 ", textPrimary)}>
           {t("orders")} -{" "}
-          {businessOrdersSummaries?.map((business) =>
-            getLngWiseStr(
-              language,
-              business?.businessName,
-              business?.businessNameHe,
-              business?.businessNameAr,
-            ),
-          )}
+          {businessOrdersSummaries?.map((business) => business?.businessName)}
         </h2>
         <div className="overflow-auto flex-1">
           <table
@@ -132,16 +121,7 @@ export const OrdersModal = ({
                 business?.orders?.map((order) => (
                   <tr key={order.id} className="text-start">
                     <td className="p-2 border ">
-                      {order?.products
-                        ?.map((p) =>
-                          getLngWiseStr(
-                            language,
-                            p?.name,
-                            p?.nameHe,
-                            p?.nameAr,
-                          ),
-                        )
-                        .join(", ")}
+                      {order?.products?.map((p) => p.name).join(", ")}
                     </td>
                     <td className="p-2 border">
                       {new Date(order?.orderInitiatedDate).toLocaleString(

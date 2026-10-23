@@ -15,7 +15,7 @@ import {
   useUpdateOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
 import { envKeys } from "@/lib/envKeys";
-import { getPlainTextFromRichText, getLngWiseStr } from "@/helpers";
+import { getPlainTextFromRichText } from "@/helpers";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
 import { useGetOrderByIdQuery } from "@/store/api/orderQueryApi";
@@ -43,7 +43,10 @@ function OrderDetailsModal({
     refetch,
     isLoading,
     isFetching,
-  } = useGetOrderByIdQuery({ orderId: orderId ?? null }, { skip: !orderId });
+  } = useGetOrderByIdQuery(
+    { orderId: orderId ?? null, language },
+    { skip: !orderId },
+  );
   const [selectedProduct, setSelectedProduct] = useState<IProductDto | null>(
     null,
   );
@@ -260,12 +263,7 @@ function OrderDetailsModal({
                   >
                     <ImageWithFallback
                       src={product?.image}
-                      alt={getLngWiseStr(
-                        language,
-                        product?.name,
-                        product?.nameHe,
-                        product?.nameAr,
-                      )}
+                      alt={product?.name}
                       className={clsx(
                         "w-24 h-22 rounded-xl object-cover border-2",
                         isDark ? "border-gray-600" : "border-gray-300",
@@ -284,12 +282,7 @@ function OrderDetailsModal({
                     <p
                       className={`${textPrimary} ${product?.status === "canceled" ? "line-through" : ""}`}
                     >
-                      {getLngWiseStr(
-                        language,
-                        product?.name,
-                        product?.nameHe,
-                        product?.nameAr,
-                      )}
+                      {product?.name}
                     </p>
                     <p className={`text-sm line-clamp-2 ${textTertiary}`}>
                       {" "}

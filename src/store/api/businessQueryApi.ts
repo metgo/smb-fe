@@ -96,9 +96,12 @@ export const businessQueryApi = createApi({
       }),
     }),
 
-    getbusinessById: builder.query<any, { businessId: string | null }>({
-      query: ({ businessId }) => ({
-        url: `${endpoints.business}/${businessId}`,
+    getbusinessById: builder.query<
+      any,
+      { businessId: string; language: Language }
+    >({
+      query: ({ businessId, language }) => ({
+        url: `${endpoints.business}/${businessId}?locale=${language}`,
         method: "GET",
       }),
       keepUnusedDataFor: 0,

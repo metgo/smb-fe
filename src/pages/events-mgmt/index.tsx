@@ -1,12 +1,13 @@
 import clsx from "clsx";
-import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { Calendar, Users, Ticket, DollarSign } from "lucide-react";
+
 import { FilterButton } from "@/components/btns";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useViewMode } from "@/hooks/useViewMode";
 import { ViewModeToggle } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ListHeaderBar from "@/components/shared/ListHeaderBar";
 import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
 import { CreateEventWizardNew, EventsWithViewMode } from "./components";

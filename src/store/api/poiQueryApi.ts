@@ -41,9 +41,12 @@ export const poiQueryApi = createApi({
       }),
     }),
 
-    getPoiById: builder.query<any, { poiId: string | null }>({
-      query: ({ poiId }) => ({
-        url: `${endpoints.poi}/${poiId}`,
+    getPoiById: builder.query<
+      any,
+      { poiId: string | null; language: Language }
+    >({
+      query: ({ poiId, language }) => ({
+        url: `${endpoints.poi}/${poiId}?locale=${language}`,
         method: "GET",
       }),
       keepUnusedDataFor: 0,

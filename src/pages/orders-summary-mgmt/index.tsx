@@ -30,7 +30,6 @@ import { FilterButton } from "@/components/btns";
 import SearchInput from "@/components/shared/SearchInput";
 import AmountFilter from "@/components/shared/AmountFilter";
 import StatsMarquee from "@/components/shared/StatsMarquee";
-import { getLngWiseStr } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "../orders-mgmt/components/OrdersModal";
@@ -60,7 +59,7 @@ export default function OrdersSummaryMgmtPage() {
   const { t } = useTranslation("orders");
   const { t: tc } = useTranslation("common");
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
-  const { isDark, isRTL, language } = useThemeClasses();
+  const { isDark, isRTL } = useThemeClasses();
   const dispatch = useAppDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -220,15 +219,7 @@ export default function OrdersSummaryMgmtPage() {
     const workbook = XLSX?.utils?.book_new();
 
     const businessRows = [
-      {
-        Field: "Business Name",
-        Value: getLngWiseStr(
-          language,
-          row?.businessName,
-          row?.businessNameHe,
-          row?.businessNameAr,
-        ),
-      },
+      { Field: "Business Name", Value: row?.businessName },
       { Field: "Business Email", Value: row.businessEmail },
       { Field: "Country", Value: row.businessAddressCountry },
       { Field: "City", Value: row.businessAddressCity },
@@ -292,16 +283,7 @@ export default function OrdersSummaryMgmtPage() {
       key: "businessName",
       label: t("business_name"),
       sortable: true,
-      render: (row: any) => (
-        <div className="text-sm">
-          {getLngWiseStr(
-            language,
-            row?.businessName,
-            row?.businessNameHe,
-            row?.businessNameAr,
-          )}
-        </div>
-      ),
+      render: (row: any) => <div className="text-sm">{row?.businessName}</div>,
     },
     {
       key: "dmoName",

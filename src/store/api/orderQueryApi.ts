@@ -21,9 +21,12 @@ export const orderQueryApi = createApi({
         params,
       }),
     }),
-    getOrderById: builder.query<IOrdersRes, { orderId: string | null }>({
-      query: ({ orderId }) => ({
-        url: `${endpoints.orderDetails}/${orderId}`,
+    getOrderById: builder.query<
+      IOrdersRes,
+      { orderId: string | null; language: Language }
+    >({
+      query: ({ orderId, language }) => ({
+        url: `${endpoints.orderDetails}/${orderId}?locale=${language}`,
         method: "GET",
       }),
     }),

@@ -1,6 +1,6 @@
 import clsx from "clsx";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Gauge, Info, RefreshCw, Sparkles } from "lucide-react";
 import {
   LineChart,
@@ -26,6 +26,7 @@ import {
   SCORE_SIGNAL_KEYS,
   SIGNAL_BAR_COLOR,
 } from "@/components/score/scoreMeta";
+import { BusinessScoreDetailsSkeleton } from "@/components/skeletons";
 
 interface Props {
   businessId: string;
@@ -79,7 +80,7 @@ const BusinessScoreDetails = ({ businessId }: Props) => {
     useRecalculateBusinessScoreMutation();
 
   if (isLoading) {
-    return <div className={clsx("p-6", textTertiary)}>…</div>;
+    return <BusinessScoreDetailsSkeleton />;
   }
 
   // admins only - the server refuses vendors

@@ -8,7 +8,6 @@ import { Building2, Loader, Package } from "lucide-react";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { getLngWiseStr } from "@/helpers";
 import { useDeleteProductMutation } from "@/store/api/productMutationApi";
 import { ConfirmDialog, GridCard } from "@/components/shared";
 
@@ -35,7 +34,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("products");
-  const { isDark, language } = useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -80,12 +79,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
               imageAlt={product.name}
               fallbackIcon={Package}
               fallbackGradient="from-blue-500 to-indigo-600"
-              title={getLngWiseStr(
-                language,
-                product?.name,
-                product?.nameHe,
-                product?.nameAr,
-              )}
+              title={product?.name}
               status={product?.status?.toLowerCase()}
               isChecked={selectedProducts?.has(product._id) ?? false}
               onCheckChange={

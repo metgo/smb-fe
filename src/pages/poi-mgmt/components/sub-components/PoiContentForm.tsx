@@ -18,19 +18,9 @@ const PoiContentForm = ({ formData, setFormData }: ArticleContentFormProps) => {
     language,
   } = useThemeClasses();
 
-  // Get correct field name based on current global language
-  const getFieldName = (baseField: string): string => {
-    if (language === "en") {
-      return baseField; // name, shortDescription, fullDescription
-    }
-    // For he → nameHe, shortDescriptionHe, etc.
-    const suffix = language.charAt(0).toUpperCase() + language.slice(1);
-    return `${baseField}${suffix}`;
-  };
-
-  const titleField = getFieldName("title");
-  const shortDescField = getFieldName("shortDescription");
-  const contentDescField = getFieldName("content");
+  const titleField = "title";
+  const shortDescField = "shortDescription";
+  const contentDescField = "content";
 
   const isRtl = language === "he" || language === "ar";
   const dir = isRtl ? "rtl" : "ltr";

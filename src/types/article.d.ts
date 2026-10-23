@@ -44,31 +44,17 @@ interface IArticleFormData {
         url: string;
       }
     | string;
-  // Content — EN / HE / AR
+  // Content
   title: string;
-  titleHe: string;
-  titleAr: string;
   shortDescription: string;
-  shortDescriptionHe: string;
-  shortDescriptionAr: string;
   content: string;
-  contentHe: string;
-  contentAr: string;
   // Tags
   tags: string[];
-  tagsHe: string[];
-  tagsAr: string[];
   // Summary
   summary: string;
-  summaryHe: string;
-  summaryAr: string;
   // SEO
   metaTitle: string;
-  metaTitleHe: string;
-  metaTitleAr: string;
   metaDescription: string;
-  metaDescriptionHe: string;
-  metaDescriptionAr: string;
   // Common
   status:
     "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED" | "PENDING";
@@ -78,24 +64,12 @@ interface IBlogDetails {
   _id: string;
   status: string;
   title: string;
-  titleHe: string;
-  titleAr: string;
   shortDescription: string;
-  shortDescriptionHe: string;
-  shortDescriptionAr: string;
-  contentHe: string;
-  contentAr: string;
   content: string;
   summary: string;
-  summaryHe: string;
-  summaryAr: string;
   slug: string;
   metaTitle: string;
-  metaTitleHe: string;
-  metaTitleAr: string;
   metaDescription: string;
-  metaDescriptionHe: string;
-  metaDescriptionAr: string;
   tags: string[];
   tagsHe: string[];
   tagsAr: string[];

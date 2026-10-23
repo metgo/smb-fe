@@ -5,6 +5,7 @@ import {
   useGetOrderProductsQuery,
   useGetReconciliationStatsQuery,
 } from "@/store/api/reconciliationQueryApi";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const LIMIT = 20;
 
@@ -24,7 +25,7 @@ export function useVendorMonthlyReportData(
   adminView: boolean,
 ) {
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
-
+  const { language } = useThemeClasses();
   const [page, setPage] = useState(1);
   const [showVenderWiseOrderTable, setShowVendorWiseOrderTable] =
     useState(false);
@@ -42,6 +43,7 @@ export function useVendorMonthlyReportData(
       limit: LIMIT,
       dmoId,
       authorityId,
+      locale: language,
     };
 
     if (filters.businessId) params.vendorId = filters.businessId;

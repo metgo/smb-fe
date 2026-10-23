@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import {
   Image as ImageIcon,
   Package,
@@ -12,9 +11,8 @@ import {
   Eye,
   CreditCard,
   FileText,
-  // LanguagesIcon,
-  // LanguagesIcon,
 } from "lucide-react";
+
 import {
   ProductBasicInfo,
   ProductPricingAvailability,
@@ -43,20 +41,14 @@ import {
   Attributes,
   DeliveryPolicyOption,
 } from "@/components/details-sections";
+import { routes } from "@/lib/routes";
 import { useAppSelector } from "@/hooks/hooks";
-import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import {
-  detectLanguage,
-  getLngWiseStr,
-  modelTitle,
-  removeNulls,
-} from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
-import { routes } from "@/lib/routes";
+import { modelTitle, removeNulls } from "@/helpers";
 import Media from "@/components/details-sections/Media";
-// import ProductTranslateButton from "./sub-components/ProductTranslateButton";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -113,8 +105,6 @@ export default function CreateProductWizard({
         {
           _id: biz?._id ?? bzIdForProdCreate,
           name: biz?.name || businessName,
-          nameHe: biz?.nameHe || businessName,
-          nameAr: biz?.nameAr || businessName,
           slug: "",
         },
       ];
@@ -158,14 +148,8 @@ export default function CreateProductWizard({
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
     name: "",
-    nameHe: "",
-    nameAr: "",
     shortDescription: "",
-    shortDescriptionHe: "",
-    shortDescriptionAr: "",
     fullDescription: "",
-    fullDescriptionHe: "",
-    fullDescriptionAr: "",
     type: "",
     categories: [],
     subCategories: [],
@@ -197,18 +181,8 @@ export default function CreateProductWizard({
     groupTypes: [] as string[],
   });
 
-  const nameForGen = getLngWiseStr(
-    language,
-    formData.name,
-    formData.nameHe,
-    formData.nameAr,
-  );
-  const descriptionForGen = getLngWiseStr(
-    language,
-    formData.fullDescription,
-    formData.fullDescriptionHe,
-    formData.fullDescriptionAr,
-  );
+  const nameForGen = formData.name;
+  const descriptionForGen = formData.fullDescription;
 
   const handleSetIsSameAsBusiness = useCallback((v: boolean) => {
     setIsSameAsBusiness(v);
@@ -247,6 +221,7 @@ export default function CreateProductWizard({
             updateProduct({
               productId: productId!,
               body: { images: updatedImages },
+              language,
             });
           }
         : undefined,
@@ -255,6 +230,7 @@ export default function CreateProductWizard({
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
+
   const isFormDirty = () => {
     return (
       JSON.stringify(formData) !== JSON.stringify(initialFormData.current) ||
@@ -305,22 +281,10 @@ export default function CreateProductWizard({
         opMode === IOpMode.DUPLICATE
           ? `${product?.name || ""} (Duplicate)`
           : product?.name || "",
-      nameHe:
-        opMode === IOpMode.DUPLICATE
-          ? `${product?.nameHe || ""} (שכפל)`
-          : product?.nameHe || "",
-      nameAr:
-        opMode === IOpMode.DUPLICATE
-          ? `${product?.nameAr || ""} (نسخ)`
-          : product?.nameAr || "",
 
       shortDescription: product?.shortDescription || "",
-      shortDescriptionHe: product?.shortDescriptionHe || "",
-      shortDescriptionAr: product?.shortDescriptionAr || "",
 
       fullDescription: product?.description || "",
-      fullDescriptionHe: product?.descriptionHe || "",
-      fullDescriptionAr: product?.descriptionAr || "",
 
       // step-2: Attributes
       categories: product?.categories || [],
@@ -382,27 +346,15 @@ export default function CreateProductWizard({
       // Basic Info (35%)
       {
         weight: 10,
-        filled: !!(
-          formData.name?.trim() ||
-          formData.nameHe?.trim() ||
-          formData.nameAr?.trim()
-        ),
+        filled: !!formData.name?.trim(),
       },
       {
         weight: 8,
-        filled: !!(
-          formData.shortDescription?.trim() ||
-          formData.shortDescriptionHe?.trim() ||
-          formData.shortDescriptionAr?.trim()
-        ),
+        filled: !!formData.shortDescription?.trim(),
       },
       {
         weight: 7,
-        filled: !!(
-          formData.fullDescription?.trim() ||
-          formData.fullDescriptionHe?.trim() ||
-          formData.fullDescriptionAr?.trim()
-        ),
+        filled: !!formData.fullDescription?.trim(),
       },
       { weight: 10, filled: !!formData.businessId },
       // Attributes (15%)
@@ -438,7 +390,6 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    // { number: 2, title: tp("translation"), icon: LanguagesIcon },
     { number: 2, title: t("product_segmentation"), icon: Package },
     { number: 3, title: t("product_pricing"), icon: CreditCard },
     { number: 4, title: t("product_media"), icon: ImageIcon },
@@ -451,13 +402,8 @@ export default function CreateProductWizard({
     switch (step) {
       case 1:
         if (!formData.businessId) newErrors.businessId = t("field_required");
-        if (!formData.name && !formData.nameAr && !formData.nameHe)
-          newErrors.nameEn = t("field_required");
-        if (
-          !formData.shortDescription &&
-          !formData.shortDescriptionAr &&
-          !formData.shortDescriptionHe
-        )
+        if (!formData.name) newErrors.nameEn = t("field_required");
+        if (!formData.shortDescription)
           newErrors.shortDescEn = t("field_required");
 
         break;
@@ -484,11 +430,7 @@ export default function CreateProductWizard({
   };
 
   const handleSaveDraft = async () => {
-    if (
-      !formData.name?.trim() &&
-      !formData.nameHe?.trim() &&
-      !formData.nameAr?.trim()
-    ) {
+    if (!formData.name?.trim()) {
       toast.error(tc("name_required"));
       return;
     }
@@ -514,20 +456,12 @@ export default function CreateProductWizard({
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
 
-    if (
-      (formData.shortDescription || "").length > 150 ||
-      (formData.shortDescriptionHe || "").length > 150 ||
-      (formData.shortDescriptionAr || "").length > 150
-    ) {
+    if ((formData.shortDescription || "").length > 150) {
       setCurrentStep(1);
       toast.error(tp("exceeds_char_limit", { limit: 150 }));
       return;
     }
-    if (
-      (formData.fullDescription || "").length > 500 ||
-      (formData.fullDescriptionHe || "").length > 500 ||
-      (formData.fullDescriptionAr || "").length > 500
-    ) {
+    if ((formData.fullDescription || "").length > 500) {
       setCurrentStep(1);
       toast.error(tp("exceeds_char_limit", { limit: 500 }));
       return;
@@ -547,60 +481,9 @@ export default function CreateProductWizard({
     }
 
     setIsPublishing(true);
-    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
 
-    await saveDraft(true, processedFormData);
+    await saveDraft(true, stepPayloadMap);
     setIsPublishing(false);
-  };
-  const getActiveField = (base: string, lang: string): string => {
-    if (lang === "en") return base;
-    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
-    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
-  };
-
-  const detectAndAssignLanguageFields = (data: any): any => {
-    const updated = { ...data };
-
-    const fieldGroups = [
-      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
-      {
-        base: "shortDescription",
-        en: "shortDescription",
-        he: "shortDescriptionHe",
-        ar: "shortDescriptionAr",
-      },
-      {
-        base: "description",
-        en: "description",
-        he: "descriptionHe",
-        ar: "descriptionAr",
-      },
-    ];
-
-    fieldGroups.forEach(({ base, en, he, ar }) => {
-      // Whichever field the user was actually typing into for THIS group,
-      // based on the global language at the time of entry
-      const activeField = getActiveField(base, language);
-      const text = data[activeField]?.trim();
-      if (!text) return;
-
-      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
-
-      // Clear all three first, then assign to wherever it actually belongs
-      updated[en] = "";
-      updated[he] = "";
-      updated[ar] = "";
-
-      if (detectedLang === "he") {
-        updated[he] = text;
-      } else if (detectedLang === "ar") {
-        updated[ar] = text;
-      } else {
-        updated[en] = text;
-      }
-    });
-
-    return updated;
   };
 
   // Draft Save Payload per Step
@@ -609,23 +492,13 @@ export default function CreateProductWizard({
     businessId: formData.businessId,
 
     name: formData.name,
-    nameAr: formData.nameAr,
-    nameHe: formData.nameHe,
 
     shortDescription: formData.shortDescription,
-    shortDescriptionAr: formData.shortDescriptionAr,
-    shortDescriptionHe: formData.shortDescriptionHe,
 
     description: formData.fullDescription,
-    descriptionHe: formData.fullDescriptionHe,
-    descriptionAr: formData.fullDescriptionAr,
 
     primaryCategoryId: formData.primaryCategory,
-    tagsId: formData.tags.map((tag: any) => ({
-      en: tag.en,
-      he: tag.he,
-      ar: tag.ar,
-    })),
+    tagsId: formData.tags,
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
 
@@ -688,6 +561,7 @@ export default function CreateProductWizard({
 
       // Update product
       await updateProduct({
+        language,
         productId: internalProductId!,
         body: {
           ...payload,
@@ -754,10 +628,6 @@ export default function CreateProductWizard({
             presetBusinessId={bzIdForProdCreate || product?.businessId?._id}
           />
         );
-      // case 2:
-      //   return (
-      //     <ProductTranslateButton formData={formData} onChange={handleChange} />
-      //   );
       case 2:
         return (
           <Attributes

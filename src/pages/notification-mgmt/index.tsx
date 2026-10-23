@@ -605,11 +605,13 @@ export default function NotificationsMgmtPage() {
                                           }).unwrap();
                                         } else if (itemType === "BUSINESS") {
                                           await updateBusiness({
+                                            language,
                                             businessId: notification.itemId,
                                             body: { status: "APPROVED" },
                                           }).unwrap();
                                         } else if (itemType === "PRODUCT") {
                                           await updateProduct({
+                                            language,
                                             productId: notification.itemId,
                                             body: { status: "APPROVED" },
                                           }).unwrap();

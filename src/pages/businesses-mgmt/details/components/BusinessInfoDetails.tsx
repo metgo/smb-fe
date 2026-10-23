@@ -2,7 +2,6 @@ import clsx from "clsx";
 import { type FC } from "react";
 import { AlignLeft, BadgePercent, FileText, Gift } from "lucide-react";
 
-import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import {
@@ -27,11 +26,7 @@ interface Business {
     country: string;
   };
   shortDescription: string;
-  shortDescriptionAr: string;
-  shortDescriptionHe: string;
   description: string;
-  descriptionHe: string;
-  descriptionAr: string;
   primaryCategoryId: string;
   subcategories: string[];
   tags: string[];
@@ -59,20 +54,14 @@ interface BusinessInfoDetailsProps {
 /* ---------- Component ---------- */
 
 const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
-  const { isDark, language } = useThemeClasses();
-  // const { userRole } = useAppSelector((state) => state.auth);
+  const { isDark } = useThemeClasses();
 
   return (
     <div className="space-y-6">
       {/* Short Description */}
       <DescriptionCard
         title={t("short_description")}
-        content={getLngWiseStr(
-          language,
-          business?.shortDescription,
-          business?.shortDescriptionHe,
-          business?.shortDescriptionAr,
-        )}
+        content={business?.shortDescription}
         icon={
           <FileText
             className={clsx(isDark ? "text-blue-400" : "text-blue-600")}
@@ -84,12 +73,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       {/* Full Description */}
       <DescriptionCard
         title={t("full_description")}
-        content={getLngWiseStr(
-          language,
-          business?.description,
-          business?.descriptionHe,
-          business?.descriptionAr,
-        )}
+        content={business?.description}
         icon={
           <AlignLeft
             className={clsx(isDark ? "text-purple-400" : "text-purple-600")}

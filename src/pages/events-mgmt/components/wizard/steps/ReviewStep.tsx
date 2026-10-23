@@ -18,10 +18,6 @@ const WIZARD_STEPS = {
 interface ReviewStepProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   eventName: string;
-  eventNameHe: string;
-  eventNameAr: string;
-  shortDescriptionHe: string;
-  shortDescriptionAr: string;
   shortDescription: string;
   eventStatus: string;
   isMultiDay: boolean;
@@ -39,10 +35,6 @@ interface ReviewStepProps {
 const ReviewStep: React.FC<ReviewStepProps> = ({
   setCurrentStep,
   eventName,
-  eventNameHe,
-  eventNameAr,
-  shortDescriptionHe,
-  shortDescriptionAr,
   shortDescription,
   eventStatus,
   isMultiDay,
@@ -131,26 +123,11 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
         />
         <div className="p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Row
-              label={t("name")}
-              value={
-                (language === "he"
-                  ? eventNameHe
-                  : language === "ar"
-                    ? eventNameAr
-                    : eventName) || t("not_set")
-              }
-            />
+            <Row label={t("name")} value={eventName || t("not_set")} />
             <Row label={t("language")} value={language.toUpperCase()} />
             <Row
               label={t("description")}
-              value={
-                (language === "he"
-                  ? shortDescriptionHe
-                  : language === "ar"
-                    ? shortDescriptionAr
-                    : shortDescription) || t("not_set")
-              }
+              value={shortDescription || t("not_set")}
             />
             <Row
               label={t("event_status")}

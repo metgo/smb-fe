@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { TrendingUp } from "lucide-react";
 
-import { getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
@@ -25,8 +24,6 @@ interface DetailTitleSectionProps {
 
 const DetailTitleSection = ({
   name,
-  nameAr,
-  nameHe,
   impact,
   createdAt,
   updatedAt,
@@ -52,7 +49,7 @@ const DetailTitleSection = ({
       <div className="flex items-center gap-3">
         <ImageWithFallback
           src={imageSrc}
-          alt={name || nameHe || nameAr}
+          alt={name}
           className={clsx(
             "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover border shrink-0",
             isDark ? "border-gray-600" : "border-gray-200",
@@ -67,7 +64,7 @@ const DetailTitleSection = ({
                 isDark ? "text-gray-100" : "text-gray-900"
               }`}
             >
-              {getLngWiseStr(language, name, nameHe, nameAr)}
+              {name}
             </h1>
 
             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">

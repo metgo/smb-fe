@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAppSelector } from "@/hooks/hooks";
 import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const LIMIT = 20;
 
@@ -13,6 +14,7 @@ interface EventFilters {
 }
 
 export function useEventListData(filters: EventFilters, searchQuery: string) {
+  const { language } = useThemeClasses();
   const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
@@ -51,6 +53,7 @@ export function useEventListData(filters: EventFilters, searchQuery: string) {
       externalApiId: websiteId,
       page,
       limit: LIMIT,
+      locale: language,
     };
 
     const finalSearchTerm =

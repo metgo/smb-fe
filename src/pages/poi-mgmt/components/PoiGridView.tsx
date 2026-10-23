@@ -2,7 +2,6 @@ import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { Image, Loader, MapPin } from "lucide-react";
 
-import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useDeletePoiMutation } from "@/store/api/poiMutationApi";
@@ -30,7 +29,7 @@ export default function PoiGridView({
   setSelectedItems,
 }: GridViewProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const { isDark, language } = useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   useInfiniteScroll({ ref: scrollRef, hasMore, isLoading, onLoadMore: next });
 
@@ -68,7 +67,7 @@ export default function PoiGridView({
             imageHeight="h-36"
             fallbackIcon={Image}
             fallbackGradient="from-gray-400 to-teal-400"
-            title={getLngWiseStr(language, poi?.name, poi?.nameHe, poi?.nameAr)}
+            title={poi?.name}
             status={poi?.status?.toLowerCase()}
             isChecked={selectedItems?.has(poi._id) ?? false}
             onCheckChange={

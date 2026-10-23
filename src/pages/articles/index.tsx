@@ -68,7 +68,7 @@ export default function ArticlesManagement() {
   const navigate = useNavigate();
   const { t } = useTranslation("article");
   const { t: tc } = useTranslation("common");
-  const { isDark, textPrimary, borderColor } = useThemeClasses();
+  const { isDark, textPrimary, borderColor, language } = useThemeClasses();
 
   const handleBusinessClick = useCallback(
     (business: any) => {
@@ -145,6 +145,7 @@ export default function ArticlesManagement() {
     () => ({
       page,
       limit: LIMIT,
+      locale: language,
       externalApiId: websiteId,
       ...(filters.status !== "all" && { status: filters.status }),
       ...(searchTerm && { search: searchTerm }),

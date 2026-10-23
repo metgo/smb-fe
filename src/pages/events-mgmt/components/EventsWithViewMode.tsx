@@ -25,11 +25,7 @@ import {
   ImageWithFallback,
   ReordableDataTable,
 } from "@/components/shared";
-import {
-  extractCenterAddressText,
-  extractEventDates,
-  getLngWiseStr,
-} from "@/helpers";
+import { extractCenterAddressText, extractEventDates } from "@/helpers";
 import {
   useDeleteEventMutation,
   useUpdateEventMutation,
@@ -266,14 +262,7 @@ export default function EventsWithViewMode({
             sortable: true,
             render: (event) => (
               <div className="flex items-center gap-2">
-                <span className="text-sm line-clamp-2">
-                  {getLngWiseStr(
-                    language,
-                    event.name,
-                    event.nameHe,
-                    event.nameAr,
-                  )}
-                </span>
+                <span className="text-sm line-clamp-2">{event.name}</span>
               </div>
             ),
           },

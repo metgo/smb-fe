@@ -1,7 +1,6 @@
 import { ReactSelect } from "@/components/form-fields";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { getLngWiseStr } from "@/helpers";
 
 interface PunchPassBasicInfoProps {
   t: (key: string) => string;
@@ -61,7 +60,7 @@ const PunchPassBasicInfo = ({
           items={
             businesses?.map((biz) => ({
               _id: biz._id,
-              name: getLngWiseStr(language, biz.name, biz.nameHe, biz.nameAr),
+              name: biz.name,
             })) || []
           }
           onSearch={searchBusiness}

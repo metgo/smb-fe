@@ -121,7 +121,7 @@ export const PaymentMgmtPage = () => {
   );
 
   const orders = useMemo(
-    () => combinedOrders.map((d) => mapOrderProductList(d, language)),
+    () => combinedOrders.map((d) => mapOrderProductList(d)),
     [combinedOrders, language],
   );
 

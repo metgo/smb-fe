@@ -13,18 +13,11 @@ import {
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-const LANG_SUFFIX: Record<Language, string> = { en: "", he: "He", ar: "Ar" };
 const LANG_DIR: Record<Language, "ltr" | "rtl"> = {
   en: "ltr",
   he: "rtl",
   ar: "rtl",
 };
-
-// tagsHe, tagsAr — the tags base field doesn't have a suffix for EN
-function getTagsField(lang: Language): string {
-  if (lang === "en") return "tags";
-  return `tags${LANG_SUFFIX[lang]}`;
-}
 
 interface ArticleSeoSettingsProps {
   formData: Record<string, any>;
@@ -64,27 +57,20 @@ export default function ArticleSeoSettings({
   } = useThemeClasses();
   const { t } = useTranslation("article");
 
-  const suffix = LANG_SUFFIX[editingLanguage];
   const dir = LANG_DIR[editingLanguage];
-  const langLabel =
-    editingLanguage !== "en" ? ` (${editingLanguage?.toUpperCase()})` : "";
 
-  const summaryField = `summary${suffix}`;
-  const metaTitleField = `metaTitle${suffix}`;
-  const metaDescField = `metaDescription${suffix}`;
-  const tagsField = getTagsField(editingLanguage);
-  const currentTags: string[] = formData[tagsField] || [];
+  const summaryField = "summary";
+  const metaTitleField = "metaTitle";
+  const metaDescField = "metaDescription";
+  const currentTags: string[] = formData.tags || [];
 
   const metaTitleLen = (formData[metaTitleField] || "").length;
   const metaDescLen = (formData[metaDescField] || "").length;
 
-  const titleField = `title${suffix}`;
-  const shortDescField = `shortDescription${suffix}`;
-  const contentField = `content${suffix}`;
   const canGenerateSeo = Boolean(
-    (formData[titleField] || "").trim() &&
-    (formData[shortDescField] || "").trim() &&
-    (formData[contentField] || "").trim(),
+    (formData.title || "").trim() &&
+    (formData.shortDescription || "").trim() &&
+    (formData.content || "").trim(),
   );
 
   return (
@@ -125,7 +111,6 @@ export default function ArticleSeoSettings({
           className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}
         >
           {t("summary")}
-          {langLabel}
         </label>
         <textarea
           value={formData[summaryField] || ""}
@@ -144,7 +129,6 @@ export default function ArticleSeoSettings({
         >
           <Tag className="w-3.5 h-3.5" />
           {t("tags")}
-          {langLabel}
         </label>
         <div className="flex gap-2 mb-2">
           <input
@@ -199,7 +183,6 @@ export default function ArticleSeoSettings({
         >
           <Search className="w-3.5 h-3.5" />
           {t("seo_metadata")}
-          {langLabel}
         </label>
         <div className="space-y-3">
           <div>

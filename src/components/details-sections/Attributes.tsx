@@ -1,23 +1,15 @@
-import { useEffect, useRef, useState, type FC } from "react";
-import { X, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { X, Sparkles, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState, type FC } from "react";
+
+import { useCommon } from "@/hooks/useCommon";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useCommon } from "@/hooks/useCommon";
-import { useTranslation } from "react-i18next";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
 
-interface Tag {
-  en: string;
-  he: string;
-  ar: string;
-}
-
-// Only `tags` is guaranteed across all consumers (business, poi, event, article).
-// Everything else (primaryCategory etc.) is only read/written in "full" variant,
-// and each parent's own formData already carries whatever extra fields it needs.
 interface AttributesFormData {
-  tags: Tag[];
+  tags: string[];
   primaryCategory?: string;
   [key: string]: any;
 }
@@ -84,16 +76,10 @@ const Attributes: FC<AttributesProps> = ({
     return item.nameAr;
   };
 
-  const createTagByLanguage = (value: string): Tag => ({
-    en: language === "en" ? value : "",
-    he: language === "he" ? value : "",
-    ar: language === "ar" ? value : "",
-  });
+  const createTagByLanguage = (value: string): string => value;
 
   const isDuplicateTag = (value: string) =>
-    formData.tags.some(
-      (tag) => tag[language]?.toLowerCase() === value.toLowerCase(),
-    );
+    formData?.tags?.some((tag) => tag?.toLowerCase() === value?.toLowerCase());
 
   const filteredSuggestions =
     allTags?.filter((item: any) => {
@@ -101,7 +87,7 @@ const Attributes: FC<AttributesProps> = ({
 
       return (
         typeof value === "string" &&
-        value.trim().toLowerCase().includes(tagInput.toLowerCase()) &&
+        value?.trim()?.toLowerCase()?.includes(tagInput?.toLowerCase()) &&
         !isDuplicateTag(value)
       );
     }) ?? [];
@@ -122,13 +108,9 @@ const Attributes: FC<AttributesProps> = ({
       .then((res: any) => {
         if (!res?.data?.length) return;
 
-        const newTags: Tag[] = res.data
-          .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
-          .map((tag: Tag) => ({
-            en: tag.en || "",
-            he: tag.he || "",
-            ar: tag.ar || "",
-          }));
+        const newTags: string[] = res?.data
+          ?.filter((tag: string) => !formData?.tags?.some((t) => t === tag))
+          ?.map((tag: string) => tag);
 
         if (newTags.length > 0) {
           setFormData({
@@ -296,17 +278,17 @@ const Attributes: FC<AttributesProps> = ({
           >
             <div className="flex flex-wrap gap-2 items-center">
               {formData.tags
-                .filter((tag) => tag?.[language]?.trim())
+                .filter((tag) => tag?.trim())
                 .map((tag, idx) => (
                   <span
-                    key={`${tag.en}-${idx}`}
+                    key={`${tag}-${idx}`}
                     className={`flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-medium ${
                       isDark
                         ? "bg-gray-700 text-gray-200"
                         : "bg-gray-100 text-gray-900 border-teal-50 border"
                     }`}
                   >
-                    {tag[language]}
+                    {tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(idx)}
@@ -346,14 +328,7 @@ const Attributes: FC<AttributesProps> = ({
                       const selected = filteredSuggestions[selectedTagIndex];
                       setFormData({
                         ...formData,
-                        tags: [
-                          ...formData.tags,
-                          {
-                            en: selected.name || "",
-                            he: selected.nameHe || "",
-                            ar: selected.nameAr || "",
-                          },
-                        ],
+                        tags: [...formData.tags, selected.name],
                       });
                     } else {
                       handleAddTag(tagInput);
@@ -398,14 +373,7 @@ const Attributes: FC<AttributesProps> = ({
                         e.preventDefault();
                         setFormData({
                           ...formData,
-                          tags: [
-                            ...formData.tags,
-                            {
-                              en: item.name || "",
-                              he: item.nameHe || "",
-                              ar: item.nameAr || "",
-                            },
-                          ],
+                          tags: [...formData.tags, item.name],
                         });
                         setTagInput("");
                         setShowTagSuggestions(false);

@@ -149,8 +149,8 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
                 >
                   {t(`flag_type_${flag.type}`)}
                 </span>
-                <div className="flex-1 min-w-[10rem]">
-                  <div className={clsx("text-sm break-words", textPrimary)}>
+                <div className="flex-1 min-w-40">
+                  <div className={clsx("text-sm wrap-break-word", textPrimary)}>
                     {flag.reason}
                   </div>
                   <div className={clsx("text-xs", textTertiary)}>
@@ -230,7 +230,7 @@ const ScoreInputsPanel = ({ businessId, inputs }: Props) => {
                   maxLength={500}
                   placeholder={t("flag_reason")}
                   onChange={(e) => setReason(e.target.value)}
-                  className={clsx(fieldInput, "flex-1 min-w-[10rem]")}
+                  className={clsx(fieldInput, "flex-1 min-w-40")}
                 />
                 <button type="submit" disabled={adding} className={button}>
                   {t("add_flag")}

@@ -36,20 +36,26 @@ export const businessMutationApi = createApi({
       }),
       invalidatesTags: ["Business"],
     }),
+
+    updateBusiness: builder.mutation<
+      any,
+      { body: any; businessId: string; language: Language }
+    >({
+      query: ({ body, businessId, language }) => ({
+        url: `${endpoints.businesses}/${businessId}?locale=${language}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Business"],
+    }),
+
     deleteBusiness: builder.mutation<any, { businessId: string }>({
       query: ({ businessId }) => ({
         url: `${endpoints.business}/${businessId}`,
         method: "DELETE",
       }),
     }),
-    updateBusiness: builder.mutation<any, { body: any; businessId: string }>({
-      query: ({ body, businessId }) => ({
-        url: `${endpoints.businesses}/${businessId}`,
-        method: "PATCH",
-        data: body,
-      }),
-      invalidatesTags: ["Business"],
-    }),
+
     bulkBusinessesUpdate: builder.mutation<any, IBulkUpdateParams>({
       query: (body) => ({
         url: endpoints.bulkBusinessesUpdate,

@@ -100,23 +100,6 @@ function ReviewCard({
   );
 }
 
-function LangSection({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mb-4 last:mb-0">
-      <p className="text-xs font-bold text-teal-500 uppercase tracking-wider mb-2">
-        {label}
-      </p>
-      {children}
-    </div>
-  );
-}
-
 function TagList({
   tags,
   textTertiary,
@@ -145,7 +128,7 @@ export default function ArticleReviewSection({
   onEdit,
 }: ArticleReviewSectionProps) {
   const { t } = useTranslation("article");
-  const { bgSecondary, textPrimary, textTertiary, borderColor, language } =
+  const { bgSecondary, textPrimary, textTertiary, borderColor } =
     useThemeClasses();
 
   const cardProps = {
@@ -158,85 +141,51 @@ export default function ArticleReviewSection({
   };
   const fieldProps = { textPrimary, textTertiary, borderColor };
 
-  const langMeta: Record<
-    string,
-    { label: string; dir: "ltr" | "rtl"; suffix: "" | "He" | "Ar" }
-  > = {
-    en: { label: "English", dir: "ltr", suffix: "" },
-    he: { label: "Hebrew", dir: "rtl", suffix: "He" },
-    ar: { label: "Arabic", dir: "rtl", suffix: "Ar" },
-  };
-  const { label, dir, suffix } = langMeta[language] ?? langMeta.en;
-
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* ── Content (Step 1) ─────────────────────────────────────── */}
       <ReviewCard title={t("form")} step={1} {...cardProps}>
-        <LangSection label={label}>
-          <FieldRow
-            label={t("title")}
-            value={formData[`title${suffix}`]}
-            dir={dir}
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("short_description")}
-            value={formData[`shortDescription${suffix}`]}
-            dir={dir}
-            isHtml
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("content")}
-            value={formData[`content${suffix}`]}
-            dir={dir}
-            isHtml
-            {...fieldProps}
-          />
-        </LangSection>
+        <FieldRow label={t("title")} value={formData.title} {...fieldProps} />
+        <FieldRow
+          label={t("short_description")}
+          value={formData.shortDescription}
+          isHtml
+          {...fieldProps}
+        />
+        <FieldRow
+          label={t("content")}
+          value={formData.content}
+          isHtml
+          {...fieldProps}
+        />
       </ReviewCard>
 
       {/* ── SEO (Step 2) ─────────────────────────────────────────── */}
       <ReviewCard title={t("seo")} step={3} {...cardProps}>
-        <LangSection label={label}>
-          <FieldRow
-            label={t("meta_title")}
-            value={formData[`metaTitle${suffix}`]}
-            dir={dir}
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("meta_description")}
-            value={formData[`metaDescription${suffix}`]}
-            dir={dir}
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("summary")}
-            value={formData[`summary${suffix}`]}
-            dir={dir}
-            {...fieldProps}
-          />
-          {suffix === "" && (
-            <FieldRow
-              label="Slug"
-              value={formData.slug}
-              dir={dir}
-              {...fieldProps}
-            />
-          )}
-          <div className={`py-2 border-b ${borderColor} last:border-0`}>
-            <p
-              className={`text-xs font-medium uppercase tracking-wide ${textTertiary} mb-1`}
-            >
-              {t("tags")}
-            </p>
-            <TagList
-              tags={formData[`tags${suffix}`]}
-              textTertiary={textTertiary}
-            />
-          </div>
-        </LangSection>
+        <FieldRow
+          label={t("meta_title")}
+          value={formData.metaTitle}
+          {...fieldProps}
+        />
+        <FieldRow
+          label={t("meta_description")}
+          value={formData.metaDescription}
+          {...fieldProps}
+        />
+        <FieldRow
+          label={t("summary")}
+          value={formData.summary}
+          {...fieldProps}
+        />
+        <FieldRow label="Slug" value={formData.slug} {...fieldProps} />
+        <div className={`py-2 border-b ${borderColor} last:border-0`}>
+          <p
+            className={`text-xs font-medium uppercase tracking-wide ${textTertiary} mb-1`}
+          >
+            {t("tags")}
+          </p>
+          <TagList tags={formData.tags} textTertiary={textTertiary} />
+        </div>
       </ReviewCard>
     </div>
   );

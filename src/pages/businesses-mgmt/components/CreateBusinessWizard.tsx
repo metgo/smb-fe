@@ -14,6 +14,7 @@ import {
   Users,
   Truck,
 } from "lucide-react";
+
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 
@@ -42,13 +43,7 @@ import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
-import {
-  detectLanguage,
-  getLngWiseStr,
-  modelTitle,
-  removeNulls,
-  type ParsedAddressParts,
-} from "@/helpers";
+import { modelTitle, removeNulls, type ParsedAddressParts } from "@/helpers";
 import PublishButton from "@/components/btns/PublishButton";
 import {
   Attributes,
@@ -57,7 +52,6 @@ import {
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
 import { getPlainText } from "@/components/shared/RichTextEditor";
-// import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
@@ -82,7 +76,7 @@ function CreateBusinessWizardInner({
   const { t: tr } = useTranslation("tour");
   const [selectedFormLanguage, _setSelectedFormLanguage] =
     useState<Language>("he");
-  const { textPrimary, isRTL, theme, language } = useThemeClasses();
+  const { textPrimary, isRTL, isDark, language } = useThemeClasses();
 
   // ─── Tour ─────────────────────────────────────────────────────────────
   const { startTour } = useTour();
@@ -215,14 +209,8 @@ function CreateBusinessWizardInner({
     id: "",
     authority: "",
     name: "",
-    nameHe: "",
-    nameAr: "",
     shortDescription: "",
-    shortDescriptionHe: "",
-    shortDescriptionAr: "",
     fullDescription: "",
-    fullDescriptionHe: "",
-    fullDescriptionAr: "",
     internalNotes: "",
     categories: [] as string[],
     markedAsSupplier: false,
@@ -270,68 +258,8 @@ function CreateBusinessWizardInner({
     // Step 8
     socialMedia: [],
   });
-  const nameForGen = getLngWiseStr(
-    language,
-    formData.name,
-    formData.nameHe,
-    formData.nameAr,
-  );
-  const descriptionForGen = getLngWiseStr(
-    language,
-    formData.fullDescription,
-    formData.fullDescriptionHe,
-    formData.fullDescriptionAr,
-  );
-  const getActiveField = (base: string, lang: string): string => {
-    if (lang === "en") return base;
-    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
-    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
-  };
-
-  const detectAndAssignLanguageFields = (data: any): any => {
-    const updated = { ...data };
-
-    const fieldGroups = [
-      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
-      {
-        base: "shortDescription",
-        en: "shortDescription",
-        he: "shortDescriptionHe",
-        ar: "shortDescriptionAr",
-      },
-      {
-        base: "description",
-        en: "description",
-        he: "descriptionHe",
-        ar: "descriptionAr",
-      },
-    ];
-
-    fieldGroups.forEach(({ base, en, he, ar }) => {
-      // Whichever field the user was actually typing into for THIS group,
-      // based on the global language at the time of entry
-      const activeField = getActiveField(base, language);
-      const text = data[activeField]?.trim();
-      if (!text) return;
-
-      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
-
-      // Clear all three first, then assign to wherever it actually belongs
-      updated[en] = "";
-      updated[he] = "";
-      updated[ar] = "";
-
-      if (detectedLang === "he") {
-        updated[he] = text;
-      } else if (detectedLang === "ar") {
-        updated[ar] = text;
-      } else {
-        updated[en] = text;
-      }
-    });
-
-    return updated;
-  };
+  const nameForGen = formData.name;
+  const descriptionForGen = formData.fullDescription;
 
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
@@ -369,6 +297,7 @@ function CreateBusinessWizardInner({
             const effectiveId = businessId || editData?._id;
             if (effectiveId) {
               updateBusiness({
+                language,
                 businessId: effectiveId,
                 body: { images: updatedImages },
               });
@@ -394,6 +323,7 @@ function CreateBusinessWizardInner({
             const effectiveId = businessId || editData?._id;
             if (effectiveId) {
               updateBusiness({
+                language,
                 businessId: effectiveId,
                 body: { logo: logoData },
               });
@@ -434,27 +364,15 @@ function CreateBusinessWizardInner({
       // Basic Info (30%)
       {
         weight: 10,
-        filled: !!(
-          formData.name?.trim() ||
-          formData.nameHe?.trim() ||
-          formData.nameAr?.trim()
-        ),
+        filled: !!formData.name?.trim(),
       },
       {
         weight: 10,
-        filled: !!(
-          formData.shortDescription?.trim() ||
-          formData.shortDescriptionHe?.trim() ||
-          formData.shortDescriptionAr?.trim()
-        ),
+        filled: !!formData.shortDescription?.trim(),
       },
       {
         weight: 10,
-        filled: !!(
-          formData.fullDescription?.trim() ||
-          formData.fullDescriptionHe?.trim() ||
-          formData.fullDescriptionAr?.trim()
-        ),
+        filled: !!formData.fullDescription?.trim(),
       },
       // Contact (15%)
       { weight: 8, filled: !!formData.email?.trim() },
@@ -503,26 +421,10 @@ function CreateBusinessWizardInner({
           opMode === IOpMode.DUPLICATE
             ? `${editData?.nameEn || editData?.name || ""} (Duplicate)`
             : editData?.nameEn || editData?.name || "",
-        nameHe:
-          opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameHe || editData?.name || ""} (שכפל)`
-            : editData?.nameHe || editData?.name || "",
-        nameAr:
-          opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameAr || editData?.name || ""} (نسخ)`
-            : editData?.nameAr || editData?.name || "",
 
         shortDescription:
           editData?.shortDescriptionEn || editData?.shortDescription || "",
-        shortDescriptionHe:
-          editData?.shortDescriptionHe || editData?.shortDescription || "",
-        shortDescriptionAr:
-          editData?.shortDescriptionAr || editData?.shortDescription || "",
         fullDescription: editData?.descriptionEn || editData?.description || "",
-        fullDescriptionHe:
-          editData?.descriptionHe || editData?.description || "",
-        fullDescriptionAr:
-          editData?.descriptionAr || editData?.description || "",
         internalNotes: editData?.internalNotes || "",
         providesDiscount: editData?.providesDiscount ?? false,
         discountConfigType: editData?.discountConfigType ?? "",
@@ -664,14 +566,8 @@ function CreateBusinessWizardInner({
     dmoId: selectedDmoId,
     associatedWebsiteIds: websiteVisibilityIds,
     name: formData.name,
-    nameAr: formData.nameAr,
-    nameHe: formData.nameHe,
     shortDescription: formData.shortDescription,
-    shortDescriptionAr: formData.shortDescriptionAr,
-    shortDescriptionHe: formData.shortDescriptionHe,
     description: formData.fullDescription,
-    descriptionAr: formData.fullDescriptionAr,
-    descriptionHe: formData.fullDescriptionHe,
     internalNotes: formData.internalNotes,
     providesDiscount: formData.providesDiscount,
     ...(formData.providesDiscount &&
@@ -707,11 +603,7 @@ function CreateBusinessWizardInner({
     geoLocation: geo,
     //  step 4
     primaryCategoryId: formData.primaryCategory,
-    tagsId: formData.tags.map((tag: any) => ({
-      en: tag.en,
-      he: tag.he,
-      ar: tag.ar,
-    })),
+    tagsId: formData.tags,
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
     // subcategories: formData.subcategories,
@@ -840,11 +732,7 @@ function CreateBusinessWizardInner({
   };
 
   const handleSaveDraft = async () => {
-    if (
-      !formData.name?.trim() &&
-      !formData.nameHe?.trim() &&
-      !formData.nameAr?.trim()
-    ) {
+    if (!formData.name?.trim()) {
       toast.error(tt("name_required"));
       return;
     }
@@ -854,19 +742,11 @@ function CreateBusinessWizardInner({
       toast.error(t(draftDiscountError));
       return;
     }
-    if (
-      !formData.shortDescription?.trim() &&
-      !formData.shortDescriptionHe?.trim() &&
-      !formData.shortDescriptionAr?.trim()
-    ) {
+    if (!formData.shortDescription?.trim()) {
       toast.error(tt("short_description_required"));
       return;
     }
-    if (
-      !formData.fullDescription?.trim() &&
-      !formData.fullDescriptionHe?.trim() &&
-      !formData.fullDescriptionAr?.trim()
-    ) {
+    if (!formData.fullDescription?.trim()) {
       toast.error(tt("full_description_required"));
       return;
     }
@@ -900,20 +780,12 @@ function CreateBusinessWizardInner({
       return;
     }
 
-    if (
-      (formData.shortDescription || "").length > 150 ||
-      (formData.shortDescriptionHe || "").length > 150 ||
-      (formData.shortDescriptionAr || "").length > 150
-    ) {
+    if ((formData.shortDescription || "").length > 150) {
       setCurrentStep(1);
       toast.error(tc("exceeds_char_limit", { limit: 150 }));
       return;
     }
-    if (
-      getPlainText(formData.fullDescription || "").length > 500 ||
-      getPlainText(formData.fullDescriptionHe || "").length > 500 ||
-      getPlainText(formData.fullDescriptionAr || "").length > 500
-    ) {
+    if (getPlainText(formData.fullDescription || "").length > 500) {
       setCurrentStep(1);
       toast.error(tc("exceeds_char_limit", { limit: 500 }));
       return;
@@ -930,8 +802,7 @@ function CreateBusinessWizardInner({
     }
 
     setIsPublishing(true);
-    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
-    const resolvedBusinessId = await saveDraft(true, processedFormData);
+    const resolvedBusinessId = await saveDraft(true, stepPayloadMap);
     if (resolvedBusinessId) {
       await Promise.all([refetch?.(), businessDataRefetch?.()]);
     }
@@ -946,7 +817,6 @@ function CreateBusinessWizardInner({
 
   const renderStep = () => {
     const commonProps = {
-      theme,
       isRTL,
       t,
       formData,
@@ -962,7 +832,6 @@ function CreateBusinessWizardInner({
       opMode,
     };
     const mediaProps = {
-      theme,
       errors,
       markDirty,
       logoImage,
@@ -1065,7 +934,7 @@ function CreateBusinessWizardInner({
               {modelTitle(opMode, tc)} {t("business")}
             </h2>
             <p
-              className={`hidden sm:block text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`hidden sm:block text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
               {steps[currentStep - 1]?.title}
@@ -1073,7 +942,7 @@ function CreateBusinessWizardInner({
 
             {lastSaved && (
               <p
-                className={`text-xs mt-1 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
+                className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-500"}`}
               >
                 {t("saved")} {lastSaved.toLocaleTimeString()}
               </p>
@@ -1095,9 +964,7 @@ function CreateBusinessWizardInner({
                   r="22"
                   fill="none"
                   strokeWidth="5"
-                  className={
-                    theme === "dark" ? "stroke-gray-700" : "stroke-gray-200"
-                  }
+                  className={isDark ? "stroke-gray-700" : "stroke-gray-200"}
                 />
                 <circle
                   cx="28"
@@ -1138,7 +1005,7 @@ function CreateBusinessWizardInner({
               onClick={() => startTour(buildTourSteps())}
               title={tr("start_tour")}
               className={`p-2 rounded-lg border transition-colors cursor-pointer ${
-                theme === "dark"
+                isDark
                   ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
                   : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
               }`}

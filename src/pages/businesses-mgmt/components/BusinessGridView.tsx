@@ -2,7 +2,6 @@ import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { Image, Loader, MapPin, Phone } from "lucide-react";
 
-import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
@@ -39,7 +38,7 @@ function BusinessGridView<T extends Business>({
   setSelectedItems,
 }: GridViewProps<T>) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const { isDark, language } = useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   useInfiniteScroll({ ref: scrollRef, hasMore, isLoading, onLoadMore: next });
 
@@ -78,12 +77,7 @@ function BusinessGridView<T extends Business>({
               imageAlt={business.name}
               fallbackIcon={Image}
               fallbackGradient="from-gray-300 to-teal-400"
-              title={getLngWiseStr(
-                language,
-                business?.name,
-                business?.nameHe,
-                business?.nameAr,
-              )}
+              title={business?.name}
               status={business?.status?.toLowerCase()}
               isChecked={selectedItems?.has(business._id) ?? false}
               onCheckChange={

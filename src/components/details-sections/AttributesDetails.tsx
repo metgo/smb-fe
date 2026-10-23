@@ -22,7 +22,7 @@ interface AttributesDetailsProps {
   groupTypesId?: string[];
   subCategoriesId?: string[];
   accessibilitiesId?: string[];
-  tags?: ITags[];
+  tags?: string[];
 }
 
 interface AttributeSectionProps {
@@ -177,7 +177,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
   accessibilitiesId,
 }) => {
   const { t } = useTranslation("common");
-  const { isDark, language } = useThemeClasses();
+  const { isDark } = useThemeClasses();
   const { categories, subCategories, groupTypes, accessibility } = useCommon();
 
   const filteredCategories = getMatchedItems(categories, categoriesId) ?? [];
@@ -186,10 +186,9 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
   const filteredAccessibilities =
     getMatchedItems(accessibility, accessibilitiesId) ?? [];
   const filteredGroupTypes = getMatchedItems(groupTypes, groupTypesId) ?? [];
-  const filteredTags = tags.filter((tag) => tag?.[language]?.trim());
 
   const hasAnyData =
-    filteredTags.length > 0 ||
+    tags.length > 0 ||
     filteredCategories.length > 0 ||
     filteredSubcategories.length > 0 ||
     filteredAccessibilities.length > 0 ||
@@ -278,7 +277,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
         >
           {filteredGroupTypes.map((type: any, idx: number) => (
             <Badge
-              key={type?.id ?? idx}
+              key={idx}
               icon={Users}
               label={type?.name ?? "Unnamed Group"}
               isDark={isDark}
@@ -289,19 +288,19 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
       )}
 
       {/* Tags */}
-      {filteredTags.length > 0 && (
+      {tags.length > 0 && (
         <AttributeSection
           icon={TagIcon}
           title={t("tags")}
-          subtitle={pluralise(filteredTags.length, "tag", "tags")}
+          subtitle={pluralise(tags.length, "tag", "tags")}
           isDark={isDark}
           colorScheme="orange"
         >
-          {filteredTags.map((tag, idx) => (
+          {tags.map((tag, idx) => (
             <Badge
               key={idx}
               icon={TagIcon}
-              label={tag[language]}
+              label={tag}
               isDark={isDark}
               colorScheme="orange"
             />

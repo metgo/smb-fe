@@ -31,6 +31,7 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
+
     getAllIcons: builder.query<any, any>({
       query: (params) => ({
         url: endpoints.icons,
@@ -49,6 +50,7 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
+
     getAccessibility: builder.query<any, Params>({
       query: (params) => ({
         url: endpoints.accessibility,
@@ -68,6 +70,7 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
+
     getAllCampaigns: builder.query<any, any>({
       query: (params) => ({
         url: endpoints.campaign,
@@ -77,6 +80,7 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
+
     getDmos: builder.query<any, void>({
       query: () => ({
         url: endpoints.dmosAuthorities,

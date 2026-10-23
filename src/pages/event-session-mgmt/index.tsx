@@ -6,8 +6,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Layout, Users, Bell, ClipboardList, Compass, Eye } from "lucide-react";
 
 import {
-  LandingTab,
   CapacityTab,
+  LandingTab,
   NotifyScheduleTab,
   RegistrationsTab,
 } from "./components";
@@ -26,7 +26,6 @@ import { useGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import { useLazyGenSessionPrivewLinkQuery } from "@/store/api/eventSessionApi";
 import { routes } from "@/lib/routes";
 import { BackToListBtn } from "@/components/btns";
-import { getLngWiseStr } from "@/helpers";
 
 // ─── Tab → tour step mapping ──────────────────────────────────────────────────
 const STEP_TAB_MAP: Partial<Record<string, TTabId>> = {
@@ -48,8 +47,7 @@ function EventSessionMgmtPageInner() {
 
   const { t } = useTranslation("event_session");
   const { t: tt } = useTranslation("tour");
-  const { isDark, bgSecondary, textPrimary, textTertiary, language } =
-    useThemeClasses();
+  const { isDark, bgSecondary, textPrimary, textTertiary } = useThemeClasses();
 
   const {
     data: eventDetails,
@@ -222,12 +220,7 @@ function EventSessionMgmtPageInner() {
                     {t("event_header_label")}
                   </p>
                   <h2 className="m-0 text-[15.5px] font-extrabold tracking-tight truncate">
-                    {getLngWiseStr(
-                      language,
-                      eventDetails?.name,
-                      eventDetails?.nameHe,
-                      eventDetails?.nameAr,
-                    )}
+                    {eventDetails?.name}
                   </h2>
                 </div>
               </div>

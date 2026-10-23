@@ -1,9 +1,8 @@
 import clsx from "clsx";
-import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, Loader, Package, Building2, AlertCircle } from "lucide-react";
 
-import { getLngWiseStr } from "@/helpers";
 import { GridCard } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
@@ -34,14 +33,12 @@ export default function ProductSelectionStep({
   selectedProducts,
   toggleProductSelection,
   primaryProducts,
-  // togglePrimaryProduct,
   hasWebsite,
   minSelectedProducts,
 }: ProductSelectionStepProps) {
   const { t } = useTranslation("minisites");
   const {
     isDark,
-    language,
     textPrimary,
     textSecondary,
     textTertiary,
@@ -144,12 +141,7 @@ export default function ProductSelectionStep({
                     imageAlt={product.name}
                     fallbackIcon={Package}
                     fallbackGradient="from-purple-500 to-pink-600"
-                    title={getLngWiseStr(
-                      language,
-                      product?.name,
-                      product?.nameHe,
-                      product?.nameAr,
-                    )}
+                    title={product?.name}
                     isChecked={selectedProducts.includes(product._id)}
                     onCheckChange={() => toggleProductSelection(product._id)}
                     onClick={() => toggleProductSelection(product._id)}
