@@ -1,26 +1,15 @@
 import { toast } from "sonner";
-import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ChevronDown,
-  Edit,
-  Eye,
-  MousePointer,
-  Timer,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { ChevronDown, Edit } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 
-import { PoiInfoDetails } from "./components";
 import { routes } from "@/lib/routes";
+import { PoiInfoDetails } from "./components";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageStats, Spinner, TabsSection } from "@/components/shared";
-import {
-  useGetPoiByIdQuery,
-  useGetIndividualPoiStatsQuery,
-} from "@/store/api/poiQueryApi";
+import { Spinner, TabsSection } from "@/components/shared";
+import { useGetPoiByIdQuery } from "@/store/api/poiQueryApi";
 import { StatusChangeBtn } from "@/components/btns";
 import { ChatWithCreator } from "@/components/chat-popup";
 import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
@@ -28,7 +17,6 @@ import { CreatePoiWizard } from "../components";
 import {
   AttributesDetails,
   DetailTitleSection,
-  // LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
 import { poiTabs } from "@/constants/tabs";
@@ -60,45 +48,6 @@ export default function PoiDetailsPage() {
   const poiId = searchParams.get("poiId") ?? "";
 
   const {
-    data,
-    refetch,
-    isLoading: isDetailStatsLoading,
-  } = useGetIndividualPoiStatsQuery({ poiId }, { skip: !poiId });
-
-  const poiStats = [
-    {
-      icon: <Eye className="w-5 h-5 text-green-600" />,
-      title: t("page_views"),
-      value: data?.pageViews?.toLocaleString() || "0",
-    },
-    {
-      icon: <Users className="w-5 h-5 text-green-600" />,
-      title: t("active_users"),
-      value: data?.activeUsers?.toLocaleString() || "0",
-    },
-    {
-      icon: <Users className="w-5 h-5 text-green-600" />,
-      title: t("unique_visitors"),
-      value: data?.totalUniqueVisitors?.toLocaleString() || "0",
-    },
-    {
-      icon: <MousePointer className="w-5 h-5 text-green-600" />,
-      title: t("clicks"),
-      value: data?.clicks?.toLocaleString() || "0",
-    },
-    {
-      icon: <TrendingUp className="w-5 h-5 text-green-600" />,
-      title: t("views_per_user"),
-      value: data?.viewsPerUser || "0",
-    },
-    {
-      icon: <Timer className="w-5 h-5 text-green-600" />,
-      title: t("avg_time_on_page"),
-      value: data?.averageEngagementTime || "0s",
-    },
-  ];
-
-  const {
     data: poi,
     refetch: poiDataRefetch,
     isLoading,
@@ -119,10 +68,10 @@ export default function PoiDetailsPage() {
     try {
       await updatePoi({
         poiId,
+        language,
         body: { status: status.toUpperCase() },
       }).unwrap();
       toast.success(tt("poi_status_update_success"));
-      refetch();
     } catch (error) {
       toast.error(tt("poi_status_update_failed"));
       console.error(error);
@@ -215,12 +164,6 @@ export default function PoiDetailsPage() {
             </>
           }
         />
-        <PageStats
-          stats={poiStats}
-          isLoading={isDetailStatsLoading}
-          className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4"
-          wrapperClassName="mt-3"
-        />
       </div>
 
       <div className="mt-6 flex flex-col flex-1 min-h-0">
@@ -240,7 +183,6 @@ export default function PoiDetailsPage() {
         <CreatePoiWizard
           editData={poi}
           onClose={() => setIsEditClicked(false)}
-          refetch={refetch}
           poiDataRefetch={poiDataRefetch}
           opMode={IOpMode.EDIT}
         />

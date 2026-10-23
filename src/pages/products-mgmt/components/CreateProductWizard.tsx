@@ -11,6 +11,7 @@ import {
   Eye,
   CreditCard,
   FileText,
+  Wand2,
 } from "lucide-react";
 
 import {
@@ -49,6 +50,7 @@ import { IOpMode } from "@/enums/operation.types";
 import { modelTitle, removeNulls } from "@/helpers";
 import Media from "@/components/details-sections/Media";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
+import { useCommon } from "@/hooks/useCommon";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -137,6 +139,8 @@ export default function CreateProductWizard({
   });
 
   const [getBusinessDelivery] = useLazyGetBusinessDeliveryInfoByIdQuery();
+
+  const { categories, accessibility, groupTypes } = useCommon();
 
   const [businessId, setBusinessId] = useState(bzIdForProdCreate || "");
   const [currentStep, setCurrentStep] = useState(1);
@@ -445,6 +449,59 @@ export default function CreateProductWizard({
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
+
+  // Dev-only helper: fills every empty field with plausible test data so the
+  // wizard can be clicked through quickly without typing. Never shown in prod.
+  const handleAutofill = () => {
+    const fallbackBusinessId = businesses?.[0]?._id || "";
+    const fallbackCategoryId = categories?.[0]?._id || "";
+    const sampleTag = "sample-tag";
+
+    setFormData((prev: any) => ({
+      ...prev,
+      businessId: prev.businessId || fallbackBusinessId,
+      name: prev.name || "Test Product " + Date.now().toString().slice(-5),
+      shortDescription:
+        prev.shortDescription ||
+        "Auto-generated short description for QA testing.",
+      fullDescription:
+        prev.fullDescription ||
+        "Auto-generated full description used for manual QA testing of the product wizard. Lorem ipsum dolor sit amet.",
+      primaryCategory: prev.primaryCategory || fallbackCategoryId,
+      tags: prev.tags?.length ? prev.tags : [sampleTag],
+      markedPrice: prev.markedPrice || "150",
+      sellingPrice: prev.sellingPrice || "120",
+      quantity: prev.isUnlimited ? prev.quantity : prev.quantity || "25",
+      startDate: prev.startDate || new Date().toISOString().slice(0, 10),
+      endDate:
+        prev.endDate ||
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .slice(0, 10),
+      vendorDelivers: true,
+      pickupAvailable: true,
+      deliveryArea: prev.deliveryArea?.length
+        ? prev.deliveryArea
+        : [{ area: "Tel Aviv", price: "20", pickUpLocation: [] }],
+      vendorDeliveryArea: prev.vendorDeliveryArea?.length
+        ? prev.vendorDeliveryArea
+        : [{ area: "Tel Aviv", price: "20", pickUpLocation: [] }],
+      deliveryAdditionalInfo:
+        prev.deliveryAdditionalInfo || "Standard delivery terms apply.",
+    }));
+
+    if (businesses?.[0]?._id) setBusinessId(businesses[0]._id);
+    if (!selectedAccessiblitiesId.length && accessibility?.[0]?._id) {
+      setAccessiblitiesId([accessibility[0]._id]);
+    }
+    if (!selectedGroupTypesId.length && groupTypes?.[0]?._id) {
+      setGroupTypesId([groupTypes[0]._id]);
+    }
+
+    toast.success(
+      tc("auto_filled", { defaultValue: "Form auto-filled for testing" }),
+    );
+  };
   const handleClose = () => {
     if (isFormDirty() && !isPublishBtnClicked && !isDraftBtnClicked) {
       setShowClosePopup(true);
@@ -736,6 +793,17 @@ export default function CreateProductWizard({
               </span>
             </div>
           </div>
+          {import.meta.env.DEV && (
+            <button
+              type="button"
+              onClick={handleAutofill}
+              title="Autofill (dev/testing only)"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium transition-colors shrink-0"
+            >
+              <Wand2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Autofill</span>
+            </button>
+          )}
           <PublishButton onClick={handlePublish} isLoading={isPublishing} />
         </div>
       </div>

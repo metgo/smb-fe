@@ -254,7 +254,6 @@ export default function CreatePoiWizard({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    // { number: 2, title: t("step_translation"), icon: LanguagesIcon },
     { number: 2, title: t("step_contact_info"), icon: Users },
     { number: 3, title: t("step_media"), icon: ImageIcon },
     { number: 4, title: t("step_attributes"), icon: Tag },
@@ -280,11 +279,7 @@ export default function CreatePoiWizard({
       location: addr.location,
     },
     geoLocation: { lat: geo.lat, long: geo.long },
-    tagsId: formData.tags?.map((tag: any) => ({
-      en: tag.en,
-      he: tag.he,
-      ar: tag.ar,
-    })),
+    tagsId: formData.tags,
     busiEmail: formData.email,
     phoneNumber: formData.phone,
     website: formData.website,

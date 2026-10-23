@@ -10,6 +10,7 @@ import {
   useInitPoiCreateMutation,
   useUpdatePoiMutation,
 } from "@/store/api/poiMutationApi";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface UsePoiDraftSaverProps {
   opMode: IOpMode;
@@ -33,6 +34,7 @@ export function usePoiDraftSaver({
   stepPayloadMap,
 }: UsePoiDraftSaverProps) {
   const navigate = useNavigate();
+  const { language } = useThemeClasses();
   const { isTraveller } = useUserRoles();
 
   const [updatePoi, { isLoading: isSaving }] = useUpdatePoiMutation();
@@ -72,6 +74,7 @@ export function usePoiDraftSaver({
         if (!Object.keys(payload).length) return;
 
         await updatePoi({
+          language,
           poiId: internalPoiId || poiId!,
           body: payload,
         }).unwrap();

@@ -21,20 +21,26 @@ export const poiMutationApi = createApi({
       }),
       invalidatesTags: ["POI"],
     }),
+
     deletePoi: builder.mutation<any, { poiId: string }>({
       query: ({ poiId }) => ({
         url: `${endpoints.poi}/${poiId}`,
         method: "DELETE",
       }),
     }),
-    updatePoi: builder.mutation<any, { body: any; poiId: string }>({
-      query: ({ body, poiId }) => ({
-        url: `${endpoints.pois}/${poiId}`,
+
+    updatePoi: builder.mutation<
+      any,
+      { body: any; poiId: string; language: Language }
+    >({
+      query: ({ body, poiId, language }) => ({
+        url: `${endpoints.pois}/${poiId}?locale=${language}`,
         method: "PATCH",
         data: body,
       }),
       invalidatesTags: ["POI"],
     }),
+
     bulkPoisUpdate: builder.mutation<any, IBulkUpdateParams>({
       query: (body) => ({
         url: endpoints.bulkPoisUpdate,

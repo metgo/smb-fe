@@ -548,7 +548,6 @@ function CreateBusinessWizardInner({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    // { number: 2, title: tc("translation"), icon: LanguagesIcon },
     { number: 2, title: t("step_contact_ownership"), icon: Users },
     { number: 3, title: t("step_location"), icon: MapPin },
     { number: 4, title: t("step_attributes"), icon: Tag },

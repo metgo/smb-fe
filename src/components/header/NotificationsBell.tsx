@@ -441,6 +441,7 @@ const NotificationsBell = () => {
                         }).unwrap();
                       } else if (itemType === "POI") {
                         await updatePoi({
+                          language,
                           poiId: notification.itemId,
                           body: { status: "APPROVED" },
                         }).unwrap();
