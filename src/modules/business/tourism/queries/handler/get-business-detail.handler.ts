@@ -14,6 +14,8 @@ import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 import { PromotionOrdersService } from 'src/modules/promotion-orders/promotion-orders.service';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 
 @QueryHandler(GetBusinessDetailForTourismQuery)
 export class GetBusinessDetailForTourismHandler
@@ -21,12 +23,16 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
   constructor(
     @InjectModel(BusinessesAudit.name)
     private BusinessesAuditModel: Model<BusinessesAudit>,
+    @InjectModel(Business.name)
+    private BusinessModel: Model<Business>,
     @InjectModel(ProductsAudit.name)
     private ProductsAuditModel: Model<ProductsAudit>,
     @InjectModel(Trip.name)
     private TripModel: Model<Trip>,
     @InjectModel(EventsAudit.name)
     private EventsAuditModel: Model<EventsAudit>,
+    @InjectModel(ExternalApi.name)
+    private ExternalApiModel: Model<ExternalApi>,
     private readonly businessService: BusinessService,
     private readonly promotionOrdersService: PromotionOrdersService,
   ) {}
@@ -34,6 +40,19 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
   async execute(queries: GetBusinessDetailForTourismQuery): Promise<any> {
     try {
       const { slug, query } = queries;
+
+      let siteId: any;
+      if (query.identifierId) {
+        const siteSetting = await this.ExternalApiModel.findOne({
+          identifierId: query.identifierId,
+        }).select('_id');
+
+        if (!siteSetting) {
+          throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
+        }
+
+        siteId = siteSetting._id;
+      }
 
       const select
         = '_id businessId primaryCategoryId location cover logo images name nameHe nameAr address countryCode phoneNumber busiEmail shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation groupTypesId accessibilitiesId primaryCategoryId tagsId openingHrs isAlwaysOpen slug socialMedia impact deliveryArea deliverySpecificSellerInfo deliveryReturnExchange deliveryAdditionalInfo isPickUpAvailable';
@@ -81,6 +100,17 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
 
         if (!business) {
           throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+        }
+
+        if (siteId) {
+          const isAssociated = await this.BusinessModel.exists({
+            _id: (business as any).businessId,
+            associatedWebsiteIds: siteId,
+          });
+
+          if (!isAssociated) {
+            throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+          }
         }
 
         const { businessId, socialMedia, ...rest } = business;

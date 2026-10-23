@@ -11,6 +11,11 @@ export class GetBusinessDetailTourismRequest {
   @IsOptional()
     campCode: string;
 
+  @ApiProperty({ type: String, required: false })
+  @IsString()
+  @IsOptional()
+    identifierId: string;
+
   @ApiProperty({
     type: 'enum',
     enum: Locale,

@@ -61,6 +61,11 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
             path: 'siteTopics.siteCategories.businessIds',
             select:
               'slug name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr geoLocation images primaryCategoryId groupTypesId accessibilitiesId tagsId address',
+            match: {
+              associatedWebsiteIds: siteSetting._id,
+              status: CommonStatus.APPROVED,
+              isDeleted: { $ne: true },
+            },
           },
         ]);
 
