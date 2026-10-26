@@ -184,7 +184,7 @@ function OrderDetailsModal({
       </div>
 
       {/* Content */}
-      <div className="px-6 overflow-y-auto overflow-hidden  space-y-6 ">
+      <div className="px-6 overflow-y-auto overflow-hidden  space-y-6">
         {/* Purchaser Information */}
         <div className="">
           <h3 className={`text-lg mb-3 ${textPrimary}`}>

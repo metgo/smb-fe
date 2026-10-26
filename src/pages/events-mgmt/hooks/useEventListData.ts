@@ -87,6 +87,7 @@ export function useEventListData(filters: EventFilters, searchQuery: string) {
     dateRangeFilter.start,
     dateRangeFilter.end,
     timeFilter,
+    language,
   ]);
 
   const {
@@ -109,7 +110,7 @@ export function useEventListData(filters: EventFilters, searchQuery: string) {
       );
       return newItems.length ? [...prev, ...newItems] : prev;
     });
-  }, [eventData, page]);
+  }, [eventData, page, language]);
 
   const fetchNextPage = useCallback(() => {
     if (!eventData?.meta?.hasNextPage || isFetching) return;

@@ -38,7 +38,7 @@ export default function ProfilePage() {
 
   const banks = tBank("banks", { returnObjects: true }) as Bank[];
 
-  const { isDark, textSecondary, language, isRTL } = useThemeClasses();
+  const { isDark, textSecondary, isRTL } = useThemeClasses();
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -190,7 +190,7 @@ export default function ProfilePage() {
               >
                 <Languages size={20} />
                 <span className="text-sm">
-                  {locales.find((l) => l.value === language)?.label}
+                  {locales.find((l) => l.value === i18n.language)?.label}
                 </span>
               </button>
               {langOpen && (
@@ -212,7 +212,7 @@ export default function ProfilePage() {
                       className={clsx(
                         "flex items-center gap-2 w-full px-3 py-2 text-sm text-start first:rounded-t-lg last:rounded-b-lg",
                         isDark ? "hover:bg-gray-700" : "hover:bg-teal-50",
-                        language === lang.value &&
+                        i18n.language === lang.value &&
                           (isDark ? "bg-gray-700" : "bg-teal-50"),
                         isDark ? "text-gray-200" : "text-gray-700",
                       )}
@@ -316,7 +316,12 @@ export default function ProfilePage() {
             <InfoItem
               icon={<Calendar />}
               label={t("member_since")}
-              value={formatDate(userInfo?.createdAt || "", language) || ""}
+              value={
+                formatDate(
+                  userInfo?.createdAt || "",
+                  i18n.language as Language,
+                ) || ""
+              }
             />
           </div>
         </div>

@@ -14,7 +14,7 @@ export default function CancelledInfo({
   compact?: boolean;
 }) {
   const { t } = useTranslation("orders");
-  const { isDark, isRTL, language } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
 
   if (!cancelled) return null;
 
@@ -49,22 +49,15 @@ export default function CancelledInfo({
         isDark
           ? "border-red-900/40 bg-red-900/10 text-red-200"
           : "border-red-200 bg-red-50 text-red-800"
-      } ${isRTL ? "text-right" : "text-left"} ${compact ? "" : "mt-3"}`}
+      }  ${compact ? "" : "mt-3"}`}
     >
-      <div
-        className={`flex items-center gap-2 font-medium mb-2 ${
-          isRTL ? "flex-row-reverse" : ""
-        }`}
-      >
+      <div className={`flex items-center gap-2 font-medium mb-2`}>
         <XCircle className="w-4 h-4 shrink-0" />
         <span>{t("cancellationDetails")}</span>
       </div>
       <dl className="space-y-1">
         {rows.map((row) => (
-          <div
-            key={row.label}
-            className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
-          >
+          <div key={row.label} className={`flex gap-2 `}>
             <dt className="shrink-0 opacity-80">{row.label}:</dt>
             <dd className="font-medium wrap-break-word">{row.value}</dd>
           </div>

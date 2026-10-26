@@ -124,7 +124,10 @@ export default function EventsWithViewMode({
   const handleEditEvent = async (eventId: string) => {
     const toastId = toast.loading(tc("event_edit_data_fetching"));
     if (eventId) {
-      const eventDetails = await getEventEditData({ eventId }).unwrap();
+      const eventDetails = await getEventEditData({
+        eventId,
+        language,
+      }).unwrap();
       if (eventDetails) {
         setIsEditModalOpen(true);
         setEditData(eventDetails);
