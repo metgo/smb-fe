@@ -54,19 +54,14 @@ export const BusinessContentForm = ({
     slug: string;
   } | null>(null);
 
-  // Get correct field name based on current global language
-  const getFieldName = (baseField: string): string => {
-    if (language === "en") {
-      return baseField; // name, shortDescription, fullDescription
-    }
-    // For he → nameHe, shortDescriptionHe, etc.
-    const suffix = language.charAt(0).toUpperCase() + language.slice(1);
-    return `${baseField}${suffix}`;
-  };
-
-  const titleField = getFieldName("name");
-  const shortDescField = getFieldName("shortDescription");
-  const fullDescField = getFieldName("fullDescription");
+  // Primary-language fields — always "name"/"shortDescription"/"fullDescription",
+  // same as Product/POI/Article content forms. The backend auto-translates
+  // nameHe/nameAr from these on save; the field must stay fixed regardless of
+  // the admin's dashboard UI language, or create/save-draft (which only reads
+  // formData.name) always sees it empty.
+  const titleField = "name";
+  const shortDescField = "shortDescription";
+  const fullDescField = "fullDescription";
 
   // Reset availability status when name changes
   const handleNameChange = (value: string) => {
