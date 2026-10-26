@@ -173,18 +173,13 @@ export const BusinessContentForm = ({
             onChange={(e) => handleNameChange(e.target.value)}
             onBlur={handleNameBlur}
             placeholder={t("title_placeholder")}
-            disabled={isBusinessContext && isEditMode}
             className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border-2 ${
               availabilityStatus === "available"
                 ? "border-green-500"
                 : availabilityStatus === "unavailable"
                   ? "border-red-500"
                   : borderColor
-            } rounded-xl px-4 py-3 pr-12 focus:outline-none transition-colors ${
-              isBusinessContext && isEditMode
-                ? "opacity-60 cursor-not-allowed"
-                : ""
-            }`}
+            } rounded-xl px-4 py-3 pr-12 focus:outline-none transition-colors`}
             dir={dir}
           />
         </div>
