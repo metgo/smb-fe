@@ -92,6 +92,7 @@ export interface VendorPaymentSummaryParams {
   sortOrder?: "ASC" | "DESC";
   page?: number;
   limit?: number;
+  locale: Language;
 }
 
 export interface VendorPaymentSummaryRow {

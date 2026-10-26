@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+
 import { useAppSelector } from "@/hooks/hooks";
 import { buildDateScopeParams } from "@/helpers";
 import {
   useGetVendorPaymentSummaryQuery,
+  type VendorPaymentSummaryParams,
   type VendorPaymentSummaryRow,
 } from "@/store/api/reconciliationQueryApi";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const LIMIT = 12;
 
@@ -21,7 +24,7 @@ export function useVendorPaymentSummaryData(
   adminView: boolean,
 ) {
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
-
+  const { language } = useThemeClasses();
   const [page, setPage] = useState(1);
   const [combinedVendors, setCombinedVendors] = useState<
     VendorPaymentSummaryRow[]
@@ -38,14 +41,16 @@ export function useVendorPaymentSummaryData(
     filters.amount,
     dmoId,
     authorityId,
+    language,
   ]);
 
   const queryParams = useMemo(() => {
-    const params: Record<string, any> = {
+    const params: VendorPaymentSummaryParams & Record<string, any> = {
       page,
       limit: LIMIT,
       dmoId,
       authorityId,
+      locale: language,
     };
 
     if (searchTerm) params.search = searchTerm;
@@ -66,6 +71,7 @@ export function useVendorPaymentSummaryData(
     searchTerm,
     dmoId,
     authorityId,
+    language,
   ]);
 
   const { data, isLoading, isFetching, refetch, fulfilledTimeStamp } =
@@ -96,7 +102,7 @@ export function useVendorPaymentSummaryData(
       return newItems.length ? [...prev, ...newItems] : prev;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDataCurrent, fulfilledTimeStamp, page]);
+  }, [isDataCurrent, fulfilledTimeStamp, page, language]);
 
   const fetchNextPage = useCallback(() => {
     if (!isDataCurrent || !data?.meta?.hasNextPage || isFetching) return;
