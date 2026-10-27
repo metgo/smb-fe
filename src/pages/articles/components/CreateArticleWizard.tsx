@@ -253,7 +253,7 @@ const CreateArticleWizard = ({
             isPublish ? t("article_published") : t("article_updated"),
           );
         } else {
-          await createBlog(payload).unwrap();
+          await createBlog({ body: payload, language }).unwrap();
           toast.success(isPublish ? t("article_published") : t("draft_saved"));
         }
         if (isPublish) onClose();

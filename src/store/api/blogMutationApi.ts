@@ -9,9 +9,9 @@ export const blogMutationApi = createApi({
   tagTypes: ["Blog"],
   endpoints: (builder) => ({
     // POST /blogs - Create a new blog
-    createBlog: builder.mutation<any, any>({
-      query: (body) => ({
-        url: `${endpoints.blogs}`,
+    createBlog: builder.mutation<any, { body: any; language: Language }>({
+      query: ({ body, language }) => ({
+        url: `${endpoints.blogs}?locale=${language}`,
         method: "POST",
         data: body,
       }),
