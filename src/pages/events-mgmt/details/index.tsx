@@ -127,6 +127,7 @@ export default function EventDetailsPage() {
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateEvent({
+        language,
         eventId,
         body: { status: status?.toUpperCase() },
       }).unwrap();

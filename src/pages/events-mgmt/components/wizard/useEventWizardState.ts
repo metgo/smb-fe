@@ -215,7 +215,11 @@ export function useEventWizardState({
     onChange: setEventImages,
     onImagesChange: eventId
       ? (updatedImages) =>
-          updateEvent({ eventId, body: { images: updatedImages } as any })
+          updateEvent({
+            language,
+            eventId,
+            body: { images: updatedImages } as any,
+          })
       : undefined,
   });
 
@@ -401,6 +405,7 @@ export function useEventWizardState({
     setEventId,
     initEventCreate,
     updateEvent,
+    language,
     stepPayloadMap,
     hydratedPayloadRef,
     businessId: selectedBusinessId,

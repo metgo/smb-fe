@@ -19,9 +19,12 @@ export const blogMutationApi = createApi({
     }),
 
     // PATCH /blogs/{blogId} - Update a blog
-    updateBlog: builder.mutation<any, { body: any; blogId: string }>({
-      query: ({ body, blogId }) => ({
-        url: `${endpoints.blogs}/${blogId}`,
+    updateBlog: builder.mutation<
+      any,
+      { body: any; blogId: string; language: Language }
+    >({
+      query: ({ body, blogId, language }) => ({
+        url: `${endpoints.blogs}/${blogId}?locale=${language}`,
         method: "PATCH",
         data: body,
       }),

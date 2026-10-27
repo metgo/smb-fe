@@ -119,6 +119,7 @@ const CreateArticleWizard = ({
               isPrimary: img.isPrimary,
             }));
             updateBlog({
+              language,
               blogId: existingArticle._id,
               body: { images: mapped },
             });
@@ -244,6 +245,7 @@ const CreateArticleWizard = ({
       try {
         if (isEditMode && existingArticle?._id) {
           await updateBlog({
+            language,
             body: payload,
             blogId: existingArticle._id,
           }).unwrap();
@@ -269,6 +271,7 @@ const CreateArticleWizard = ({
       updateBlog,
       onClose,
       validateArticle,
+      language,
     ],
   );
 
