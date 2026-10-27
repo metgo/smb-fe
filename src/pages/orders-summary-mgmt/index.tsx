@@ -40,6 +40,16 @@ import { usePersistentState } from "@/hooks/usePersistentState";
 
 const limit = 20;
 
+const defaultSummaryFilters = {
+  status: "all",
+  startDate: "",
+  endDate: "",
+  month: "all",
+  dmoId: "all",
+  authorityId: "all",
+  amount: "",
+};
+
 // Show a ₪ amount with at most 2 decimals, floored - never round a money value
 // up (10,476.568 -> ₪10,476.56). The backend already floors these; this is the
 // display-side guard so a bare toLocaleString() can't leak a 3rd decimal again.
@@ -56,11 +66,13 @@ type SummaryColumnVisibility = typeof defaultColumns;
 
 export default function OrdersSummaryMgmtPage() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
   const { t } = useTranslation("orders");
   const { t: tc } = useTranslation("common");
+
+  const { isDark, isRTL, language } = useThemeClasses();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
-  const { isDark, isRTL } = useThemeClasses();
-  const dispatch = useAppDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
   const [searchTermSummary, setSearchTermSummary] = usePersistentState(
@@ -100,6 +112,7 @@ export default function OrdersSummaryMgmtPage() {
 
   const orderSummaryQueryParams = useMemo(() => {
     const params: any = {
+      locale: language,
       page: pageSummary,
       limit,
       dmoId: summaryFilters.dmoId !== "all" ? summaryFilters.dmoId : undefined,
@@ -148,7 +161,14 @@ export default function OrdersSummaryMgmtPage() {
     }
 
     return params;
-  }, [pageSummary, searchTermSummary, summaryFilters, authorityId, dmoId]);
+  }, [
+    pageSummary,
+    searchTermSummary,
+    summaryFilters,
+    authorityId,
+    dmoId,
+    language,
+  ]);
 
   const {
     data: orderSummaries,
@@ -183,7 +203,7 @@ export default function OrdersSummaryMgmtPage() {
   useEffect(() => {
     setCombinedOrdersSummary([]);
     setPageSummary(1);
-  }, [searchTermSummary, summaryFilters]);
+  }, [searchTermSummary, summaryFilters, language]);
 
   useEffect(() => {
     if (!ordersSummariess?.length) return;
@@ -200,17 +220,7 @@ export default function OrdersSummaryMgmtPage() {
         return [...prev, ...newItems];
       });
     }
-  }, [ordersSummariess, pageSummary]);
-
-  const defaultSummaryFilters = {
-    status: "all",
-    startDate: "",
-    endDate: "",
-    month: "all",
-    dmoId: "all",
-    authorityId: "all",
-    amount: "",
-  };
+  }, [ordersSummariess, pageSummary, language]);
 
   const [columnVisibility, setColumnVisibility] =
     useState<SummaryColumnVisibility>(defaultColumns);

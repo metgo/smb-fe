@@ -35,7 +35,7 @@ export function useVendorMonthlyReportData(
   useEffect(() => {
     setPage(1);
     setCombinedOrders([]);
-  }, [searchTerm, filters, dmoId, authorityId]);
+  }, [searchTerm, filters, dmoId, authorityId, language]);
 
   const queryParams = useMemo(() => {
     const params: Record<string, any> = {
@@ -60,7 +60,7 @@ export function useVendorMonthlyReportData(
     );
 
     return params;
-  }, [page, filters, searchTerm, dmoId, authorityId]);
+  }, [page, filters, searchTerm, dmoId, authorityId, language]);
 
   const statsQueryParams = useMemo(() => {
     const { page: _p, limit: _l, ...rest } = queryParams;
@@ -84,7 +84,7 @@ export function useVendorMonthlyReportData(
   // has not been started yet" (RTK error #38) - no-op in that case instead.
   const refetch = useCallback(() => {
     if (!isUninitialized) refetchOrderProducts();
-  }, [isUninitialized, refetchOrderProducts]);
+  }, [isUninitialized, refetchOrderProducts, language]);
 
   const {
     data: reconciliationStats,
@@ -114,12 +114,12 @@ export function useVendorMonthlyReportData(
       );
       return newItems.length ? [...prev, ...newItems] : prev;
     });
-  }, [currentOrderProductsData, page]);
+  }, [currentOrderProductsData, page, language]);
 
   const fetchNextPage = useCallback(() => {
     if (!orderProductsData?.meta?.hasNextPage || isFetching) return;
     setPage((prev) => prev + 1);
-  }, [orderProductsData?.meta?.hasNextPage, isFetching]);
+  }, [orderProductsData?.meta?.hasNextPage, isFetching, language]);
 
   return {
     combinedOrders,

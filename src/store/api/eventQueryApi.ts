@@ -166,9 +166,12 @@ export const eventQueryApi = createApi({
       }),
     }),
 
-    getEventById: builder.query<IEventDetailsRes, { eventId: string | null }>({
-      query: ({ eventId }) => ({
-        url: `${endpoints.events}/${eventId}`,
+    getEventById: builder.query<
+      IEventDetailsRes,
+      { eventId: string | null; language: Language }
+    >({
+      query: ({ eventId, language }) => ({
+        url: `${endpoints.events}/${eventId}?locale=${language}`,
         method: "GET",
       }),
       keepUnusedDataFor: 0,

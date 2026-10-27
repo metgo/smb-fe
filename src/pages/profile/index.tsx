@@ -13,6 +13,9 @@ import {
   Moon,
   Sun,
   Languages,
+  Globe,
+  Wallet,
+  Settings,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -22,6 +25,7 @@ import { setTheme } from "@/features/settingsSlice";
 import { AssignBankAccountModal } from "./components";
 import { useNavigate } from "react-router-dom";
 import { useGetUserInfoQuery } from "@/store/api/userQueryApi";
+import { useUpdateUserMutation } from "@/store/api/userMutationApi";
 import { formatDate } from "@/helpers/formatter";
 import { Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -34,7 +38,7 @@ export default function ProfilePage() {
 
   const banks = tBank("banks", { returnObjects: true }) as Bank[];
 
-  const { isDark, textSecondary, language, isRTL } = useThemeClasses();
+  const { isDark, textSecondary, isRTL } = useThemeClasses();
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -65,6 +69,24 @@ export default function ProfilePage() {
     isLoading,
     isFetching,
   } = useGetUserInfoQuery();
+
+  const [updateUser, { isLoading: isUpdatingLanguage }] =
+    useUpdateUserMutation();
+
+  const handleLanguagePreferenceChange = async (lng: Language) => {
+    if (!userInfo?.id || lng === userInfo?.languagePreference) return;
+
+    try {
+      await updateUser({
+        userId: userInfo.id,
+        body: { languagePreference: lng },
+      }).unwrap();
+      handleLanguageChange(lng);
+      refetch();
+    } catch (error) {
+      console.error("Failed to update language preference", error);
+    }
+  };
 
   const [showBankModal, setShowBankModal] = useState(false);
 
@@ -144,7 +166,13 @@ export default function ProfilePage() {
             isDark ? "bg-gray-800" : "bg-white"
           } rounded-2xl shadow-lg p-5 sm:p-8 mb-6`}
         >
-          <h2 className={clsx("text-xl mb-4", textSecondary)}>
+          <h2
+            className={clsx(
+              "flex items-center gap-2 text-xl mb-4",
+              textSecondary,
+            )}
+          >
+            <Settings className="w-5 h-5" />
             {t("preferences") || "Preferences"}
           </h2>
 
@@ -162,7 +190,7 @@ export default function ProfilePage() {
               >
                 <Languages size={20} />
                 <span className="text-sm">
-                  {locales.find((l) => l.value === language)?.label}
+                  {locales.find((l) => l.value === i18n.language)?.label}
                 </span>
               </button>
               {langOpen && (
@@ -178,13 +206,13 @@ export default function ProfilePage() {
                     <button
                       key={lang.value}
                       onClick={() => {
-                        handleLanguageChange(lang.value);
+                        handleLanguagePreferenceChange(lang.value);
                         setLangOpen(false);
                       }}
                       className={clsx(
                         "flex items-center gap-2 w-full px-3 py-2 text-sm text-start first:rounded-t-lg last:rounded-b-lg",
                         isDark ? "hover:bg-gray-700" : "hover:bg-teal-50",
-                        language === lang.value &&
+                        i18n.language === lang.value &&
                           (isDark ? "bg-gray-700" : "bg-teal-50"),
                         isDark ? "text-gray-200" : "text-gray-700",
                       )}
@@ -215,6 +243,44 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* Language Preference */}
+        <div
+          className={`${
+            isDark ? "bg-gray-800" : "bg-white"
+          } rounded-2xl shadow-lg p-5 sm:p-8 mb-6`}
+        >
+          <h2
+            className={clsx(
+              "flex items-center gap-2 text-xl sm:text-2xl mb-5 sm:mb-6",
+              textSecondary,
+            )}
+          >
+            <Globe className="w-5 h-5 sm:w-6 sm:h-6" />
+            {t("language_preference") || "Language Preference"}
+          </h2>
+
+          <div className="flex items-center gap-3">
+            {locales.map((lang) => (
+              <button
+                key={lang.value}
+                disabled={isUpdatingLanguage}
+                onClick={() => handleLanguagePreferenceChange(lang.value)}
+                className={clsx(
+                  "flex items-center gap-2 border rounded-lg px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",
+                  userInfo?.languagePreference === lang.value
+                    ? "border-teal-500 bg-teal-50 text-teal-700"
+                    : isDark
+                      ? "border-gray-700 text-gray-200"
+                      : "border-gray-300 text-gray-700",
+                )}
+              >
+                <span>{lang.flag}</span>
+                <span>{lang.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Contact Information */}
         <div
           className={`${
@@ -222,8 +288,12 @@ export default function ProfilePage() {
           } rounded-2xl shadow-lg p-5 sm:p-8 mb-6`}
         >
           <h2
-            className={clsx("text-xl sm:text-2xl mb-5 sm:mb-6", textSecondary)}
+            className={clsx(
+              "flex items-center gap-2 text-xl sm:text-2xl mb-5 sm:mb-6",
+              textSecondary,
+            )}
           >
+            <User className="w-5 h-5 sm:w-6 sm:h-6" />
             {t("contact_information")}
           </h2>
 
@@ -246,7 +316,12 @@ export default function ProfilePage() {
             <InfoItem
               icon={<Calendar />}
               label={t("member_since")}
-              value={formatDate(userInfo?.createdAt || "", language) || ""}
+              value={
+                formatDate(
+                  userInfo?.createdAt || "",
+                  i18n.language as Language,
+                ) || ""
+              }
             />
           </div>
         </div>
@@ -258,7 +333,13 @@ export default function ProfilePage() {
           } rounded-2xl shadow-lg p-5 sm:p-8`}
         >
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5 sm:mb-6">
-            <h2 className={clsx("text-xl sm:text-2xl", textSecondary)}>
+            <h2
+              className={clsx(
+                "flex items-center gap-2 text-xl sm:text-2xl",
+                textSecondary,
+              )}
+            >
+              <Wallet className="w-5 h-5 sm:w-6 sm:h-6" />
               {t("bank_account_details")}
             </h2>
 

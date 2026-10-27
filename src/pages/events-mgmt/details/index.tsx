@@ -47,16 +47,16 @@ import { CreateEventWizardNew } from "../components";
 import { formatILS } from "@/helpers/formatter";
 
 export default function EventDetailsPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation("events");
 
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const eventId = searchParams.get("eventId") || "";
   const tokenFromUrl = searchParams.get("token"); // QR code has token
   const tabFromUrl = searchParams.get("tab") || "overview";
   const isFromQRCode = !!tokenFromUrl; // Only from QR code if token exists
 
-  const { bgPrimary, isRTL, isDark } = useThemeClasses();
+  const { bgPrimary, isRTL, isDark, language } = useThemeClasses();
 
   const [hasExternalTicket, setHasExternalTicket] = useState<boolean>(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -84,7 +84,7 @@ export default function EventDetailsPage() {
     refetch,
     isLoading,
     isFetching,
-  } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
+  } = useGetEventByIdQuery(eventId ? { eventId, language } : skipToken);
 
   const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
     eventId && !hasExternalTicket ? { eventId } : skipToken,

@@ -47,14 +47,15 @@ function EventSessionMgmtPageInner() {
 
   const { t } = useTranslation("event_session");
   const { t: tt } = useTranslation("tour");
-  const { isDark, bgSecondary, textPrimary, textTertiary } = useThemeClasses();
+  const { isDark, language, bgSecondary, textPrimary, textTertiary } =
+    useThemeClasses();
 
   const {
     data: eventDetails,
     isFetching,
     isLoading,
     refetch,
-  } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
+  } = useGetEventByIdQuery(eventId ? { eventId, language } : skipToken);
 
   const [triggerPreviewLink, { isFetching: isPreviewLoading }] =
     useLazyGenSessionPrivewLinkQuery();

@@ -4,7 +4,7 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
 import { store } from "@/store/store";
-import { setLanguage } from "@/features/settingsSlice";
+import { setTextDirection } from "@/features/settingsSlice";
 
 i18n
   .use(HttpBackend)
@@ -47,13 +47,17 @@ i18n
     },
   });
 
-// i18next is the single source of truth for "current language" — direction
-// (dir) and the Redux `language`/`isRTL` fields must only ever follow what
+// i18next is the single source of truth for "current UI language" — text
+// direction (dir) and the Redux `isRTL` field must only ever follow what
 // i18next actually resolved and loaded, never be set independently of it.
 // Otherwise the two can drift (e.g. dir flips to RTL while text is still
 // English because the language bundle failed to load, or vice versa).
+//
+// Note: this is distinct from `settings.language`, the header-selected
+// "API language" used for localized data requests — that one does NOT
+// drive i18n and must not be changed here.
 i18n.on("languageChanged", (lng) => {
-  store.dispatch(setLanguage(lng as Language));
+  store.dispatch(setTextDirection(lng as Language));
 
   const { isRTL } = store.getState().settings;
   document.documentElement.dir = isRTL ? "rtl" : "ltr";

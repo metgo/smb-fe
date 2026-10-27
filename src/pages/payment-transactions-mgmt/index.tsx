@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useTranslation } from "react-i18next";
 import { FileText } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetPaymentTransactionsQuery } from "@/store/api/paymentQueryApi";
 import type { PaymentTransaction } from "@/store/api/paymentQueryApi";
+import { useGetPaymentTransactionsQuery } from "@/store/api/paymentQueryApi";
 import {
   PageHeader,
   SearchInput,
@@ -294,7 +294,7 @@ const PaymentTransactionsPage = () => {
             <div className="relative">
               <FilterButton value={showFilters} onChange={setShowFilters} />
               {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none bg-teal-500 text-white">
+                <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none bg-teal-500 text-white">
                   {activeFilterCount}
                 </span>
               )}

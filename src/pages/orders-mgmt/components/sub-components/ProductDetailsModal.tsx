@@ -18,7 +18,7 @@ export default function ProductDetailsModal({
   onClose,
 }: ProductDetailsModalProps) {
   const { t } = useTranslation("orders");
-  const { isRTL, isDark, textPrimary, textTertiary } = useThemeClasses();
+  const { isDark, textPrimary, textTertiary } = useThemeClasses();
 
   return (
     <ModalWrapper
@@ -35,9 +35,7 @@ export default function ProductDetailsModal({
         <div
           className={`p-6 border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}
         >
-          <div
-            className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
-          >
+          <div className={`flex items-center justify-between `}>
             <h2 className={`text-2xl ${textPrimary}`}>{product?.name}</h2>
           </div>
         </div>

@@ -331,7 +331,9 @@ export function buildOrderColumns({
             className="w-12 h-12 rounded-lg object-cover shrink-0"
           />
           <div className="min-w-0">
-            <div className={`font-medium text-base ${textPrimary} truncate`}>
+            <div
+              className={`font-small text-wrap text-sm ${textPrimary} truncate line-clamp-2`}
+            >
               {order.productName}
             </div>
           </div>

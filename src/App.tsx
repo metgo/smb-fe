@@ -65,7 +65,11 @@ import {
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { IdleLogout, SplashLoader } from "./components/shared";
+import {
+  IdleLogout,
+  SplashLoader,
+  SyncLanguagePreference,
+} from "./components/shared";
 import RouterProgressBar from "./components/shared/RouterProgressBar";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
@@ -551,6 +555,7 @@ function App() {
             <Suspense fallback={<SplashLoader />}>
               <ProtectedRoute>
                 <IdleLogout />
+                <SyncLanguagePreference />
                 <RootLayout />
               </ProtectedRoute>
             </Suspense>

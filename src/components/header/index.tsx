@@ -15,7 +15,7 @@ import {
 // import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { setTheme } from "@/features/settingsSlice";
+import { setTheme, setLanguage } from "@/features/settingsSlice";
 import {
   setAuthority,
   setDmo,
@@ -121,12 +121,12 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // This only changes the "API language" used for localized data requests
+  // (see useThemeClasses/settingsSlice) — it must NOT call i18n.changeLanguage,
+  // since static UI text and direction follow the user's saved
+  // languagePreference instead (synced via SyncLanguagePreference).
   const handleLanguageChange = (lng: Language) => {
-    // Redux `settings.language`/`isRTL` are updated via the i18n
-    // "languageChanged" listener once the bundle actually loads — see src/i18n/index.ts.
-    i18n.changeLanguage(lng).catch((error) => {
-      console.error("Failed to change language", error);
-    });
+    dispatch(setLanguage(lng));
   };
 
   return (
@@ -142,7 +142,7 @@ export default function Header() {
             {/* Left: logo */}
             <div className="flex items-center gap-2 shrink-0">
               <img
-                src={getHeaderLogoByLanguage(language, isDark)}
+                src={getHeaderLogoByLanguage(i18n.language as Language, isDark)}
                 alt="Logo image"
                 className="h-14 sm:h-16 w-auto object-contain shrink-0"
               />

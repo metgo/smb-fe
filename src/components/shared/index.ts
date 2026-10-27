@@ -7,6 +7,7 @@ import RouterProgressBar from "./RouterProgressBar";
 import ConfirmDialog from "./ConfirmDialog";
 import FilterChips from "./FilterChips";
 import IdleLogout from "./IdleLogout";
+import SyncLanguagePreference from "./SyncLanguagePreference";
 import ImageWithFallback from "./ImageWithFallback";
 import InfoTooltip from "./InfoTooltip";
 import ItemStatusBadge from "./ItemStatusBadge";
@@ -39,6 +40,7 @@ export {
   PageStats,
   PageHeader,
   IdleLogout,
+  SyncLanguagePreference,
   InfoTooltip,
   TabsSection,
   WizardFooter,
