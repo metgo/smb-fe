@@ -107,6 +107,8 @@
   "payment_information": "Payment Information",
   "payment_date": "Payment Date",
   "order_id": "Order ID",
+  "notify_customer_by": "Notify customer by",
+  "sms": "SMS",
   "loading_punch_pass": "Loading punch pass...",
   "punch_pass_load_failed": "Failed to load punch pass",
   "punch_pass_delete_failed": "Failed to delete punch pass",

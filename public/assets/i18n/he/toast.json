@@ -88,5 +88,10 @@
   "vendor_sms_sent_success": "SMS נשלח לספק בהצלחה",
   "vendor_sms_sent_failed": "שליחת SMS לספק נכשלה",
   "ticket_sms_resend_success": "ה-SMS של הכרטיס נשלח מחדש בהצלחה",
-  "ticket_sms_resend_faild": "שליחת ה-SMS של הכרטיס מחדש נכשלה"
+  "ticket_sms_resend_faild": "שליחת ה-SMS של הכרטיס מחדש נכשלה",
+
+  "punchpass_email_resend_success": "אימייל הכרטיסייה נשלח בהצלחה",
+  "punchpass_email_resend_failed": "שליחת אימייל הכרטיסייה נכשלה",
+  "punchpass_sms_resend_success": "ה-SMS של הכרטיסייה נשלח בהצלחה",
+  "punchpass_sms_resend_failed": "שליחת ה-SMS של הכרטיסייה נכשלה"
 }

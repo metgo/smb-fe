@@ -107,6 +107,8 @@
   "payment_information": "معلومات الدفع",
   "payment_date": "تاريخ الدفع",
   "order_id": "رقم الطلب",
+  "notify_customer_by": "إشعار العميل عبر",
+  "sms": "رسالة نصية",
   "loading_punch_pass": "جارٍ تحميل البطاقة...",
   "punch_pass_load_failed": "فشل تحميل البطاقة",
   "punch_pass_delete_failed": "فشل حذف البطاقة",
