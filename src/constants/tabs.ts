@@ -34,6 +34,7 @@ export const businessTabs = [
   { id: "delivery", label: "delivery_policy", icon: Truck },
   { id: "hours", label: "operating_hours", icon: Clock },
   { id: "score", label: "score", icon: Gauge },
+  { id: "audit_info", label: "audit_info", icon: History },
 ];
 export const miniSiteTabs = [
   { id: "overview", label: "overview", icon: FileText },
@@ -55,6 +56,7 @@ export const eventTabs = [
     icon: Bell,
   },
   { id: "qr_scan_logs", label: "qr_scan_logs", icon: Logs },
+  { id: "audit_info", label: "audit_info", icon: History },
 ];
 
 export const getEventTabs = (hasExternalTicket?: boolean) => {
@@ -77,12 +79,14 @@ export const productTabs = [
   },
   { id: "delivery", label: "delivery_policy", icon: Truck },
   { id: "media", label: "media", icon: ImageIcon },
+  { id: "audit_info", label: "audit_info", icon: History },
 ];
 
 export const poiTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "accessibility", label: "attributes", icon: Accessibility },
   { id: "media", label: "images", icon: ImageIcon },
+  { id: "audit_info", label: "audit_info", icon: History },
 ];
 
 export const tripTabs = [
@@ -90,6 +94,7 @@ export const tripTabs = [
   { id: "stations", label: "stations", icon: MapPin },
   { id: "itenary", label: "step_itenary", icon: Clock },
   { id: "media", label: "media", icon: ImageIcon },
+  { id: "audit_info", label: "audit_info", icon: History },
 ];
 
 export const punchPassTabs = [
@@ -104,6 +109,7 @@ export const voucherTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "assignee", label: "assignee_and_creator", icon: Users },
   { id: "transactions", label: "transactions_and_usage", icon: Truck },
+  { id: "audit_info", label: "audit_info", icon: History },
 ];
 
 export const crashTabs = [

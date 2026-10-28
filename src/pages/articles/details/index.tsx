@@ -8,6 +8,7 @@ import {
   ExternalLink,
   FileText,
   Globe,
+  History,
   Image as ImageIcon,
   ChevronDown,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { useGetBlogByIdQuery } from "@/store/api/blogQueryApi";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
 import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
+import { AuditInfoDetails } from "@/components/details-sections";
 import { formatDateTime } from "@/helpers/formatter";
 import { sanitizeRichTextHtml } from "@/helpers";
 
@@ -48,8 +50,8 @@ function mapBlogDetailsToArticle(blogDetails: any): IBlogDetails {
     images: blogDetails?.images ?? [],
     createdAt: blogDetails?.createdAt ?? "",
     updatedAt: blogDetails?.updatedAt ?? null,
-    createdBy: blogDetails?.createdBy ?? "",
-    updatedBy: blogDetails?.updatedBy ?? null,
+    createdBy: blogDetails?.createdBy,
+    updatedBy: blogDetails?.updatedBy,
     externalApiId: blogDetails?.externalApiId ?? null,
   };
 }
@@ -111,6 +113,7 @@ export default function ArticleDetails() {
     { id: "content", label: t("tab_content"), icon: FileText },
     { id: "seo", label: t("tab_seo"), icon: Globe },
     { id: "media", label: t("tab_media"), icon: ImageIcon },
+    { id: "audit_info", label: "audit_info", icon: History },
   ];
 
   const primaryImage = getPrimaryImage(blogDetails?.images || []);
@@ -301,6 +304,15 @@ export default function ArticleDetails() {
         return renderSEO();
       case "media":
         return renderMedia();
+      case "audit_info":
+        return (
+          <AuditInfoDetails
+            createdAt={blogDetails?.createdAt}
+            updatedAt={blogDetails?.updatedAt ?? undefined}
+            createdBy={blogDetails?.createdBy}
+            updatedBy={blogDetails?.updatedBy}
+          />
+        );
       default:
         return renderOverview();
     }

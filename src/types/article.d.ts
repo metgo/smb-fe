@@ -60,7 +60,7 @@ interface IArticleFormData {
     "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED" | "PENDING";
 }
 
-interface IBlogDetails {
+interface IBlogDetails extends IAuditInfo {
   _id: string;
   status: string;
   title: string;
@@ -74,10 +74,6 @@ interface IBlogDetails {
   tagsHe: string[];
   tagsAr: string[];
   images: BlogImage[];
-  createdAt: string;
-  updatedAt: string | null;
-  createdBy: string;
-  updatedBy: string | null;
   externalApiId: {
     id: string;
     name: string;

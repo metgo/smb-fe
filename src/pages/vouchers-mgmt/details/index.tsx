@@ -25,6 +25,7 @@ import { BackToListBtn } from "@/components/btns";
 import { formatDate, getStatusColor, getStatusLabel } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Spinner, TabsSection } from "@/components/shared";
+import { AuditInfoDetails } from "@/components/details-sections";
 
 import {
   AssignVoucherModal,
@@ -284,6 +285,16 @@ export default function VoucherDetailsPage() {
           {/* Transactions Tab */}
           {activeTab === "transactions" && (
             <VoucherUsageOrderList voucherId={voucher._id} />
+          )}
+
+          {/* Audit Info Tab */}
+          {activeTab === "audit_info" && (
+            <AuditInfoDetails
+              createdAt={voucher?.createdAt}
+              updatedAt={voucher?.updatedAt}
+              createdBy={voucher?.createdBy}
+              updatedBy={voucher?.updatedBy}
+            />
           )}
         </div>
       </div>

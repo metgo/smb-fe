@@ -398,11 +398,8 @@ interface IEventColumnVisibility {
   createdAt: boolean;
 }
 
-interface IEventDetailsRes {
+interface IEventDetailsRes extends IAuditInfo {
   _id: string;
-  createdAt: string;
-  updatedAt: string;
-  updatedBy: string;
   deletedBy: string | null;
   deletedAt: string | null;
   isDeleted: boolean;

@@ -156,12 +156,8 @@ interface ITripPayload {
 }
 
 // TripResponse
-interface ITripDetailsRes {
+interface ITripDetailsRes extends IAuditInfo {
   _id: string;
-  createdAt: string;
-  updatedAt: string | null;
-  createdBy: string;
-  updatedBy: string | null;
 
   name: string;
   status: string;
