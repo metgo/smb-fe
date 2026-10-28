@@ -21,7 +21,7 @@ export default function DashboardDetailDrawer({
   children,
 }: DashboardDetailDrawerProps) {
   const { t } = useTranslation("dashboard_mock");
-  const { isDark, isRTL } = useThemeClasses();
+  const { isDark } = useThemeClasses();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
@@ -58,11 +58,8 @@ export default function DashboardDetailDrawer({
         aria-modal="true"
         aria-labelledby="dashboard-drawer-title"
         className={clsx(
-          "relative w-full sm:max-w-md h-full overflow-y-auto border-l shadow-xl p-5",
-          isRTL ? "ml-0 border-r" : "",
-          isDark
-            ? "bg-gray-900 border-gray-800 text-white"
-            : "bg-white border-gray-200 text-gray-900",
+          "dm-glass relative w-full sm:max-w-md h-full overflow-y-auto shadow-xl p-5 rounded-l-3xl",
+          isDark ? "dm-glass--dark text-white" : "text-gray-900",
         )}
       >
         <div className="flex items-start justify-between gap-3 mb-4">

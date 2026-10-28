@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Button } from "@/components/ui/button";
+import { useTilt3D } from "../hooks/useTilt3D";
 import type { PerformanceAlert } from "../types/dashboard.types";
 
 interface DashboardAlertCardProps {
@@ -17,13 +18,17 @@ export default function DashboardAlertCard({
 }: DashboardAlertCardProps) {
   const { t } = useTranslation("dashboard_mock");
   const { isDark } = useThemeClasses();
+  const tilt = useTilt3D<HTMLDivElement>();
   const change = alert.currentScore - alert.previousScore;
 
   return (
     <div
+      ref={tilt.ref}
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
       className={clsx(
-        "rounded-lg border p-4",
-        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+        "dm-glass dm-tilt rounded-2xl p-4",
+        isDark && "dm-glass--dark",
       )}
     >
       <div className="flex items-start justify-between gap-3 mb-2">

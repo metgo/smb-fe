@@ -52,10 +52,8 @@ export default function BusinessSwitcher({
         aria-haspopup="listbox"
         aria-expanded={open}
         className={clsx(
-          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm border min-w-56 cursor-pointer",
-          isDark
-            ? "bg-gray-800 border-gray-700 text-white"
-            : "bg-white border-gray-300 text-gray-900",
+          "dm-glass flex items-center gap-2 rounded-2xl px-3 py-2 text-sm min-w-56 cursor-pointer",
+          isDark ? "dm-glass--dark text-white" : "text-gray-900",
         )}
       >
         <div
@@ -81,8 +79,8 @@ export default function BusinessSwitcher({
         <div
           role="listbox"
           className={clsx(
-            "absolute top-full left-0 mt-1 z-50 rounded-lg border shadow-lg min-w-full overflow-hidden",
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+            "dm-glass absolute top-full left-0 mt-1 z-50 rounded-2xl shadow-lg min-w-full overflow-hidden",
+            isDark && "dm-glass--dark",
           )}
         >
           {businesses.map((business) => (

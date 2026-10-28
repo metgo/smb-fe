@@ -29,6 +29,169 @@ body {
   top: 0 !important;
 }
 
+/* ----------------------------------------------------------------------
+   Role-based mock dashboard (src/pages/dashboard-mgmt): glassmorphism +
+   3D tilt treatment for cards and section panels. Scoped to .dm-glass /
+   .dm-tilt so it never affects any other page's styling.
+---------------------------------------------------------------------- */
+.dm-glass {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0.22) 55%,
+    rgba(255, 255, 255, 0.12)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 -16px 24px -20px rgba(255, 255, 255, 0.5),
+    0 18px 40px -16px rgba(15, 23, 42, 0.28),
+    0 4px 10px -4px rgba(15, 23, 42, 0.12);
+}
+
+/* Soft glossy sheen in the top-left, like a highlight catching curved glass. */
+.dm-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    120% 90% at 15% -10%,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0) 55%
+  );
+  pointer-events: none;
+}
+
+.dm-glass--dark {
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.03) 55%,
+    rgba(0, 0, 0, 0.1)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 -16px 24px -20px rgba(255, 255, 255, 0.06),
+    0 22px 46px -18px rgba(0, 0, 0, 0.65),
+    0 4px 12px -4px rgba(0, 0, 0, 0.4);
+}
+
+.dm-glass--dark::before {
+  background: radial-gradient(
+    120% 90% at 15% -10%,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0) 55%
+  );
+}
+
+/* 3D tilt wrapper: --rx / --ry are set from pointer position by useTilt3D. */
+.dm-tilt {
+  --rx: 0deg;
+  --ry: 0deg;
+  --tz: 0px;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry))
+    translateZ(var(--tz));
+  transform-style: preserve-3d;
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+.dm-tilt:hover,
+.dm-tilt:focus-within {
+  --tz: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dm-tilt {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+/* CSS-only lift for cards rendered in lists/maps, where wiring a pointer
+   tracker per item isn't practical. Gives the same glass-3D language
+   without needing a ref per row. */
+.dm-tilt-static {
+  transform: perspective(900px) rotateX(0deg) translateZ(0px);
+  transform-style: preserve-3d;
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease;
+}
+
+.dm-tilt-static:hover,
+.dm-tilt-static:focus-within {
+  transform: perspective(900px) rotateX(2deg) translateZ(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dm-tilt-static {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+/* Ambient, softly-colored backdrop so the frosted glass has something
+   visible to blur, like a dim lit room behind a glass panel. Purely
+   decorative, fixed behind the dashboard content (z-index: -1). */
+.dm-ambient-bg {
+  position: relative;
+}
+
+.dm-ambient-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      38% 32% at 12% 8%,
+      rgba(249, 168, 37, 0.22),
+      transparent 60%
+    ),
+    radial-gradient(
+      42% 36% at 85% 15%,
+      rgba(56, 189, 248, 0.2),
+      transparent 60%
+    ),
+    radial-gradient(
+      46% 40% at 50% 95%,
+      rgba(168, 85, 247, 0.16),
+      transparent 60%
+    );
+}
+
+.dm-ambient-bg--dark::before {
+  background:
+    radial-gradient(
+      38% 32% at 12% 8%,
+      rgba(249, 168, 37, 0.14),
+      transparent 60%
+    ),
+    radial-gradient(
+      42% 36% at 85% 15%,
+      rgba(56, 189, 248, 0.14),
+      transparent 60%
+    ),
+    radial-gradient(
+      46% 40% at 50% 95%,
+      rgba(168, 85, 247, 0.12),
+      transparent 60%
+    );
+}
+
 :root {
   --font-size: 16px;
   --background: #ffffff;

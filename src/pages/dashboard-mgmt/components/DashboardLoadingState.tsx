@@ -38,8 +38,8 @@ export default function DashboardLoadingState({
         <div
           key={i}
           className={clsx(
-            "rounded-lg border p-4 h-28 animate-pulse",
-            isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+            "dm-glass rounded-2xl p-4 h-28 animate-pulse",
+            isDark && "dm-glass--dark",
           )}
         >
           <div className={clsx("h-3 w-20 rounded mb-3", pulseClass)} />

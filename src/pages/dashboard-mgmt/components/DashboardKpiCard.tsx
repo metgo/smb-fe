@@ -4,6 +4,7 @@ import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTilt3D } from "../hooks/useTilt3D";
 import type { Trend } from "../types/dashboard.types";
 
 interface DashboardKpiCardProps {
@@ -25,6 +26,7 @@ export default function DashboardKpiCard({
 }: DashboardKpiCardProps) {
   const { t } = useTranslation("dashboard_mock");
   const { isDark } = useThemeClasses();
+  const tilt = useTilt3D<HTMLDivElement>();
 
   const isClickable = typeof onClick === "function";
 
@@ -42,15 +44,27 @@ export default function DashboardKpiCard({
         ? ArrowDown
         : ArrowRight;
 
-  const Wrapper = isClickable ? "button" : "div";
-
   return (
-    <Wrapper
-      type={isClickable ? "button" : undefined}
+    <div
+      ref={tilt.ref}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
       onClick={onClick}
+      onKeyDown={
+        isClickable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
       className={clsx(
-        "rounded-lg border p-4 text-left w-full transition-shadow",
-        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+        "dm-glass dm-tilt rounded-2xl p-4 text-left w-full",
+        isDark && "dm-glass--dark",
         isClickable && "hover:shadow-md cursor-pointer",
       )}
       aria-label={isClickable ? `${label}: ${value}` : undefined}
@@ -122,6 +136,6 @@ export default function DashboardKpiCard({
           {description}
         </p>
       )}
-    </Wrapper>
+    </div>
   );
 }

@@ -37,10 +37,13 @@ import {
   DashboardSectionHeader,
   DashboardAlertCard,
   DashboardDetailDrawer,
+  ReorderableSection,
+  LayoutCustomizeToggle,
 } from "../components";
 import type { DashboardDataTableColumn } from "../components";
 import { useDashboardFilters } from "../hooks/useDashboardFilters";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { useSectionOrder } from "../hooks/useSectionOrder";
 import { mockDmos, mockOrders, mockVendors } from "../data/mockDashboardData";
 import {
   aggregateRevenue,
@@ -63,7 +66,7 @@ const CURRENT_DMO_ID = "dmo-1";
 
 export default function DmoDashboard() {
   const { t } = useTranslation("dashboard_mock");
-  const { isDark } = useThemeClasses();
+  const { isDark, textPrimary } = useThemeClasses();
   const { period, setPeriod, series } = useDashboardFilters("monthly");
   const {
     authorities,
@@ -83,6 +86,32 @@ export default function DmoDashboard() {
 
   const dmo = mockDmos.find((d) => d.id === CURRENT_DMO_ID);
   const comparisonLabel = PERIOD_COMPARISON_LABEL[period];
+
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const sectionDescriptors = [
+    { id: "regional-overview", label: t("section_regional_overview") },
+    { id: "authority-performance", label: t("section_authority_performance") },
+    {
+      id: "regional-traffic-chart",
+      label: t("section_regional_traffic_chart"),
+    },
+    { id: "entity-breakdown", label: t("section_entity_breakdown") },
+    {
+      id: "regional-revenue-orders-chart",
+      label: t("section_regional_revenue_orders_chart"),
+    },
+    { id: "business-approvals", label: t("section_business_approvals") },
+    { id: "campaign-performance", label: t("section_campaign_performance") },
+    { id: "visitor-origin-chart", label: t("section_visitor_origin_chart") },
+    { id: "popular-top-earning", label: t("section_popular_top_earning") },
+    { id: "upcoming-events", label: t("section_upcoming_events") },
+    { id: "performance-alerts", label: t("section_performance_alerts") },
+    { id: "minisite-health", label: t("section_minisite_health") },
+  ];
+  const { orderedSections, moveSection, resetOrder } = useSectionOrder(
+    "dmo",
+    sectionDescriptors,
+  );
 
   const regionalOrders = useMemo(
     () =>
@@ -182,6 +211,7 @@ export default function DmoDashboard() {
       render: (r) => r.name,
       sortable: true,
       sortValue: (r) => r.name,
+      className: textPrimary,
     },
     {
       key: "businesses",
@@ -189,6 +219,7 @@ export default function DmoDashboard() {
       render: (r) => formatCount(r.businessCount ?? 0),
       sortable: true,
       sortValue: (r) => r.businessCount ?? 0,
+      className: textPrimary,
     },
     {
       key: "revenue",
@@ -196,11 +227,13 @@ export default function DmoDashboard() {
       render: (r) => formatCurrency(r.revenue),
       sortable: true,
       sortValue: (r) => r.revenue,
+      className: textPrimary,
     },
     {
       key: "orders",
       header: t("orders"),
       render: (r) => formatCount(r.orderCount),
+      className: textPrimary,
     },
     {
       key: "growth",
@@ -209,11 +242,13 @@ export default function DmoDashboard() {
         r.growthPercent === null
           ? "—"
           : `${r.growthPercent > 0 ? "+" : ""}${r.growthPercent}%`,
+      className: textPrimary,
     },
     {
       key: "pending",
       header: t("pending_approvals"),
       render: (r) => formatCount(r.pendingApprovals),
+      className: textPrimary,
     },
   ];
 
@@ -222,20 +257,24 @@ export default function DmoDashboard() {
       key: "name",
       header: t("business_name"),
       render: (row) => row.businessName,
+      className: textPrimary,
     },
     {
       key: "category",
       header: t("category"),
       render: (row) => t(`category_${row.category}`),
+      className: textPrimary,
     },
     {
       key: "submitted",
       header: t("submitted_at"),
       render: (row) => row.submittedAt,
+      className: textPrimary,
     },
     {
       key: "status",
       header: t("status"),
+      className: textPrimary,
       render: (row) => (
         <Badge
           variant={
@@ -322,21 +361,8 @@ export default function DmoDashboard() {
     lastIncidentAt: "2026-10-19",
   };
 
-  return (
-    <div className="space-y-6">
-      <DashboardHeader
-        title={t("dmo_dashboard_title")}
-        subtitle={t("dmo_dashboard_subtitle")}
-        scopeLabel={t("scope_dmo", { name: dmo?.name ?? "" })}
-      />
-
-      <DashboardFilters
-        period={period}
-        onPeriodChange={setPeriod}
-        onRefresh={() => toast.success(t("demo_data_refreshed"))}
-      />
-
-      {/* A. Regional overview */}
+  const sectionContent: Record<string, React.ReactNode> = {
+    "regional-overview": (
       <section>
         <DashboardSectionHeader title={t("section_regional_overview")} />
         <DashboardKpiGrid>
@@ -351,12 +377,13 @@ export default function DmoDashboard() {
           ))}
         </DashboardKpiGrid>
       </section>
+    ),
 
-      {/* B. Authority performance */}
+    "authority-performance": (
       <section>
         <DashboardSectionHeader title={t("section_authority_performance")} />
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           <DashboardDataTable
             rowKey={(r) => r.id}
@@ -366,8 +393,9 @@ export default function DmoDashboard() {
           />
         </div>
       </section>
+    ),
 
-      {/* C. Website traffic */}
+    "regional-traffic-chart": (
       <DashboardChartCard
         title={t("chart_regional_traffic")}
         subtitle={t("chart_regional_traffic_desc")}
@@ -414,8 +442,9 @@ export default function DmoDashboard() {
           </LineChart>
         </ResponsiveContainer>
       </DashboardChartCard>
+    ),
 
-      {/* D. Business/product/POI breakdown */}
+    "entity-breakdown": (
       <section>
         <DashboardSectionHeader title={t("section_entity_breakdown")} />
         <div className="grid sm:grid-cols-3 gap-3">
@@ -432,8 +461,9 @@ export default function DmoDashboard() {
           <BreakdownCard icon={MapPin} label={t("pois")} items={pois} />
         </div>
       </section>
+    ),
 
-      {/* E + F. Regional revenue & order/voucher trends */}
+    "regional-revenue-orders-chart": (
       <div className="grid lg:grid-cols-2 gap-4">
         <DashboardChartCard
           title={t("chart_regional_revenue")}
@@ -491,12 +521,13 @@ export default function DmoDashboard() {
           </ResponsiveContainer>
         </DashboardChartCard>
       </div>
+    ),
 
-      {/* G. Business approvals */}
+    "business-approvals": (
       <section>
         <DashboardSectionHeader title={t("section_business_approvals")} />
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           <DashboardDataTable
             rowKey={(row) => row.id}
@@ -507,8 +538,9 @@ export default function DmoDashboard() {
           />
         </div>
       </section>
+    ),
 
-      {/* H. Campaign performance */}
+    "campaign-performance": (
       <section>
         <DashboardSectionHeader title={t("section_campaign_performance")} />
         <DashboardKpiGrid>
@@ -534,8 +566,9 @@ export default function DmoDashboard() {
           />
         </DashboardKpiGrid>
       </section>
+    ),
 
-      {/* I. Visitor origin */}
+    "visitor-origin-chart": (
       <DashboardChartCard
         title={t("section_visitor_origin")}
         subtitle={t("section_visitor_origin_desc")}
@@ -559,13 +592,14 @@ export default function DmoDashboard() {
           </BarChart>
         </ResponsiveContainer>
       </DashboardChartCard>
+    ),
 
-      {/* J. Popular and top-earning entities */}
+    "popular-top-earning": (
       <section>
         <DashboardSectionHeader title={t("section_popular_top_earning")} />
         <div className="grid lg:grid-cols-2 gap-4">
           <div
-            className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+            className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
           >
             <h3
               className={`text-sm font-semibold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}
@@ -591,7 +625,7 @@ export default function DmoDashboard() {
             </ul>
           </div>
           <div
-            className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+            className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
           >
             <h3
               className={`text-sm font-semibold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}
@@ -618,8 +652,9 @@ export default function DmoDashboard() {
           </div>
         </div>
       </section>
+    ),
 
-      {/* K. Upcoming events and capacity */}
+    "upcoming-events": (
       <section>
         <DashboardSectionHeader title={t("section_upcoming_events")} />
         <div className="grid sm:grid-cols-2 gap-3">
@@ -628,7 +663,7 @@ export default function DmoDashboard() {
             return (
               <div
                 key={event.id}
-                className={`rounded-lg border p-4 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}
+                className={`dm-glass dm-tilt-static rounded-2xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
               >
                 <p
                   className={`text-sm font-medium ${isDark ? "text-white" : "text-gray-900"}`}
@@ -665,8 +700,9 @@ export default function DmoDashboard() {
           })}
         </div>
       </section>
+    ),
 
-      {/* L. Business performance alerts */}
+    "performance-alerts": (
       <section>
         <DashboardSectionHeader title={t("section_performance_alerts")} />
         {alerts.length === 0 ? (
@@ -687,8 +723,9 @@ export default function DmoDashboard() {
           </div>
         )}
       </section>
+    ),
 
-      {/* M. Regional mini-site health */}
+    "minisite-health": (
       <section>
         <DashboardSectionHeader title={t("section_minisite_health")} />
         <DashboardKpiGrid>
@@ -714,6 +751,46 @@ export default function DmoDashboard() {
           />
         </DashboardKpiGrid>
       </section>
+    ),
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <DashboardHeader
+          title={t("dmo_dashboard_title")}
+          subtitle={t("dmo_dashboard_subtitle")}
+          scopeLabel={t("scope_dmo", { name: dmo?.name ?? "" })}
+        />
+        <LayoutCustomizeToggle
+          isCustomizing={isCustomizing}
+          onToggle={() => setIsCustomizing((v) => !v)}
+          onReset={resetOrder}
+        />
+      </div>
+
+      <DashboardFilters
+        period={period}
+        onPeriodChange={setPeriod}
+        onRefresh={() => toast.success(t("demo_data_refreshed"))}
+      />
+
+      {orderedSections.map((section, index) => (
+        <ReorderableSection
+          key={section.id}
+          id={section.id}
+          index={index}
+          label={section.label}
+          isCustomizing={isCustomizing}
+          isFirst={index === 0}
+          isLast={index === orderedSections.length - 1}
+          onMove={moveSection}
+          onMoveUp={() => moveSection(index, index - 1)}
+          onMoveDown={() => moveSection(index, index + 1)}
+        >
+          {sectionContent[section.id]}
+        </ReorderableSection>
+      ))}
 
       <DashboardDetailDrawer
         isOpen={!!inspectedAlert}
@@ -760,7 +837,7 @@ function BreakdownCard({
 
   return (
     <div
-      className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+      className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
     >
       <div className="flex items-center gap-2 mb-3">
         <Icon className="w-4 h-4 text-teal-500" aria-hidden="true" />

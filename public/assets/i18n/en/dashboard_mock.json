@@ -6,6 +6,22 @@
   "role_authority": "Authority",
   "role_traveller": "Vendor",
 
+  "customize_layout": "Customize layout",
+  "done_customizing": "Done",
+  "reset_layout": "Reset layout",
+  "drag_to_reorder": "Drag to reorder {{section}}",
+  "move_section_up": "Move {{section}} up",
+  "move_section_down": "Move {{section}} down",
+
+  "section_platform_growth_trend": "Platform Growth Trend",
+  "section_traffic_trend_chart": "Traffic & Conversions Chart",
+  "section_revenue_trend_chart": "Revenue Trend Chart",
+  "section_regional_traffic_chart": "Regional Website Traffic Chart",
+  "section_regional_revenue_orders_chart": "Regional Revenue & Order Charts",
+  "section_visitor_origin_chart": "Visitor Origin Chart",
+  "section_purchase_trend_charts": "Purchase Trend Charts",
+  "section_orders_table": "Orders Table",
+
   "period_filter_label": "Time period",
   "period_daily": "Daily",
   "period_weekly": "Weekly",

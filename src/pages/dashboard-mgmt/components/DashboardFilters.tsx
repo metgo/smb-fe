@@ -30,10 +30,8 @@ export default function DashboardFilters({
         role="radiogroup"
         aria-label={t("period_filter_label")}
         className={clsx(
-          "inline-flex rounded-lg border p-0.5",
-          isDark
-            ? "bg-gray-900 border-gray-800"
-            : "bg-gray-100 border-gray-200",
+          "dm-glass inline-flex rounded-2xl p-0.5",
+          isDark && "dm-glass--dark",
         )}
       >
         {PERIODS.map((p) => (
@@ -44,7 +42,7 @@ export default function DashboardFilters({
             aria-checked={period === p}
             onClick={() => onPeriodChange(p)}
             className={clsx(
-              "px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
+              "px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer",
               period === p
                 ? isDark
                   ? "bg-gray-700 text-white"

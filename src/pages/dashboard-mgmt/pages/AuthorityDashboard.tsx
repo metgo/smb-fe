@@ -37,10 +37,13 @@ import {
   DashboardAlertCard,
   DashboardDataTable,
   DashboardDetailDrawer,
+  ReorderableSection,
+  LayoutCustomizeToggle,
 } from "../components";
 import type { DashboardDataTableColumn } from "../components";
 import { useDashboardFilters } from "../hooks/useDashboardFilters";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { useSectionOrder } from "../hooks/useSectionOrder";
 import {
   mockAuthorities,
   mockOrders,
@@ -63,7 +66,7 @@ const CURRENT_AUTHORITY_ID = "auth-1";
 
 export default function AuthorityDashboard() {
   const { t } = useTranslation("dashboard_mock");
-  const { isDark } = useThemeClasses();
+  const { isDark, textPrimary } = useThemeClasses();
   const { period, setPeriod, series } = useDashboardFilters("monthly");
   const { businesses, products, pois, approvals, alerts, events } =
     useDashboardData({
@@ -78,6 +81,26 @@ export default function AuthorityDashboard() {
 
   const authority = mockAuthorities.find((a) => a.id === CURRENT_AUTHORITY_ID);
   const comparisonLabel = PERIOD_COMPARISON_LABEL[period];
+
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const sectionDescriptors = [
+    { id: "area-overview", label: t("section_area_overview") },
+    { id: "entity-breakdown", label: t("section_entity_breakdown") },
+    { id: "revenue-snapshot", label: t("section_revenue_snapshot") },
+    { id: "business-health", label: t("section_business_health") },
+    { id: "campaign-performance", label: t("section_campaign_performance") },
+    { id: "popular-top-earning", label: t("section_popular_top_earning") },
+    { id: "events-pois", label: t("section_events_pois") },
+    {
+      id: "purchase-trend-charts",
+      label: t("section_purchase_trend_charts"),
+    },
+    { id: "actionable-items", label: t("section_actionable_items") },
+  ];
+  const { orderedSections, moveSection, resetOrder } = useSectionOrder(
+    "authority",
+    sectionDescriptors,
+  );
 
   const areaOrders = useMemo(
     () =>
@@ -170,10 +193,30 @@ export default function AuthorityDashboard() {
     registrations?: number;
     capacity?: number;
   }>[] = [
-    { key: "name", header: t("name"), render: (r) => r.name },
-    { key: "type", header: t("type"), render: (r) => r.type },
-    { key: "location", header: t("location"), render: (r) => r.location },
-    { key: "date", header: t("date"), render: (r) => r.date ?? "—" },
+    {
+      key: "name",
+      header: t("name"),
+      render: (r) => r.name,
+      className: textPrimary,
+    },
+    {
+      key: "type",
+      header: t("type"),
+      render: (r) => r.type,
+      className: textPrimary,
+    },
+    {
+      key: "location",
+      header: t("location"),
+      render: (r) => r.location,
+      className: textPrimary,
+    },
+    {
+      key: "date",
+      header: t("date"),
+      render: (r) => r.date ?? "—",
+      className: textPrimary,
+    },
     {
       key: "status",
       header: t("status"),
@@ -182,6 +225,7 @@ export default function AuthorityDashboard() {
           {t(`status_${r.status}`)}
         </Badge>
       ),
+      className: textPrimary,
     },
     {
       key: "capacity",
@@ -193,6 +237,7 @@ export default function AuthorityDashboard() {
               capacity: r.capacity,
             })
           : "—",
+      className: textPrimary,
     },
   ];
 
@@ -218,21 +263,8 @@ export default function AuthorityDashboard() {
 
   const upcomingEvents = events.filter(isUpcoming).slice(0, 4);
 
-  return (
-    <div className="space-y-6">
-      <DashboardHeader
-        title={t("authority_dashboard_title")}
-        subtitle={t("authority_dashboard_subtitle")}
-        scopeLabel={t("scope_authority", { name: authority?.name ?? "" })}
-      />
-
-      <DashboardFilters
-        period={period}
-        onPeriodChange={setPeriod}
-        onRefresh={() => toast.success(t("demo_data_refreshed"))}
-      />
-
-      {/* A. Area overview */}
+  const sectionContent: Record<string, React.ReactNode> = {
+    "area-overview": (
       <section>
         <DashboardSectionHeader title={t("section_area_overview")} />
         <DashboardKpiGrid>
@@ -247,8 +279,9 @@ export default function AuthorityDashboard() {
           ))}
         </DashboardKpiGrid>
       </section>
+    ),
 
-      {/* B. Breakdown */}
+    "entity-breakdown": (
       <section>
         <DashboardSectionHeader title={t("section_entity_breakdown")} />
         <div className="grid sm:grid-cols-3 gap-3">
@@ -265,8 +298,9 @@ export default function AuthorityDashboard() {
           <BreakdownCard icon={MapPin} label={t("pois")} items={pois} />
         </div>
       </section>
+    ),
 
-      {/* C. Revenue snapshot */}
+    "revenue-snapshot": (
       <section>
         <DashboardSectionHeader title={t("section_revenue_snapshot")} />
         <DashboardKpiGrid>
@@ -292,8 +326,9 @@ export default function AuthorityDashboard() {
           />
         </DashboardKpiGrid>
       </section>
+    ),
 
-      {/* D. Business health */}
+    "business-health": (
       <section>
         <DashboardSectionHeader title={t("section_business_health")} />
         <DashboardKpiGrid>
@@ -337,8 +372,9 @@ export default function AuthorityDashboard() {
           </div>
         )}
       </section>
+    ),
 
-      {/* E. Campaign performance */}
+    "campaign-performance": (
       <section>
         <DashboardSectionHeader title={t("section_campaign_performance")} />
         <DashboardKpiGrid>
@@ -364,13 +400,14 @@ export default function AuthorityDashboard() {
           />
         </DashboardKpiGrid>
       </section>
+    ),
 
-      {/* F. Popular and top-earning */}
+    "popular-top-earning": (
       <section>
         <DashboardSectionHeader title={t("section_popular_top_earning")} />
         <div className="grid lg:grid-cols-2 gap-4">
           <div
-            className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+            className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
           >
             <h3
               className={`text-sm font-semibold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}
@@ -396,7 +433,7 @@ export default function AuthorityDashboard() {
             </ul>
           </div>
           <div
-            className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+            className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
           >
             <h3
               className={`text-sm font-semibold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}
@@ -423,12 +460,13 @@ export default function AuthorityDashboard() {
           </div>
         </div>
       </section>
+    ),
 
-      {/* G. Events and POIs */}
+    "events-pois": (
       <section>
         <DashboardSectionHeader title={t("section_events_pois")} />
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           <DashboardDataTable
             rowKey={(r) => r.id}
@@ -438,8 +476,9 @@ export default function AuthorityDashboard() {
           />
         </div>
       </section>
+    ),
 
-      {/* H. Purchase trends */}
+    "purchase-trend-charts": (
       <div className="grid lg:grid-cols-2 gap-4">
         <DashboardChartCard
           title={t("chart_purchase_trends")}
@@ -489,8 +528,9 @@ export default function AuthorityDashboard() {
           </ResponsiveContainer>
         </DashboardChartCard>
       </div>
+    ),
 
-      {/* I. Actionable items */}
+    "actionable-items": (
       <section>
         <DashboardSectionHeader title={t("section_actionable_items")} />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -516,6 +556,46 @@ export default function AuthorityDashboard() {
           />
         </div>
       </section>
+    ),
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <DashboardHeader
+          title={t("authority_dashboard_title")}
+          subtitle={t("authority_dashboard_subtitle")}
+          scopeLabel={t("scope_authority", { name: authority?.name ?? "" })}
+        />
+        <LayoutCustomizeToggle
+          isCustomizing={isCustomizing}
+          onToggle={() => setIsCustomizing((v) => !v)}
+          onReset={resetOrder}
+        />
+      </div>
+
+      <DashboardFilters
+        period={period}
+        onPeriodChange={setPeriod}
+        onRefresh={() => toast.success(t("demo_data_refreshed"))}
+      />
+
+      {orderedSections.map((section, index) => (
+        <ReorderableSection
+          key={section.id}
+          id={section.id}
+          index={index}
+          label={section.label}
+          isCustomizing={isCustomizing}
+          isFirst={index === 0}
+          isLast={index === orderedSections.length - 1}
+          onMove={moveSection}
+          onMoveUp={() => moveSection(index, index - 1)}
+          onMoveDown={() => moveSection(index, index + 1)}
+        >
+          {sectionContent[section.id]}
+        </ReorderableSection>
+      ))}
 
       <DashboardDetailDrawer
         isOpen={!!inspectedAlert}
@@ -562,7 +642,7 @@ function BreakdownCard({
 
   return (
     <div
-      className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+      className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
     >
       <div className="flex items-center gap-2 mb-3">
         <Icon className="w-4 h-4 text-teal-500" aria-hidden="true" />
@@ -617,7 +697,7 @@ function ActionableGroup({
 
   return (
     <div
-      className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+      className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
     >
       <div className="flex items-center gap-2 mb-3">
         <Icon className="w-4 h-4 text-teal-500" aria-hidden="true" />

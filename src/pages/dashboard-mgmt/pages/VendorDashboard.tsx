@@ -34,10 +34,13 @@ import {
   DashboardDataTable,
   DashboardDetailDrawer,
   BusinessSwitcher,
+  ReorderableSection,
+  LayoutCustomizeToggle,
 } from "../components";
 import type { DashboardDataTableColumn } from "../components";
 import { useDashboardFilters } from "../hooks/useDashboardFilters";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { useSectionOrder } from "../hooks/useSectionOrder";
 import {
   CURRENT_VENDOR_ID,
   getVendorBusinesses,
@@ -60,7 +63,7 @@ import type { Order } from "../types/dashboard.types";
 
 export default function VendorDashboard() {
   const { t } = useTranslation("dashboard_mock");
-  const { isDark } = useThemeClasses();
+  const { isDark, textPrimary } = useThemeClasses();
   const { period, setPeriod } = useDashboardFilters("monthly");
 
   const vendorBusinesses = useMemo(
@@ -78,6 +81,7 @@ export default function VendorDashboard() {
   });
 
   const [inspectedOrder, setInspectedOrder] = useState<Order | null>(null);
+  const [isCustomizing, setIsCustomizing] = useState(false);
 
   const comparisonLabel = PERIOD_COMPARISON_LABEL[period];
   const business = vendorBusinesses.find((b) => b.id === selectedBusinessId);
@@ -159,6 +163,7 @@ export default function VendorDashboard() {
       render: (o) => o.orderNumber,
       sortable: true,
       sortValue: (o) => o.orderNumber,
+      className: textPrimary,
     },
     {
       key: "date",
@@ -166,14 +171,21 @@ export default function VendorDashboard() {
       render: (o) => o.date,
       sortable: true,
       sortValue: (o) => o.date,
+      className: textPrimary,
     },
-    { key: "item", header: t("item_summary"), render: (o) => o.itemSummary },
+    {
+      key: "item",
+      header: t("item_summary"),
+      render: (o) => o.itemSummary,
+      className: textPrimary,
+    },
     {
       key: "amount",
       header: t("amount"),
       render: (o) => formatCurrency(o.amount),
       sortable: true,
       sortValue: (o) => o.amount,
+      className: textPrimary,
     },
     {
       key: "status",
@@ -191,11 +203,13 @@ export default function VendorDashboard() {
           {t(`order_status_${o.status}`)}
         </Badge>
       ),
+      className: textPrimary,
     },
     {
       key: "fulfillment",
       header: t("fulfillment_method"),
       render: (o) => t(o.fulfillmentMethod),
+      className: textPrimary,
     },
     {
       key: "actions",
@@ -209,17 +223,29 @@ export default function VendorDashboard() {
           {t("view")}
         </button>
       ),
+      className: textPrimary,
     },
   ];
 
   const paymentColumns: DashboardDataTableColumn<(typeof payments)[number]>[] =
     [
-      { key: "reference", header: t("reference"), render: (p) => p.reference },
-      { key: "date", header: t("date"), render: (p) => p.date },
+      {
+        key: "reference",
+        header: t("reference"),
+        render: (p) => p.reference,
+        className: textPrimary,
+      },
+      {
+        key: "date",
+        header: t("date"),
+        render: (p) => p.date,
+        className: textPrimary,
+      },
       {
         key: "amount",
         header: t("amount"),
         render: (p) => formatCurrency(p.amount),
+        className: textPrimary,
       },
       {
         key: "status",
@@ -237,6 +263,7 @@ export default function VendorDashboard() {
             {t(`payment_status_${p.status}`)}
           </Badge>
         ),
+        className: textPrimary,
       },
       {
         key: "dispute",
@@ -251,6 +278,7 @@ export default function VendorDashboard() {
               {t(`dispute_${p.disputeStatus}`)}
             </Badge>
           ),
+        className: textPrimary,
       },
     ];
 
@@ -262,29 +290,29 @@ export default function VendorDashboard() {
 
   const upcomingEvents = events.filter(isUpcoming).slice(0, 4);
 
-  return (
-    <div className="space-y-6">
-      <DashboardHeader
-        title={t("vendor_dashboard_title")}
-        subtitle={t("vendor_dashboard_subtitle")}
-        scopeLabel={t("scope_business", { name: business?.name ?? "" })}
-      />
+  const sectionDescriptors = [
+    { id: "orders-overview", label: t("section_orders_overview") },
+    { id: "orders-table", label: t("section_orders_table") },
+    { id: "revenue-payouts", label: t("section_revenue_payouts") },
+    {
+      id: "top-selling-products",
+      label: t("section_top_selling_products"),
+    },
+    { id: "payments-disputes", label: t("section_payments_disputes") },
+    ...(business
+      ? [{ id: "performance-score", label: t("section_performance_score") }]
+      : []),
+    { id: "profile-completion", label: t("section_profile_completion") },
+    { id: "platform-updates", label: t("section_platform_updates") },
+    { id: "upcoming-events", label: t("section_upcoming_events") },
+  ];
+  const { orderedSections, moveSection, resetOrder } = useSectionOrder(
+    "traveller",
+    sectionDescriptors,
+  );
 
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <BusinessSwitcher
-          businesses={vendorBusinesses}
-          selectedBusinessId={selectedBusinessId}
-          onSelect={setSelectedBusinessId}
-        />
-      </div>
-
-      <DashboardFilters
-        period={period}
-        onPeriodChange={setPeriod}
-        onRefresh={() => toast.success(t("demo_data_refreshed"))}
-      />
-
-      {/* B. Orders overview */}
+  const sectionContent: Record<string, React.ReactNode> = {
+    "orders-overview": (
       <section>
         <DashboardSectionHeader title={t("section_orders_overview")} />
         <DashboardKpiGrid>
@@ -328,10 +356,12 @@ export default function VendorDashboard() {
           </DashboardChartCard>
         </div>
       </section>
+    ),
 
+    "orders-table": (
       <section>
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           <DashboardDataTable
             rowKey={(o) => o.id}
@@ -341,8 +371,9 @@ export default function VendorDashboard() {
           />
         </div>
       </section>
+    ),
 
-      {/* C. Revenue and payouts */}
+    "revenue-payouts": (
       <section>
         <DashboardSectionHeader title={t("section_revenue_payouts")} />
         <DashboardKpiGrid>
@@ -375,12 +406,13 @@ export default function VendorDashboard() {
           />
         </DashboardKpiGrid>
       </section>
+    ),
 
-      {/* D. Top-selling products */}
+    "top-selling-products": (
       <section>
         <DashboardSectionHeader title={t("section_top_selling_products")} />
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           {topProducts.length === 0 ? (
             <p
@@ -419,12 +451,13 @@ export default function VendorDashboard() {
           )}
         </div>
       </section>
+    ),
 
-      {/* E. Payments and disputes */}
+    "payments-disputes": (
       <section>
         <DashboardSectionHeader title={t("section_payments_disputes")} />
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           <DashboardDataTable
             rowKey={(p) => p.id}
@@ -435,41 +468,41 @@ export default function VendorDashboard() {
           />
         </div>
       </section>
+    ),
 
-      {/* F. Business performance score */}
-      {business && (
-        <section>
-          <DashboardSectionHeader title={t("section_performance_score")} />
-          <div
-            className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <span
-                className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
-              >
-                {business.performanceScore}
-              </span>
-              <span
-                className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
-              >
-                {t("score_change_label")}: {business.previousPerformanceScore} →{" "}
-                {business.performanceScore}
-              </span>
-            </div>
-            <p
-              className={`text-xs italic ${isDark ? "text-gray-500" : "text-gray-400"}`}
+    "performance-score": business && (
+      <section>
+        <DashboardSectionHeader title={t("section_performance_score")} />
+        <div
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <span
+              className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
             >
-              {t("simulated_data_notice")}
-            </p>
+              {business.performanceScore}
+            </span>
+            <span
+              className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            >
+              {t("score_change_label")}: {business.previousPerformanceScore} →{" "}
+              {business.performanceScore}
+            </span>
           </div>
-        </section>
-      )}
+          <p
+            className={`text-xs italic ${isDark ? "text-gray-500" : "text-gray-400"}`}
+          >
+            {t("simulated_data_notice")}
+          </p>
+        </div>
+      </section>
+    ),
 
-      {/* H. Profile completion */}
+    "profile-completion": (
       <section>
         <DashboardSectionHeader title={t("section_profile_completion")} />
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           <div className="flex items-center justify-between mb-2">
             <span
@@ -510,15 +543,16 @@ export default function VendorDashboard() {
           )}
         </div>
       </section>
+    ),
 
-      {/* I. Platform updates */}
+    "platform-updates": (
       <section>
         <DashboardSectionHeader title={t("section_platform_updates")} />
         <div className="grid sm:grid-cols-3 gap-3">
           {mockAnnouncements.map((a) => (
             <div
               key={a.id}
-              className={`rounded-lg border p-4 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}
+              className={`dm-glass dm-tilt-static rounded-2xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Megaphone
@@ -545,8 +579,9 @@ export default function VendorDashboard() {
           ))}
         </div>
       </section>
+    ),
 
-      {/* J. Upcoming events and sessions */}
+    "upcoming-events": (
       <section>
         <DashboardSectionHeader title={t("section_upcoming_events")} />
         {upcomingEvents.length === 0 ? (
@@ -560,7 +595,7 @@ export default function VendorDashboard() {
             {upcomingEvents.map((event) => (
               <div
                 key={event.id}
-                className={`rounded-lg border p-4 flex items-center justify-between gap-3 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}
+                className={`dm-glass dm-tilt-static rounded-2xl p-4 flex items-center justify-between gap-3 ${isDark ? "dm-glass--dark" : ""}`}
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -593,6 +628,54 @@ export default function VendorDashboard() {
           </div>
         )}
       </section>
+    ),
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <DashboardHeader
+          title={t("vendor_dashboard_title")}
+          subtitle={t("vendor_dashboard_subtitle")}
+          scopeLabel={t("scope_business", { name: business?.name ?? "" })}
+        />
+        <LayoutCustomizeToggle
+          isCustomizing={isCustomizing}
+          onToggle={() => setIsCustomizing((v) => !v)}
+          onReset={resetOrder}
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <BusinessSwitcher
+          businesses={vendorBusinesses}
+          selectedBusinessId={selectedBusinessId}
+          onSelect={setSelectedBusinessId}
+        />
+      </div>
+
+      <DashboardFilters
+        period={period}
+        onPeriodChange={setPeriod}
+        onRefresh={() => toast.success(t("demo_data_refreshed"))}
+      />
+
+      {orderedSections.map((section, index) => (
+        <ReorderableSection
+          key={section.id}
+          id={section.id}
+          index={index}
+          label={section.label}
+          isCustomizing={isCustomizing}
+          isFirst={index === 0}
+          isLast={index === orderedSections.length - 1}
+          onMove={moveSection}
+          onMoveUp={() => moveSection(index, index - 1)}
+          onMoveDown={() => moveSection(index, index + 1)}
+        >
+          {sectionContent[section.id]}
+        </ReorderableSection>
+      ))}
 
       <DashboardDetailDrawer
         isOpen={!!inspectedOrder}

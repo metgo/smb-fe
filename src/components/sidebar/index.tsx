@@ -111,13 +111,17 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       isEnabled: true,
     },
-    {
-      id: "dashboard-demo",
-      path: routes.dashboardDemo,
-      label: t("role_dashboards_demo") || "Role Dashboards (Demo)",
-      icon: FlaskConical,
-      isEnabled: true,
-    },
+    ...(isSuperadmin
+      ? [
+          {
+            id: "dashboard-demo",
+            path: routes.dashboardDemo,
+            label: t("role_dashboards_demo") || "Role Dashboards (Demo)",
+            icon: FlaskConical,
+            isEnabled: true,
+          },
+        ]
+      : []),
     {
       id: "businesses",
       path: routes.businessMgmt,

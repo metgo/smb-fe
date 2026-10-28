@@ -24,10 +24,10 @@ export default function RoleSwitcher({ role, onChange }: RoleSwitcherProps) {
   return (
     <div
       className={clsx(
-        "flex flex-wrap items-center gap-2 rounded-lg border p-2 mb-4",
+        "dm-glass flex flex-wrap items-center gap-2 rounded-2xl p-2 mb-4 border",
         isDark
           ? "bg-amber-950/20 border-amber-900/50"
-          : "bg-amber-50 border-amber-200",
+          : "bg-amber-50/70 border-amber-200",
       )}
     >
       <span
@@ -53,7 +53,7 @@ export default function RoleSwitcher({ role, onChange }: RoleSwitcherProps) {
             aria-selected={role === r}
             onClick={() => onChange(r)}
             className={clsx(
-              "px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
+              "px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer",
               role === r
                 ? "bg-amber-600 text-white"
                 : isDark

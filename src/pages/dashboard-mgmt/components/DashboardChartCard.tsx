@@ -1,6 +1,7 @@
 import clsx from "clsx";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTilt3D } from "../hooks/useTilt3D";
 import DashboardEmptyState from "./DashboardEmptyState";
 
 interface DashboardChartCardProps {
@@ -24,12 +25,16 @@ export default function DashboardChartCard({
   accessibleSummary,
 }: DashboardChartCardProps) {
   const { isDark } = useThemeClasses();
+  const tilt = useTilt3D<HTMLElement>();
 
   return (
     <section
+      ref={tilt.ref}
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
       className={clsx(
-        "rounded-xl border p-5",
-        isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200",
+        "dm-glass dm-tilt rounded-3xl p-5 mt-4",
+        isDark && "dm-glass--dark",
       )}
     >
       <div className="flex items-start gap-2 mb-4">

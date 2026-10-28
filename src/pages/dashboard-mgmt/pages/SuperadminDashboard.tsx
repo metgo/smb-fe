@@ -42,10 +42,13 @@ import {
   DashboardDataTable,
   DashboardSectionHeader,
   DashboardDetailDrawer,
+  ReorderableSection,
+  LayoutCustomizeToggle,
 } from "../components";
 import type { DashboardDataTableColumn } from "../components";
 import { useDashboardFilters } from "../hooks/useDashboardFilters";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { useSectionOrder } from "../hooks/useSectionOrder";
 import {
   mockAuthorities,
   mockDmos,
@@ -89,7 +92,7 @@ const STATUS_STYLES: Record<HealthStatus, { bg: string; text: string }> = {
 
 export default function SuperadminDashboard() {
   const { t } = useTranslation("dashboard_mock");
-  const { isDark } = useThemeClasses();
+  const { isDark, textPrimary } = useThemeClasses();
   const { period, setPeriod, series } = useDashboardFilters("monthly");
   const { events } = useDashboardData({ role: "superadmin", period });
 
@@ -98,6 +101,26 @@ export default function SuperadminDashboard() {
     null | "businesses" | "orders" | "revenue" | "approvals"
   >(null);
   const comparisonLabel = PERIOD_COMPARISON_LABEL[period];
+
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const sectionDescriptors = [
+    { id: "platform-overview", label: t("section_platform_overview") },
+    { id: "traffic-overview", label: t("section_traffic_overview") },
+    { id: "revenue-overview", label: t("section_revenue_overview") },
+    { id: "order-voucher-trends", label: t("section_order_voucher_trends") },
+    { id: "system-health", label: t("section_system_health") },
+    { id: "top-dmos-authorities", label: t("section_top_dmos_authorities") },
+    { id: "top-items", label: t("section_top_items") },
+    {
+      id: "top-earning-businesses",
+      label: t("section_top_earning_businesses"),
+    },
+    { id: "upcoming-events", label: t("section_upcoming_events") },
+  ];
+  const { orderedSections, moveSection, resetOrder } = useSectionOrder(
+    "superadmin",
+    sectionDescriptors,
+  );
 
   const totalVendors = mockVendors.length;
   const totalBusinesses = mockBusinesses.length;
@@ -299,14 +322,21 @@ export default function SuperadminDashboard() {
       render: (row) => row.business.name,
       sortable: true,
       sortValue: (row) => row.business.name,
+      className: textPrimary,
     },
-    { key: "vendor", header: t("vendor"), render: (row) => row.vendorName },
+    {
+      key: "vendor",
+      header: t("vendor"),
+      render: (row) => row.vendorName,
+      className: textPrimary,
+    },
     {
       key: "orders",
       header: t("orders"),
       render: (row) => formatCount(row.orderCount),
       sortable: true,
       sortValue: (row) => row.orderCount,
+      className: textPrimary,
     },
     {
       key: "revenue",
@@ -314,6 +344,7 @@ export default function SuperadminDashboard() {
       render: (row) => formatCurrency(row.revenue),
       sortable: true,
       sortValue: (row) => row.revenue,
+      className: textPrimary,
     },
   ];
 
@@ -396,171 +427,167 @@ export default function SuperadminDashboard() {
 
   const upcomingEvents = events.filter(isUpcoming).slice(0, 6);
 
-  return (
-    <div className="space-y-6">
-      <DashboardHeader
-        title={t("superadmin_dashboard_title")}
-        subtitle={t("superadmin_dashboard_subtitle")}
-        scopeLabel={t("scope_entire_platform")}
-      />
+  const sectionContent: Record<string, React.ReactNode> = {
+    "platform-overview": (
+      <>
+        <section>
+          <DashboardSectionHeader title={t("section_platform_overview")} />
+          <DashboardKpiGrid>
+            {kpis.map((kpi) => (
+              <DashboardKpiCard
+                key={kpi.id}
+                label={kpi.label}
+                value={kpi.value}
+                icon={kpi.icon}
+                trend={kpi.trend}
+                onClick={kpi.onClick}
+              />
+            ))}
+          </DashboardKpiGrid>
+        </section>
 
-      <DashboardFilters
-        period={period}
-        onPeriodChange={setPeriod}
-        onRefresh={() => toast.success(t("demo_data_refreshed"))}
-      />
+        <DashboardChartCard
+          title={t("chart_growth_trend")}
+          subtitle={t("chart_growth_trend_desc")}
+          accessibleSummary={t("chart_growth_trend_desc")}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={series.history}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="businessGrowth"
+                name={t("business_growth")}
+                stroke="#3b82f6"
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="authorityGrowth"
+                name={t("authority_growth")}
+                stroke="#f59e0b"
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </DashboardChartCard>
+      </>
+    ),
 
-      {/* A. Platform overview */}
-      <section>
-        <DashboardSectionHeader title={t("section_platform_overview")} />
-        <DashboardKpiGrid>
-          {kpis.map((kpi) => (
-            <DashboardKpiCard
-              key={kpi.id}
-              label={kpi.label}
-              value={kpi.value}
-              icon={kpi.icon}
-              trend={kpi.trend}
-              onClick={kpi.onClick}
-            />
-          ))}
-        </DashboardKpiGrid>
-      </section>
+    "traffic-overview": (
+      <>
+        <section>
+          <DashboardSectionHeader
+            title={t("section_traffic_overview")}
+            subtitle={t("conversion_rate_label", { rate: conversionRate })}
+          />
+          <DashboardKpiGrid>
+            {trafficKpis.map((kpi) => (
+              <DashboardKpiCard
+                key={kpi.id}
+                label={kpi.label}
+                value={kpi.value}
+                icon={kpi.icon}
+                trend={kpi.trend}
+              />
+            ))}
+          </DashboardKpiGrid>
+        </section>
 
-      <DashboardChartCard
-        title={t("chart_growth_trend")}
-        subtitle={t("chart_growth_trend_desc")}
-        accessibleSummary={t("chart_growth_trend_desc")}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={series.history}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="businessGrowth"
-              name={t("business_growth")}
-              stroke="#3b82f6"
-              strokeWidth={2}
-            />
-            <Line
-              type="monotone"
-              dataKey="authorityGrowth"
-              name={t("authority_growth")}
-              stroke="#f59e0b"
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </DashboardChartCard>
+        <DashboardChartCard
+          title={t("chart_traffic_conversions")}
+          subtitle={t("chart_traffic_conversions_desc")}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={series.history}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="sessions"
+                name={t("sessions")}
+                stroke="#8b5cf6"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="conversions"
+                name={t("conversions")}
+                stroke="#10b981"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </DashboardChartCard>
+      </>
+    ),
 
-      {/* B. Website traffic overview */}
-      <section>
-        <DashboardSectionHeader
-          title={t("section_traffic_overview")}
-          subtitle={t("conversion_rate_label", { rate: conversionRate })}
-        />
-        <DashboardKpiGrid>
-          {trafficKpis.map((kpi) => (
-            <DashboardKpiCard
-              key={kpi.id}
-              label={kpi.label}
-              value={kpi.value}
-              icon={kpi.icon}
-              trend={kpi.trend}
-            />
-          ))}
-        </DashboardKpiGrid>
-      </section>
+    "revenue-overview": (
+      <>
+        <section>
+          <DashboardSectionHeader title={t("section_revenue_overview")} />
+          <DashboardKpiGrid>
+            {revenueKpis.map((kpi) => (
+              <DashboardKpiCard
+                key={kpi.id}
+                label={kpi.label}
+                value={kpi.value}
+                icon={kpi.icon}
+                trend={kpi.trend}
+                onClick={kpi.onClick}
+              />
+            ))}
+          </DashboardKpiGrid>
+        </section>
 
-      <DashboardChartCard
-        title={t("chart_traffic_conversions")}
-        subtitle={t("chart_traffic_conversions_desc")}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={series.history}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="sessions"
-              name={t("sessions")}
-              stroke="#8b5cf6"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="conversions"
-              name={t("conversions")}
-              stroke="#10b981"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </DashboardChartCard>
+        <DashboardChartCard
+          title={t("chart_revenue_trend")}
+          subtitle={t("chart_revenue_trend_desc")}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={series.history}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                name={t("total_platform_revenue")}
+                stroke="#10b981"
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="platformFees"
+                name={t("platform_fees_collected")}
+                stroke="#3b82f6"
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="vendorPayouts"
+                name={t("vendor_payouts")}
+                stroke="#f59e0b"
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </DashboardChartCard>
+      </>
+    ),
 
-      {/* C. Revenue overview */}
-      <section>
-        <DashboardSectionHeader title={t("section_revenue_overview")} />
-        <DashboardKpiGrid>
-          {revenueKpis.map((kpi) => (
-            <DashboardKpiCard
-              key={kpi.id}
-              label={kpi.label}
-              value={kpi.value}
-              icon={kpi.icon}
-              trend={kpi.trend}
-              onClick={kpi.onClick}
-            />
-          ))}
-        </DashboardKpiGrid>
-      </section>
-
-      <DashboardChartCard
-        title={t("chart_revenue_trend")}
-        subtitle={t("chart_revenue_trend_desc")}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={series.history}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="revenue"
-              name={t("total_platform_revenue")}
-              stroke="#10b981"
-              strokeWidth={2}
-            />
-            <Line
-              type="monotone"
-              dataKey="platformFees"
-              name={t("platform_fees_collected")}
-              stroke="#3b82f6"
-              strokeWidth={2}
-            />
-            <Line
-              type="monotone"
-              dataKey="vendorPayouts"
-              name={t("vendor_payouts")}
-              stroke="#f59e0b"
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </DashboardChartCard>
-
-      {/* D. Order and voucher trends */}
+    "order-voucher-trends": (
       <section>
         <DashboardSectionHeader title={t("section_order_voucher_trends")} />
         <div className="grid lg:grid-cols-2 gap-4">
@@ -625,8 +652,9 @@ export default function SuperadminDashboard() {
           </DashboardChartCard>
         </div>
       </section>
+    ),
 
-      {/* E. System health */}
+    "system-health": (
       <section>
         <DashboardSectionHeader title={t("section_system_health")} />
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -644,7 +672,7 @@ export default function SuperadminDashboard() {
             return (
               <div
                 key={incident.id}
-                className={`rounded-lg border p-4 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}
+                className={`dm-glass dm-tilt-static rounded-2xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
               >
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span
@@ -673,12 +701,13 @@ export default function SuperadminDashboard() {
           })}
         </div>
       </section>
+    ),
 
-      {/* F. Top-performing DMOs and Authorities */}
+    "top-dmos-authorities": (
       <section>
         <DashboardSectionHeader title={t("section_top_dmos_authorities")} />
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           <DashboardDataTable
             rowKey={(row) => row.id}
@@ -690,11 +719,13 @@ export default function SuperadminDashboard() {
                 render: (r) => r.name,
                 sortable: true,
                 sortValue: (r) => r.name,
+                className: textPrimary,
               },
               {
                 key: "region",
                 header: t("region"),
                 render: (r) => r.region ?? "—",
+                className: textPrimary,
               },
               {
                 key: "businesses",
@@ -702,6 +733,7 @@ export default function SuperadminDashboard() {
                 render: (r) => formatCount(r.businessCount ?? 0),
                 sortable: true,
                 sortValue: (r) => r.businessCount ?? 0,
+                className: textPrimary,
               },
               {
                 key: "revenue",
@@ -709,6 +741,7 @@ export default function SuperadminDashboard() {
                 render: (r) => formatCurrency(r.revenue),
                 sortable: true,
                 sortValue: (r) => r.revenue,
+                className: textPrimary,
               },
               {
                 key: "growth",
@@ -717,6 +750,7 @@ export default function SuperadminDashboard() {
                   r.growthPercent === null
                     ? "—"
                     : `${r.growthPercent > 0 ? "+" : ""}${r.growthPercent}%`,
+                className: textPrimary,
               },
               {
                 key: "performance",
@@ -728,14 +762,16 @@ export default function SuperadminDashboard() {
                     {t(`health_${r.performance}`)}
                   </span>
                 ),
+                className: textPrimary,
               },
             ]}
             rows={topDmoAuthorities}
           />
         </div>
       </section>
+    ),
 
-      {/* G. Top businesses, products, events */}
+    "top-items": (
       <section>
         <DashboardSectionHeader title={t("section_top_items")} />
         <div className="grid lg:grid-cols-3 gap-4">
@@ -780,12 +816,13 @@ export default function SuperadminDashboard() {
           />
         </div>
       </section>
+    ),
 
-      {/* H. Top-earning businesses */}
+    "top-earning-businesses": (
       <section>
         <DashboardSectionHeader title={t("section_top_earning_businesses")} />
         <div
-          className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+          className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
         >
           <DashboardDataTable
             rowKey={(row) => row.business.id}
@@ -795,8 +832,9 @@ export default function SuperadminDashboard() {
           />
         </div>
       </section>
+    ),
 
-      {/* I. Upcoming events */}
+    "upcoming-events": (
       <section>
         <DashboardSectionHeader title={t("section_upcoming_events")} />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -805,7 +843,7 @@ export default function SuperadminDashboard() {
             return (
               <div
                 key={event.id}
-                className={`rounded-lg border p-4 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}
+                className={`dm-glass dm-tilt-static rounded-2xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
               >
                 <div className="flex items-center gap-2 mb-1">
                   <Calendar
@@ -855,6 +893,46 @@ export default function SuperadminDashboard() {
           })}
         </div>
       </section>
+    ),
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <DashboardHeader
+          title={t("superadmin_dashboard_title")}
+          subtitle={t("superadmin_dashboard_subtitle")}
+          scopeLabel={t("scope_entire_platform")}
+        />
+        <LayoutCustomizeToggle
+          isCustomizing={isCustomizing}
+          onToggle={() => setIsCustomizing((v) => !v)}
+          onReset={resetOrder}
+        />
+      </div>
+
+      <DashboardFilters
+        period={period}
+        onPeriodChange={setPeriod}
+        onRefresh={() => toast.success(t("demo_data_refreshed"))}
+      />
+
+      {orderedSections.map((section, index) => (
+        <ReorderableSection
+          key={section.id}
+          id={section.id}
+          index={index}
+          label={section.label}
+          isCustomizing={isCustomizing}
+          isFirst={index === 0}
+          isLast={index === orderedSections.length - 1}
+          onMove={moveSection}
+          onMoveUp={() => moveSection(index, index - 1)}
+          onMoveDown={() => moveSection(index, index + 1)}
+        >
+          {sectionContent[section.id]}
+        </ReorderableSection>
+      ))}
 
       <DashboardDetailDrawer
         isOpen={drawer === "businesses"}
@@ -938,7 +1016,7 @@ function TopList({
 
   return (
     <div
-      className={`rounded-xl border p-4 ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}`}
+      className={`dm-glass dm-tilt-static rounded-3xl p-4 ${isDark ? "dm-glass--dark" : ""}`}
     >
       <div className="flex items-center gap-2 mb-3">
         <Icon className="w-4 h-4 text-teal-500" aria-hidden="true" />

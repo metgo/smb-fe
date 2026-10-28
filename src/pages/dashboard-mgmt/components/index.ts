@@ -13,3 +13,5 @@ export { default as DashboardAlertCard } from "./DashboardAlertCard";
 export { default as DashboardSectionHeader } from "./DashboardSectionHeader";
 export { default as BusinessSwitcher } from "./BusinessSwitcher";
 export { default as DashboardDetailDrawer } from "./DashboardDetailDrawer";
+export { default as ReorderableSection } from "./ReorderableSection";
+export { default as LayoutCustomizeToggle } from "./LayoutCustomizeToggle";
