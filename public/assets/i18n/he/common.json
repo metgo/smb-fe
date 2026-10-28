@@ -452,5 +452,6 @@
   "trades": "עסקאות",
   "email_config": "תבניות אימייל",
   "email_activity": "פעילות אימייל",
-  "email_templates": "תבניות אימייל"
+  "email_templates": "תבניות אימייל",
+  "role_dashboards_demo": "Role Dashboards (Demo)"
 }

@@ -30,6 +30,7 @@ i18n
       "reconciliation",
       "payments",
       "utm_campaign",
+      "dashboard_mock",
     ],
     defaultNS: "common",
 
