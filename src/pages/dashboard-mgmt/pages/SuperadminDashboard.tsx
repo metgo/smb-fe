@@ -117,10 +117,13 @@ export default function SuperadminDashboard() {
     },
     { id: "upcoming-events", label: t("section_upcoming_events") },
   ];
-  const { orderedSections, moveSection, resetOrder } = useSectionOrder(
-    "superadmin",
-    sectionDescriptors,
-  );
+  const {
+    orderedSections,
+    hidden,
+    moveSection,
+    toggleSectionVisibility,
+    resetOrder,
+  } = useSectionOrder("superadmin", sectionDescriptors);
 
   const totalVendors = mockVendors.length;
   const totalBusinesses = mockBusinesses.length;
@@ -926,9 +929,11 @@ export default function SuperadminDashboard() {
           isCustomizing={isCustomizing}
           isFirst={index === 0}
           isLast={index === orderedSections.length - 1}
+          isHidden={hidden.has(section.id)}
           onMove={moveSection}
           onMoveUp={() => moveSection(index, index - 1)}
           onMoveDown={() => moveSection(index, index + 1)}
+          onToggleVisibility={() => toggleSectionVisibility(section.id)}
         >
           {sectionContent[section.id]}
         </ReorderableSection>

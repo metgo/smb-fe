@@ -306,10 +306,13 @@ export default function VendorDashboard() {
     { id: "platform-updates", label: t("section_platform_updates") },
     { id: "upcoming-events", label: t("section_upcoming_events") },
   ];
-  const { orderedSections, moveSection, resetOrder } = useSectionOrder(
-    "traveller",
-    sectionDescriptors,
-  );
+  const {
+    orderedSections,
+    hidden,
+    moveSection,
+    toggleSectionVisibility,
+    resetOrder,
+  } = useSectionOrder("traveller", sectionDescriptors);
 
   const sectionContent: Record<string, React.ReactNode> = {
     "orders-overview": (
@@ -669,9 +672,11 @@ export default function VendorDashboard() {
           isCustomizing={isCustomizing}
           isFirst={index === 0}
           isLast={index === orderedSections.length - 1}
+          isHidden={hidden.has(section.id)}
           onMove={moveSection}
           onMoveUp={() => moveSection(index, index - 1)}
           onMoveDown={() => moveSection(index, index + 1)}
+          onToggleVisibility={() => toggleSectionVisibility(section.id)}
         >
           {sectionContent[section.id]}
         </ReorderableSection>

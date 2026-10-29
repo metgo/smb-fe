@@ -12,6 +12,9 @@
   "drag_to_reorder": "Drag to reorder {{section}}",
   "move_section_up": "Move {{section}} up",
   "move_section_down": "Move {{section}} down",
+  "hide_section": "Hide {{section}}",
+  "show_section": "Show {{section}}",
+  "section_hidden_badge": "Hidden",
 
   "section_platform_growth_trend": "Platform Growth Trend",
   "section_traffic_trend_chart": "Traffic & Conversions Chart",

@@ -1,7 +1,13 @@
 import { useRef } from "react";
 import clsx from "clsx";
 import { useDrag, useDrop } from "react-dnd";
-import { GripVertical, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -20,9 +26,11 @@ interface ReorderableSectionProps {
   isCustomizing: boolean;
   isFirst: boolean;
   isLast: boolean;
+  isHidden: boolean;
   onMove: (dragIndex: number, hoverIndex: number) => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
+  onToggleVisibility: () => void;
   children: React.ReactNode;
 }
 
@@ -33,9 +41,11 @@ export default function ReorderableSection({
   isCustomizing,
   isFirst,
   isLast,
+  isHidden,
   onMove,
   onMoveUp,
   onMoveDown,
+  onToggleVisibility,
   children,
 }: ReorderableSectionProps) {
   const { t } = useTranslation("dashboard_mock");
@@ -64,6 +74,7 @@ export default function ReorderableSection({
   };
 
   if (!isCustomizing) {
+    if (isHidden) return null;
     return <div>{children}</div>;
   }
 
@@ -72,7 +83,8 @@ export default function ReorderableSection({
       ref={dragDropRef}
       className={clsx(
         "relative rounded-3xl transition-all duration-200",
-        "ring-2 ring-teal-500/70 ring-offset-4",
+        "ring-2 ring-offset-4",
+        isHidden ? "ring-gray-400/50" : "ring-teal-500/70",
         isDark ? "ring-offset-gray-950" : "ring-offset-gray-50",
         isDragging ? "opacity-50 scale-[0.99]" : "opacity-100 scale-100",
       )}
@@ -123,10 +135,47 @@ export default function ReorderableSection({
           >
             <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
           </button>
+          <button
+            type="button"
+            onClick={onToggleVisibility}
+            aria-label={
+              isHidden
+                ? t("show_section", { section: label })
+                : t("hide_section", { section: label })
+            }
+            aria-pressed={isHidden}
+            className={clsx(
+              "p-1 rounded-full transition-colors cursor-pointer",
+              isDark
+                ? "hover:bg-gray-800 text-gray-300"
+                : "hover:bg-gray-100 text-gray-600",
+            )}
+          >
+            {isHidden ? (
+              <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />
+            ) : (
+              <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
+          </button>
         </span>
       </div>
 
-      <div className="pt-2">{children}</div>
+      <div
+        className={clsx("pt-2", isHidden && "opacity-40 pointer-events-none")}
+      >
+        {children}
+      </div>
+
+      {isHidden && (
+        <div
+          className={clsx(
+            "absolute top-3 right-4 z-20 text-[11px] font-medium px-2 py-0.5 rounded-full",
+            isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600",
+          )}
+        >
+          {t("section_hidden_badge")}
+        </div>
+      )}
     </div>
   );
 }

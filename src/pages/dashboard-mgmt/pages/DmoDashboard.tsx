@@ -108,10 +108,13 @@ export default function DmoDashboard() {
     { id: "performance-alerts", label: t("section_performance_alerts") },
     { id: "minisite-health", label: t("section_minisite_health") },
   ];
-  const { orderedSections, moveSection, resetOrder } = useSectionOrder(
-    "dmo",
-    sectionDescriptors,
-  );
+  const {
+    orderedSections,
+    hidden,
+    moveSection,
+    toggleSectionVisibility,
+    resetOrder,
+  } = useSectionOrder("dmo", sectionDescriptors);
 
   const regionalOrders = useMemo(
     () =>
@@ -784,9 +787,11 @@ export default function DmoDashboard() {
           isCustomizing={isCustomizing}
           isFirst={index === 0}
           isLast={index === orderedSections.length - 1}
+          isHidden={hidden.has(section.id)}
           onMove={moveSection}
           onMoveUp={() => moveSection(index, index - 1)}
           onMoveDown={() => moveSection(index, index + 1)}
+          onToggleVisibility={() => toggleSectionVisibility(section.id)}
         >
           {sectionContent[section.id]}
         </ReorderableSection>

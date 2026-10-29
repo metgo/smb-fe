@@ -97,10 +97,13 @@ export default function AuthorityDashboard() {
     },
     { id: "actionable-items", label: t("section_actionable_items") },
   ];
-  const { orderedSections, moveSection, resetOrder } = useSectionOrder(
-    "authority",
-    sectionDescriptors,
-  );
+  const {
+    orderedSections,
+    hidden,
+    moveSection,
+    toggleSectionVisibility,
+    resetOrder,
+  } = useSectionOrder("authority", sectionDescriptors);
 
   const areaOrders = useMemo(
     () =>
@@ -589,9 +592,11 @@ export default function AuthorityDashboard() {
           isCustomizing={isCustomizing}
           isFirst={index === 0}
           isLast={index === orderedSections.length - 1}
+          isHidden={hidden.has(section.id)}
           onMove={moveSection}
           onMoveUp={() => moveSection(index, index - 1)}
           onMoveDown={() => moveSection(index, index + 1)}
+          onToggleVisibility={() => toggleSectionVisibility(section.id)}
         >
           {sectionContent[section.id]}
         </ReorderableSection>
