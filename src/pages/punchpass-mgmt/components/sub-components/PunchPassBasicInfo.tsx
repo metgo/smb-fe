@@ -152,6 +152,10 @@ const PunchPassBasicInfo = ({
                 quantity: {
                   ...formData.quantity,
                   isUnlimited: e.target.checked,
+                  // Unlimited has no real stock cap - clear any leftover
+                  // number instead of silently submitting it hidden (matches
+                  // the backend's own isUnlimited -> initial 0 invariant).
+                  ...(e.target.checked && { initial: 0 }),
                 },
               })
             }
