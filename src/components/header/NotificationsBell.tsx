@@ -45,6 +45,7 @@ import {
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
+import { useUpdatePunchPassMutation } from "@/store/api/punchPassApi";
 import { useGetChangesByEntityQuery } from "@/store/api/businessQueryApi";
 import { ViewChangesModal } from "@/components/change-tracking";
 import { UserRole } from "@/enums/user.types";
@@ -69,6 +70,7 @@ const NotificationsBell = () => {
   const [updateProduct] = useUpdateProductMutation();
   const [updateEvent] = useUpdateEventMutation();
   const [updatePoi] = useUpdatePoiMutation();
+  const [updatePunchPass] = useUpdatePunchPassMutation();
 
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
   const [viewChangesState, setViewChangesState] = useState({
@@ -355,7 +357,8 @@ const NotificationsBell = () => {
                     (itemType === "BUSINESS" ||
                       itemType === "PRODUCT" ||
                       itemType === "EVENT" ||
-                      itemType === "POI");
+                      itemType === "POI" ||
+                      itemType === "PUNCH_PASS");
 
                   const handleViewDetails = async (e: React.MouseEvent) => {
                     e.stopPropagation();
@@ -364,7 +367,11 @@ const NotificationsBell = () => {
                     dispatch(markNotificationAsRead(notification._id));
                     if (itemEndpoint[itemType]) {
                       const paramName =
-                        itemType === "DISPUTE" ? "orderProductId" : queryParam;
+                        itemType === "DISPUTE"
+                          ? "orderProductId"
+                          : itemType === "PUNCH_PASS"
+                            ? "punchPassId"
+                            : queryParam;
 
                       const idValue =
                         itemType === "DISPUTE"
@@ -443,6 +450,12 @@ const NotificationsBell = () => {
                         await updatePoi({
                           language,
                           poiId: notification.itemId,
+                          body: { status: "APPROVED" },
+                        }).unwrap();
+                      } else if (itemType === "PUNCH_PASS") {
+                        await updatePunchPass({
+                          language,
+                          punchPassId: notification.itemId,
                           body: { status: "APPROVED" },
                         }).unwrap();
                       }
@@ -603,7 +616,8 @@ const NotificationsBell = () => {
                             (itemType === "BUSINESS" ||
                               itemType === "PRODUCT" ||
                               itemType === "EVENT" ||
-                              itemType === "POI") &&
+                              itemType === "POI" ||
+                              itemType === "PUNCH_PASS") &&
                             (userRole === UserRole.SUPERADMIN ||
                               userRole === UserRole.AUTHORITY ||
                               userRole === UserRole.DMO ||

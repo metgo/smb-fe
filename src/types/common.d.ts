@@ -162,7 +162,8 @@ interface ISearchBusiness {
 
 type TNotifStatus = "ALL" | "READ" | "UNREAD";
 
-type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "POI" | "DISPUTE";
+type TItemType =
+  "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "POI" | "DISPUTE" | "PUNCH_PASS";
 
 type TNotifType =
   | "ALL"
