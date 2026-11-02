@@ -212,13 +212,13 @@ export default function Sidebar() {
       icon: FileText,
       isEnabled: true,
     },
-    // {
-    //   id: "punchPasses",
-    //   path: routes.punchPassMgmt,
-    //   label: t("punch_passes") || "Punch Passes",
-    //   icon: WalletCards,
-    //   isEnabled: true,
-    // },
+    {
+      id: "punchPasses",
+      path: routes.punchPassMgmt,
+      label: t("punch_passes") || "Punch Passes",
+      icon: WalletCards,
+      isEnabled: true,
+    },
     {
       id: "communication-center",
       path: "#communication_center",
