@@ -1,5 +1,5 @@
 import {
-  Controller, Get, HttpCode, HttpStatus, Param,
+  Controller, Get, HttpCode, HttpStatus, Param, Query,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ServerSuccess } from 'src/common/constant';
@@ -28,7 +28,11 @@ export class TicketController {
   })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  async getTicketById(@Param('id') id: string) {
-    return await this.queryBus.execute(new GetTicketByIdQuery(id));
+  async getTicketById(
+    @Param('id') id: string,
+    @Query('checkout') checkout?: string,
+  ) {
+    const checkoutFlag = checkout === 'true';
+    return await this.queryBus.execute(new GetTicketByIdQuery(id, checkoutFlag));
   }
 }

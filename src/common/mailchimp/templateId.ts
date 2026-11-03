@@ -41,6 +41,8 @@ export const DynamicEmailTemplate = {
   InquiryFundayToOwner: 'inquiry-funday-for-client',
   NoSearchResult: 'no-search-result-notification',
   HighValueOrderAlert: 'high-value-order-alert',
+  PunchPassesOnWallet: 'punch-passes-on-wallet',
+  PunchPassConfirmationForCreator: 'punch-pass-confirmation-for-creator',
   LionCoinRedeemed: 'lion-coin-redeemed',
   LionCoinRedeemedForBusiness: 'lion-coin-redeemed-for-business',
   LionCoinCancelled: 'lion-coin-cancelled',

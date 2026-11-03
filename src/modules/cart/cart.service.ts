@@ -24,6 +24,7 @@ import { UpdateCartDto } from 'src/modules/cart/dto/update-cart.dto';
 import { ProductsService } from 'src/modules/products/products.services';
 import { OrderItemType } from '../orders/orders.type';
 import { GetTicketByIdQuery } from '../tickets/queries/get-ticket-by-id.query';
+import { GetPunchPassByIdQuery } from '../punch-passes/queries/get-punch-pass-by-id.query';
 import { DeleteItemFromCartDto } from './dto/delete-item-from-cart.dto';
 import { AddItemsToCartDto } from './dto/add-items-to-cart.dto';
 import { AddVendorWiseProductsToCartDto } from './dto/add-vendor-wise-products-to-cart.dto';
@@ -79,6 +80,12 @@ export class CartService {
       if (command.product.itemType === OrderItemType.TICKET) {
         itemInfo = await this.queryBus.execute(
           new GetTicketByIdQuery(command.product.id),
+        );
+      }
+
+      if (command.product.itemType === OrderItemType.PUNCH_PASS) {
+        itemInfo = await this.queryBus.execute(
+          new GetPunchPassByIdQuery(command.product.id),
         );
       }
 
@@ -184,9 +191,15 @@ export class CartService {
             );
           }
 
+          if (product.itemType === OrderItemType.PUNCH_PASS) {
+            itemInfo = await this.queryBus.execute(
+              new GetPunchPassByIdQuery(product.id),
+            );
+          }
+
           if (!itemInfo) {
             throw new NotFoundException(
-              `Product/Ticket with id ${product.id} not found`,
+              `Product/Ticket/Punch Pass with id ${product.id} not found`,
             );
           }
 
@@ -317,6 +330,10 @@ export class CartService {
         op => op.itemType === OrderItemType.TICKET,
       );
 
+      const punchPassIds = existingProductInCart.filter(
+        op => op.itemType === OrderItemType.PUNCH_PASS,
+      );
+
       let totalAmount;
       if (productIds?.length) {
         const productInformation = await Promise.all(
@@ -338,6 +355,21 @@ export class CartService {
 
         totalAmount = ticketInformation.reduce(
           (total, ticket, index) => total + ticket.price.sellingPrice * ticketIds[index].quantity,
+          totalAmount || 0,
+        );
+      }
+
+      if (punchPassIds?.length) {
+        const punchPassInformation = await Promise.all(
+          punchPassIds?.map(
+            async punchPass => await this.queryBus.execute(
+              new GetPunchPassByIdQuery(punchPass.id),
+            ),
+          ),
+        );
+
+        totalAmount = punchPassInformation.reduce(
+          (total, punchPass, index) => total + punchPass.price.sellingPrice * punchPassIds[index].quantity,
           totalAmount || 0,
         );
       }
@@ -572,6 +604,10 @@ export class CartService {
         op => op.itemType === OrderItemType.TICKET,
       );
 
+      const punchPassIds = existingCart.product.filter(
+        op => op.itemType === OrderItemType.PUNCH_PASS,
+      );
+
       let totalAmount = 0;
 
       if (productIds?.length) {
@@ -596,6 +632,21 @@ export class CartService {
 
         totalAmount = ticketInformation.reduce(
           (total, ticket, index) => total + ticket.price.sellingPrice * ticketIds[index].quantity,
+          totalAmount,
+        );
+      }
+
+      if (punchPassIds?.length) {
+        const punchPassInformation = await Promise.all(
+          punchPassIds?.map(
+            async punchPass => await this.queryBus.execute(
+              new GetPunchPassByIdQuery(punchPass.id.toString()),
+            ),
+          ),
+        );
+
+        totalAmount = punchPassInformation.reduce(
+          (total, punchPass, index) => total + punchPass.price.sellingPrice * punchPassIds[index].quantity,
           totalAmount,
         );
       }
@@ -653,6 +704,8 @@ export class CartService {
         command.vendorProducts.flatMap(vendor => vendor.products.map(async p => {
           if (p.itemType === OrderItemType.TICKET) {
             await this.queryBus.execute(new GetTicketByIdQuery(p._id));
+          } else if (p.itemType === OrderItemType.PUNCH_PASS) {
+            await this.queryBus.execute(new GetPunchPassByIdQuery(p._id));
           } else {
             await this.productsService.getProductInformationForCart({
               id: p._id,

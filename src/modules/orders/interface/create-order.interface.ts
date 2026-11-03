@@ -17,6 +17,7 @@ export interface CreateOrderCommand {
   ticketDetails: Ticket[];
   cartItemsProduct: CartProductResponse[];
   cartItemsTicket: CartProductResponse[];
+  cartItemsPunchPass?: CartProductResponse[];
 }
 
 export interface CreateMiniSiteOrderInterface {

@@ -391,6 +391,9 @@ export const ServerSuccess = {
     DELETED: 'Ticket for event was deleted successfully',
     LISTED: 'Ticket for event was listed successfully',
   },
+  PUNCH_PASS: {
+    LISTED: 'Punch passes were listed successfully',
+  },
   PROMOTION_GROUP: {
     CREATED: 'Promotion group was created successfully',
     UPDATED: 'Promotion group was updated successfully',

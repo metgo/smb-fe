@@ -22,7 +22,7 @@ export class GetTicketByIdHandler implements IQueryHandler<GetTicketByIdQuery> {
 
   async execute(queries: GetTicketByIdQuery): Promise<Ticket> {
     try {
-      const { id } = queries;
+      const { id, checkout } = queries;
       const tickets = await this.TicketModel.aggregate([
         {
           $match: {
@@ -56,6 +56,18 @@ export class GetTicketByIdHandler implements IQueryHandler<GetTicketByIdQuery> {
 
       if (!ticket) {
         throw new NotFoundException(`Ticket ${ServerErrors.NOT_FOUND}`);
+      }
+
+      // If checkout flag is true, return only specific fields
+      if (checkout) {
+        const primaryImage = ticket.images?.find((img: any) => img.isPrimary) || ticket.images?.[0];
+        return {
+          _id: ticket._id,
+          name: ticket.name,
+          image: primaryImage?.image || null,
+          alt: primaryImage?.alt || null,
+          sellingPrice: ticket.price?.sellingPrice || 0,
+        } as any;
       }
 
       return ticket;

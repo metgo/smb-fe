@@ -74,6 +74,8 @@ export class ConfigService {
       'GOOGLE_CLIENT_SECRET',
       'GOOGLE_REDIRECT_URI',
       'SMS_CONFIRM_PURCHASE_TOKEN',
+      'WALLET_ISSUER_ID',
+      'GOOGLE_WALLET_PATH',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -142,6 +144,8 @@ export class ConfigService {
       GOOGLE_CLIENT_SECRET: Joi.string().required(),
       GOOGLE_REDIRECT_URI: Joi.string().required(),
       SMS_CONFIRM_PURCHASE_TOKEN: Joi.string().required(),
+      WALLET_ISSUER_ID: Joi.string().optional(),
+      GOOGLE_WALLET_PATH: Joi.string().optional(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig }
@@ -252,6 +256,16 @@ export class ConfigService {
       CLIENT_ID: this.get('GOOGLE_CLIENT_ID'),
       CLIENT_SECRET: this.get('GOOGLE_CLIENT_SECRET'),
       REDIRECT_URI: this.get('GOOGLE_REDIRECT_URI'),
+    };
+  }
+
+  // Wallet issuance is skipped when ISSUER_ID is not set. The key file
+  // falls back to the GCS service account - that account must be added
+  // as a user in the Google Pay & Wallet Console for the issuer.
+  get googleWallet() {
+    return {
+      ISSUER_ID: this.get('WALLET_ISSUER_ID'),
+      KEY_FILE: this.get('GOOGLE_WALLET_PATH') || this.get('GCS_FILE_PATH'),
     };
   }
 }

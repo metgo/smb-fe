@@ -35,7 +35,7 @@ export class ProductsController {
       status: HttpStatus.OK,
       description: ServerSuccess.PRODUCTS.LISTED,
     },
-    operation: 'Get detail of a product by slug',
+    operation: 'Get detail of a product by slug or id',
     params: [
       {
         name: 'slug',
@@ -52,8 +52,13 @@ export class ProductsController {
     @Param('slug') slug: string,
     @Query() query: GetProductsQuery,
   ) {
-    const products = await this.productsService.getOne(slug, query);
-    return products;
+    // If the parameter is a valid ObjectId AND checkout flag is true, treat it as ID (checkout mode)
+    // Otherwise treat it as slug (normal mode)
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(slug);
+    if (isObjectId && query.checkout) {
+      return this.productsService.getOneForCheckout(slug, query);
+    }
+    return this.productsService.getOne(slug, query);
   }
 
   @ApiEndpoint({

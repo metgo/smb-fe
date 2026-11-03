@@ -21,4 +21,5 @@ export enum DeliveryMethod {
 export enum OrderItemType {
   PRODUCT = 'PRODUCT',
   TICKET = 'TICKET',
+  PUNCH_PASS = 'PUNCH_PASS',
 }

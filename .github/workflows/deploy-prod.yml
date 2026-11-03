@@ -17,10 +17,10 @@ jobs:
       - name: Remove the GCS file and env
         run: rm -rf credentials .env.development
       
-      - name: Create GCS credentials file
-        run: |
-          mkdir -p credentials
-          echo -n "${{ secrets.GCP_PATH }}" | base64 -d > credentials/metgo-staging-server-6d235c8ca059.json
+      # - name: Create GCS credentials file
+      #   run: |
+      #     mkdir -p credentials
+      #     echo -n "${{ secrets.GCP_PATH }}" | base64 -d > credentials/metgo-staging-server-6d235c8ca059.json
 
         # Decode and create the .env file
       - name: Create .env file

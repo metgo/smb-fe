@@ -221,6 +221,61 @@ export class ProductsService {
     }
   }
 
+  async getOneForCheckout(id: string, query: GetProductsQuery) {
+    try {
+      const select
+        = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId deliveryArea';
+      const selectWithVisibilityFields = `${select} status isDeleted`;
+
+      const populate = {
+        path: 'categories subCategories',
+        select: '_id name hebrewName',
+      };
+
+      const businessPopulate = {
+        path: 'businessId',
+        select:
+          '_id slug logo name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location tagsId',
+      };
+
+      const isVisible = (doc: any): boolean => !!doc
+        && doc.status === CommonStatus.APPROVED
+        && doc.isDeleted !== true
+        && (doc.quantity?.remaining > 0 || doc.quantity?.isUnlimited === true);
+
+      const product = await this.ProductsAuditModel.findOne({ productId: id })
+        .sort({ createdAt: -1 })
+        .populate<{ businessId: Business }>(businessPopulate)
+        .populate(populate)
+        .select(selectWithVisibilityFields)
+        .lean();
+
+      if (!isVisible(product)) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+
+      const response = await this.localizeProduct(product, query.locale);
+
+      const primaryImage = response?.images?.find((img: any) => img.isPrimary) || response?.images?.[0];
+      const checkoutResponse: any = {
+        _id: response?.productId,
+        name: response?.name,
+        image: primaryImage?.image || null,
+        alt: primaryImage?.alt || null,
+        sellingPrice: response?.price?.sellingPrice || 0,
+      };
+
+      // Only include deliveryArea if it exists and has items
+      if (response?.deliveryArea && response?.deliveryArea?.length > 0) {
+        checkoutResponse.deliveryArea = response.deliveryArea;
+      }
+
+      return checkoutResponse;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
   async findManyById(ids: string[]): Promise<ProductsAudit[]> {
     try {
       const findQuery = {
@@ -262,7 +317,7 @@ export class ProductsService {
       return response;
     } catch (error) {
       this.logger.error('[PRODUCT]: FAILED TO LIST PRODUCTS', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
       });
       exceptionHandling(error);
     }
@@ -299,9 +354,9 @@ export class ProductsService {
       );
       return response;
     } catch (error) {
-      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+      if (error instanceof Error && (error as any).name === 'CastError' && (error as any).kind === 'ObjectId') {
         throw new BadRequestException(
-          `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
+          `${(error as any).model?.modelName} ${ServerErrors.INVALID_ID}`,
         );
       }
       exceptionHandling(error);
@@ -336,9 +391,9 @@ export class ProductsService {
 
       return mappedResponse;
     } catch (error) {
-      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+      if (error instanceof Error && (error as any).name === 'CastError' && (error as any).kind === 'ObjectId') {
         throw new BadRequestException(
-          `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
+          `${(error as any).model?.modelName} ${ServerErrors.INVALID_ID}`,
         );
       }
       exceptionHandling(error);
@@ -396,7 +451,7 @@ export class ProductsService {
       );
     } catch (error) {
       this.logger.error('[DEDUCT QUANTITY]: Failed to deduct quantity', {
-        err: error.message,
+        err: error instanceof Error ? error.message : String(error),
         productCount: products.length,
       });
       throw error;

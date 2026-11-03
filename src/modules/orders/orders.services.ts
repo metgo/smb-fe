@@ -29,7 +29,11 @@ import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interfac
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
 import { CartService } from 'src/modules/cart/cart.service';
 import { Cart } from 'src/modules/cart/cart.schema';
-import { CartProductResponse, CartStatus } from 'src/modules/cart/cart.types';
+import {
+  CartProductPayload,
+  CartProductResponse,
+  CartStatus,
+} from 'src/modules/cart/cart.types';
 import {
   PromotionOrdersService,
   PromotionRedemptionEntry,
@@ -39,6 +43,7 @@ import { PromotionOrder } from 'src/modules/promotion-orders/schema/promotion-or
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { EventTicketAnswer } from 'src/modules/event-ticket-answers/schema/event-ticket-answer.schema';
 import { ProductsService } from 'src/modules/products/products.services';
+import { User } from 'src/modules/users/schema/users.schema';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { CreateOrderDto } from 'src/modules/orders/dto';
@@ -69,6 +74,12 @@ import { Ticket } from '../tickets/schema/tickets.schema';
 import { TicketsService } from '../tickets/tickets.services';
 import { GetEventByIdsQuery } from '../events/queries/get-by-ids.query';
 import { DocUploadService } from '../doc-upload/doc-upload.service';
+import { GetPunchPassByIdQuery } from '../punch-passes/queries/get-punch-pass-by-id.query';
+import { PunchPass } from '../punch-passes/schema/punch-pass.schema';
+import { PunchCardsService } from '../punch-cards/punch-cards.service';
+import { PunchCard } from '../punch-cards/schema/punch-card.schema';
+import { PunchPassesService } from '../punch-passes/punch-passes.service';
+import { GoogleWalletService } from 'src/services/google-wallet/google-wallet.service';
 
 function hexToRgba(hex: string, opacity: number): string {
   if (!hex) return `rgba(0, 0, 0, ${opacity})`;
@@ -107,6 +118,8 @@ export class OrdersService {
     private OrderProductModel: Model<OrderProduct>,
     @InjectModel(EventTicketAnswer.name)
     private readonly eventTicketAnswerModel: Model<EventTicketAnswer>,
+    @InjectModel(User.name)
+    private readonly UserModel: Model<User>,
     private readonly businessService: BusinessService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
@@ -126,6 +139,9 @@ export class OrdersService {
     private readonly docUploadService: DocUploadService,
     private readonly sessionBookingsService: SessionBookingsService,
     private readonly smsService: SmsService,
+    private readonly punchCardsService: PunchCardsService,
+    private readonly punchPassesService: PunchPassesService,
+    private readonly googleWalletService: GoogleWalletService,
   ) { }
 
   async getVendorOwnerForOrder(
@@ -265,12 +281,32 @@ export class OrdersService {
         .filter(ticket => ticket.itemType === OrderItemType.TICKET)
         .map(ticket => ticket.id.toString());
 
-      const [productsFromDB, ticketsFromDB] = await Promise.all([
+      // Deduped - a punch pass line always has quantity 1 per cart entry
+      // (see cart.service.ts), so no need to worry about duplicate ids here
+      // the way updateAfterPaymentSuccess does for multi-unit lines.
+      const cartPunchPassIds = [
+        ...new Set(
+          cartDetails.product
+            .filter(item => item.itemType === OrderItemType.PUNCH_PASS)
+            .map(item => item.id.toString()),
+        ),
+      ];
+
+      const [productsFromDB, ticketsFromDB, punchPassesFromDB] = await Promise.all([
         cartProducts?.length
           ? this.productsService.findManyById(cartProducts)
           : [],
         cartTickets?.length
           ? this.queryBus.execute(new GetTicketByIdsQuery(cartTickets))
+          : [],
+        cartPunchPassIds.length
+          ? (
+            await Promise.all(
+              cartPunchPassIds.map(
+                id => this.queryBus.execute(new GetPunchPassByIdQuery(id)) as Promise<PunchPass>,
+              ),
+            )
+          ).filter(Boolean)
           : [],
       ]);
 
@@ -296,7 +332,17 @@ export class OrdersService {
         }
       }
 
-      const combinedItems = [...productsFromDB, ...ticketsFromDB];
+      // Not supported yet - vouchers apply generically to totalAmountToPay,
+      // so one could silently fund a punch pass if allowed. Reject early
+      // instead of relying on the later zero-total guard, which wouldn't
+      // catch partial voucher coverage.
+      if (cartPunchPassIds.length && body?.voucher?.length) {
+        throw new BadRequestException(
+          'Punch passes cannot be purchased with vouchers yet',
+        );
+      }
+
+      const combinedItems = [...productsFromDB, ...ticketsFromDB, ...punchPassesFromDB];
 
       const { payableAmount, cartItems, totalDeliveryFee }
         = await calculateProductsTotalAmount(cartDetails?.product, combinedItems);
@@ -370,6 +416,10 @@ export class OrdersService {
         ticket => ticket.itemType === OrderItemType.TICKET,
       );
 
+      const cartItemsPunchPass = cartItems.filter(
+        punchPass => punchPass.itemType === OrderItemType.PUNCH_PASS,
+      );
+
       const order = await this.createOrder({
         loggedInUser,
         body,
@@ -379,6 +429,7 @@ export class OrdersService {
         products,
         productDetails: productsFromDB,
         ticketDetails: ticketsFromDB,
+        cartItemsPunchPass,
         cartItemsProduct,
         cartItemsTicket,
         totalDeliveryFee,
@@ -682,6 +733,14 @@ export class OrdersService {
       cart = await this.cartService.findOneById(body.cartId);
     }
 
+    // Punch passes in a vendor-split cart are rejected separately, inside
+    // createVendorSplitOrdersForVoucher below - that path doesn't fan out
+    // per unit / create PunchCards. Only the single-cart (cart.product) case
+    // is fulfilled here, via fulfillPunchPassOrderProducts further down.
+    const findCartPunchPasses = cart?.product?.filter(
+      item => item.itemType === OrderItemType.PUNCH_PASS,
+    ) || [];
+
     // If cart has vendor products, use vendor split order creation
     // Only proceed if vendorProducts has data and regular product array is empty
     if (
@@ -809,9 +868,65 @@ export class OrdersService {
       await this.ticketsService.deductQuantity(cartItemsTicket);
     }
 
-    // Ticket-only voucher order is done instantly - nothing else rolls
+    if (findCartPunchPasses?.length) {
+      const { createdPunchCards } = await this.fulfillPunchPassOrderProducts(
+        findCartPunchPasses,
+        order,
+        command?.externalApi,
+      );
+
+      this.logger.info('[ORDER]: PUNCH CARDS CREATED', {
+        orderId: order._id,
+        count: createdPunchCards.length,
+      });
+
+      // Wallet pass creation and the buyer/creator emails already happened
+      // inside fulfillPunchPassOrderProducts above - this used to redo both
+      // a second time here (a second Google Wallet API call per card, and a
+      // second buyer + creator email per order). Only the SMS below is
+      // unique to this flow.
+
+      // Send SMS confirmation to buyer if phone number is present
+      if (order?.phone) {
+        const countryCode = order?.countryCode || '972';
+        const siteName = command?.externalApi?.name || 'MetGo';
+        const orderLink = `${(command?.externalApi?.websiteUrl || '').replace(/\/$/, '')}/order-confirmation?orderId=${order._id}`;
+
+        // Build punch pass summary for SMS (current remaining/total counts)
+        const punchPassSummary = createdPunchCards
+          .map(({ punchCard, punchPassInfo }) => {
+            const passName = punchPassInfo.nameHe || punchPassInfo.name || punchPassInfo.nameAr || punchCard.cardNumber;
+            return `${passName}: ${punchCard.remainingItems}/${punchCard.totalItems} נותרו`;
+          })
+          .join(' | ');
+
+        const smsMessage = `שלום ${order?.firstName || ''}\nתודה על רכישת הכרטיסייה מאתר ${siteName}\nמצב הכרטיסייה שלך: ${punchPassSummary || 'אין נתונים זמינים'}\nכדי לצפות בפרטי ההזמנה יש להכנס ללינק הזה: ${orderLink}\nבברכה צוות ${siteName}\nלתמיכה ניתן ליצור איתנו קשר באמצעות המייל הבא: support@metgo.app`;
+
+        try {
+          await this.smsService.sendSms({
+            firstName: order?.firstName || '',
+            lastName: order?.lastName || '',
+            phone: `+${countryCode}${order.phone}`,
+            message: smsMessage,
+            sender: 'TAV8',
+            subject: 'Punch Pass Confirmation',
+          });
+          this.logger.info('[SMS]: PUNCH PASS CONFIRMATION SMS SENT', {
+            orderId: order._id,
+            phone: order.phone,
+          });
+        } catch (smsError) {
+          this.logger.error('[SMS]: FAILED TO SEND PUNCH PASS CONFIRMATION SMS', {
+            orderId: order._id,
+            error: smsError instanceof Error ? smsError.message : String(smsError),
+          });
+        }
+      }
+    }
+
+    // Ticket/punch-pass-only voucher order is done instantly - nothing else rolls
     // Order.status up from its order-products, so set it here.
-    if (cartItemsTicket?.length && !cartItemsProduct?.length) {
+    if (!cartItemsProduct?.length && (cartItemsTicket?.length || findCartPunchPasses?.length)) {
       await updateById<Order>(this.OrderModel, order._id, {
         status: OrderStatus.COMPLETED,
       });
@@ -1044,8 +1159,13 @@ export class OrdersService {
         item => item.itemType === OrderItemType.TICKET,
       );
 
+      const findCartPunchPasses = cart?.product?.filter(
+        item => item.itemType === OrderItemType.PUNCH_PASS,
+      );
+
       let getProductsInformation = [];
       let getTicketsInformation = [];
+      let getPunchPassesInformation = [];
 
       if (findCartProducts?.length) {
         await this.productsService.deductQuantity(findCartProducts);
@@ -1259,7 +1379,238 @@ export class OrdersService {
 
         // Ticket-only order is done instantly - nothing else rolls
         // Order.status up from its order-products, so set it here.
-        if (!findCartProducts?.length) {
+        if (!findCartProducts?.length && !findCartPunchPasses?.length) {
+          await updateById<Order>(this.OrderModel, updateOrder._id, {
+            status: OrderStatus.COMPLETED,
+          });
+          updateOrder.status = OrderStatus.COMPLETED;
+        }
+      }
+
+      if (findCartPunchPasses?.length) {
+        const punchPassIds = [
+          ...new Set(findCartPunchPasses.map(item => item.id.toString())),
+        ];
+
+        getPunchPassesInformation = (
+          await Promise.all(
+            punchPassIds.map(
+              id => this.queryBus.execute(new GetPunchPassByIdQuery(id)) as Promise<PunchPass>,
+            ),
+          )
+        ).filter(Boolean);
+
+        await this.punchPassesService.deductQuantity(
+          findCartPunchPasses.map(item => ({
+            id: item.id.toString(),
+            quantity: item.quantity || 1,
+          })),
+        );
+
+        const missingPunchPassItems = updateOrder.products.filter(
+          product => !findCartPunchPasses.find(
+            item => item.id.toString() === product.id.toString(),
+          ),
+        );
+
+        if (missingPunchPassItems.length > 0) {
+          this.logger.warn(
+            '[ORDER]: Missing cart items for some punch passes after payment',
+            {
+              orderId: updateOrder._id,
+              missingPunchPassIds: missingPunchPassItems.map(p => p.id),
+            },
+          );
+        }
+
+        const punchCardArrays = await Promise.all(
+          updateOrder.products
+            .map(product => {
+              const cartItem = findCartPunchPasses.find(
+                item => item.id.toString() === product.id.toString(),
+              );
+
+              const punchPassInfo = getPunchPassesInformation.find(
+                item => item._id.toString() === product.id.toString(),
+              );
+
+              return { product, cartItem, punchPassInfo };
+            })
+            .filter(
+              ({ cartItem, punchPassInfo }) => cartItem && punchPassInfo,
+            )
+            .map(async ({ cartItem, punchPassInfo }) => {
+              const cardQuantity = cartItem.quantity || 1;
+
+              return Promise.all(
+                Array.from({ length: cardQuantity }, async () => {
+                  // Payment, and quantity.sold, are already committed by this
+                  // point - a throw here must not escape and reject the
+                  // sibling units in this Promise.all (other cards for this
+                  // same cart item, or other cart items entirely), since the
+                  // dedupe guard at the top of this function means this
+                  // order can never be reprocessed once paymentStatus is
+                  // SUCCESS. One unit's failure is logged loudly and
+                  // skipped, not a reason to also strand everything else in
+                  // this order.
+                  try {
+                    const orderProduct = await this.orderProductService.create({
+                      itemId: new mongoose.Types.ObjectId(cartItem.id),
+                      quantity: 1, // Always 1 per PUNCH_PASS - see comment above
+                      email: cartItem.email,
+                      countryCode: cartItem.countryCode,
+                      phone: cartItem.phone,
+                      firstName: cartItem.firstName,
+                      lastName: cartItem.lastName,
+                      deliveryFee: cartItem.deliveryFee,
+                      deliveryMethod: cartItem.deliveryMethod,
+                      deliveryArea: cartItem.deliveryArea,
+                      deliveryPickupLocation: cartItem.deliveryPickupLocation,
+                      houseNo: cartItem.houseNo,
+                      apartment: cartItem.apartment,
+                      city: cartItem.city,
+                      street: cartItem.street,
+                      isGift: cartItem.isGift,
+                      additionalInfo: cartItem.additionalInfo,
+                      amount: punchPassInfo.price?.sellingPrice || 0,
+                      loggedInUserId: updateOrder.userId,
+                      orderId: updateOrder.id,
+                      itemType: cartItem.itemType,
+                      // punch passes have no shipping step - fulfilled the
+                      // instant they're purchased, same as tickets
+                      status: OrderStatus.COMPLETED,
+                      completed: { date: new Date(), isAutomatic: true },
+                    });
+
+                    const punchCard = await this.punchCardsService.create({
+                      punchPass: punchPassInfo,
+                      orderProductId: orderProduct._id.toString(),
+                      businessId: punchPassInfo.businessId.toString(),
+                      userId: updateOrder.userId?.toString(),
+                      email: cartItem.email,
+                      phone: cartItem.phone,
+                    });
+
+                    return {
+                      punchCard, punchPassInfo, cartItem, amount: orderProduct.amount,
+                    };
+                  } catch (err) {
+                    this.logger.error(
+                      '[ORDER]: PAID PUNCH PASS UNIT FAILED TO FULFILL - PAYMENT ALREADY CAPTURED, NO RETRY WILL HAPPEN',
+                      {
+                        orderId: updateOrder._id,
+                        punchPassId: punchPassInfo?._id,
+                        email: cartItem?.email,
+                        err: err instanceof Error ? err.message : String(err),
+                      },
+                    );
+                    return null;
+                  }
+                }),
+              );
+            }),
+        );
+
+        const createdPunchCards = punchCardArrays.flat().filter(Boolean);
+        const expectedCardCount = findCartPunchPasses.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+        this.logger.info('[ORDER]: PUNCH CARDS CREATED', {
+          orderId: updateOrder._id,
+          count: createdPunchCards.length,
+        });
+
+        if (createdPunchCards.length < expectedCardCount) {
+          this.logger.error(
+            '[ORDER]: PUNCH PASS ORDER FULFILLED SHORT - CUSTOMER PAID FOR MORE CARDS THAN WERE CREATED',
+            {
+              orderId: updateOrder._id,
+              expected: expectedCardCount,
+              created: createdPunchCards.length,
+            },
+          );
+        }
+
+        // One wallet pass per PunchCard. Best-effort: the purchase is already
+        // paid and the cards exist, so a Wallet API failure must not fail
+        // payment success - it's logged and the pass can be re-issued later.
+        // TODO(METGO-2620): Apple Wallet issuance hooks in here too.
+        const walletPunchCards = await Promise.all(
+          createdPunchCards.map(async ({
+            punchCard, punchPassInfo, cartItem, amount,
+          }) => {
+            let googleSaveUrl: string = null;
+            try {
+              const pass = await this.googleWalletService.createPunchCardPass(
+                punchCard,
+                punchPassInfo,
+              );
+              if (pass) {
+                await this.punchCardsService.setGoogleWalletPass(
+                  punchCard._id,
+                  pass.objectId,
+                  pass.saveUrl,
+                );
+                googleSaveUrl = pass.saveUrl;
+              }
+            } catch (err) {
+              this.logger.error('[ORDER]: FAILED TO CREATE GOOGLE WALLET PASS', {
+                orderId: updateOrder._id,
+                punchCardId: punchCard._id,
+                err: err instanceof Error ? err.message : String(err),
+              });
+            }
+            return {
+              punchCard, punchPassInfo, cartItem, googleSaveUrl, amount,
+            };
+          }),
+        );
+
+        await this.sendEmailPostPunchPassPayment(
+          walletPunchCards,
+          updateOrder,
+          externalApi,
+        );
+
+        // Send SMS confirmation to buyer if phone number is present
+        if (updateOrder?.phone) {
+          const countryCode = updateOrder?.countryCode || '972';
+          const siteName = externalApi?.name || 'MetGo';
+          const orderLink = `${(externalApi?.websiteUrl || '').replace(/\/$/, '')}/order-confirmation?orderId=${updateOrder._id}`;
+
+          // Build punch pass summary for SMS (current remaining/total counts)
+          const punchPassSummary = walletPunchCards
+            .map(({ punchCard, punchPassInfo }) => {
+              const passName = punchPassInfo.nameHe || punchPassInfo.name || punchPassInfo.nameAr || punchCard.cardNumber;
+              return `${passName}: ${punchCard.remainingItems}/${punchCard.totalItems} נותרו`;
+            })
+            .join(' | ');
+
+          const smsMessage = `שלום ${updateOrder?.firstName || ''}\nתודה על רכישת הכרטיסייה מאתר ${siteName}\nמצב הכרטיסייה שלך: ${punchPassSummary || 'אין נתונים זמינים'}\nכדי לצפות בפרטי ההזמנה יש להכנס ללינק הזה: ${orderLink}\nבברכה צוות ${siteName}\nלתמיכה ניתן ליצור איתנו קשר באמצעות המייל הבא: support@metgo.app`;
+
+          try {
+            await this.smsService.sendSms({
+              firstName: updateOrder?.firstName || '',
+              lastName: updateOrder?.lastName || '',
+              phone: `+${countryCode}${updateOrder.phone}`,
+              message: smsMessage,
+              sender: 'TAV8',
+              subject: 'Punch Pass Confirmation',
+            });
+            this.logger.info('[SMS]: PUNCH PASS CONFIRMATION SMS SENT', {
+              orderId: updateOrder._id,
+              phone: updateOrder.phone,
+            });
+          } catch (smsError) {
+            this.logger.error('[SMS]: FAILED TO SEND PUNCH PASS CONFIRMATION SMS', {
+              orderId: updateOrder._id,
+              error: smsError instanceof Error ? smsError.message : String(smsError),
+            });
+          }
+        }
+
+        // Punch-pass-only order is done instantly - nothing else rolls
+        // Order.status up from its order-products, so set it here.
+        if (!findCartProducts?.length && !findCartTickets?.length) {
           await updateById<Order>(this.OrderModel, updateOrder._id, {
             status: OrderStatus.COMPLETED,
           });
@@ -1321,6 +1672,7 @@ export class OrdersService {
         getProductInformation: [
           ...getProductsInformation,
           ...getTicketsInformation,
+          ...getPunchPassesInformation,
         ],
       };
     } catch (err) {
@@ -1328,6 +1680,276 @@ export class OrdersService {
         err: err instanceof Error ? err.message : String(err),
       });
       exceptionHandling(err);
+    }
+  }
+
+  // One email per recipient listing every punch card they received, each
+  // with its own "Add to Google Wallet" button. Cards whose wallet pass
+  // failed are still listed (card number + QR token live on the card), just
+  // without the button. Never throws - payment is already captured.
+  // Shared by the purchase-confirmation email and the /order-confirmation
+  // page's punch-pass branch, so the card markup (and the "Add to Google
+  // Wallet" button condition) only lives in one place.
+  private escapePunchCardHtml(value: unknown): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  private buildPunchCardHtmlBlock(
+    punchCard: PunchCard,
+    punchPassInfo: PunchPass,
+    googleSaveUrl: string | null = (punchCard as any).walletGoogleSaveUrl || null,
+  ): string {
+    const escape = (value: unknown) => this.escapePunchCardHtml(value);
+    const passName = punchPassInfo?.nameHe || punchPassInfo?.name || punchPassInfo?.nameAr;
+    const image = punchPassInfo?.images?.find(img => img.isPrimary)?.image
+      || punchPassInfo?.images?.[0]?.image;
+    const validUntil = new Date(punchCard.validUntil).toLocaleDateString('he-IL');
+
+    const walletButton = googleSaveUrl
+      ? `<a href="${escape(googleSaveUrl)}" target="_blank" style="display: inline-block; background: #000000; color: #ffffff; padding: 10px 20px; border-radius: 24px; font-size: 14px; font-weight: bold; text-decoration: none; margin-top: 12px;">הוספה ל-Google Wallet</a>`
+      : '';
+
+    return `
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; direction: rtl; border-radius: 20px;">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                ${image ? `<td style="padding: 0; vertical-align: top; width: 100px;">
+                  <img src="${escape(image)}" alt="${escape(passName)}" style="max-width: 100px; height: 100px; margin-left: 10px; display: block; border-radius: 12px;">
+                </td>` : ''}
+                <td style="padding: 0 10px; vertical-align: top;" width="100%">
+                  <span style="display: block; font-size: 16px; font-weight: bold; color: #333333;">${escape(passName)}</span>
+                  <span style="display: block; font-size: 13px; color: #666666; margin-top: 4px;">מספר כרטיסייה: ${escape(punchCard.cardNumber)}</span>
+                  <span style="display: block; font-size: 13px; color: #666666;">ניקובים: ${punchCard.remainingItems} / ${punchCard.totalItems}</span>
+                  <span style="display: block; font-size: 13px; color: #666666;">בתוקף עד: ${validUntil}</span>${walletButton}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>`;
+  }
+
+  private async sendEmailPostPunchPassPayment(
+    punchCards: {
+      punchCard: PunchCard;
+      punchPassInfo: PunchPass;
+      cartItem: Pick<CartProductPayload, 'email' | 'firstName'>;
+      googleSaveUrl: string | null;
+      amount?: number;
+    }[],
+    order: Order,
+    externalApi: any,
+  ): Promise<void> {
+    try {
+      const { emailFields } = await getCommonEmailFields(
+        externalApi,
+        this.docUploadService,
+      );
+
+      const byRecipient = new Map<string, { buyerName: string; html: string[] }>();
+
+      punchCards.forEach(({
+        punchCard, punchPassInfo, cartItem, googleSaveUrl,
+      }) => {
+        const to = cartItem?.email || order.email;
+        if (!to) return;
+
+        // The save URL is a signed token that adds this card (with its
+        // redemption QR) to any wallet, so log only whether it exists.
+        this.logger.info('[EMAIL]: PUNCH PASS WALLET BUTTON', {
+          orderId: order._id,
+          punchCardId: punchCard._id,
+          walletGoogleObjectId: punchCard.walletGoogleObjectId,
+          hasGoogleSaveUrl: !!googleSaveUrl,
+          walletButtonRendered: !!googleSaveUrl,
+          to,
+        });
+
+        const html = this.buildPunchCardHtmlBlock(punchCard, punchPassInfo, googleSaveUrl);
+
+        const group = byRecipient.get(to) || {
+          buyerName: cartItem?.firstName || order.firstName || '',
+          html: [],
+        };
+        group.html.push(html);
+        byRecipient.set(to, group);
+      });
+
+      await Promise.all(
+        [...byRecipient.entries()].map(async ([to, group]) => {
+          try {
+            await this.mailchimpService.sendTransactionalEmail({
+              to,
+              templatedId: DynamicEmailTemplate.PunchPassesOnWallet,
+              from_email: externalApi?.companyDetails?.email,
+              from_name: externalApi?.name,
+              subject: 'הכרטיסייה שלך מוכנה - הוסיפו אותה לארנק',
+              mergeVars: {
+                ...emailFields,
+                BUYERNAME: group.buyerName,
+                PUNCH_PASSES_HTML: group.html.join(''),
+                BUTTON_LINK: externalApi?.websiteUrl,
+                CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
+              },
+            });
+            this.logger.info('[EMAIL]: PUNCH PASS WALLET EMAIL SENT', {
+              orderId: order._id,
+              to,
+              count: group.html.length,
+            });
+          } catch (err) {
+            this.logger.error('[EMAIL]: FAILED TO SEND PUNCH PASS WALLET EMAIL', {
+              orderId: order._id,
+              to,
+              err: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }),
+      );
+
+      await this.sendPunchPassCreatorEmails(punchCards, order, externalApi);
+    } catch (err) {
+      this.logger.error('[EMAIL]: FAILED TO BUILD PUNCH PASS WALLET EMAIL', {
+        orderId: order?._id,
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  // One email per punch pass sold, sent to that pass's creator (PunchPass.
+  // userId) - grouped by punch pass rather than by creator, so a creator who
+  // sold two different passes in one order gets two focused emails instead
+  // of one email mixing unrelated items. Never throws - payment is already
+  // captured.
+  private async sendPunchPassCreatorEmails(
+    punchCards: {
+      punchCard: PunchCard;
+      punchPassInfo: PunchPass;
+      amount?: number;
+    }[],
+    order: Order,
+    externalApi: any,
+  ): Promise<void> {
+    try {
+      const { emailFields } = await getCommonEmailFields(
+        externalApi,
+        this.docUploadService,
+      );
+
+      const escape = (value: unknown) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+      const byPunchPass = new Map<string, {
+        punchPassInfo: PunchPass;
+        cards: typeof punchCards;
+      }>();
+
+      punchCards.forEach(entry => {
+        const passId = entry.punchPassInfo._id.toString();
+        const group = byPunchPass.get(passId) || { punchPassInfo: entry.punchPassInfo, cards: [] };
+        group.cards.push(entry);
+        byPunchPass.set(passId, group);
+      });
+
+      const { FE } = this.configService.baseUrl;
+
+      await Promise.all(
+        [...byPunchPass.values()].map(async ({ punchPassInfo, cards }) => {
+          try {
+            const creatorId = punchPassInfo.userId?.toString();
+            if (!creatorId) return;
+
+            const creator = await this.UserModel
+              .findById(creatorId, 'email firstName')
+              .lean();
+            if (!creator?.email) return;
+
+            const passName = punchPassInfo.nameHe || punchPassInfo.name || punchPassInfo.nameAr;
+            const image = punchPassInfo.images?.find(img => img.isPrimary)?.image
+              || punchPassInfo.images?.[0]?.image;
+
+            let totalAmount = 0;
+            const cardsHtml = cards.map(({ punchCard, amount }) => {
+              const price = amount || punchPassInfo.price?.sellingPrice || 0;
+              totalAmount += price;
+
+              const itemsBreakdown = (punchCard.items || [])
+                .filter((item: any) => item.nameHe || item.name || item.nameAr)
+                .map((item: any) => `${escape(item.nameHe || item.name || item.nameAr)} ×${item.quantity}`)
+                .join(', ');
+
+              return `
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                  <tr>
+                    <td style="padding: 10px; background: #f9f9f9; direction: rtl; border-radius: 20px;">
+                      <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                        <tr>
+                          <td style="padding: 0; vertical-align: middle;">
+                            <img src="${escape(image)}" alt="${escape(passName)}" style="max-width: 100px; height: 100px; margin-left: 10px; display: block; border-radius: 12px;">
+                          </td>
+                          <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                            <span style="display: block; font-size: 16px; color: #333333;">${escape(passName)}</span>
+                            <span style="display: block; font-size: 13px; color: #666666;">מספר כרטיסייה: ${escape(punchCard.cardNumber)}</span>
+                            ${itemsBreakdown ? `<span style="display: block; font-size: 12px; color: #888888; margin-top: 2px;">כולל: ${itemsBreakdown}</span>` : ''}
+                          </td>
+                          <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                            <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>`;
+            }).join('');
+
+            await this.mailchimpService.sendTransactionalEmail({
+              to: creator.email,
+              templatedId: DynamicEmailTemplate.PunchPassConfirmationForCreator,
+              from_email: externalApi?.companyDetails?.email,
+              from_name: externalApi?.name,
+              subject: `הודעת מכירת כרטיסייה - ${passName}`,
+              mergeVars: {
+                ...emailFields,
+                PUNCH_PASS_NAME: passName,
+                BUYERNAME: order.firstName,
+                BUYER_PHONE_NUMBER: order.phone,
+                BUYER_ORDER_EMAIL: order.email,
+                QUANTITY: cards.length,
+                PUNCH_CARDS_HTML: cardsHtml,
+                TOTALAMOUNT: totalAmount,
+                PUNCH_PASS_LINK: `${FE}punch-pass-details?punchPassId=${punchPassInfo._id}`,
+              },
+            });
+
+            this.logger.info('[EMAIL]: PUNCH PASS CREATOR EMAIL SENT', {
+              orderId: order._id,
+              punchPassId: punchPassInfo._id,
+              to: creator.email,
+              cardCount: cards.length,
+            });
+          } catch (err) {
+            this.logger.error('[EMAIL]: FAILED TO SEND PUNCH PASS CREATOR EMAIL', {
+              orderId: order._id,
+              punchPassId: punchPassInfo._id,
+              err: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }),
+      );
+    } catch (err) {
+      this.logger.error('[EMAIL]: FAILED TO BUILD PUNCH PASS CREATOR EMAIL', {
+        orderId: order?._id,
+        err: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -1474,11 +2096,215 @@ export class OrdersService {
     }, externalApi);
   }
 
+  // Creates one OrderProduct + redeemable PunchCard per unit purchased, deducts the
+  // pass's catalogue quantity, best-effort issues a Google Wallet pass, and emails the
+  // buyer + the pass's creator. Shared by the paid path (updateAfterPaymentSuccess) and
+  // the fully-voucher/free path (createOrderWithOnlyVouchers) - both resolve a punch
+  // pass order instantly, so both need the same fulfillment, not just an OrderProduct.
+  private async fulfillPunchPassOrderProducts(
+    findCartPunchPasses: any[],
+    order: any,
+    externalApi: any,
+  ): Promise<{ createdPunchCards: any[]; getPunchPassesInformation: PunchPass[] }> {
+    const punchPassIds = [
+      ...new Set(findCartPunchPasses.map(item => item.id.toString())),
+    ];
+
+    const getPunchPassesInformation = (
+      await Promise.all(
+        punchPassIds.map(
+          id => this.queryBus.execute(new GetPunchPassByIdQuery(id)) as Promise<PunchPass>,
+        ),
+      )
+    ).filter(Boolean);
+
+    await this.punchPassesService.deductQuantity(
+      findCartPunchPasses.map(item => ({
+        id: item.id.toString(),
+        quantity: item.quantity || 1,
+      })),
+    );
+
+    const missingPunchPassItems = order.products.filter(
+      product => !findCartPunchPasses.find(
+        item => item.id.toString() === product.id.toString(),
+      ),
+    );
+
+    if (missingPunchPassItems.length > 0) {
+      this.logger.warn(
+        '[ORDER]: Missing cart items for some punch passes after payment',
+        {
+          orderId: order._id,
+          missingPunchPassIds: missingPunchPassItems.map(p => p.id),
+        },
+      );
+    }
+
+    const punchCardArrays = await Promise.all(
+      order.products
+        .map(product => {
+          const cartItem = findCartPunchPasses.find(
+            item => item.id.toString() === product.id.toString(),
+          );
+
+          const punchPassInfo = getPunchPassesInformation.find(
+            item => item._id.toString() === product.id.toString(),
+          );
+
+          return { product, cartItem, punchPassInfo };
+        })
+        .filter(
+          ({ cartItem, punchPassInfo }) => cartItem && punchPassInfo,
+        )
+        .map(async ({ cartItem, punchPassInfo }) => {
+          const cardQuantity = cartItem.quantity || 1;
+
+          return Promise.all(
+            Array.from({ length: cardQuantity }, async () => {
+              // Payment is already committed by this point - a throw here
+              // must not escape and reject the sibling units in this
+              // Promise.all. See the same guard in updateAfterPaymentSuccess.
+              try {
+                const orderProduct = await this.orderProductService.create({
+                  itemId: new mongoose.Types.ObjectId(cartItem.id),
+                  quantity: 1, // Always 1 per PUNCH_PASS - see comment above
+                  email: cartItem.email,
+                  countryCode: cartItem.countryCode,
+                  phone: cartItem.phone,
+                  firstName: cartItem.firstName,
+                  lastName: cartItem.lastName,
+                  deliveryFee: cartItem.deliveryFee,
+                  deliveryMethod: cartItem.deliveryMethod,
+                  deliveryArea: cartItem.deliveryArea,
+                  deliveryPickupLocation: cartItem.deliveryPickupLocation,
+                  houseNo: cartItem.houseNo,
+                  apartment: cartItem.apartment,
+                  city: cartItem.city,
+                  street: cartItem.street,
+                  isGift: cartItem.isGift,
+                  additionalInfo: cartItem.additionalInfo,
+                  amount: punchPassInfo.price?.sellingPrice || 0,
+                  loggedInUserId: order.userId,
+                  orderId: order.id,
+                  itemType: cartItem.itemType,
+                  // punch passes have no shipping step - fulfilled the
+                  // instant they're purchased, same as tickets
+                  status: OrderStatus.COMPLETED,
+                  completed: { date: new Date(), isAutomatic: true },
+                });
+
+                const punchCard = await this.punchCardsService.create({
+                  punchPass: punchPassInfo,
+                  orderProductId: orderProduct._id.toString(),
+                  businessId: punchPassInfo.businessId.toString(),
+                  userId: order.userId?.toString(),
+                  email: cartItem.email,
+                  phone: cartItem.phone,
+                });
+
+                return {
+                  punchCard, punchPassInfo, cartItem, amount: orderProduct.amount,
+                };
+              } catch (err) {
+                this.logger.error(
+                  '[ORDER]: PAID PUNCH PASS UNIT FAILED TO FULFILL - PAYMENT ALREADY CAPTURED, NO RETRY WILL HAPPEN',
+                  {
+                    orderId: order._id,
+                    punchPassId: punchPassInfo?._id,
+                    email: cartItem?.email,
+                    err: err instanceof Error ? err.message : String(err),
+                  },
+                );
+                return null;
+              }
+            }),
+          );
+        }),
+    );
+
+    const createdPunchCards = punchCardArrays.flat().filter(Boolean);
+    const expectedCardCount = findCartPunchPasses.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+    this.logger.info('[ORDER]: PUNCH CARDS CREATED', {
+      orderId: order._id,
+      count: createdPunchCards.length,
+    });
+
+    if (createdPunchCards.length < expectedCardCount) {
+      this.logger.error(
+        '[ORDER]: PUNCH PASS ORDER FULFILLED SHORT - CUSTOMER PAID FOR MORE CARDS THAN WERE CREATED',
+        {
+          orderId: order._id,
+          expected: expectedCardCount,
+          created: createdPunchCards.length,
+        },
+      );
+    }
+
+    // One wallet pass per PunchCard. Best-effort: the purchase is already
+    // paid (or free) and the cards exist, so a Wallet API failure must not
+    // fail order creation - it's logged and the pass can be re-issued later.
+    // TODO(METGO-2620): Apple Wallet issuance hooks in here too.
+    const walletPunchCards = await Promise.all(
+      createdPunchCards.map(async ({
+        punchCard, punchPassInfo, cartItem, amount,
+      }) => {
+        let googleSaveUrl: string = null;
+        try {
+          const pass = await this.googleWalletService.createPunchCardPass(
+            punchCard,
+            punchPassInfo,
+          );
+          if (pass) {
+            await this.punchCardsService.setGoogleWalletPass(
+              punchCard._id,
+              pass.objectId,
+              pass.saveUrl,
+            );
+            googleSaveUrl = pass.saveUrl;
+          }
+        } catch (err) {
+          this.logger.error('[ORDER]: FAILED TO CREATE GOOGLE WALLET PASS', {
+            orderId: order._id,
+            punchCardId: punchCard._id,
+            err: err instanceof Error ? err.message : String(err),
+          });
+        }
+        return {
+          punchCard, punchPassInfo, cartItem, googleSaveUrl, amount,
+        };
+      }),
+    );
+
+    await this.sendEmailPostPunchPassPayment(
+      walletPunchCards,
+      order,
+      externalApi,
+    );
+
+    return { createdPunchCards, getPunchPassesInformation };
+  }
+
   private async createVendorSplitOrdersForVoucher(
     parentOrder: Order,
     cart: Cart,
     externalApi: any,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
+    // PUNCH_PASS is not wired into the voucher/multi-vendor split path -
+    // unlike TICKET it isn't fanned out per unit here, so silently allowing
+    // it through would complete the order without ever creating the
+    // redeemable PunchCard. Reject explicitly instead of a silent gap.
+    if (
+      cart.vendorProducts.some(vendor => vendor.products.some(
+        p => p.itemType === OrderItemType.PUNCH_PASS,
+      ))
+    ) {
+      throw new BadRequestException(
+        'Punch passes cannot be purchased via voucher-funded multi-vendor carts yet',
+      );
+    }
+
     // Lion Coin vouchers charged in this payment (keyed by businessId). Cart never written to,
     // so this is the only source for redemption info.
     const lionCoinsByBusinessId = await this.findLionCoinsForPaidCart(cart, parentOrder);
@@ -1681,6 +2507,19 @@ export class OrdersService {
     cart: Cart,
     externalApi: any,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
+    // Same reasoning as createVendorSplitOrdersForVoucher above - this path
+    // doesn't fan out per unit / create PunchCards, so reject rather than
+    // silently completing an order with no redeemable card behind it.
+    if (
+      cart.vendorProducts.some(vendor => vendor.products.some(
+        p => p.itemType === OrderItemType.PUNCH_PASS,
+      ))
+    ) {
+      throw new BadRequestException(
+        'Punch passes cannot be purchased via multi-vendor split carts yet',
+      );
+    }
+
     // Lion Coin vouchers charged in this payment (keyed by businessId). Cart never written to,
     // so this is the only source for redemption info.
     const lionCoinsByBusinessId = await this.findLionCoinsForPaidCart(cart, parentOrder);
@@ -3844,6 +4683,9 @@ export class OrdersService {
     const isTicket = orderProducts.some(
       (op: any) => op.itemType === OrderItemType.TICKET,
     );
+    const isPunchPass = orderProducts.some(
+      (op: any) => op.itemType === OrderItemType.PUNCH_PASS,
+    );
     const websiteUrl = (externalApi?.websiteUrl || '').replace(/\/$/, '');
 
     // Generate QR code scan URL with token
@@ -3868,12 +4710,15 @@ export class OrdersService {
     }
 
     let productInfoList: any[] = [];
-    if (productIds.length > 0) {
+    if (productIds.length > 0 && !isPunchPass) {
       if (isTicket) {
         productInfoList = await this.queryBus.execute(
           new GetTicketByIdsQuery(productIds),
         );
       } else {
+        // Punch passes live in their own collection, not Products - handled
+        // separately below. Skipping them here avoids a false "Product not
+        // found" 404 (getProductInformationForOrders only knows Products).
         productInfoList = await this.productsService.getProductInformationForOrders(
           productIds.map(id => ({ id })),
         );
@@ -3960,6 +4805,39 @@ export class OrdersService {
       templateId = isSessionBooking
         ? DynamicEmailTemplate.SessionBookingConfirmation
         : DynamicEmailTemplate.TicketConfirmationForCustomers;
+    }
+
+    let punchPassesHtml = '';
+    if (isPunchPass) {
+      const punchPassOrderProductIds = orderProducts
+        .filter((op: any) => op.itemType === OrderItemType.PUNCH_PASS)
+        .map((op: any) => op._id.toString());
+
+      const punchCards = await this.punchCardsService.findByOrderProductIds(
+        punchPassOrderProductIds,
+      );
+
+      const punchPassIds = [
+        ...new Set(punchCards.map((card: any) => card.punchPassId.toString())),
+      ];
+      const punchPassInfoList = (
+        await Promise.all(
+          punchPassIds.map(
+            id => this.queryBus.execute(new GetPunchPassByIdQuery(id)) as Promise<PunchPass>,
+          ),
+        )
+      ).filter(Boolean);
+
+      punchPassesHtml = punchCards
+        .map((card: any) => {
+          const punchPassInfo = punchPassInfoList.find(
+            (p: any) => p._id.toString() === card.punchPassId.toString(),
+          );
+          return this.buildPunchCardHtmlBlock(card, punchPassInfo as PunchPass);
+        })
+        .join('');
+
+      templateId = DynamicEmailTemplate.PunchPassesOnWallet;
     }
 
     // Common email fields — logo, banners, footer images, social links
@@ -4116,6 +4994,9 @@ export class OrdersService {
 
         // ── Products (single-vendor / ticket / mini-site templates) ──
         PRODUCTS: products,
+
+        // ── Punch pass specific ──
+        PUNCH_PASSES_HTML: punchPassesHtml,
       },
     };
   }
