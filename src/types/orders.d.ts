@@ -66,8 +66,6 @@ class IProductDto {
   _id: string;
   orderedProductId: string;
   name: string;
-  nameHe?: string;
-  nameAr?: string;
   description: string;
   image: string;
   quantity: number;
@@ -104,9 +102,7 @@ class IProductDto {
 
   business?: {
     _id: string;
-    nameEn: string;
-    nameHe: string;
-    nameAr: string;
+    name: string;
     logoUrl: string;
   };
 }

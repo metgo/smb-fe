@@ -43,6 +43,7 @@ import {
   Mail,
   Activity,
   MailPlus,
+  FlaskConical,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -110,6 +111,17 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       isEnabled: true,
     },
+    ...(isSuperadmin
+      ? [
+          {
+            id: "dashboard-demo",
+            path: routes.dashboardDemo,
+            label: t("role_dashboards_demo") || "Role Dashboards (Demo)",
+            icon: FlaskConical,
+            isEnabled: true,
+          },
+        ]
+      : []),
     {
       id: "businesses",
       path: routes.businessMgmt,

@@ -232,6 +232,7 @@ export const PaymentMgmtPage = () => {
     handleBulkMarkOrderCompleted,
     handleCloseAllOrders,
     vendorBankDetails,
+    refetchVendorBankDetails,
     showVendorBankDetailsModal,
     setShowVendorBankDetailsModal,
   } = useOrderActions({
@@ -708,6 +709,7 @@ export const PaymentMgmtPage = () => {
                 }
               : undefined
           }
+          onBankDetailsSaved={refetchVendorBankDetails}
         />
       )}
     </div>

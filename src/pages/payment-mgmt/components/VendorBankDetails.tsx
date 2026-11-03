@@ -32,6 +32,7 @@ interface VendorBankDetailsProps {
   setIsOpen: (v: boolean) => void;
   savedBankAccount: BankAccount | undefined;
   ownerInfo: VendorBankDetailsOwnerInfo;
+  onBankDetailsSaved?: () => void;
 }
 
 const VendorBankDetails = ({
@@ -39,6 +40,7 @@ const VendorBankDetails = ({
   setIsOpen,
   savedBankAccount,
   ownerInfo,
+  onBankDetailsSaved,
 }: VendorBankDetailsProps) => {
   const { t } = useTranslation("profile");
   const { t: tBank } = useTranslation("banks");
@@ -130,6 +132,7 @@ const VendorBankDetails = ({
 
     if (res?.message) {
       toast.success(res.message || "Bank Info updated successfully");
+      onBankDetailsSaved?.();
       setIsOpen(false);
     }
   };

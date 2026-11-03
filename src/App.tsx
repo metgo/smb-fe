@@ -61,6 +61,7 @@ import {
   OfflineOrdersMgmtPage,
   EmailConfigMgmtPage,
   EmailActivityMgmtPage,
+  DashboardMgmtPage,
 } from "@/pages";
 import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -563,6 +564,10 @@ function App() {
           errorElement: <ErrorUiPage />,
           children: [
             { path: routes.dashboard, element: <DashboardPage /> },
+            {
+              path: routes.dashboardDemo,
+              element: <DashboardMgmtPage />,
+            },
             {
               path: routes.analyticsDashboard,
               element: <AnalyticsDashboardPage />,

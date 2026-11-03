@@ -57,12 +57,12 @@ export default function ProductDetailsModal({
                   to={`${routes.businessDetails}?businessId=${product?.business?._id}`}
                 >
                   <div className="flex items-center gap-3">
-                    <p>{product?.business?.nameEn}</p>
+                    <p>{product?.business?.name}</p>
                     <div>
-                      <img
+                      <ImageWithFallback
                         src={product?.business?.logoUrl}
-                        alt={product?.business?.nameEn || "Business logo"}
-                        className="w-6 h-6 rounded-lg object-cover"
+                        alt={product?.business?.name || "Business logo"}
+                        className="w-6 h-6 rounded-sm object-cover"
                       />
                     </div>
                   </div>

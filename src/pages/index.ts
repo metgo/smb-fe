@@ -45,6 +45,7 @@ import UtmBuilderPage from "./utm-builder";
 import OfflineOrdersMgmtPage from "./offline-orders-mgmt";
 import EmailConfigMgmtPage from "./email-config-mgmt";
 import EmailActivityMgmtPage from "./email-activity-mgmt";
+import DashboardMgmtPage from "./dashboard-mgmt";
 
 export {
   ChatPage,
@@ -94,4 +95,5 @@ export {
   UtmBuilderPage,
   EmailConfigMgmtPage,
   EmailActivityMgmtPage,
+  DashboardMgmtPage,
 };

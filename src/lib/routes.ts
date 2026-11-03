@@ -71,6 +71,8 @@ export const routes = {
   scoreInsights: "/score-insights",
 
   qrscanLogsMgmt: "/qrscan-logs-management",
+
+  dashboardDemo: "/dashboard-mgmt",
 };
 
 export type RouteKey = keyof typeof routes;

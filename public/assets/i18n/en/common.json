@@ -425,5 +425,6 @@
   "trades": "Trades",
   "email_config": "Email Config",
   "email_templates": "Email Templates",
-  "email_activity": "Email Activity"
+  "email_activity": "Email Activity",
+  "role_dashboards_demo": "Role Dashboards (Demo)"
 }

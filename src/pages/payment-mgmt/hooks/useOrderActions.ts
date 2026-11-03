@@ -73,9 +73,10 @@ export function useOrderActions({
         refetchOnMountOrArgChange: true,
       },
     );
-  const { data: vendorBankDetails } = useGetUserInfoQuery(undefined, {
-    skip: userRole === "superadmin",
-  });
+  const { data: vendorBankDetails, refetch: refetchVendorBankDetails } =
+    useGetUserInfoQuery(undefined, {
+      skip: userRole === "superadmin",
+    });
 
   const [cancelOrderProduct] = useCancelOrderProductMutation();
   const [openDispute] = useOpenDisputeMutation();
@@ -548,6 +549,7 @@ export function useOrderActions({
     handleCloseAllOrders,
 
     vendorBankDetails,
+    refetchVendorBankDetails,
     showVendorBankDetailsModal,
     setShowVendorBankDetailsModal,
   };
