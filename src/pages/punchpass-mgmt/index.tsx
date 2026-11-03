@@ -252,7 +252,7 @@ export default function PunchpassMgmtPage() {
                 title={t("scan_punch_pass")}
               >
                 <ScanLine className="w-4 h-4" />
-                <span className="hidden md:block">{t("scan_punch_pass")}</span>
+                <span className="block">{t("scan_punch_pass")}</span>
               </button>
 
               <ViewModeToggle

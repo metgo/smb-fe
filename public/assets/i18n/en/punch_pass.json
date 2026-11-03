@@ -27,6 +27,7 @@
 
   "marked_price": "Original Price",
   "selling_price": "Selling Price",
+  "free": "Free",
   "unlimited_stock": "Unlimited Stock",
   "stock_quantity": "Stock Quantity",
   "quantity": "Quantity",

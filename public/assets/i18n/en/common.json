@@ -50,6 +50,8 @@
   "address": "Address",
   "vouchers": "Vouchers",
   "punch_passes": "Punch Passes",
+  "punch_pass": "Punch Pass",
+  "punch_pass_scan": "Punch Pass Scan",
   "logo": "Logo",
   "upload_logo": "Upload Logo",
   "logo_required": "Logo (Required)",

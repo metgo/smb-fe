@@ -27,6 +27,7 @@
 
   "marked_price": "السعر الأصلي",
   "selling_price": "سعر البيع",
+  "free": "مجاني",
   "unlimited_stock": "مخزون غير محدود",
   "stock_quantity": "كمية المخزون",
   "quantity": "الكمية",
