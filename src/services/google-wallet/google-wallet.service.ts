@@ -51,12 +51,23 @@ const TYPE_HE: Record<string, string> = {
 
 // Same stamp icon for every catalogue type (replaces the earlier per-type
 // Heroicons set - simpler, and matches the punch-card metaphor directly
-// regardless of what the catalogue item actually is). Colored icon for
-// used circles, outline icon (recolored black->white, see getStampIcons())
-// for remaining ones - Barak wanted a clearer visual difference than just
-// the circle fill/outline alone.
+// regardless of what the catalogue item actually is). Used circles get the
+// MetGo brand gradient (see recolorToBrandGradient()), outline icon
+// (recolored black->white, see getStampIcons()) for remaining ones - Barak
+// wanted a clearer visual difference than just the circle fill/outline
+// alone, then asked for the used icon to match MetGo's brand colors
+// instead of plain orange.
 const STAMP_ICON_URL = 'https://storage.googleapis.com/tav8-sderot20w3s71w1n/icons/stamp.png';
 const STAMP_ICON_OUTLINE_URL = 'https://storage.googleapis.com/tav8-sderot20w3s71w1n/icons/stamp-black.png';
+
+// Exact stripe colors (top to bottom) from Workspace-FE's own
+// public/assets/images/nati_icon_color.svg - the MetGo balloon logo.
+const BRAND_GRADIENT_STOPS: Array<[number, number, number]> = [
+  [0xff, 0x66, 0x33], // orange
+  [0xfd, 0xcb, 0x00], // yellow
+  [0x99, 0xcc, 0x33], // green
+  [0x00, 0x99, 0xff], // blue
+];
 
 // Google Wallet's Generic pass "Details" list renders left-aligned
 // regardless of content - confirmed by test purchase, and prepending the
@@ -275,6 +286,39 @@ export class GoogleWalletService {
       .toBuffer();
   }
 
+  // Paints the used-stamp icon with MetGo's brand gradient (top to bottom,
+  // same stripe order as the balloon logo), keeping the original alpha
+  // (shape) untouched - same raw-pixel approach as recolorToWhite().
+  private static async recolorToBrandGradient(buffer: Buffer): Promise<Buffer> {
+    const { data, info } = await sharp(buffer).ensureAlpha().raw()
+      .toBuffer({ resolveWithObject: true });
+    const { width, height, channels } = info;
+    const lastStop = BRAND_GRADIENT_STOPS.length - 1;
+
+    for (let y = 0; y < height; y += 1) {
+      const t = height > 1 ? (y / (height - 1)) * lastStop : 0;
+      const i0 = Math.min(Math.floor(t), lastStop);
+      const i1 = Math.min(i0 + 1, lastStop);
+      const frac = t - i0;
+      const [r0, g0, b0] = BRAND_GRADIENT_STOPS[i0];
+      const [r1, g1, b1] = BRAND_GRADIENT_STOPS[i1];
+      const r = Math.round(r0 + (r1 - r0) * frac);
+      const g = Math.round(g0 + (g1 - g0) * frac);
+      const b = Math.round(b0 + (b1 - b0) * frac);
+
+      for (let x = 0; x < width; x += 1) {
+        const idx = (y * width + x) * channels;
+        data[idx] = r;
+        data[idx + 1] = g;
+        data[idx + 2] = b;
+      }
+    }
+
+    return sharp(data, { raw: { width, height, channels: 4 } })
+      .png()
+      .toBuffer();
+  }
+
   private async getStampIcons(): Promise<{ used: Buffer; remaining: Buffer } | null> {
     if (this.stampIcons !== undefined) return this.stampIcons;
 
@@ -287,7 +331,9 @@ export class GoogleWalletService {
       if (!usedRes.ok) throw new Error(`used icon status ${usedRes.status}`);
       if (!remainingRes.ok) throw new Error(`outline icon status ${remainingRes.status}`);
 
-      const usedRaw = Buffer.from(await usedRes.arrayBuffer());
+      const usedRaw = await GoogleWalletService.recolorToBrandGradient(
+        Buffer.from(await usedRes.arrayBuffer()),
+      );
       const remainingRaw = await GoogleWalletService.recolorToWhite(
         Buffer.from(await remainingRes.arrayBuffer()),
       );
