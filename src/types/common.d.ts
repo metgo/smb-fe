@@ -155,8 +155,6 @@ interface IAssociatedWebsiteIds {
 interface ISearchBusiness {
   _id: string;
   name: string;
-  nameHe: string;
-  nameAr: string;
   slug: string;
 }
 

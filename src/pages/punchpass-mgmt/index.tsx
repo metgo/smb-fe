@@ -47,7 +47,14 @@ export default function PunchpassMgmtPage() {
 
   const { t } = useTranslation("punch_pass");
   const { startDate, endDate } = useAppSelector((state) => state.auth);
-  const { isDark, bgSecondary, borderColor, language } = useThemeClasses();
+  const {
+    isDark,
+    bgSecondary,
+    borderColor,
+    language,
+    textPrimary,
+    textSecondary,
+  } = useThemeClasses();
 
   // ─── Filter & Search (persisted to localStorage) ─────────────────────
   const {
@@ -292,8 +299,15 @@ export default function PunchpassMgmtPage() {
               <EmptyState searchQuery={searchTerm} />
             ) : (
               <div className="text-center">
-                <Ticket className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <p className="opacity-50 mb-6">{t("no_punch_passes_desc")}</p>
+                <Ticket
+                  className={clsx(
+                    "w-16 h-16 mx-auto mb-4 opacity-80",
+                    textSecondary,
+                  )}
+                />
+                <p className={clsx("opacity-90 mb-6", textPrimary)}>
+                  {t("no_punch_passes_desc")}
+                </p>
                 <button
                   onClick={handleCreateNew}
                   className="px-6 py-3 bg-linear-to-r from-teal-500 to-cyan-600 text-white rounded-lg hover:shadow-lg transition-all"

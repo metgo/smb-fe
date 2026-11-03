@@ -86,7 +86,6 @@ export default function CreatePunchPassWizard({
   punchPass,
   opMode = IOpMode.CREATE,
 }: PunchPassWizardProps) {
-  console.log("🚀 ~ CreatePunchPassWizard ~ punchPass:", punchPass);
   const { t } = useTranslation("punch_pass");
   const { t: tc } = useTranslation("toast");
 
@@ -123,9 +122,7 @@ export default function CreatePunchPassWizard({
         {
           _id: biz?._id ?? bzIdForCreate,
           name: biz?.name || businessName,
-          nameHe: biz?.nameHe || businessName,
-          nameAr: biz?.nameAr || businessName,
-          slug: "",
+          slug: biz?.slug || "",
         },
       ];
     }
