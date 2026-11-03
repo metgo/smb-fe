@@ -89,5 +89,10 @@
   "vendor_sms_sent_success": "تم إرسال الرسالة النصية إلى المورد بنجاح",
   "vendor_sms_sent_failed": "فشل إرسال الرسالة النصية إلى المورد",
   "ticket_sms_resend_success": "تمت إعادة إرسال رسالة التذكرة بنجاح",
-  "ticket_sms_resend_faild": "فشل في إعادة إرسال رسالة التذكرة"
+  "ticket_sms_resend_faild": "فشل في إعادة إرسال رسالة التذكرة",
+
+  "punchpass_email_resend_success": "تم إرسال بريد بطاقة الثقب بنجاح",
+  "punchpass_email_resend_failed": "فشل إرسال بريد بطاقة الثقب",
+  "punchpass_sms_resend_success": "تم إرسال رسالة بطاقة الثقب بنجاح",
+  "punchpass_sms_resend_failed": "فشل إرسال رسالة بطاقة الثقب"
 }

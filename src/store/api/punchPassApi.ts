@@ -113,6 +113,20 @@ export const punchPassesApi = createApi({
       }),
       invalidatesTags: ["PunchPasses"],
     }),
+
+    // Resend the card's current status (live remaining/total, not the
+    // purchase-time snapshot) to the customer by email or SMS - same
+    // request contract as the event ticket modal's notify buttons.
+    notifyPunchPassCustomerByEmailSms: builder.mutation<
+      any,
+      { ordersId: string[]; type: "email" | "sms"; emailRecipient: string }
+    >({
+      query: (payload) => ({
+        url: endpoints.sendOrderNotification,
+        method: "POST",
+        data: payload,
+      }),
+    }),
   }),
 });
 
@@ -131,4 +145,5 @@ export const {
 
   useGetPunchCardLookupQuery,
   useRedeemPunchCardMutation,
+  useNotifyPunchPassCustomerByEmailSmsMutation,
 } = punchPassesApi;

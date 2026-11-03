@@ -40,6 +40,15 @@ const InlineStatusSelect = ({
     (punchPass as any)?.status || "",
   );
 
+  // Resync when the server's status changes under us (e.g. after create/
+  // refetch) - without this, localStatus is only ever set once at mount and
+  // silently goes stale if this component instance is reused for different
+  // row data (React reconciliation reusing the slot) instead of remounting.
+  const punchPassStatus = (punchPass as any)?.status || "";
+  useEffect(() => {
+    setLocalStatus(punchPassStatus);
+  }, [punchPass?._id, punchPassStatus]);
+
   useEffect(() => {
     if (!isEditing) return;
     const handle = (e: MouseEvent) => {

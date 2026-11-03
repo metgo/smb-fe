@@ -44,6 +44,10 @@ interface PunchPassScannerModalProps {
   onClose: () => void;
 }
 
+interface PunchPassScannerContentProps {
+  showHeader?: boolean;
+}
+
 // ─── Camera + QR decode ──────────────────────────────────────────────
 interface QRCameraProps {
   onDetected: (value: string) => void;
@@ -428,10 +432,10 @@ const PunchCardLookupResult: React.FC<PunchCardLookupResultProps> = ({
   );
 };
 
-// ─── Modal ───────────────────────────────────────────────────────────
-const PunchPassScannerModal: React.FC<PunchPassScannerModalProps> = ({
-  onClose,
-}) => {
+// ─── Shared scanner content (used by the modal and the standalone page) ──
+export const PunchPassScannerContent: React.FC<
+  PunchPassScannerContentProps
+> = ({ showHeader = true }) => {
   const { t } = useTranslation("punch_pass");
   const {
     isDark,
@@ -555,8 +559,8 @@ const PunchPassScannerModal: React.FC<PunchPassScannerModalProps> = ({
   };
 
   return (
-    <ModalWrapper onClose={onClose} maxWidth="max-w-md" height="h-auto">
-      <div className="flex flex-col p-3 gap-5 max-h-[85dvh] overflow-y-auto">
+    <div className="flex flex-col gap-5">
+      {showHeader && (
         <div>
           <h1 className={clsx("text-2xl font-semibold", textPrimary)}>
             {t("scan_punch_pass")}
@@ -565,70 +569,83 @@ const PunchPassScannerModal: React.FC<PunchPassScannerModalProps> = ({
             {t("scan_punch_pass_desc")}
           </p>
         </div>
+      )}
 
-        {/* Tabs */}
-        <div
-          className={clsx(
-            "grid grid-cols-2 gap-1 p-1 rounded-xl border",
-            borderColor,
-            isDark ? "bg-gray-800/60" : "bg-gray-100",
-          )}
-        >
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleTabChange(tab.id)}
-              className={clsx(
-                "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors cursor-pointer",
-                activeTab === tab.id
-                  ? "bg-linear-to-r from-teal-500 to-cyan-600 text-white shadow"
-                  : isDark
-                    ? "text-gray-300 hover:bg-gray-700/60"
-                    : "text-gray-700 hover:bg-white",
-              )}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        {lookup ? (
-          renderLookup()
-        ) : activeTab === "qr" ? (
-          <div className="flex flex-col gap-3">
-            <QRCamera onDetected={handleDetected} />
-            <p className={clsx("text-sm text-center", textTertiary)}>
-              {t("scan_qr_hint")}
-            </p>
-          </div>
-        ) : (
-          <form onSubmit={handleCardSubmit} className="flex flex-col gap-3">
-            <label className={clsx("text-sm font-medium", textPrimary)}>
-              {t("card_number")}
-            </label>
-            <input
-              autoFocus
-              value={cardNumber}
-              onChange={(e) => setCardNumber(e.target.value)}
-              placeholder={t("PP-20XX-XXXXXXXX")}
-              className={clsx(
-                "w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-teal-500",
-                inputClasses,
-              )}
-            />
-            <button
-              type="submit"
-              disabled={!cardNumber.trim()}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-linear-to-r from-teal-500 to-cyan-600 text-white font-medium transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              <Search className="w-4 h-4" />
-              {t("find_punch_card")}
-            </button>
-          </form>
+      {/* Tabs */}
+      <div
+        className={clsx(
+          "grid grid-cols-2 gap-1 p-1 rounded-xl border",
+          borderColor,
+          isDark ? "bg-gray-800/60" : "bg-gray-100",
         )}
+      >
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => handleTabChange(tab.id)}
+            className={clsx(
+              "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+              activeTab === tab.id
+                ? "bg-linear-to-r from-teal-500 to-cyan-600 text-white shadow"
+                : isDark
+                  ? "text-gray-300 hover:bg-gray-700/60"
+                  : "text-gray-700 hover:bg-white",
+            )}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      {lookup ? (
+        renderLookup()
+      ) : activeTab === "qr" ? (
+        <div className="flex flex-col gap-3">
+          <QRCamera onDetected={handleDetected} />
+          <p className={clsx("text-sm text-center", textTertiary)}>
+            {t("scan_qr_hint")}
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={handleCardSubmit} className="flex flex-col gap-3">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            {t("card_number")}
+          </label>
+          <input
+            autoFocus
+            value={cardNumber}
+            onChange={(e) => setCardNumber(e.target.value)}
+            placeholder={t("PP-20XX-XXXXXXXX")}
+            className={clsx(
+              "w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 focus:ring-teal-500",
+              inputClasses,
+            )}
+          />
+          <button
+            type="submit"
+            disabled={!cardNumber.trim()}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-linear-to-r from-teal-500 to-cyan-600 text-white font-medium transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <Search className="w-4 h-4" />
+            {t("find_punch_card")}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+};
+
+// ─── Modal (used from the punch passes list page) ─────────────────────
+const PunchPassScannerModal: React.FC<PunchPassScannerModalProps> = ({
+  onClose,
+}) => {
+  return (
+    <ModalWrapper onClose={onClose} maxWidth="max-w-md" height="h-auto">
+      <div className="flex flex-col p-3 max-h-[85dvh] overflow-y-auto">
+        <PunchPassScannerContent />
       </div>
     </ModalWrapper>
   );

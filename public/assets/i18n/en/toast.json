@@ -93,5 +93,10 @@
   "vendor_sms_sent_success": "SMS sent to vendor successfully",
   "vendor_sms_sent_failed": "Failed to send SMS to vendor",
   "ticket_sms_resend_success": "Ticket SMS resent successfully",
-  "ticket_sms_resend_faild": "Failed to resend ticket SMS"
+  "ticket_sms_resend_faild": "Failed to resend ticket SMS",
+
+  "punchpass_email_resend_success": "Punch pass email sent successfully",
+  "punchpass_email_resend_failed": "Failed to send punch pass email",
+  "punchpass_sms_resend_success": "Punch pass SMS sent successfully",
+  "punchpass_sms_resend_failed": "Failed to send punch pass SMS"
 }

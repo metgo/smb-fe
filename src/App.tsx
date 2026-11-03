@@ -25,6 +25,7 @@ import {
   VouchersMgmtPage,
   PunchpassMgmtPage,
   PunchPassDetailsPage,
+  PunchPassScanMgmtPage,
   EventDetailsPage,
   BusinessDetailsPage,
   ProductDetailsPage,
@@ -631,6 +632,10 @@ function App() {
             {
               path: routes.punchPassDetails,
               element: <PunchPassDetailsPage />,
+            },
+            {
+              path: routes.punchPassScanMgmt,
+              element: <PunchPassScanMgmtPage />,
             },
 
             { path: routes.profile, element: <ProfilePage /> },

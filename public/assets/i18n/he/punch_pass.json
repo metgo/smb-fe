@@ -27,6 +27,7 @@
 
   "marked_price": "מחיר מקורי",
   "selling_price": "מחיר מכירה",
+  "free": "ללא עלות",
   "unlimited_stock": "מלאי בלתי מוגבל",
   "stock_quantity": "כמות במלאי",
   "quantity": "כמות",
@@ -107,6 +108,8 @@
   "payment_information": "פרטי תשלום",
   "payment_date": "תאריך תשלום",
   "order_id": "מספר הזמנה",
+  "notify_customer_by": "עדכן את הלקוח באמצעות",
+  "sms": "מסרון",
   "loading_punch_pass": "טוען כרטיסייה...",
   "punch_pass_load_failed": "טעינת הכרטיסייה נכשלה",
   "punch_pass_delete_failed": "מחיקת הכרטיסייה נכשלה",

@@ -19,6 +19,7 @@ import VouchersMgmtPage from "./vouchers-mgmt";
 import VoucherDetailsPage from "./vouchers-mgmt/details";
 import PunchpassMgmtPage from "./punchpass-mgmt";
 import PunchPassDetailsPage from "./punchpass-mgmt/details";
+import PunchPassScanMgmtPage from "./punchpass-scan-mgmt";
 import WebsiteMgmtPage from "./website-mgmt";
 import DynamicPageMgmtPage from "./dynamic-page-mgmt";
 import PromotionsMgmtPage from "./promotions-mgmt";
@@ -81,6 +82,7 @@ export {
   VoucherDetailsPage,
   PunchpassMgmtPage,
   PunchPassDetailsPage,
+  PunchPassScanMgmtPage,
   WebsiteMgmtPage,
   WebsiteConfigPage,
   DynamicPageMgmtPage,

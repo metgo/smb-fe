@@ -4,6 +4,8 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface PunchPassBasicInfoProps {
   t: (key: string) => string;
+  isFree: boolean;
+  setIsFree: (value: boolean) => void;
   formData: IPunchPassPayload;
   setFormData: (data: any) => void;
   errors: {
@@ -21,6 +23,8 @@ interface PunchPassBasicInfoProps {
 
 const PunchPassBasicInfo = ({
   t,
+  isFree,
+  setIsFree,
   isLoading,
   formData,
   setFormData,
@@ -35,6 +39,19 @@ const PunchPassBasicInfo = ({
 
   const handleChange = (updates: Partial<IPunchPassPayload>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
+  };
+
+  const handleFreeToggle = (checked: boolean) => {
+    setIsFree(checked);
+    if (checked) {
+      handleChange({
+        price: {
+          ...formData.price,
+          markedPrice: 0,
+          sellingPrice: 0,
+        },
+      });
+    }
   };
 
   const inputClasses = `w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`;
@@ -96,6 +113,19 @@ const PunchPassBasicInfo = ({
         />
       </FormFieldWrapper>
 
+      {/* Free */}
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={isFree}
+          onChange={(e) => handleFreeToggle(e.target.checked)}
+          className="rounded"
+        />
+        <span className={`text-sm font-medium ${textSecondary}`}>
+          {t("free")}
+        </span>
+      </label>
+
       {/* Price */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormFieldWrapper label={t("marked_price")}>
@@ -103,7 +133,8 @@ const PunchPassBasicInfo = ({
             type="number"
             min={0}
             step="0.01"
-            value={formData.price?.markedPrice ?? ""}
+            disabled={isFree}
+            value={isFree ? 0 : (formData.price?.markedPrice ?? "")}
             onChange={(e) =>
               handleChange({
                 price: {
@@ -113,7 +144,7 @@ const PunchPassBasicInfo = ({
               })
             }
             placeholder="0.00"
-            className={inputClasses}
+            className={`${inputClasses} ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
           />
         </FormFieldWrapper>
 
@@ -126,7 +157,8 @@ const PunchPassBasicInfo = ({
             type="number"
             min={0}
             step="0.01"
-            value={formData.price?.sellingPrice ?? ""}
+            disabled={isFree}
+            value={isFree ? 0 : (formData.price?.sellingPrice ?? "")}
             onChange={(e) =>
               handleChange({
                 price: {
@@ -136,7 +168,7 @@ const PunchPassBasicInfo = ({
               })
             }
             placeholder="0.00"
-            className={inputClasses}
+            className={`${inputClasses} ${isFree ? "opacity-50 cursor-not-allowed" : ""}`}
           />
         </FormFieldWrapper>
       </div>
@@ -152,6 +184,10 @@ const PunchPassBasicInfo = ({
                 quantity: {
                   ...formData.quantity,
                   isUnlimited: e.target.checked,
+                  // Unlimited has no real stock cap - clear any leftover
+                  // number instead of silently submitting it hidden (matches
+                  // the backend's own isUnlimited -> initial 0 invariant).
+                  ...(e.target.checked && { initial: 0 }),
                 },
               })
             }

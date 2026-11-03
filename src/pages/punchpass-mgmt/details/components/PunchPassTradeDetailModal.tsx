@@ -1,5 +1,7 @@
 import clsx from "clsx";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   User,
   Mail,
@@ -17,12 +19,16 @@ import {
   GraduationCap,
   CalendarDays,
   Tag,
+  Send,
 } from "lucide-react";
 
 import { ModalWrapper } from "@/components/wrapper";
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetPunchCardRedemptionsQuery } from "@/store/api/punchPassApi";
+import {
+  useGetPunchCardRedemptionsQuery,
+  useNotifyPunchPassCustomerByEmailSmsMutation,
+} from "@/store/api/punchPassApi";
 
 export const getTradeStatusColor = (status: string, isDark: boolean) => {
   switch (status?.toLowerCase()) {
@@ -248,6 +254,32 @@ const PunchPassTradeDetailModal: React.FC<PunchPassTradeDetailModalProps> = ({
     );
   const redemptionItems = punchCardRedemptions?.items ?? [];
 
+  const { t: tt } = useTranslation("toast");
+  const [notifyPunchPassCustomer, { isLoading: isResendingEmail }] =
+    useNotifyPunchPassCustomerByEmailSmsMutation();
+
+  const handleResendEmailSms = async (type: "email" | "sms") => {
+    try {
+      await notifyPunchPassCustomer({
+        ordersId: [trade.orderProductId],
+        emailRecipient: "CUSTOMER",
+        type,
+      }).unwrap();
+      toast.success(
+        type === "email"
+          ? tt("punchpass_email_resend_success")
+          : tt("punchpass_sms_resend_success"),
+      );
+    } catch (error) {
+      toast.error(
+        type === "email"
+          ? tt("punchpass_email_resend_failed")
+          : tt("punchpass_sms_resend_failed"),
+      );
+      console.error(`Failed to send punch pass ${type}:`, error);
+    }
+  };
+
   const fullName = `${trade.firstName} ${trade.lastName || ""}`.trim();
 
   const formatDate = (dateString?: string | null) =>
@@ -465,6 +497,39 @@ const PunchPassTradeDetailModal: React.FC<PunchPassTradeDetailModalProps> = ({
               </Section>
             </>
           )}
+        </div>
+
+        <div
+          className={clsx(
+            "shrink-0 flex justify-between items-center p-6 pt-3 sm:p-7 sm:pt-3 border-t",
+            borderColor,
+          )}
+        >
+          <div className={textPrimary}>{t("notify_customer_by")}:</div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleResendEmailSms("email")}
+              disabled={isResendingEmail}
+              className={clsx(
+                "px-4 py-2 cursor-pointer bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 active:bg-green-800 transition-colors flex items-center gap-2 shadow-sm",
+                isResendingEmail && "opacity-50 cursor-not-allowed",
+              )}
+            >
+              <Mail className="h-4 w-4" />
+              {t("email")}
+            </button>
+            <button
+              onClick={() => handleResendEmailSms("sms")}
+              disabled={isResendingEmail}
+              className={clsx(
+                "px-4 py-2 cursor-pointer bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center gap-2 shadow-sm",
+                isResendingEmail && "opacity-50 cursor-not-allowed",
+              )}
+            >
+              <Send className="h-4 w-4" />
+              {t("sms")}
+            </button>
+          </div>
         </div>
       </div>
     </ModalWrapper>

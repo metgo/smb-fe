@@ -86,6 +86,7 @@ export default function CreatePunchPassWizard({
   punchPass,
   opMode = IOpMode.CREATE,
 }: PunchPassWizardProps) {
+  console.log("🚀 ~ CreatePunchPassWizard ~ punchPass:", punchPass);
   const { t } = useTranslation("punch_pass");
   const { t: tc } = useTranslation("toast");
 
@@ -150,6 +151,7 @@ export default function CreatePunchPassWizard({
     },
   });
 
+  const [isFree, setIsFree] = useState(false);
   const [businessId, setBusinessId] = useState(bzIdForCreate || "");
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -237,6 +239,9 @@ export default function CreatePunchPassWizard({
     setFormData(loadedFormData);
     initialFormData.current = loadedFormData;
     setGalleryImages(punchPass?.images || []);
+    if (punchPass?.price?.sellingPrice === 0) {
+      setIsFree(true);
+    }
   }, [punchPassId, punchPass]);
 
   const [createdPunchPassId, setCreatedPunchPassId] = useState<string | null>(
@@ -257,7 +262,11 @@ export default function CreatePunchPassWizard({
       case 1:
         if (!formData.businessId) newErrors.businessId = t("field_required");
         if (!formData.name?.trim()) newErrors.name = t("field_required");
-        if (!formData.price?.sellingPrice || formData.price.sellingPrice <= 0)
+        if (
+          formData.price?.sellingPrice === undefined ||
+          formData.price.sellingPrice === null ||
+          formData.price.sellingPrice < 0
+        )
           newErrors.sellingPrice = t("invalid_price");
         if (
           !formData.quantity?.isUnlimited &&
@@ -417,6 +426,8 @@ export default function CreatePunchPassWizard({
       images,
       setCurrentStep,
       businesses,
+      isFree,
+      setIsFree,
       isLoading: isSearching || _isBusinessesLoading,
       searchBusiness,
     };

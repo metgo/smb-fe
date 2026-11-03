@@ -19,6 +19,8 @@
   "users": "משתמשים",
   "vouchers": "שוברים",
   "punch_passes": "כרטיסיות ניקוב",
+  "punch_pass": "כרטיסיית ניקוב",
+  "punch_pass_scan": "סריקת כרטיסיית ניקוב",
   "done": "בוצע",
   "title": "כותרת",
   "title_placeholder": "הזן כותרת...",

@@ -71,6 +71,7 @@ export const itemEndpoint: Record<string, string> = {
   PRODUCT: routes.productDetails,
   EVENT: routes.eventDetails,
   DISPUTE: routes.vendorReconciliationMgmt,
+  PUNCH_PASS: routes.punchPassDetails,
 };
 
 export const googlePointOfInterest = [

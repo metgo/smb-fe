@@ -44,6 +44,7 @@ import {
   Activity,
   MailPlus,
   FlaskConical,
+  ScanLine,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -212,13 +213,29 @@ export default function Sidebar() {
       icon: FileText,
       isEnabled: true,
     },
-    // {
-    //   id: "punchPasses",
-    //   path: routes.punchPassMgmt,
-    //   label: t("punch_passes") || "Punch Passes",
-    //   icon: WalletCards,
-    //   isEnabled: true,
-    // },
+    {
+      id: "punch-pass",
+      path: "#punch_pass",
+      label: t("punch_pass") || "Punch Pass",
+      icon: WalletCards,
+      isEnabled: true,
+      subItems: [
+        {
+          id: "punchPasses",
+          path: routes.punchPassMgmt,
+          label: t("punch_passes") || "Punch Passes",
+          icon: WalletCards,
+          isEnabled: true,
+        },
+        {
+          id: "punchPassScan",
+          path: routes.punchPassScanMgmt,
+          label: t("punch_pass_scan") || "Punch Pass Scan",
+          icon: ScanLine,
+          isEnabled: true,
+        },
+      ],
+    },
     {
       id: "communication-center",
       path: "#communication_center",
