@@ -137,36 +137,37 @@ export default function Sidebar() {
       icon: Package,
       isEnabled: true,
     },
-    {
-      id: "orders",
-      path: "#orders",
-      label: t("orders") || "Orders",
-      icon: ShoppingCart,
-      isEnabled: true,
-      subItems: [
-        {
-          id: "all-orders",
-          path: routes.ordersMgmt,
-          label: t("orders") || "All Orders",
-          icon: ShoppingBag,
-          isEnabled: true,
-        },
-        {
-          id: "offline-orders",
-          path: routes.offlineOrdersMgmt,
-          label: t("offline_orders") || "Offline Orders",
-          icon: WalletCards,
-          isEnabled: true,
-        },
-        {
-          id: "all-orders-summary",
-          path: routes.ordersSummaryMgmt,
-          label: t("order_summary") || "Orders Summary",
-          icon: CalendarArrowDown,
-          isEnabled: true,
-        },
-        ...(isVendorReconciliation
-          ? [
+    ...(isVendorReconciliation
+      ? [
+          {
+            id: "orders",
+            path: "#orders",
+            label: t("orders") || "Orders",
+            icon: ShoppingCart,
+            isEnabled: true,
+            subItems: [
+              {
+                id: "all-orders",
+                path: routes.ordersMgmt,
+                label: t("orders") || "All Orders",
+                icon: ShoppingBag,
+                isEnabled: true,
+              },
+              {
+                id: "offline-orders",
+                path: routes.offlineOrdersMgmt,
+                label: t("offline_orders") || "Offline Orders",
+                icon: WalletCards,
+                isEnabled: true,
+              },
+              {
+                id: "all-orders-summary",
+                path: routes.ordersSummaryMgmt,
+                label: t("order_summary") || "Orders Summary",
+                icon: CalendarArrowDown,
+                isEnabled: true,
+              },
+
               {
                 id: "vendor-reconciliation",
                 path: routes.vendorReconciliationMgmt,
@@ -174,10 +175,10 @@ export default function Sidebar() {
                 icon: Receipt,
                 isEnabled: true,
               },
-            ]
-          : []),
-      ],
-    },
+            ],
+          },
+        ]
+      : []),
     {
       id: "events",
       path: routes.eventsMgmt,
