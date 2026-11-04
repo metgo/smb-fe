@@ -786,7 +786,7 @@ export class VoucherService {
         voucher.remainingAmount,
       );
 
-      const updatedField = {
+      const updatedField: any = {
         updatedBy: loggedInUserId,
         updatedAt: new Date(),
         remainingAmount,
@@ -794,6 +794,11 @@ export class VoucherService {
           ? voucher?.expireDate
           : twoYearExpireDate(),
       };
+
+      // Set status to REDEEMED when voucher is fully used
+      if (remainingAmount === 0) {
+        updatedField.status = VoucherStatus.REDEEMED;
+      }
 
       // Conditioned on the remainingAmount read above so that two concurrent
       // redemptions of the same voucher can't both succeed against a stale balance.
@@ -838,7 +843,7 @@ export class VoucherService {
           // Capped at the voucher's original face value ("amount") so a
           // duplicate/retried refund can never inflate remainingAmount above
           // what the voucher was ever actually worth.
-          await this.VoucherModel.findOneAndUpdate(
+          const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
             { _id: voucherDetail.id },
             [
               {
@@ -860,6 +865,20 @@ export class VoucherService {
             ],
             { new: true },
           );
+
+          // Revert status from REDEEMED to ASSIGNED if remainingAmount > 0
+          // Non-critical update - don't await to avoid blocking on failure
+          if (updatedVoucher && updatedVoucher.remainingAmount > 0 && updatedVoucher.status === VoucherStatus.REDEEMED) {
+            this.VoucherModel.findOneAndUpdate(
+              { _id: voucherDetail.id },
+              { $set: { status: VoucherStatus.ASSIGNED } },
+            ).catch(err => {
+              this.logger.warn('[VOUCHER]: FAILED TO REVERT STATUS AFTER ORDER FAILED', {
+                voucherId: voucherDetail.id,
+                err: err.message,
+              });
+            });
+          }
         }),
       );
       this.logger.info('[VOUCHER]: UPDATED AFTER ORDER FAILED', {
