@@ -139,7 +139,8 @@ const PunchPassBasicInfo = ({
               handleChange({
                 price: {
                   ...formData.price,
-                  markedPrice: Number(e.target.value),
+                  markedPrice:
+                    e.target.value === "" ? undefined : Number(e.target.value),
                 },
               })
             }
@@ -163,7 +164,8 @@ const PunchPassBasicInfo = ({
               handleChange({
                 price: {
                   ...formData.price,
-                  sellingPrice: Number(e.target.value),
+                  sellingPrice:
+                    e.target.value === "" ? undefined : Number(e.target.value),
                 },
               })
             }
@@ -212,7 +214,10 @@ const PunchPassBasicInfo = ({
                 handleChange({
                   quantity: {
                     ...formData.quantity,
-                    initial: Number(e.target.value),
+                    initial:
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
                   },
                 })
               }
