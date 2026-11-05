@@ -290,9 +290,32 @@ const DANGEROUS_TAGS = new Set([
   "BASE",
 ]);
 
+// Page-chrome tags (UI labels, toolbars, nav) copied along with content from
+// web pages / chat apps — e.g. ChatGPT's "Writing ✓" <header>. Removed with
+// their children.
+const CHROME_TAGS = new Set(["HEADER", "FOOTER", "NAV", "ASIDE"]);
+
+// Layout wrapper tags that carry no formatting — unwrapped (children kept).
+const UNWRAP_TAGS = new Set(["SECTION", "ARTICLE", "MAIN"]);
+
+// True for colors that render invisibly: transparent / rgba(..., 0) / hsla(..., 0)
+function isTransparentColor(color: string): boolean {
+  const c = color.trim().toLowerCase();
+  if (!c) return false;
+  if (c === "transparent") return true;
+  const m = c.match(/^(?:rgba|hsla)\((.+)\)$/);
+  if (!m) return false;
+  const parts = m[1].split(/[\s,/]+/).filter(Boolean);
+  return parts.length === 4 && parseFloat(parts[3]) === 0;
+}
+
 /**
  * Sanitizes pasted HTML:
+ * - Removes HTML comments (framework markers like <!--comp--> from SPAs)
  * - Removes dangerous tags and their children
+ * - Removes page-chrome tags (header/footer/nav/aside) and their children
+ * - Unwraps layout wrappers (section/article/main), keeping their content
+ * - Removes elements whose text color is fully transparent (hidden text)
  * - Strips all event-handler attributes (on*)
  * - Strips href="javascript:..." links
  * - Keeps only allowed CSS properties in inline styles
@@ -304,10 +327,21 @@ function sanitizePastedHTML(html: string): string {
   const walk = (node: Node) => {
     const children = Array.from(node.childNodes);
     for (const child of children) {
+      if (child.nodeType === Node.COMMENT_NODE) {
+        node.removeChild(child);
+        continue;
+      }
+
       if (child.nodeType === Node.ELEMENT_NODE) {
         const el = child as HTMLElement;
 
-        if (DANGEROUS_TAGS.has(el.tagName)) {
+        if (DANGEROUS_TAGS.has(el.tagName) || CHROME_TAGS.has(el.tagName)) {
+          node.removeChild(el);
+          continue;
+        }
+
+        // Hidden text (e.g. color: rgba(0,0,0,0)) — drop it entirely
+        if (isTransparentColor(el.style.color)) {
           node.removeChild(el);
           continue;
         }
@@ -337,9 +371,16 @@ function sanitizePastedHTML(html: string): string {
             if (val) kept.push(`${prop}:${val}`);
           }
           el.style.cssText = kept.join(";");
+          if (!el.style.cssText) el.removeAttribute("style");
         }
 
         walk(el);
+
+        // Unwrap layout-only wrappers after cleaning their children
+        if (UNWRAP_TAGS.has(el.tagName)) {
+          while (el.firstChild) node.insertBefore(el.firstChild, el);
+          node.removeChild(el);
+        }
       }
     }
   };

@@ -78,6 +78,14 @@ export default function PageContentTab({
         {currentErrors.content && (
           <p className="text-xs text-red-500">{currentErrors.content}</p>
         )}
+
+        {/* <div>
+          <div
+            dir="auto"
+            className="prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: currentForm.content || "" }}
+          />
+        </div> */}
       </div>
     </>
   );
