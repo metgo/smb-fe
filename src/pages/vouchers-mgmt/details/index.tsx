@@ -70,7 +70,7 @@ export default function VoucherDetailsPage() {
 
   const handleCopy = () => {
     if (!voucher?.code) return;
-    navigator.clipboard.writeText(voucher.code);
+    navigator.clipboard.writeText(voucher?.code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -199,14 +199,14 @@ export default function VoucherDetailsPage() {
               <p
                 className={`text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
               >
-                {voucher?.campId?.name ? voucher.campId?.name : "—"}
+                {voucher?.campId?.name ? voucher?.campId?.name : "—"}
               </p>
 
               {/* Expiry countdown */}
               {voucher?.expireDate &&
                 (() => {
                   const daysLeft = Math.ceil(
-                    (new Date(voucher.expireDate).getTime() - Date.now()) /
+                    (new Date(voucher?.expireDate).getTime() - Date.now()) /
                       (1000 * 60 * 60 * 24),
                   );
                   if (daysLeft < 0)
@@ -283,7 +283,7 @@ export default function VoucherDetailsPage() {
 
           {/* Transactions Tab */}
           {activeTab === "transactions" && (
-            <VoucherUsageOrderList voucherId={voucher._id} />
+            <VoucherUsageOrderList voucherId={voucher?._id} />
           )}
         </div>
       </div>
