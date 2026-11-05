@@ -1,15 +1,18 @@
 {
   "page_title": "الصفحات الديناميكية",
   "page_subtitle": "إدارة محتوى صفحاتك القانونية الثابتة",
+  "info_select_website": "يرجى اختيار موقع إلكتروني قبل إدخال المحتوى.",
 
   "tab_terms": "الشروط والأحكام",
   "tab_privacy": "سياسة الخصوصية",
+  "tab_about_us": "من نحن",
   "tab_business_regulation": "لائحة الأعمال",
   "tab_document_upload": "رفع المستندات",
 
   "field_title": "العنوان",
   "field_title_placeholder_terms": "مثال: الشروط والأحكام",
   "field_title_placeholder_privacy": "مثال: سياسة الخصوصية",
+  "field_title_placeholder_about_us": "مثال: من نحن",
   "field_title_required": "حقل العنوان مطلوب",
 
   "field_subtitle": "العنوان الفرعي",
@@ -22,6 +25,7 @@
 
   "upload_drag_drop": "اسحب وأفلت الملفات هنا، أو انقر للاستعراض",
   "upload_supported_formats": "الصيغ المدعومة: PDF، Word، Excel، PowerPoint، TXT",
+  "error_no_website": "يرجى اختيار موقع إلكتروني أولاً",
   "error_no_document": "يرجى رفع مستند واحد على الأقل",
   "error_upload_in_progress": "يرجى الانتظار حتى تنتهي جميع الملفات من الرفع",
   "error_upload_failed_files": "يرجى إزالة أو إعادة محاولة الملفات الفاشلة قبل الحفظ",

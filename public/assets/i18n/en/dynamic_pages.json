@@ -1,15 +1,18 @@
 {
   "page_title": "Dynamic Pages",
   "page_subtitle": "Manage the content of your static legal pages",
+  "info_select_website": "Please select a website before entering content.",
 
   "tab_terms": "Terms & Conditions",
   "tab_privacy": "Privacy Policy",
+  "tab_about_us": "About Us",
   "tab_business_regulation": "Business Regulation",
   "tab_document_upload": "Document Upload",
 
   "field_title": "Title",
   "field_title_placeholder_terms": "e.g. Terms and Conditions",
   "field_title_placeholder_privacy": "e.g. Privacy Policy",
+  "field_title_placeholder_about_us": "e.g. About Us",
   "field_title_required": "Title is required",
 
   "field_subtitle": "Subtitle",
@@ -22,6 +25,7 @@
 
   "upload_drag_drop": "Drag & drop files here, or click to browse",
   "upload_supported_formats": "Supported: PDF, Word (.doc/.docx), Excel (.xls/.xlsx), PowerPoint (.ppt/.pptx), TXT",
+  "error_no_website": "Please select a website first",
   "error_no_document": "Please upload at least one document",
   "error_upload_in_progress": "Please wait for all files to finish uploading",
   "error_upload_failed_files": "Please remove or retry failed uploads before saving",

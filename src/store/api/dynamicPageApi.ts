@@ -15,6 +15,7 @@ interface IDynamicPageBody {
   type:
     | "terms_and_condition"
     | "privacy"
+    | "about_us"
     | "business_regulation"
     | "document_upload";
   title: string;
@@ -34,6 +35,7 @@ interface IDynamicPageData {
     type:
       | "terms_and_condition"
       | "privacy"
+      | "about_us"
       | "business_regulation"
       | "document_upload";
     title: string;

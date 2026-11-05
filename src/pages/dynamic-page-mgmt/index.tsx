@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FileText, Shield, BookOpen, Upload } from "lucide-react";
+import { FileText, Shield, Info, BookOpen, Upload } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { ReactSelect } from "@/components/form-fields";
@@ -45,6 +45,7 @@ export default function DynamicPageMgmt() {
       icon: FileText,
     },
     { id: "privacy" as TabId, label: t("tab_privacy"), icon: Shield },
+    { id: "about_us" as TabId, label: t("tab_about_us"), icon: Info },
     {
       id: "business_regulation" as TabId,
       label: t("tab_business_regulation"),
@@ -62,12 +63,14 @@ export default function DynamicPageMgmt() {
   const [forms, setForms] = useState<Record<TabId, PageFormData>>({
     terms_and_condition: { ...INITIAL_FORM },
     privacy: { ...INITIAL_FORM },
+    about_us: { ...INITIAL_FORM },
     business_regulation: { ...INITIAL_FORM },
     document_upload: { ...INITIAL_FORM },
   });
   const [errors, setErrors] = useState<Record<TabId, Partial<PageFormData>>>({
     terms_and_condition: {},
     privacy: {},
+    about_us: {},
     business_regulation: {},
     document_upload: {},
   });
@@ -387,7 +390,7 @@ export default function DynamicPageMgmt() {
           </div>
           <div className="flex  items-center gap-2 sm:gap-4">
             <ReactSelect
-              minWidth={200}
+              minWidth={120}
               items={associatedWebsite}
               value={externalApiId}
               onChange={(value) => setExternalApiId(value)}
@@ -413,7 +416,33 @@ export default function DynamicPageMgmt() {
 
       {/* Form Body */}
       <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
-        <div className="space-y-6">
+        <div className="space-y-2">
+          {!externalApiId && (
+            <div
+              role="status"
+              className={clsx(
+                "flex items-start gap-3 rounded-xl border p-4",
+                isDark
+                  ? "bg-blue-900/20 border-blue-800"
+                  : "bg-blue-50 border-blue-200",
+              )}
+            >
+              <Info
+                className={clsx(
+                  "w-5 h-5 shrink-0 mt-0.5",
+                  isDark ? "text-blue-400" : "text-blue-600",
+                )}
+              />
+              <p
+                className={clsx(
+                  "text-sm font-medium mb-0",
+                  isDark ? "text-blue-200" : "text-blue-900",
+                )}
+              >
+                {t("info_select_website")}
+              </p>
+            </div>
+          )}
           <div
             className={clsx(
               "rounded-xl border p-4 sm:p-6 space-y-5",

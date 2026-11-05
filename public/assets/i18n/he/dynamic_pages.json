@@ -1,15 +1,18 @@
 {
   "page_title": "דפים דינמיים",
   "page_subtitle": "נהל את תוכן הדפים המשפטיים הסטטיים שלך",
+  "info_select_website": "אנא בחר אתר לפני הזנת תוכן.",
 
   "tab_terms": "תנאי שימוש",
   "tab_privacy": "מדיניות פרטיות",
+  "tab_about_us": "אודותינו",
   "tab_business_regulation": "תקנון עסקים",
   "tab_document_upload": "העלאת מסמכים",
 
   "field_title": "כותרת",
   "field_title_placeholder_terms": "לדוגמה: תנאי שימוש",
   "field_title_placeholder_privacy": "לדוגמה: מדיניות פרטיות",
+  "field_title_placeholder_about_us": "לדוגמה: אודותינו",
   "field_title_required": "שדה כותרת הוא חובה",
 
   "field_subtitle": "כותרת משנה",
@@ -22,6 +25,7 @@
 
   "upload_drag_drop": "גרור ושחרר קבצים כאן, או לחץ לעיון",
   "upload_supported_formats": "נתמך: PDF, Word, Excel, PowerPoint, TXT",
+  "error_no_website": "אנא בחר אתר תחילה",
   "error_no_document": "אנא העלה לפחות מסמך אחד",
   "error_upload_in_progress": "אנא המתן עד שכל הקבצים יסיימו להיטען",
   "error_upload_failed_files": "אנא הסר או נסה שוב את ההעלאות שנכשלו לפני השמירה",

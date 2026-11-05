@@ -23,9 +23,11 @@ export default function PageContentTab({
   const { textPrimary, textTertiary, inputClasses } = useThemeClasses();
 
   const titlePlaceholder =
-    activeTab === "terms"
+    activeTab === "terms_and_condition"
       ? t("field_title_placeholder_terms")
-      : t("field_title_placeholder_privacy");
+      : activeTab === "about_us"
+        ? t("field_title_placeholder_about_us")
+        : t("field_title_placeholder_privacy");
 
   return (
     <>
