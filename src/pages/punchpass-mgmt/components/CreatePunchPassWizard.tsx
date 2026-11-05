@@ -66,13 +66,13 @@ const emptyFormData = (businessId = ""): IPunchPassPayload => ({
     },
   ],
   price: {
-    markedPrice: 0,
-    sellingPrice: 0,
+    markedPrice: undefined,
+    sellingPrice: undefined,
     discountAmount: 0,
     discountPercent: 0,
   },
   quantity: {
-    initial: 1,
+    initial: undefined,
     isUnlimited: false,
   },
   expiryDate: 60,

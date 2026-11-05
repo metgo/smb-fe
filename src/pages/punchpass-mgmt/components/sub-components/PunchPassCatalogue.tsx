@@ -38,7 +38,7 @@ const CATALOGUE_TYPES: TCatalogueItem["type"][] = [
 const emptyCatalogueItem: TCatalogueItem = {
   name: "",
   type: "PRODUCT",
-  quantity: 1,
+  quantity: undefined,
   dateTime: "",
   order: 0,
 };
@@ -356,7 +356,10 @@ const PunchPassCatalogue = ({
                                   value={item.quantity ?? ""}
                                   onChange={(e) =>
                                     updateCatalogue(index, {
-                                      quantity: Number(e.target.value),
+                                      quantity:
+                                        e.target.value === ""
+                                          ? undefined
+                                          : Number(e.target.value),
                                     })
                                   }
                                   placeholder="1"

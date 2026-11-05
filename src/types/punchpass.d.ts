@@ -16,14 +16,14 @@ interface IPunchPassPayload {
   }[];
 
   price: {
-    markedPrice: number;
+    markedPrice?: number;
     discountAmount: number;
     discountPercent: number;
-    sellingPrice: number;
+    sellingPrice?: number;
   };
 
   quantity: {
-    initial: number;
+    initial?: number;
     isUnlimited: boolean;
   };
 
