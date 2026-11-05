@@ -3330,6 +3330,14 @@ export class OrdersService {
         );
       }
 
+      // Also handle orders that might have been canceled in other ways
+      // but still have voucher deductions that need restoration
+      const order = await findOneById<Order>(this.OrderModel, orderId);
+      if (order?.voucher && order?.voucher?.length && order.status === OrderStatus.CANCELED) {
+        // Double-check if vouchers need restoration
+        await this.restoreVouchersForCanceledOrder(order);
+      }
+
       // No per-vendor split orders exist yet at this point - those are only
       // created on payment SUCCESS - so any Lion Coins reserved against
       // this cart need releasing here, not via a redeemedOrderId lookup.
@@ -3377,6 +3385,50 @@ export class OrdersService {
         err: err instanceof Error ? err.message : String(err),
       });
       exceptionHandling(err);
+    }
+  }
+
+  /**
+   * Helper function to restore vouchers for canceled orders
+   * This ensures vouchers are restored even if the order was canceled
+   * through different flows (not just payment failure)
+   */
+  private async restoreVouchersForCanceledOrder(order: Order): Promise<void> {
+    try {
+      if (!order?.voucher || !order?.voucher?.length) {
+        return;
+      }
+
+      // Check if vouchers were actually deducted by comparing with current voucher state
+      const voucherChecks = order.voucher.map(async voucherDetail => {
+        const voucher = await this.voucherService.getVoucherBasicDetails(voucherDetail.id);
+        if (voucher) {
+          // Check if the voucher's remaining amount is less than it should be
+          // This indicates the voucher was deducted but not restored
+          const expectedRemaining = voucher.amount - (voucherDetail.redeemedAmount || 0);
+          if (voucher.remainingAmount < expectedRemaining) {
+            return voucherDetail;
+          }
+        }
+        return null;
+      });
+
+      const voucherDetails = await Promise.all(voucherChecks);
+      const vouchersToRestore = voucherDetails.filter(v => v !== null);
+
+      if (vouchersToRestore.length > 0) {
+        await this.voucherService.updateAmountAfterOrderFailed(vouchersToRestore);
+        this.logger.info('[ORDER]: RESTORED VOUCHERS FOR CANCELED ORDER', {
+          orderId: order._id,
+          vouchersRestored: vouchersToRestore.length,
+        });
+      }
+    } catch (err) {
+      this.logger.warn('[ORDER]: FAILED TO RESTORE VOUCHERS FOR CANCELED ORDER', {
+        orderId: order._id,
+        err: err instanceof Error ? err.message : String(err),
+      });
+      // Don't throw - this is a best-effort restoration
     }
   }
 

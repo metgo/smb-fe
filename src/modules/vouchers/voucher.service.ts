@@ -786,6 +786,13 @@ export class VoucherService {
         voucher.remainingAmount,
       );
 
+      // Prevent over-redemption - check if there's enough balance
+      if (remainingAmount < 0) {
+        throw new UnprocessableEntityException(
+          'Insufficient voucher balance',
+        );
+      }
+
       const updatedField: any = {
         updatedBy: loggedInUserId,
         updatedAt: new Date(),
@@ -887,6 +894,25 @@ export class VoucherService {
     } catch (err) {
       this.logger.error('[VOUCHER]: FAILED TO UPDATE AFTER ORDER FAILED', {
         err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  /**
+   * Get voucher basic details (amount, remainingAmount) for restoration checks
+   * This is a public method to allow other services to check voucher state
+   */
+  async getVoucherBasicDetails(voucherId: string) {
+    try {
+      return await this.VoucherModel.findOne(
+        { _id: voucherId },
+        { amount: 1, remainingAmount: 1 },
+      );
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO GET VOUCHER BASIC DETAILS', {
+        voucherId,
+        err: err instanceof Error ? err.message : String(err),
       });
       exceptionHandling(err);
     }
