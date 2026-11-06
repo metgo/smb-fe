@@ -106,6 +106,8 @@
   "draft": "טיוטה",
   "orderType": "סוג הזמנה",
   "deliveryType": "סוג משלוח",
+  "filter_by_business": "סינון לפי עסק",
+  "select_business": "בחר עסק",
   "paymentMethod": "אמצעי תשלום",
   "showMore": "הצג חודשים נוספים",
   "creditCard": "כרטיס אשראי",

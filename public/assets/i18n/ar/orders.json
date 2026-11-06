@@ -111,6 +111,8 @@
   "draft": "مسودة",
   "orderType": "نوع الطلب",
   "deliveryType": "نوع التوصيل",
+  "filter_by_business": "تصفية حسب الشركة",
+  "select_business": "اختر الشركة",
   "paymentMethod": "طريقة الدفع",
   "showMore": "عرض أشهر إضافية",
   "creditCard": "بطاقة ائتمان",
