@@ -29,10 +29,10 @@ export const eventMutationApi = createApi({
 
     updateEvent: builder.mutation<
       any,
-      { body: EventStepPayload; eventId: string }
+      { body: EventStepPayload; eventId: string; language: Language }
     >({
-      query: ({ body, eventId }) => ({
-        url: `${endpoints.events}/${eventId}`,
+      query: ({ body, eventId, language }) => ({
+        url: `${endpoints.events}/${eventId}?locale=${language}`,
         method: "PATCH",
         data: body,
       }),

@@ -427,7 +427,11 @@ export default function EventsWithViewMode({
     try {
       await Promise.all(
         Array.from(selectedEvents).map((eventId: string) =>
-          updateEvent({ eventId, body: { status: status?.toUpperCase() } }),
+          updateEvent({
+            language,
+            eventId,
+            body: { status: status?.toUpperCase() },
+          }),
         ),
       );
       const message = tc("event_status_update_success");

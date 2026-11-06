@@ -10,7 +10,12 @@ interface UseEventDraftSaverProps {
   eventId: string;
   setEventId: (id: string) => void;
   initEventCreate: (args: { businessId?: string }) => any;
-  updateEvent: (args: { eventId: string; body: any }) => any;
+  updateEvent: (args: {
+    eventId: string;
+    body: any;
+    language: Language;
+  }) => any;
+  language: Language;
   stepPayloadMap: Record<number, () => any>;
   /**
    * Snapshot of the step payloads as hydrated from the server (edit mode only).
@@ -28,6 +33,7 @@ export function useEventDraftSaver({
   setEventId,
   initEventCreate,
   updateEvent,
+  language,
   stepPayloadMap,
   hydratedPayloadRef,
   businessId,
@@ -105,6 +111,7 @@ export function useEventDraftSaver({
         if (!Object.keys(payload).length) return;
 
         await updateEvent({
+          language,
           eventId: internalEventId || eventId!,
           body: payload,
         }).unwrap();
@@ -128,6 +135,7 @@ export function useEventDraftSaver({
       initEventCreate,
       eventId,
       updateEvent,
+      language,
       setEventId,
       t,
       isTraveller,

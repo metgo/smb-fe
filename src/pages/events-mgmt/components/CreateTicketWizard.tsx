@@ -68,6 +68,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
     textTertiary,
     rowDir,
     isDark,
+    language,
   } = useThemeClasses();
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -259,6 +260,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
 
       if (hasExternalTicket) {
         await updateEvent({
+          language,
           eventId,
           body: { hasExternalTicket: false },
         }).unwrap();

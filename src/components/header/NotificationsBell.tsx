@@ -443,6 +443,7 @@ const NotificationsBell = () => {
                         }).unwrap();
                       } else if (itemType === "EVENT") {
                         await updateEvent({
+                          language,
                           eventId: notification.itemId,
                           body: { status: "APPROVED" },
                         }).unwrap();

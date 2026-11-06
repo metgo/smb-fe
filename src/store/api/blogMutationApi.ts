@@ -9,9 +9,9 @@ export const blogMutationApi = createApi({
   tagTypes: ["Blog"],
   endpoints: (builder) => ({
     // POST /blogs - Create a new blog
-    createBlog: builder.mutation<any, any>({
-      query: (body) => ({
-        url: `${endpoints.blogs}`,
+    createBlog: builder.mutation<any, { body: any; language: Language }>({
+      query: ({ body, language }) => ({
+        url: `${endpoints.blogs}?locale=${language}`,
         method: "POST",
         data: body,
       }),
@@ -19,9 +19,12 @@ export const blogMutationApi = createApi({
     }),
 
     // PATCH /blogs/{blogId} - Update a blog
-    updateBlog: builder.mutation<any, { body: any; blogId: string }>({
-      query: ({ body, blogId }) => ({
-        url: `${endpoints.blogs}/${blogId}`,
+    updateBlog: builder.mutation<
+      any,
+      { body: any; blogId: string; language: Language }
+    >({
+      query: ({ body, blogId, language }) => ({
+        url: `${endpoints.blogs}/${blogId}?locale=${language}`,
         method: "PATCH",
         data: body,
       }),

@@ -118,6 +118,7 @@ export default function ArticleDetails() {
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBlog({
+        language,
         blogId,
         body: { status: status.toUpperCase() },
       }).unwrap();

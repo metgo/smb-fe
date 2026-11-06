@@ -60,6 +60,7 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
     borderColor,
     bgSecondary,
     textSecondary,
+    language,
   } = useThemeClasses();
 
   const {
@@ -199,6 +200,7 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
 
   async function updateTicketPurchaseLink() {
     await updateEvent({
+      language,
       eventId,
       body: {
         ticketBuyLink,

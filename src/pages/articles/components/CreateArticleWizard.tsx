@@ -119,6 +119,7 @@ const CreateArticleWizard = ({
               isPrimary: img.isPrimary,
             }));
             updateBlog({
+              language,
               blogId: existingArticle._id,
               body: { images: mapped },
             });
@@ -244,6 +245,7 @@ const CreateArticleWizard = ({
       try {
         if (isEditMode && existingArticle?._id) {
           await updateBlog({
+            language,
             body: payload,
             blogId: existingArticle._id,
           }).unwrap();
@@ -251,7 +253,7 @@ const CreateArticleWizard = ({
             isPublish ? t("article_published") : t("article_updated"),
           );
         } else {
-          await createBlog(payload).unwrap();
+          await createBlog({ body: payload, language }).unwrap();
           toast.success(isPublish ? t("article_published") : t("draft_saved"));
         }
         if (isPublish) onClose();
@@ -269,6 +271,7 @@ const CreateArticleWizard = ({
       updateBlog,
       onClose,
       validateArticle,
+      language,
     ],
   );
 
