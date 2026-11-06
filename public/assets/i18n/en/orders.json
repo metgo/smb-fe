@@ -109,6 +109,8 @@
   "draft": "Draft",
   "orderType": "Order Type",
   "deliveryType": "Delivery Type",
+  "filter_by_business": "Filter by Business",
+  "select_business": "Select Business",
   "paymentMethod": "Payment Method",
   "showMore": "Show more months",
   "creditCard": "Credit Card",

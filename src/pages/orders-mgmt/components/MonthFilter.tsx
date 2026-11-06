@@ -1,9 +1,5 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import {
-  formatMonthFilterLabel,
-  getCurrentMonthFilterValue,
-  getMonthFilterLocale,
-} from "@/helpers";
+import { formatMonthFilterLabel, getMonthFilterLocale } from "@/helpers";
 
 function getLastNMonths(
   n: number,
@@ -46,8 +42,6 @@ export default function MonthFilter({
   const { isDark, isRTL, language } = useThemeClasses();
   const locale = getMonthFilterLocale(language);
   const last12Months = getLastNMonths(12, locale);
-  const currentMonthValue = getCurrentMonthFilterValue();
-  const selectValue = value === "all" ? currentMonthValue : value;
 
   return (
     <div>
@@ -61,7 +55,7 @@ export default function MonthFilter({
 
       <div className="relative">
         <select
-          value={selectValue}
+          value={value}
           onChange={(e) => {
             onChange(e.target.value);
             if (e.target.value !== "custom") {
@@ -75,6 +69,7 @@ export default function MonthFilter({
               : "bg-white border-gray-300 text-gray-900"
           }`}
         >
+          <option value="all">{t("all")}</option>
           {last12Months.map((month) => (
             <option key={month.value} value={month.value}>
               {month.label}

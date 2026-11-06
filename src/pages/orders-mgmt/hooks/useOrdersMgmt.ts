@@ -9,12 +9,18 @@ import {
 } from "@/store/api/orderQueryApi";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
+import {
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessForProductQuery,
+} from "@/store/api/businessQueryApi";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { useViewMode } from "@/hooks/useViewMode";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useCommon } from "@/hooks/useCommon";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ORDER_COLUMNS } from "@/lib/utils";
 
 const limit = 20;
@@ -59,12 +65,14 @@ const defaultFilters = {
   endDate: "",
   dmoId: "all",
   authorityId: "all",
+  businessId: "all",
   amount: "",
 };
 
 export function useOrdersMgmt() {
   const { t } = useTranslation("orders");
   const { t: tc } = useTranslation("common");
+  const { language } = useThemeClasses();
   const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
@@ -254,7 +262,40 @@ export function useOrdersMgmt() {
     month: "all", // 'all', 'MM-YYYY', or 'custom'
     dmoId: dmoId || "all",
     authorityId: authorityId || "all",
+    businessId: "all",
     amount: "",
+  });
+
+  // Business filter - scoped to the currently selected dmo/authority, same
+  // as the role-based scoping the backend already applies to the order list
+  const { data: businessData, isLoading: isBusinessesLoading } =
+    useGetBusinessForProductQuery({
+      locale: language,
+      limit: 20,
+      page: 1,
+      dmoId: filters.dmoId !== "all" ? filters.dmoId : undefined,
+      authorityId:
+        filters.authorityId !== "all" ? filters.authorityId : undefined,
+    });
+  const [getBusinessList] = useLazyGetBusinessForProductQuery();
+
+  const {
+    items: businesses,
+    search: searchBusiness,
+    isSearching: isBusinessSearching,
+  } = useRemoteSelectData({
+    initialData: businessData?.data,
+    debounceMs: 400,
+    searchParams: {
+      locale: language,
+      dmoId: filters.dmoId !== "all" ? filters.dmoId : undefined,
+      authorityId:
+        filters.authorityId !== "all" ? filters.authorityId : undefined,
+    },
+    lazySearch: async (params) => {
+      const res = await getBusinessList(params).unwrap();
+      return { data: res?.data };
+    },
   });
 
   const lastGlobalDmoId = useRef(dmoId);
@@ -267,6 +308,7 @@ export function useOrdersMgmt() {
         ...prev,
         dmoId: dmoId || "all",
         authorityId: "all",
+        businessId: "all",
       }));
     }
   }, [dmoId]);
@@ -274,7 +316,11 @@ export function useOrdersMgmt() {
   useEffect(() => {
     if (authorityId !== lastGlobalAuthorityId.current) {
       lastGlobalAuthorityId.current = authorityId;
-      setFilters((prev) => ({ ...prev, authorityId: authorityId || "all" }));
+      setFilters((prev) => ({
+        ...prev,
+        authorityId: authorityId || "all",
+        businessId: "all",
+      }));
     }
   }, [authorityId]);
 
@@ -359,8 +405,16 @@ export function useOrdersMgmt() {
       });
     }
 
+    if (filters.businessId !== "all") {
+      const business = businesses?.find((b) => b._id === filters.businessId);
+      chips.push({
+        key: "businessId",
+        value: business?.name || filters.businessId,
+      });
+    }
+
     return chips;
-  }, [filters, dmosAuthorities, t]);
+  }, [filters, dmosAuthorities, businesses, t]);
 
   useEffect(() => {
     setPage(1);
@@ -376,6 +430,7 @@ export function useOrdersMgmt() {
       dmoId: filters.dmoId !== "all" ? filters.dmoId : undefined,
       authorityId:
         filters.authorityId !== "all" ? filters.authorityId : undefined,
+      businessId: filters.businessId !== "all" ? filters.businessId : undefined,
       websiteId,
     };
 
@@ -557,6 +612,12 @@ export function useOrdersMgmt() {
     activeFilterChips,
     showFilters,
     setShowFilters,
+
+    // business filter
+    businesses,
+    searchBusiness,
+    isBusinessesLoading,
+    isBusinessSearching,
 
     // selection
     selectedOrders,

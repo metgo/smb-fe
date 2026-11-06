@@ -31,6 +31,7 @@ import {
   QRScannerModal,
   ExportOrdersButton,
 } from "./components";
+import { ReactSelect } from "@/components/form-fields";
 import SearchInput from "@/components/shared/SearchInput";
 import AmountFilter from "@/components/shared/AmountFilter";
 import StatsMarquee from "@/components/shared/StatsMarquee";
@@ -61,6 +62,10 @@ export default function OrdersMgmtPage() {
     activeFilterChips,
     showFilters,
     setShowFilters,
+    businesses,
+    searchBusiness,
+    isBusinessesLoading,
+    isBusinessSearching,
     selectedOrders,
     setSelectedOrders,
     showColumnSettings,
@@ -603,6 +608,35 @@ export default function OrdersMgmtPage() {
               </div>
 
               <>
+                <div className="min-w-45">
+                  <label
+                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("filter_by_business")}
+                  </label>
+                  <ReactSelect
+                    isClearable
+                    value={
+                      filters.businessId === "all" ? "" : filters.businessId
+                    }
+                    onChange={(businessId: string) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        businessId: businessId || "all",
+                      }))
+                    }
+                    items={
+                      businesses?.map((item: any) => ({
+                        _id: item._id,
+                        name: item.name,
+                      })) ?? []
+                    }
+                    placeholder={t("select_business")}
+                    onSearch={searchBusiness}
+                    isLoading={isBusinessSearching || isBusinessesLoading}
+                  />
+                </div>
+
                 <div className="min-w-45">
                   <FilterSelect
                     label={t("deliveryType")}
