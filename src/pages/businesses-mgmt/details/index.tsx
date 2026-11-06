@@ -31,6 +31,7 @@ import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
 import {
   AttributesDetails,
+  AuditInfoDetails,
   DeliveryPolicyOptionDetails,
   DetailTitleSection,
   MediaDetails,
@@ -358,6 +359,15 @@ function BusinessDetailsPageInner() {
         return <BusinessOpeningHoursDetails {...commonProps} />;
       case "score":
         return <BusinessScoreDetails businessId={businessId} />;
+      case "audit_info":
+        return (
+          <AuditInfoDetails
+            createdAt={business?.createdAt}
+            updatedAt={business?.updatedAt}
+            createdBy={business?.createdBy}
+            updatedBy={business?.updatedBy}
+          />
+        );
       default:
         return null;
     }

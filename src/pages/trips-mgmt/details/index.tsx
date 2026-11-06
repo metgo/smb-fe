@@ -11,6 +11,7 @@ import { Spinner, TabsSection } from "@/components/shared";
 import { StatusChangeBtn } from "@/components/btns";
 import { ChatWithCreator } from "@/components/chat-popup";
 import {
+  AuditInfoDetails,
   DetailTitleSection,
   MediaDetails,
 } from "@/components/details-sections";
@@ -108,6 +109,15 @@ export default function TripDetailsPage() {
         return <TripItineraryDetails t={t} itenary={trip?.itenary} />;
       case "media":
         return <MediaDetails images={tripImages} />;
+      case "audit_info":
+        return (
+          <AuditInfoDetails
+            createdAt={trip?.createdAt}
+            updatedAt={trip?.updatedAt ?? undefined}
+            createdBy={trip?.createdBy}
+            updatedBy={trip?.updatedBy}
+          />
+        );
       default:
         return null;
     }

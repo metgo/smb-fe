@@ -31,6 +31,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { productTabs } from "@/constants/tabs";
 import {
   AttributesDetails,
+  AuditInfoDetails,
   DeliveryPolicyOptionDetails,
   DetailTitleSection,
   MediaDetails,
@@ -173,6 +174,15 @@ export default function ProductDetailsPage() {
         return <DeliveryPolicyOptionDetails data={product} isProduct />;
       case "media":
         return <MediaDetails {...mediaProps} />;
+      case "audit_info":
+        return (
+          <AuditInfoDetails
+            createdAt={product?.createdAt}
+            updatedAt={product?.updatedAt}
+            createdBy={product?.createdBy}
+            updatedBy={product?.updatedBy}
+          />
+        );
       default:
         return null;
     }

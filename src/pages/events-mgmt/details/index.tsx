@@ -38,6 +38,7 @@ import { ChatWithCreator } from "@/components/chat-popup";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
   AttributesDetails,
+  AuditInfoDetails,
   DetailTitleSection,
   MediaDetails,
 } from "@/components/details-sections";
@@ -240,6 +241,15 @@ export default function EventDetailsPage() {
         );
       case "qr_scan_logs":
         return <EventQrScanLogs eventId={eventId} />;
+      case "audit_info":
+        return (
+          <AuditInfoDetails
+            createdAt={eventDetails?.createdAt}
+            updatedAt={eventDetails?.updatedAt}
+            createdBy={eventDetails?.createdBy}
+            updatedBy={eventDetails?.updatedBy}
+          />
+        );
       default:
         return null;
     }

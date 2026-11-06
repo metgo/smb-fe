@@ -16,6 +16,7 @@ import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
 import { CreatePoiWizard } from "../components";
 import {
   AttributesDetails,
+  AuditInfoDetails,
   DetailTitleSection,
   MediaDetails,
 } from "@/components/details-sections";
@@ -103,6 +104,15 @@ export default function PoiDetailsPage() {
             groupTypesId={poi?.groupTypesId}
             accessibilitiesId={poi?.accessibilitiesId}
             tags={poi?.tagsId}
+          />
+        );
+      case "audit_info":
+        return (
+          <AuditInfoDetails
+            createdAt={poi?.createdAt}
+            updatedAt={poi?.updatedAt}
+            createdBy={poi?.createdBy}
+            updatedBy={poi?.updatedBy}
           />
         );
       default:
