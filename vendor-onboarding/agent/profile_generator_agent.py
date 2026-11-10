@@ -29,8 +29,9 @@ import sys
 
 import anthropic
 
-MODEL = os.environ.get("PROFILE_AGENT_MODEL", "claude-sonnet-5")
+MODEL = os.environ.get("PROFILE_AGENT_MODEL", "claude-sonnet-5-5")
 MAX_RETRIES = 2
+MAX_TOKENS = 16000
 
 # ---------------------------------------------------------------- taxonomy ---
 
@@ -61,12 +62,14 @@ Negev Time, a Hebrew-language (RTL) tourism marketplace for the Negev region.
 You will receive the vendor's answers to four short interview questions
 (q_offer: what they offer and a typical visit; q_edge: what sets them apart,
 possibly including their founding story; q_fit: who enjoys it most and who it is
-less suited for; q_reco: a one-sentence customer recommendation), plus their
+less suited for; q_reco: a one-sentence customer recommendation; and, when the
+vendor came through WhatsApp, q_practical: when to visit and what to know before
+arriving), plus their
 address, an optional website, optionally scraped website content, and a product
 list. Generate ONLY the interpretive fields below. Factual fields (name, phone,
 email, address) are handled outside of you — do not include them.
 
-Return ONLY a valid JSON object, no markdown fences, no commentary:
+Return a JSON object with these fields (the response format is enforced by a schema):
 
 {{
   "category": "",           // exactly ONE of: {" · ".join(TAXONOMY["category"])}
@@ -114,7 +117,120 @@ otherwise leave them empty.
   Never change prices. Missing price → keep 0 and flag.
 - Answers may contradict each other → prefer the more specific claim and flag it."""
 
+# ------------------------------------------------------------ output schema ---
+
+
+def _str_list(allowed=None):
+    items = {"type": "string", "enum": allowed} if allowed else {"type": "string"}
+    return {"type": "array", "items": items}
+
+
+OUTPUT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "category": {"type": "string", "enum": TAXONOMY["category"]},
+        "tags": _str_list(ALL_TAGS),
+        "audience": _str_list(TAXONOMY["audience"]),
+        "image_type_tags": _str_list(TAXONOMY["image_type_tags"]),
+        "image_mood_tags": _str_list(TAXONOMY["image_mood_tags"]),
+        "short_desc": {"type": "string"},
+        "full_desc": {"type": "string"},
+        "highlights": _str_list(),
+        "practical": {
+            "type": "object",
+            "properties": {
+                k: {"type": "string"}
+                for k in ("best_time", "accessibility", "parking", "booking", "bring")
+            },
+            "required": ["best_time", "accessibility", "parking", "booking", "bring"],
+            "additionalProperties": False,
+        },
+        "products": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "desc": {"type": "string"},
+                    "price_ils": {"type": "number"},
+                    "duration": {"type": "string"},
+                    "booking_required": {"type": "boolean"},
+                },
+                "required": ["name", "desc", "price_ils", "duration", "booking_required"],
+                "additionalProperties": False,
+            },
+        },
+        "confidence_flags": _str_list(),
+    },
+    "required": [
+        "category", "tags", "audience", "image_type_tags", "image_mood_tags",
+        "short_desc", "full_desc", "highlights", "practical", "products",
+        "confidence_flags",
+    ],
+    "additionalProperties": False,
+}
+
 # ----------------------------------------------------------------- helpers ---
+
+
+def normalize_answers(answers: dict) -> dict:
+    """Map either answer shape onto the four keys the prompt expects.
+
+    The web form sends q_offer / q_edge / q_fit / q_reco. The WhatsApp
+    interviewer (docs/agent-prompts.md) sends q1-q6 with q5 split into q5a/q5b.
+    Founding story (q1) and differentiator (q3) both feed q_edge; the practical
+    question (q5) has no form equivalent, so it travels as q_practical.
+    """
+    answers = answers or {}
+    if any(k in answers for k in ("q_offer", "q_edge", "q_fit", "q_reco")):
+        return dict(answers)
+
+    def join(*keys):
+        return "\n\n".join(str(answers[k]).strip() for k in keys if str(answers.get(k, "")).strip())
+
+    out = {
+        "q_offer": join("q2"),
+        "q_edge": join("q1", "q3"),
+        "q_fit": join("q4"),
+        "q_reco": join("q6"),
+    }
+    practical = join("q5", "q5a", "q5b")
+    if practical:
+        out["q_practical"] = practical
+    return out
+
+
+def _to_price(value):
+    try:
+        return float(value) if str(value).strip() != "" else 0
+    except (TypeError, ValueError):
+        return 0
+
+
+def _merge_products(raw, generated: list) -> tuple:
+    """Keep vendor-entered product facts verbatim; take only the tidied desc from the model.
+
+    The web form sends a list of {name, desc, price, duration, booking}. The
+    WhatsApp interviewer sends free text, which only the model can parse, so in
+    that case the model's prices are kept but flagged for a human check.
+    """
+    flags = []
+    if isinstance(raw, list) and raw:
+        products = []
+        for i, p in enumerate(raw):
+            gen = generated[i] if i < len(generated) else {}
+            products.append({
+                "name": p.get("name", ""),
+                "desc": gen.get("desc") or p.get("desc", ""),
+                "price_ils": _to_price(p.get("price", p.get("price_ils"))),
+                "duration": p.get("duration", ""),
+                "booking_required": bool(p.get("booking", p.get("booking_required", False))),
+            })
+        return products, flags
+    if isinstance(raw, str) and raw.strip() and generated:
+        flags.append("products parsed from free text by the model — verify names and prices")
+    return generated, flags
+
 
 
 def _extract_json(text: str) -> dict:
@@ -158,7 +274,7 @@ def _enforce_taxonomy(ai: dict) -> list:
 def _sanity_flags(submission: dict, ai: dict) -> list:
     """Cross-checks between vendor input and generated content."""
     flags = []
-    answers = submission.get("answers", {})
+    answers = normalize_answers(submission.get("answers", {}))
 
     total_words = sum(len(str(a).split()) for a in answers.values())
     if total_words < 60:
@@ -184,12 +300,13 @@ def generate_profile(submission: dict, client: "anthropic.Anthropic | None" = No
     """Form submission JSON in → complete business profile JSON out."""
     client = client or anthropic.Anthropic()
 
+    answers = normalize_answers(submission.get("answers", {}))
     user_msg = json.dumps(
         {
             "business_name": submission.get("basic_fields", {}).get("business_name", ""),
             "address": submission.get("business", {}).get("address", ""),
             "website": submission.get("business", {}).get("website", ""),
-            "answers": submission.get("answers", {}),
+            "answers": answers,
             "products_raw": submission.get("products_raw", []),
             "scraped_website": submission.get("scraped_website", ""),
             "prefill_data": submission.get("prefill_data", {}),
@@ -198,23 +315,27 @@ def generate_profile(submission: dict, client: "anthropic.Anthropic | None" = No
         indent=2,
     )
 
+    # Newer Claude models reject assistant-turn prefill, so JSON is enforced
+    # with a response schema instead. fallbacks="default" re-runs a request the
+    # safety classifier declines on a fallback model inside the same call.
     last_err = None
     ai = None
-    for attempt in range(MAX_RETRIES + 1):
-        response = client.messages.create(
+    for _attempt in range(MAX_RETRIES + 1):
+        response = client.beta.messages.create(
             model=MODEL,
-            max_tokens=4000,
+            max_tokens=MAX_TOKENS,
             system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_msg}]
-            + (
-                [{"role": "assistant", "content": "{"}]  # nudge bare-JSON output
-                if attempt == 0
-                else []
-            ),
+            messages=[{"role": "user", "content": user_msg}],
+            output_config={"format": {"type": "json_schema", "schema": OUTPUT_SCHEMA}},
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
         )
-        raw = response.content[0].text
-        if attempt == 0:
-            raw = "{" + raw
+        if response.stop_reason == "refusal":
+            raise RuntimeError("model declined to generate this profile — route to human QA")
+        if response.stop_reason == "max_tokens":
+            last_err = ValueError("output hit max_tokens")
+            continue
+        raw = next((b.text for b in response.content if b.type == "text"), "")
         try:
             ai = _extract_json(raw)
             break
@@ -225,6 +346,10 @@ def generate_profile(submission: dict, client: "anthropic.Anthropic | None" = No
 
     flags = list(ai.get("confidence_flags") or [])
     flags += _enforce_taxonomy(ai)
+    ai["products"], product_flags = _merge_products(
+        submission.get("products_raw", []), ai.get("products") or []
+    )
+    flags += product_flags
     flags += _sanity_flags(submission, ai)
 
     basic = submission.get("basic_fields", {})
@@ -238,7 +363,7 @@ def generate_profile(submission: dict, client: "anthropic.Anthropic | None" = No
         or submission.get("prefill_data", {}).get("address", ""),
         "website": submission.get("business", {}).get("website", ""),
         "vendor_images": [img.get("name", "") for img in submission.get("images", [])],
-        "answers": submission.get("answers", {}),
+        "answers": submission.get("answers", {}),  # raw, exactly as the vendor gave them
         "channel": submission.get("channel", ""),
         "submitted_at": submission.get("submitted_at", ""),
         # --- generated content ---

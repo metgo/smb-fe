@@ -78,8 +78,8 @@ For the first ~30 vendors, review every generated page before publishing. Track 
 - **Audience:** משפחות · זוגות · קבוצות · יחידים
 - **Season tags:** קיץ · חורף · סתיו · אביב
 - **Practical tags:** נגיש · נגיש לכיסאות גלגלים · ידידותי למשפחות · חניה · שירותים · מקום לפיקניק · הרפתקאות · רגיעה
-- **Image type tags:** jeep tour, hiking, winery, B&B, restaurant, stargazing, crater view, workshop, camping… (extend to match image folder)
-- **Image mood tags:** sunset, night sky, romantic, family fun, adventure, calm, panorama…
+- **Image type tags:** jeep-tour, hiking, winery, bnb, restaurant, stargazing, crater-view, workshop, camping, spa, farm, museum (extend to match image folder; hyphenated, matching the agent code)
+- **Image mood tags:** sunset, night-sky, romantic, family-fun, adventure, calm, panorama
 
 ## 5. Agent I/O
 
@@ -91,7 +91,7 @@ For the first ~30 vendors, review every generated page before publishing. Track 
   "category": "טיולים",
   "tags": ["קיץ", "נגיש", "חניה"],
   "audience": ["משפחות", "זוגות"],
-  "image_type_tags": ["jeep tour", "crater view"],
+  "image_type_tags": ["jeep-tour", "crater-view"],
   "image_mood_tags": ["sunset", "adventure"],
   "short_desc": "עד 60 תווים — ההמלצה של הלקוח, מזוקקת",
   "full_desc": "3-4 פסקאות: סיפור → חוויה → מה מייחד → למי מתאים",

@@ -327,6 +327,9 @@ function renderThumbs(){
 
 // ---- products ----
 let prodCount = 0;
+function esc(v){
+  return String(v ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 function addProduct(data){
   if (document.querySelectorAll('.product').length >= 4) return;
   const i = ++prodCount;
@@ -336,12 +339,12 @@ function addProduct(data){
   div.innerHTML = `
     <button class="rm" title="הסרה" onclick="this.parentElement.remove(); save();">×</button>
     <label>שם המוצר</label>
-    <input type="text" class="p-name" value="${d.name || ''}">
+    <input type="text" class="p-name" value="${esc(d.name)}">
     <label>תיאור קצר</label>
-    <input type="text" class="p-desc" value="${d.desc || ''}">
+    <input type="text" class="p-desc" value="${esc(d.desc)}">
     <div class="row">
-      <div><label>מחיר (₪)</label><input type="number" class="p-price" min="0" value="${d.price ?? ''}"></div>
-      <div><label>משך (אם רלוונטי)</label><input type="text" class="p-dur" placeholder='למשל: 3 שעות' value="${d.duration || ''}"></div>
+      <div><label>מחיר (₪)</label><input type="number" class="p-price" min="0" value="${esc(d.price)}"></div>
+      <div><label>משך (אם רלוונטי)</label><input type="text" class="p-dur" placeholder='למשל: 3 שעות' value="${esc(d.duration)}"></div>
     </div>
     <div class="chk"><input type="checkbox" class="p-book" ${d.booking ? 'checked' : ''} id="bk${i}"><label for="bk${i}" style="margin:0; font-weight:400;">נדרשת הזמנה מראש</label></div>`;
   document.getElementById('products').appendChild(div);
