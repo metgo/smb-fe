@@ -1,0 +1,181 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+
+import PriceTag from "../PriceTag";
+import { useItemBuyCart } from "@/hooks";
+import { CardSkeleton } from "../skeletons";
+import { cartLabels, misc } from "@/constant/hebrew";
+import { IconImage, NextImage } from "@/components/ui";
+import { useImageScale } from "@/hooks/image/useImageScale";
+import { useImagePresent } from "@/hooks/image/useImagePresent";
+import { pathNames } from "@/lib/endpoints";
+import { startLoading } from "../wrappers/ProgressBar";
+import { itemTypeEnum } from "@/lib/utils";
+
+const ImageCard = ({
+  imageItem,
+  scale,
+  primaryCategoryId,
+}: {
+  imageItem: ImageItem;
+  scale: number;
+  primaryCategoryId: string;
+}) => {
+  const aspectRatio = 242 / 224;
+  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
+    aspectRatio,
+    imageItem,
+    0,
+    [imageItem],
+    {
+      threshold: 0.1,
+      rootMargin: "50px",
+      enabled: false,
+    },
+  );
+
+  if (isLoading || !isImageLoaded)
+    return (
+      <CardSkeleton
+        className={"rounded-t-2xl w-full h-full"}
+        primaryCategoryId={primaryCategoryId}
+      />
+    );
+
+  return (
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "-100%" }}
+      transition={{ duration: 0, ease: "easeInOut" }}
+      className="absolute top-0 left-0 h-full w-full"
+    >
+      <NextImage
+        isFill
+        width={242}
+        height={224}
+        scale={scale}
+        alt={updatedImage.alt}
+        imgSrc={updatedImage.imageUrl}
+        className="w-full object-cover"
+      />
+    </motion.div>
+  );
+};
+
+const ProductCard = ({
+  product,
+  isCartPage = false,
+  primaryCategoryId,
+}: {
+  product: Product;
+  isCartPage?: boolean;
+  primaryCategoryId: string;
+}) => {
+  const router = useRouter();
+  const { scale } = useImageScale();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const { addToCart, quickPurchase } = useItemBuyCart();
+
+  function handleNavigation() {
+    startLoading();
+    router.push(`${pathNames.productsDetails}/${product._id}`);
+  }
+
+  return (
+    <div
+      onClick={handleNavigation}
+      className=" custom-cursor rounded-2xl overflow-hidden border border-[#D3D3D3]"
+    >
+      <div className="relative w-full overflow-hidden">
+        <div
+          // style={{ width: 242 * scale, height: 224 * scale }}
+          className="relative max-sm:h-[142px] md:h-[224px] w-full"
+        >
+          <AnimatePresence mode="sync" initial={false}>
+            {product?.images?.map((imageItem, index) =>
+              index === activeImageIndex ? (
+                <ImageCard
+                  key={index}
+                  scale={scale}
+                  imageItem={imageItem}
+                  primaryCategoryId={primaryCategoryId}
+                />
+              ) : null,
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Controls & indicators */}
+        {product?.images?.length > 1 && (
+          <div className="absolute bottom-1 left-0 flex items-center justify-between px-4 mb-3.5 w-full">
+            <div className="w-10" />
+            <div className="flex items-center gap-1">
+              {product?.images?.map((_: any, index: number) => (
+                <div
+                  key={index}
+                  className={`transition-all duration-300 rounded-full bg-white ${index === activeImageIndex ? "w-2 h-2" : "w-2 h-2 opacity-50"}`}
+                />
+              ))}
+            </div>
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setActiveImageIndex(
+                  (prev) => (prev + 1) % product?.images?.length,
+                );
+              }}
+              className="custom-cursor"
+            >
+              <IconImage width={30} height={30} icon="prev" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="m-4">
+        <h3 className="text-dark font-bold line-clamp-1">{product?.name}</h3>
+        <div
+          className="line-clamp-2 text-theme text-[12px] h-8.5 font-normal"
+          dangerouslySetInnerHTML={{ __html: product?.description || "" }}
+        />
+        <PriceTag
+          price={product?.price?.sellingPrice}
+          className="text-[32px] text-dark font-normal my-2.5"
+        />
+
+        {isCartPage ? (
+          <button
+            type="button"
+            onClick={(e) => addToCart(e, product, 1, itemTypeEnum.product)}
+            className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-bold text-lg"
+          >
+            <span>{cartLabels.addToCart}</span>
+          </button>
+        ) : (
+          <div className="flex items-center justify-between gap-2.5">
+            <button
+              type="button"
+              onClick={(e) => quickPurchase(e, product, itemTypeEnum.product)}
+              className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-bold text-lg"
+            >
+              <span>{misc.quickPurchase}</span>
+            </button>
+            <div
+              onClick={(e) => addToCart(e, product, 1, itemTypeEnum.product)}
+              className="flex-none custom-cursor hover:shadow-md rounded-xl"
+            >
+              <IconImage width={40} height={40} icon="circular-cart" />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;
