@@ -91,6 +91,7 @@ import DocumentsManagement from "./pages/documents-mgmt";
 import PublicTicketPage from "./pages/public-ticket";
 import PublicSessionPage from "./pages/public-session";
 import { UserRole } from "./enums/user.types";
+import { postLoginPath } from "./pages/onboarding/api";
 import { store } from "./store/store";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
@@ -295,10 +296,10 @@ function App() {
           if (savedRedirect) {
             sessionStorage.removeItem("redirect_after_login");
             window.location.href = savedRedirect;
-          } else if (user?.role === UserRole.TRAVELLER && !user?.hasBusiness) {
-            window.location.href = routes.businessMgmt;
           } else {
-            window.location.href = routes.dashboard;
+            void postLoginPath(user).then((path) => {
+              window.location.href = path;
+            });
           }
         } catch (error) {
           console.error(

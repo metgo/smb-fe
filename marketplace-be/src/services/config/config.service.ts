@@ -76,6 +76,7 @@ export class ConfigService {
       'SMS_CONFIRM_PURCHASE_TOKEN',
       'WALLET_ISSUER_ID',
       'GOOGLE_WALLET_PATH',
+      'GEMINI_API_KEY',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -146,6 +147,7 @@ export class ConfigService {
       SMS_CONFIRM_PURCHASE_TOKEN: Joi.string().required(),
       WALLET_ISSUER_ID: Joi.string().optional(),
       GOOGLE_WALLET_PATH: Joi.string().optional(),
+      GEMINI_API_KEY: Joi.string().optional(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig }

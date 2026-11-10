@@ -64,6 +64,7 @@ import { PartnersModule } from './modules/partners/partners.module';
 import { SessionBookingsModule } from './modules/session-bookings/session-bookings.module';
 import { EventTicketAnswersModule } from './modules/event-ticket-answers/event-ticket-answers.module';
 // import { TagsModule } from './modules/tags/tags.module';
+import { VendorOnboardingModule } from './modules/vendor-onboarding/vendor-onboarding.module';
 
 @Module({
   imports: [
@@ -127,6 +128,7 @@ import { EventTicketAnswersModule } from './modules/event-ticket-answers/event-t
     PartnersModule,
     SessionBookingsModule,
     EventTicketAnswersModule,
+    VendorOnboardingModule,
   ],
   providers: [
     {

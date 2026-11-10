@@ -2,7 +2,6 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { routes } from "@/lib/routes";
 import { SubmitButton } from "@/components/btns";
 import { normalizePhone } from "@/helpers/formatter";
 import ContinueWithGoogle from "./ContinueWithGoogle";
@@ -16,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { getLogoByLanguage } from "@/lib/utils";
 import AuthInputField from "./AuthInputField";
 import AuthHeader from "./AuthHeader";
+import { postLoginPath } from "@/pages/onboarding/api";
 
 interface SignupProps {
   setCurrentTab: (v: string) => void;
@@ -72,7 +72,7 @@ export function Signup({ setCurrentTab }: SignupProps) {
       sessionStorage.setItem("access_token", res.accessToken);
       dispatch(loginSuccess(res.user));
     }
-    navigate(routes.dashboard, { replace: true });
+    navigate(await postLoginPath(res.user), { replace: true });
     toast.success(
       t("welcome_user", {
         firstName: res.user.firstName,

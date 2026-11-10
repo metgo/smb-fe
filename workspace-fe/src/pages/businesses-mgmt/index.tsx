@@ -41,6 +41,13 @@ import { useBusinessFilters } from "./hooks/useBusinessFilters";
 import { useBusinessListData } from "./hooks/useBusinessListData";
 import { BUSINESS_COLUMNS } from "@/lib/utils";
 import ListHeaderBar from "@/components/shared/ListHeaderBar";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import {
+  OnboardingReviewWizard,
+  VendorOnboarding,
+  type CreateResult,
+} from "@/pages/onboarding";
+import { Sparkles } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -81,6 +88,54 @@ function BusinessesMgmtPageInner() {
 
   // ─── UI State ─────────────────────────────────────────────────────────
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // ─── Onboarding (AI-assisted Add business) ────────────────────────────
+  const { isTraveller } = useUserRoles();
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [reviewBusinessId, setReviewBusinessId] = useState<string | null>(null);
+  const autoOpenedRef = useRef(false);
+  const hasNoBusinesses =
+    !isLoading && !isFetching && totalData === 0 && !searchTerm;
+
+  // A vendor with no businesses lands straight in onboarding (once per session
+  // unless they come back via ?onboarding=1, e.g. right after login).
+  useEffect(() => {
+    if (autoOpenedRef.current || !isTraveller || !hasNoBusinesses) return;
+    const params = new URLSearchParams(window.location.search);
+    let dismissed = false;
+    try {
+      dismissed = sessionStorage.getItem("onboarding_dismissed") === "1";
+    } catch {
+      /* storage unavailable */
+    }
+    if (params.get("onboarding") === "1" || !dismissed) {
+      autoOpenedRef.current = true;
+      setIsOnboardingOpen(true);
+    }
+  }, [isTraveller, hasNoBusinesses]);
+
+  const closeOnboarding = () => {
+    setIsOnboardingOpen(false);
+    try {
+      sessionStorage.setItem("onboarding_dismissed", "1");
+    } catch {
+      /* storage unavailable */
+    }
+  };
+
+  const handleOnboardingComplete = (result: CreateResult) => {
+    setIsOnboardingOpen(false);
+    refetch();
+    toast.success(t("businesses:onboarding_created"));
+    if (result.productsFailed) {
+      toast.warning(
+        t("businesses:onboarding_products_failed", {
+          count: result.productsFailed,
+        }),
+      );
+    }
+    setReviewBusinessId(result.businessId);
+  };
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [viewMode, setViewMode] = useViewMode("businessViewMode");
@@ -350,7 +405,7 @@ function BusinessesMgmtPageInner() {
             title={t("businesses_management")}
             count={totalData}
             addLabel={t("add_business")}
-            onAdd={() => setIsCreateModalOpen(true)}
+            onAdd={() => setIsOnboardingOpen(true)}
             stats={businessStats}
             isStatsLoading={isStatsLoading}
             dataTourHeader="page-header"
@@ -449,7 +504,28 @@ function BusinessesMgmtPageInner() {
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >
-              <EmptyState searchQuery={searchTerm} />
+              {isTraveller && hasNoBusinesses ? (
+                <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-4">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+                    <Sparkles className="h-6 w-6" aria-hidden />
+                  </span>
+                  <h2 className="text-lg font-semibold">
+                    {t("businesses:onboarding_empty_title")}
+                  </h2>
+                  <p className="text-sm opacity-75">
+                    {t("businesses:onboarding_empty_desc")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsOnboardingOpen(true)}
+                    className="mt-2 rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    {t("businesses:onboarding_empty_cta")}
+                  </button>
+                </div>
+              ) : (
+                <EmptyState searchQuery={searchTerm} />
+              )}
             </div>
           ) : viewMode === "list" ? (
             <BusinessListView
@@ -500,6 +576,25 @@ function BusinessesMgmtPageInner() {
       {isCreateModalOpen && (
         <CreateBusinessWizard
           onClose={() => setIsCreateModalOpen(false)}
+          refetch={refetch}
+        />
+      )}
+
+      {isOnboardingOpen && (
+        <VendorOnboarding
+          onClose={closeOnboarding}
+          onManual={() => {
+            closeOnboarding();
+            setIsCreateModalOpen(true);
+          }}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
+
+      {reviewBusinessId && (
+        <OnboardingReviewWizard
+          businessId={reviewBusinessId}
+          onClose={() => setReviewBusinessId(null)}
           refetch={refetch}
         />
       )}
