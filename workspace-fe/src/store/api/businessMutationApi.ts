@@ -1,0 +1,94 @@
+import { createApi } from "@reduxjs/toolkit/query/react";
+
+import { endpoints } from "@/lib/endpoints";
+import { axiosBaseQuery } from "./axiosBaseQuery";
+
+interface IBulkUpdateParams {
+  businessesId: string[];
+  status?: string;
+  isDeleted?: boolean;
+}
+
+/* ---------------- API ---------------- */
+export const businessMutationApi = createApi({
+  reducerPath: "businessMutationApi",
+  baseQuery: axiosBaseQuery(),
+  tagTypes: ["Business"],
+  endpoints: (builder) => ({
+    initBusinessCreate: builder.mutation<
+      any,
+      {
+        name: string;
+        dmoId?: string;
+        authorityId?: string;
+        checkOnly?: boolean;
+      }
+    >({
+      query: (body) => ({
+        url: endpoints.businesses,
+        method: "POST",
+        data: {
+          name: body.name,
+          dmoId: body.dmoId,
+          authorityId: body.authorityId,
+          checkOnly: body.checkOnly,
+        },
+      }),
+      invalidatesTags: ["Business"],
+    }),
+
+    updateBusiness: builder.mutation<
+      any,
+      { body: any; businessId: string; language: Language }
+    >({
+      query: ({ body, businessId, language }) => ({
+        url: `${endpoints.businesses}/${businessId}?locale=${language}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Business"],
+    }),
+
+    deleteBusiness: builder.mutation<any, { businessId: string }>({
+      query: ({ businessId }) => ({
+        url: `${endpoints.business}/${businessId}`,
+        method: "DELETE",
+      }),
+    }),
+
+    bulkBusinessesUpdate: builder.mutation<any, IBulkUpdateParams>({
+      query: (body) => ({
+        url: endpoints.bulkBusinessesUpdate,
+        method: "PATCH",
+        data: body,
+      }),
+    }),
+    approveCategorySuggestion: builder.mutation<
+      any,
+      {
+        itemId: string;
+        itemType: TItemType;
+        categoryTitle: string;
+        notificationId: string;
+      }
+    >({
+      query: ({ itemId, itemType, categoryTitle, notificationId }) => {
+        const route =
+          itemType.toUpperCase() === "PRODUCT" ? "products" : "businesses";
+        return {
+          url: `/${route}/${itemId}/approve-category`,
+          method: "POST",
+          data: { categoryTitle, notificationId },
+        };
+      },
+    }),
+  }),
+});
+
+export const {
+  useInitBusinessCreateMutation,
+  useUpdateBusinessMutation,
+  useDeleteBusinessMutation,
+  useBulkBusinessesUpdateMutation,
+  useApproveCategorySuggestionMutation,
+} = businessMutationApi;

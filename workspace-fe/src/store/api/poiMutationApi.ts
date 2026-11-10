@@ -1,0 +1,59 @@
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { endpoints } from "@/lib/endpoints";
+import { axiosBaseQuery } from "./axiosBaseQuery";
+
+interface IBulkUpdateParams {
+  poiIds: string[];
+  status?: string;
+  isDeleted?: boolean;
+}
+
+export const poiMutationApi = createApi({
+  reducerPath: "poiMutationApi",
+  baseQuery: axiosBaseQuery(),
+  tagTypes: ["POI"],
+  endpoints: (builder) => ({
+    initPoiCreate: builder.mutation<any, any>({
+      query: (payload) => ({
+        url: endpoints.pois,
+        method: "POST",
+        data: payload,
+      }),
+      invalidatesTags: ["POI"],
+    }),
+
+    deletePoi: builder.mutation<any, { poiId: string }>({
+      query: ({ poiId }) => ({
+        url: `${endpoints.poi}/${poiId}`,
+        method: "DELETE",
+      }),
+    }),
+
+    updatePoi: builder.mutation<
+      any,
+      { body: any; poiId: string; language: Language }
+    >({
+      query: ({ body, poiId, language }) => ({
+        url: `${endpoints.pois}/${poiId}?locale=${language}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["POI"],
+    }),
+
+    bulkPoisUpdate: builder.mutation<any, IBulkUpdateParams>({
+      query: (body) => ({
+        url: endpoints.bulkPoisUpdate,
+        method: "PATCH",
+        data: body,
+      }),
+    }),
+  }),
+});
+
+export const {
+  useInitPoiCreateMutation,
+  useUpdatePoiMutation,
+  useDeletePoiMutation,
+  useBulkPoisUpdateMutation,
+} = poiMutationApi;
