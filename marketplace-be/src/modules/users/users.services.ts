@@ -1,0 +1,1041 @@
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import mongoose, { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { nanoid } from 'nanoid';
+import { Logger } from 'winston';
+
+import {
+  emailDefaultTemplate,
+  ServerErrors,
+  ServerSuccess,
+} from 'src/common/constant';
+import { Locale } from 'src/common/enum';
+import {
+  DynamicHebrewTemplate,
+  EnglishTemplate,
+  HebrewTemplate,
+} from 'src/common/mailchimp/templateId';
+import { paginateData } from 'src/common/pagination';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { unproject } from 'src/common/utils/select.handling';
+import {
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  findOneByFieldNameIncludingDeleted,
+  findOneById,
+  update,
+  updateById,
+} from 'src/core/helper/query-helper';
+import { IGoogleUser } from 'src/modules/auth/auth.types';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { RegisterRequest } from 'src/modules/auth/requests/register.request';
+import { RegisterStep1Request } from 'src/modules/auth/requests/register-step1.request';
+import { RegisterStep2Request } from 'src/modules/auth/requests/register-step2.request';
+import { AuthorityService } from 'src/modules/authority/authority.service';
+import { BusinessService } from 'src/modules/business/shared/services/business.service';
+import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { DMOService } from 'src/modules/dmo/dmo.service';
+import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
+import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
+import { User } from 'src/modules/users/schema/users.schema';
+import { VoucherService } from 'src/modules/vouchers/voucher.service';
+import { ConfigService } from 'src/services/config/config.service';
+import {
+  OTPPurpose,
+  UpdateLastLogin,
+  UserType,
+} from 'src/modules/users/users.type';
+import { HashService } from 'src/services/hash/hash.service';
+import { ChangePasswordDto } from '../auth/requests/change-password.dto';
+import { OTP } from './schema/otp.schema';
+import { generateOTP } from 'src/common/otpGenerate';
+import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
+import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
+import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
+import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
+import { ExternalApiRegisterRequest } from 'src/modules/external-api/dto/register-user.dto';
+import { GetAllUsersQuery } from 'src/modules/users/queries/get-all-users.query';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
+import { SmsService } from 'src/services/sms/sms.service';
+import { CreateUserByWebsiteRequest } from './requests/create-user-by-website.request';
+
+@Injectable()
+export class UsersService {
+  private email: string;
+  private password: string;
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
+    @InjectModel(User.name)
+    private UserModel: Model<User>,
+    @InjectModel(OTP.name)
+    private OtpModel: Model<OTP>,
+    private readonly authorityService: AuthorityService,
+    private readonly businessService: BusinessService,
+    private readonly campaignService: CampaignService,
+    private readonly dmoService: DMOService,
+    private readonly hashService: HashService,
+    private readonly jwtAuthService: JwtAuthService,
+    private mailchimpService: MailChimpService,
+    private voucherService: VoucherService,
+    private readonly smsService: SmsService,
+  ) {
+    const configService = new ConfigService();
+
+    this.email = configService.superAdminEmail;
+    this.password = configService.superAdminPassword;
+  }
+
+  async seedSuperadmin() {
+    const superadmin = {
+      firstName: 'Super',
+      lastName: 'Admin',
+      email: this.email,
+      password: this.password,
+      role: UserType.SUPERADMIN,
+    };
+
+    // Check if superadmin already exists
+    const existingSuperadmin = await this.UserModel.findOne({
+      email: superadmin.email,
+    }).exec();
+
+    if (!existingSuperadmin) {
+      await this.UserModel.create(superadmin);
+      console.log('Superadmin seeded successfully.');
+    } else {
+      console.log('Superadmin already exists.');
+    }
+  }
+
+  async getAllUsers(
+    queries: GetAllUsersQuery,
+    loggedInUser: LoggedInUserInterface,
+  ) {
+    try {
+      const {
+        page, limit, search, isDeleted,
+      } = queries;
+
+      let findQuery: any = {
+        externalApiId: new mongoose.Types.ObjectId(loggedInUser.externalApi.id),
+      };
+
+      if (search) {
+        findQuery = {
+          ...findQuery,
+          $or: [
+            { firstName: { $regex: search, $options: 'i' } },
+            { lastName: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+          ],
+        };
+      }
+
+      if (isDeleted && /true/.test(isDeleted)) {
+        findQuery = {
+          ...findQuery,
+          isDeleted: true,
+        };
+      }
+
+      if (isDeleted && /false/.test(isDeleted)) {
+        findQuery = {
+          ...findQuery,
+          isDeleted: { $ne: true },
+        };
+      }
+
+      const pipeline: any[] = [
+        {
+          $match: findQuery,
+        },
+      ];
+
+      const project: any = {
+        createdAt: 0,
+        updatedAt: 0,
+        password: 0,
+        ...unproject,
+      };
+
+      pipeline.push({
+        $project: project,
+      });
+
+      const users = await this.UserModel.aggregate(pipeline);
+
+      const queryPage = page ? Number(page) : null;
+      const queryLimit = limit ? Number(limit) : null;
+
+      const paginatedUsers = paginateData(queryPage, queryLimit, users);
+
+      return paginatedUsers;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async getUserById(userId: string): Promise<GetUserDetailsResponse> {
+    try {
+      const user = await findOneById<User>(this.UserModel, userId);
+
+      if (!user) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneDetails: {
+          countryCode: user.countryCode,
+          phoneNumber: user.phoneNumber,
+        },
+        languagePreference: user.languagePreference,
+        address: user.address,
+        dob: user.dob,
+        email: user.email,
+        isPhoneVerify: user.isPhoneVerify,
+        isEmailVerify: user.isEmailVerify,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+    } catch (error) {
+      exceptionHandling(error);
+      throw new InternalServerErrorException("Couldn't find user");
+    }
+  }
+
+  async create(
+    registerDto: RegisterRequest | ExternalApiRegisterRequest,
+  ): Promise<GetUserDetailsResponse> {
+    try {
+      await this.validateUserIfNeedToRecover(registerDto.email);
+
+      const hashedPassword = await this.hashService.create(
+        registerDto.password,
+      );
+
+      const newUser = await new this.UserModel({
+        ...registerDto,
+        password: hashedPassword,
+        createdAt: new Date(),
+      }).save();
+
+      await this.postUserCreation(registerDto.email, newUser);
+
+      return {
+        id: newUser.id,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        phoneDetails: {
+          countryCode: newUser.countryCode,
+          phoneNumber: newUser.phoneNumber,
+        },
+        languagePreference: newUser.languagePreference,
+        address: newUser.address,
+        dob: newUser.dob,
+        email: newUser.email,
+        isPhoneVerify: newUser.isPhoneVerify,
+        isEmailVerify: newUser.isEmailVerify,
+        role: newUser.role,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+      };
+    } catch (error) {
+      this.logger.error(
+        `[USER]: FAILED TO CREATE ------ ERROR: ${error.message}`,
+        {
+          err: error.message,
+        },
+      );
+      if (error.code === 11000) {
+        throw new ConflictException(ServerErrors.USER.EXISTS);
+      }
+      exceptionHandling(error);
+    }
+  }
+
+  async createStep1(
+    registerDto: RegisterStep1Request,
+  ): Promise<GetUserDetailsResponse> {
+    try {
+      const user = await this.validateUserIfNeedToRecover(registerDto.email);
+
+      if (user && !user?.password) {
+        return {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user?.lastName,
+          phoneDetails: {
+            countryCode: user?.countryCode,
+            phoneNumber: user?.phoneNumber,
+          },
+          languagePreference: user.languagePreference,
+          address: user?.address,
+          dob: user?.dob,
+          email: user.email,
+          isPhoneVerify: user?.isPhoneVerify,
+          isEmailVerify: user?.isEmailVerify,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+      }
+
+      const newUser = await new this.UserModel({
+        ...registerDto,
+        createdAt: new Date(),
+      }).save();
+
+      this.logger.info('[USER]: STEP-1 OF CREATION COMPLETED', {
+        message: newUser,
+      });
+
+      return {
+        id: newUser.id,
+        firstName: newUser.firstName,
+        lastName: newUser?.lastName,
+        phoneDetails: {
+          countryCode: newUser?.countryCode,
+          phoneNumber: newUser?.phoneNumber,
+        },
+        languagePreference: newUser.languagePreference,
+        address: newUser?.address,
+        dob: newUser?.dob,
+        email: newUser.email,
+        isPhoneVerify: newUser?.isPhoneVerify,
+        isEmailVerify: newUser?.isEmailVerify,
+        role: newUser.role,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+      };
+    } catch (error) {
+      this.logger.error(
+        `[USER]: FAILED TO CREATE AT STEP 1------ ERROR: ${error.message}`,
+        {
+          err: error.message,
+        },
+      );
+      if (error.code === 11000) {
+        throw new ConflictException(ServerErrors.USER.EXISTS);
+      }
+      exceptionHandling(error);
+    }
+  }
+
+  async updateForStep2(
+    userId: string,
+    registerDto: RegisterStep2Request,
+  ): Promise<GetUserDetailsResponse> {
+    try {
+      const hashedPassword = await this.hashService.create(
+        registerDto.password,
+      );
+
+      const updateField = {
+        ...registerDto,
+        password: hashedPassword,
+        updatedAt: new Date(),
+      };
+
+      const user = await updateById<User>(this.UserModel, userId, updateField);
+      this.logger.info('[USER]: STEP-2 OF CREATION COMPLETED', {
+        message: user,
+      });
+
+      await this.postUserCreation(user.email, user);
+
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user?.lastName,
+        phoneDetails: {
+          countryCode: user?.countryCode,
+          phoneNumber: user?.phoneNumber,
+        },
+        languagePreference: user.languagePreference,
+        address: user?.address,
+        dob: user?.dob,
+        email: user.email,
+        isPhoneVerify: user?.isPhoneVerify,
+        isEmailVerify: user?.isEmailVerify,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+    } catch (error) {
+      this.logger.error(
+        `[USER]: FAILED TO CREATE AT STEP 2------ ERROR: ${error.message}`,
+        {
+          err: error.message,
+        },
+      );
+      if (error.code === 11000) {
+        throw new ConflictException(ServerErrors.USER.EXISTS);
+      }
+      exceptionHandling(error);
+    }
+  }
+
+  async generateOtp(user: User, purpose: OTPPurpose): Promise<string> {
+    const code = await generateOTP();
+
+    const otp = await this.OtpModel.create({
+      code,
+      expireDate: oneHrsExpireDate(),
+      userId: user._id,
+    });
+
+    const otpBody = {
+      id: `${otp._id}`,
+      code: otp.code,
+      email: user.email,
+      purpose,
+    };
+    const { otpToken } = this.jwtAuthService.otpToken(otpBody);
+
+    await this.mailchimpService.sendTransactionalEmail({
+      to: user?.email,
+      templatedId:
+        user?.languagePreference === Locale.HEBREW
+          ? HebrewTemplate.ForgotPassword
+          : EnglishTemplate.ForgotPassword,
+      mergeVars: {
+        FNAME: user?.firstName,
+        OTP: code,
+      },
+    });
+
+    if (purpose === OTPPurpose.UNBLOCK_ACCOUNT) {
+      const password = nanoid(10);
+      const hashedPassword = await this.hashService.create(password);
+
+      await updateById<User>(this.UserModel, user._id, {
+        password: hashedPassword,
+        updatedAt: new Date(),
+      });
+
+      await this.mailchimpService.sendTransactionalEmail({
+        to: user?.email,
+        templatedId:
+          user?.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.PasswordChangeConfirmation
+            : EnglishTemplate.PasswordChangeConfirmation,
+        mergeVars: {
+          FNAME: user?.firstName,
+          NEWPASSWORD: `New Password: ${password}`,
+        },
+      });
+    }
+
+    return otpToken;
+  }
+
+  async verifyOtp(dto: VerifyOtpDto): Promise<object> {
+    const decode = this.jwtAuthService.otpDecode(dto.token);
+
+    const otp = await this.OtpModel.findById(decode.id).exec();
+
+    if (otp.code === dto.code) {
+      if (checkExpireDate(otp.expireDate)) {
+        if (!otp.isVerify) {
+          await updateById<OTP>(this.OtpModel, otp._id, {
+            isVerify: true,
+            updatedAt: new Date(),
+          });
+          return {
+            response: ServerSuccess.OTP.VERIFY,
+            purpose: decode.purpose,
+          };
+        }
+        throw new BadRequestException(ServerErrors.OTP.EXPIRE);
+      }
+      throw new BadRequestException(ServerErrors.OTP.EXPIRE);
+    }
+    throw new BadRequestException(ServerErrors.OTP.NOT_MATCH);
+  }
+
+  async updatePassword(dto: UpdatePasswordDto) {
+    const decode = this.jwtAuthService.otpDecode(dto.token);
+
+    const otp = await this.OtpModel.findById(decode.id).exec();
+
+    if (!otp.isVerify) {
+      throw new BadRequestException(ServerErrors.OTP.NOT_VERIFY);
+    }
+    const hashedPassword = await this.hashService.create(dto.password);
+
+    const updateUser = await updateById<User>(this.UserModel, otp.userId, {
+      password: hashedPassword,
+      updatedAt: new Date(),
+    });
+
+    if (!updateUser) {
+      throw new BadRequestException(ServerErrors.USER.NOT_FOUND);
+    }
+    return true;
+  }
+
+  async update(
+    userId: string,
+    loggedInUserId: string,
+    updateUserDto: UpdateUserRequest,
+  ): Promise<GetUserDetailsResponse> {
+    try {
+      const updatedData = { ...updateUserDto, updatedBy: loggedInUserId };
+      const updatedUser = await updateById<User>(
+        this.UserModel,
+        userId,
+        updatedData,
+      );
+
+      if (!updatedUser) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      this.logger.info('[USER]: UPDATED', { message: updatedUser });
+
+      return {
+        id: updatedUser.id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        phoneDetails: {
+          countryCode: updatedUser.countryCode,
+          phoneNumber: updatedUser.phoneNumber,
+        },
+        languagePreference: updatedUser.languagePreference,
+        address: updatedUser.address,
+        dob: updatedUser.dob,
+        email: updatedUser.email,
+        isPhoneVerify: updatedUser.isPhoneVerify,
+        isEmailVerify: updatedUser.isEmailVerify,
+        role: updatedUser.role,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
+      };
+    } catch (error) {
+      this.logger.error(
+        `[USER]: FAILED TO UPDATE ------ ERROR: ${error.message}`,
+        {
+          err: error.message,
+        },
+      );
+      exceptionHandling(error);
+    }
+  }
+
+  async updateLastLogin(userId: string, updateUserDto: UpdateLastLogin) {
+    try {
+      const updatedUser = await updateById<User>(
+        this.UserModel,
+        userId,
+        updateUserDto,
+      );
+
+      if (!updatedUser) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return {
+        id: updatedUser.id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        phoneDetails: {
+          countryCode: updatedUser.countryCode,
+          phoneNumber: updatedUser.phoneNumber,
+        },
+        languagePreference: updatedUser.languagePreference,
+        address: updatedUser.address,
+        dob: updatedUser.dob,
+        email: updatedUser.email,
+        isPhoneVerify: updatedUser.isPhoneVerify,
+        isEmailVerify: updatedUser.isEmailVerify,
+        role: updatedUser.role,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
+      };
+    } catch (error) {
+      exceptionHandling(error);
+    }
+  }
+
+  async changePassword(id: string, dto: ChangePasswordDto): Promise<User> {
+    const hashedPassword = await this.hashService.create(dto.password);
+
+    const userWithChangedPwd = await update<User>(this.UserModel, '_id', id, {
+      password: hashedPassword,
+    });
+    if (!userWithChangedPwd) {
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+    }
+
+    await this.mailchimpService.sendTransactionalEmail({
+      to: userWithChangedPwd?.email,
+      templatedId:
+        userWithChangedPwd?.languagePreference === Locale.HEBREW
+          ? HebrewTemplate.PasswordChangeConfirmation
+          : EnglishTemplate.PasswordChangeConfirmation,
+      mergeVars: {
+        FNAME: userWithChangedPwd?.firstName,
+        NEWPASSWORD: '',
+      },
+    });
+
+    return userWithChangedPwd;
+  }
+
+  async findByEmail(email: string): Promise<any> {
+    try {
+      const user = await this.findOneByEmail(email);
+
+      if (!user) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return user;
+    } catch (error) {
+      exceptionHandling(error);
+    }
+  }
+
+  async findOne(email: string): Promise<User> {
+    try {
+      const user = await findOneByFieldNameIncludingDeleted<User>(
+        this.UserModel,
+        'email',
+        email,
+      );
+
+      if (!user) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return user;
+    } catch (error) {
+      exceptionHandling(error);
+      throw new InternalServerErrorException(
+        "Couldn't find user with given email",
+      );
+    }
+  }
+
+  async findByEmailOrNull(email: string): Promise<User | null> {
+    const user = await this.findOneByEmail(email);
+    if (!user) {
+      return null;
+    }
+
+    return user;
+  }
+
+  async findOneByEmail(email: string) {
+    const user = await findOneByFieldName<User>(this.UserModel, 'email', email);
+
+    return user;
+  }
+
+  // admin create users
+
+  // async adminCreateUser(
+  //   dto: createUserByAdminDto,
+  //   loggedInUser: LoggedInUserInterface,
+  // ) {
+  //   try {
+  //     const user = await this.validateUserIfNeedToRecover(dto.email);
+
+  //     if (user) {
+  //       throw new BadRequestException(ServerErrors.USER.EXISTS);
+  //     }
+
+  //     const password = nanoid(8);
+  //     const hashedPassword = await this.hashService.create(password);
+
+  //     let body: any = {
+  //       ...dto,
+  //       password: hashedPassword,
+  //       createdAt: new Date(),
+  //     };
+
+  //     let newUser = new this.UserModel(body);
+  //     let entity: string = 'METGO';
+  //     let dmo: DMO;
+  //     let campaign: any;
+
+  //     if (dto.dmoId) {
+  //       if (loggedInUser.role === UserType.SUPERADMIN) {
+  //         body = {
+  //           ...body,
+  //           role: UserType.DMO,
+  //         };
+
+  //         newUser = new this.UserModel(body);
+  //         dmo = await this.dmoService.addAdmin(dto.dmoId, newUser.id);
+  //         entity = dmo?.name;
+  //       }
+
+  //       if (loggedInUser.role === UserType.DMO) {
+  //         body = {
+  //           ...body,
+  //           role: UserType.DMOADMIN,
+  //         };
+
+  //         newUser = new this.UserModel(body);
+  //         dmo = await this.dmoService.addCollaborators(
+  //           loggedInUser.dmo.id,
+  //           newUser.id,
+  //         );
+  //         entity = dmo?.name;
+  //       }
+  //     }
+
+  //     if (dto.authorityId) {
+  //       body = {
+  //         ...body,
+  //         role: UserType.AUTHORITY,
+  //       };
+
+  //       newUser = new this.UserModel(body);
+  //       const authority = await this.authorityService.addAdmin(
+  //         dto.authorityId,
+  //         newUser.id,
+  //       );
+  //       entity = authority?.name;
+  //     }
+
+  //     if (
+  //       body.businessesId?.length
+  //       && loggedInUser.role === UserType.SUPERADMIN
+  //     ) {
+  //       body = {
+  //         ...body,
+  //         hasBusiness: true,
+  //       };
+
+  //       newUser = new this.UserModel(body);
+  //       await this.businessService.assignUsertoBusinesses(
+  //         body.businessesId,
+  //         newUser.id,
+  //         loggedInUser.id,
+  //         newUser,
+  //       );
+  //     }
+
+  //     await newUser.save();
+
+  //     this.logger.info('[USER]: CREATED BY ADMIN', { message: newUser });
+
+  //     if (dmo) {
+  //       campaign
+  //         = await this.campaignService.getOneCampaignDetailAssociatedToIds(
+  //           dmo._id,
+  //           'dmoIds',
+  //         );
+  //     }
+
+  //     await Promise.all([
+  //       this.voucherService.updateVoucherCreatedDetails(body.email, newUser.id),
+  //       this.voucherService.updateVoucherAssignedDetails(
+  //         body.email,
+  //         newUser.id,
+  //       ),
+  //       this.mailchimpService.subscribe(
+  //         newUser.firstName,
+  //         newUser.lastName,
+  //         newUser.email,
+  //       ),
+  //       this.mailchimpService.sendTransactionalEmail({
+  //         to: newUser?.email,
+  //         templatedId: DynamicHebrewTemplate.UserRegistrationByAdmin,
+  //         mergeVars: {
+  //           FNAME: newUser?.firstName,
+  //           ENTITY: entity,
+  //           website: 'https://console.metgo.app/',
+  //           USERNAME: newUser?.email,
+  //           PASSWORD: password,
+  //           LOGO1: dmo?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+  //           LOGO2: emailDefaultTemplate.MAIN_LOGO,
+  //           LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+  //           PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+  //           PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+  //           IMAGE1: emailDefaultTemplate.IMAGE1,
+  //           IMAGE2: dmo?.imagePath || emailDefaultTemplate.IMAGE2,
+  //           IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
+  //         },
+  //       }),
+  //     ]);
+
+  //     return newUser;
+  //   } catch (err) {
+  //     this.logger.error(
+  //       `[USER]: FAILED TO CREATE BY ADMIN ------ ERROR: ${err.message}`,
+  //       {
+  //         err: err.message,
+  //       },
+  //     );
+  //     exceptionHandling(err);
+  //   }
+  // }
+
+  async createUserThroughWebsite(dto: CreateUserByWebsiteRequest) {
+    try {
+      const user = await this.UserModel.findOne({ email: dto.email }).lean();
+
+      if (user) {
+        return user;
+      }
+
+      const password = nanoid(8);
+      const hashedPassword = await this.hashService.create(password);
+
+      const body = {
+        ...dto,
+        role: UserType.TRAVELLER,
+        hasBusiness: true,
+        password: hashedPassword,
+        createdAt: new Date(),
+      };
+
+      const newUser = new this.UserModel(body);
+      const entity: string = 'METGO';
+
+      await newUser.save();
+
+      this.logger.info('[USER]: CREATED BY ADMIN', { message: newUser });
+
+      await Promise.all([
+        this.voucherService.updateVoucherCreatedDetails(body.email, newUser.id),
+        this.voucherService.updateVoucherAssignedDetails(
+          body.email,
+          newUser.id,
+        ),
+        this.mailchimpService.subscribe(
+          newUser.firstName,
+          newUser.lastName,
+          newUser.email,
+        ),
+        this.mailchimpService.sendTransactionalEmail({
+          to: newUser?.email,
+          templatedId: DynamicHebrewTemplate.UserRegistrationByAdmin,
+          mergeVars: {
+            FNAME: newUser?.firstName,
+            ENTITY: entity,
+            website: 'https://workspace.metgo.app/',
+            USERNAME: newUser?.email,
+            PASSWORD: password,
+            LOGO1: emailDefaultTemplate.SIDE_LOGO,
+            LOGO2: emailDefaultTemplate.MAIN_LOGO,
+            LOGO3: emailDefaultTemplate.SIDE_LOGO,
+            PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+            PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+            IMAGE1: emailDefaultTemplate.IMAGE1,
+            IMAGE2: emailDefaultTemplate.IMAGE2,
+            IMAGE3: emailDefaultTemplate.IMAGE3,
+          },
+        }),
+      ]);
+
+      if (dto.phoneNumber) {
+        const siteName = dto.siteName ?? 'MetGo';
+        const businessName = dto.businessName ?? '';
+        const smsMessage = `היי ${
+          dto.firstName ?? ''
+        }, ברוכים הבאים ל-${siteName}!\nבואו נשפר את הנראות של ${businessName} באתר. היכנסו לעדכון פרופיל העסק כאן:\nhttps://workspace.metgo.app/\nשם משתמש: המייל שהזנת בטופס\nסיסמה: ${password}\nצוות MetGo  מאחל לכם המון בהצלחה!\n\nלכל עזרה, אנחנו כאן: support@mego.app`;
+
+        await this.smsService.sendSms({
+          firstName: dto.firstName ?? '',
+          lastName: dto.lastName ?? '',
+          phone: dto.phoneNumber,
+          message: smsMessage,
+          sender: 'MetGo',
+          subject: 'Business Registration',
+        });
+      }
+
+      return newUser;
+    } catch (err) {
+      this.logger.error(
+        `[USER]: FAILED TO CREATE BY ADMIN ------ ERROR: ${err.message}`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async findDMOUser(id: string) {
+    const dmoUser = await findOneById<User>(this.UserModel, id);
+
+    if (!dmoUser) {
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+    }
+    if (dmoUser.role !== 'dmo') {
+      throw new NotFoundException(ServerErrors.NOT_DMO_USER);
+    }
+
+    return true;
+  }
+
+  async findByFieldNameExcludeId(
+    fieldName: keyof User,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
+    try {
+      const user = await findOneByFieldNameExcludeId<User>(
+        this.UserModel,
+        fieldName,
+        items,
+        id,
+      );
+      if (user) {
+        throw new BadRequestException(
+          `${fieldName.toUpperCase()} already exists`,
+        );
+      }
+      return false;
+    } catch (error) {
+      if (error instanceof mongoose.Error.CastError) {
+        if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+          throw new BadRequestException(
+            `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
+          );
+        }
+        throw new InternalServerErrorException("Couldn't update user");
+      }
+    }
+  }
+
+  async validateUserIfNeedToRecover(email: string) {
+    try {
+      const user = await this.UserModel.findOne({ email });
+
+      if (user && !user?.isDeleted && user?.deletedAt) {
+        throw new ConflictException(ServerErrors.USER.DELETED_BUT_RECOVERABLE);
+      }
+
+      if (!user) {
+        return null;
+      }
+
+      return user;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async unblockUserAccount(email: string): Promise<GetUserDetailsResponse> {
+    const unblockedUser = await this.UserModel.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          loginAttempts: 0,
+        },
+      },
+    );
+
+    if (!unblockedUser) {
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+    }
+
+    return {
+      id: unblockedUser.id,
+      firstName: unblockedUser.firstName,
+      lastName: unblockedUser.lastName,
+      phoneDetails: {
+        countryCode: unblockedUser.countryCode,
+        phoneNumber: unblockedUser.phoneNumber,
+      },
+      languagePreference: unblockedUser.languagePreference,
+      address: unblockedUser.address,
+      dob: unblockedUser.dob,
+      email: unblockedUser.email,
+      isPhoneVerify: unblockedUser.isPhoneVerify,
+      isEmailVerify: unblockedUser.isEmailVerify,
+      role: unblockedUser.role,
+      createdAt: unblockedUser.createdAt,
+      updatedAt: unblockedUser.updatedAt,
+      deletedAt: unblockedUser.deletedAt,
+    };
+  }
+
+  async findByRegex(keyword: string, searchParams: (keyof User)[]) {
+    const regexQueries = searchParams.map(searchParam => ({
+      [searchParam]: { $regex: keyword, $options: 'i' },
+    }));
+
+    const query = {
+      $or: regexQueries,
+    };
+
+    const data = await this.UserModel.find(query).select('_id');
+    return data;
+  }
+
+  // Oauth
+  async createUserFromGoogleLogin(googleUser: IGoogleUser) {
+    const user = await findOneByFieldName<User>(
+      this.UserModel,
+      'email',
+      googleUser.email,
+    );
+
+    if (!user) {
+      const password = nanoid(10);
+      const hashedPassword = await this.hashService.create(password);
+      const sanitizedUser = new this.UserModel({
+        email: googleUser.email,
+        isEmailVerify: googleUser.verified_email,
+        firstName: googleUser.given_name,
+        lastName: googleUser.family_name,
+        password: hashedPassword,
+      });
+
+      const savedUser = await this.UserModel.create(sanitizedUser);
+
+      await this.postUserCreation(googleUser.email, savedUser);
+
+      return savedUser;
+    }
+
+    return user;
+  }
+
+  private async postUserCreation(registeredEmail: string, newUser: User) {
+    this.logger.info('[USER]: CREATED', { message: newUser });
+
+    await Promise.all([
+      this.mailchimpService.subscribe(
+        newUser.firstName,
+        newUser.lastName,
+        newUser.email,
+      ),
+      this.mailchimpService.sendTransactionalEmail({
+        to: newUser?.email,
+        templatedId: EnglishTemplate.UserRegistrationBySelf,
+        mergeVars: {
+          FNAME: newUser?.firstName,
+        },
+      }),
+      this.voucherService.updateVoucherCreatedDetails(
+        registeredEmail,
+        newUser._id?.toString(),
+      ),
+      this.voucherService.updateVoucherAssignedDetails(
+        registeredEmail,
+        newUser._id?.toString(),
+      ),
+    ]);
+  }
+}

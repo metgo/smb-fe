@@ -1,0 +1,77 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
+
+import { CommonStatus } from 'src/common/enum';
+import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { SettingType } from '../settings.type';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+
+@Schema({ _id: false })
+export class File {
+  @Prop()
+    file: string;
+
+  @Prop()
+    docUrl: string;
+
+  @Prop()
+    docType: string;
+
+  @Prop()
+    docSize: string;
+}
+
+export const FileSchema = SchemaFactory.createForClass(File);
+
+@Schema()
+export class Setting extends AuditableSchema {
+  @Prop()
+    title: string;
+
+  @Prop()
+    titleHe: string;
+
+  @Prop()
+    titleAr: string;
+
+  @Prop()
+    subTitle: string;
+
+  @Prop()
+    subTitleHe: string;
+
+  @Prop()
+    subTitleAr: string;
+
+  @Prop()
+    description: string;
+
+  @Prop()
+    descriptionHe: string;
+
+  @Prop()
+    descriptionAr: string;
+
+  @Prop()
+    slug: string;
+
+  @Prop({ type: [FileSchema], default: [] })
+    files: File[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: ExternalApi.name,
+    required: false,
+  })
+    externalApiId: mongoose.Types.ObjectId;
+
+  @Prop({ enum: SettingType, default: SettingType.PRIVACY })
+    type: SettingType;
+
+  @Prop({ enum: CommonStatus, default: CommonStatus.PENDING })
+    status: CommonStatus;
+}
+
+export type Settings = HydratedDocument<Setting>;
+
+export const SettingSchema = SchemaFactory.createForClass(Setting);
