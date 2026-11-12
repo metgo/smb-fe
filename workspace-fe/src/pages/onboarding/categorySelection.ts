@@ -1,7 +1,10 @@
 import {
+  BUSINESS_TAXONOMY,
   MAX_CATEGORY_GROUPS,
   findSubcategory,
+  groupForDbCategory,
   groupOfSubcategory,
+  nameKey,
 } from "@/lib/businessTaxonomy";
 
 /**
@@ -182,4 +185,124 @@ export function selectionTags(sel: CategorySelection): string[] {
     ? [sel.mainCategory, ...keys.filter((k) => k !== sel.mainCategory)]
     : keys;
   return ordered.map(label).filter((l): l is string => !!l);
+}
+
+/* ------------------------------------------- saved businesses --- */
+
+interface DbCategory {
+  _id: string;
+  name?: string;
+  hebrewName?: string;
+  nameHe?: string;
+}
+
+/** An id field that may come back populated ({ _id, ... }) or as a plain id. */
+const idOf = (v: unknown): string =>
+  typeof v === "string"
+    ? v
+    : v && typeof v === "object" && "_id" in v
+      ? String((v as { _id: unknown })._id)
+      : "";
+
+/** The database category that stands for a taxonomy area. */
+export const dbCategoryIdForGroup = (
+  groupEn: string | undefined,
+  dbCategories: DbCategory[] = [],
+) =>
+  groupEn
+    ? dbCategories.find((c) => groupForDbCategory(c)?.en === groupEn)?._id
+    : undefined;
+
+/** Subcategory (canonical name) whose label in any language equals a tag. */
+const subcategoryForTag = (tag: string) => {
+  const key = nameKey(tag);
+  if (!key) return undefined;
+  for (const g of BUSINESS_TAXONOMY) {
+    const sub = g.subcategories.find((x) =>
+      [x.he, x.en, x.ar].some((l) => nameKey(l) === key),
+    );
+    if (sub) return sub.en;
+  }
+  return undefined;
+};
+
+/**
+ * Rebuild the category choice of a saved business, which stores it as
+ * primaryCategoryId (main area), bussCategoriesId (all areas) and the
+ * subcategories as tags, main first. Returns the remaining (plain) tags too.
+ */
+export function selectionFromSaved(
+  saved: {
+    primaryCategoryId?: unknown;
+    categoryIds?: unknown[];
+    tags?: string[];
+  },
+  dbCategories: DbCategory[] = [],
+): { selection: CategorySelection; otherTags: string[] } {
+  const areaOfId = (id: string) => {
+    const cat = dbCategories.find((c) => c._id === id);
+    return cat ? groupForDbCategory(cat)?.en : undefined;
+  };
+  const primaryArea = areaOfId(idOf(saved.primaryCategoryId));
+  const areas: string[] = [];
+  const addArea = (a?: string) => {
+    if (a && !areas.includes(a) && areas.length < MAX_CATEGORY_GROUPS)
+      areas.push(a);
+  };
+  addArea(primaryArea);
+  (saved.categoryIds ?? []).forEach((id) => addArea(areaOfId(idOf(id))));
+
+  const subcategories: string[] = [];
+  const otherTags: string[] = [];
+  for (const tag of saved.tags ?? []) {
+    const sub = typeof tag === "string" ? subcategoryForTag(tag) : undefined;
+    if (!sub) {
+      if (typeof tag === "string" && tag.trim()) otherTags.push(tag);
+      continue;
+    }
+    const area = groupOfSubcategory(sub)?.en;
+    addArea(area);
+    if (area && areas.includes(area) && !subcategories.includes(sub)) {
+      subcategories.push(sub);
+    } else {
+      otherTags.push(tag);
+    }
+  }
+  const mainCategory =
+    subcategories.find((s) => groupOfSubcategory(s)?.en === primaryArea) ??
+    subcategories[0] ??
+    "";
+  return {
+    selection: {
+      categoryGroups: areas,
+      subcategories,
+      customCategories: [],
+      mainCategory,
+    },
+    otherTags,
+  };
+}
+
+/** PATCH fields for a business: main area, all areas, and tags. */
+export function selectionToBusinessFields(
+  sel: CategorySelection,
+  otherTags: string[],
+  dbCategories: DbCategory[] = [],
+) {
+  const ids = orderedGroups(sel)
+    .map((g) => dbCategoryIdForGroup(g, dbCategories))
+    .filter((id): id is string => !!id);
+  const chosen = selectionTags(sel);
+  const seen = new Set<string>();
+  const tags = [...chosen, ...otherTags].filter((t) => {
+    const k = t.trim().toLowerCase();
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  return {
+    primaryCategoryId: ids[0] ?? "",
+    bussCategoriesId: ids,
+    tagsId: tags,
+  };
 }

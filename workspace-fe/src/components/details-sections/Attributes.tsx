@@ -8,6 +8,8 @@ import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
 import { groupForDbCategory, taxonomyLabel } from "@/lib/businessTaxonomy";
+import { CategoryPicker } from "@/pages/onboarding/CategorySteps";
+import type { CategorySelection } from "@/pages/onboarding/categorySelection";
 
 /** A category's name in the UI language, falling back to the taxonomy. */
 const categoryLabel = (cat: any, language: string) => {
@@ -64,6 +66,12 @@ interface AttributesProps {
   setAccessiblitiesId?: (v: string[]) => void;
   opMode?: string;
   variant?: "full" | "tagsOnly";
+  /**
+   * When given, the business's areas and subcategories are picked with the
+   * two-step taxonomy picker instead of the single primary category cards.
+   */
+  categorySelection?: CategorySelection;
+  onCategorySelectionChange?: (next: CategorySelection) => void;
   /** Parent computes this from its OWN field names (e.g. name/nameHe/nameAr for business, title/titleHe/titleAr for poi) */
   nameForGen: string;
   /** Parent computes this from its OWN field names (e.g. fullDescription* for business, shortDescription* or content* for poi) */
@@ -82,6 +90,8 @@ const Attributes: FC<AttributesProps> = ({
   variant = "full",
   nameForGen,
   descriptionForGen,
+  categorySelection,
+  onCategorySelectionChange,
 }) => {
   const { t, i18n } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
@@ -203,28 +213,35 @@ const Attributes: FC<AttributesProps> = ({
       <div className="space-y-6">
         {variant === "full" && (
           <>
-            {/* Primary Category */}
-            <div>
-              <label
-                className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {t("primary_category")} <span className="text-red-500">*</span>
-              </label>
+            {categorySelection && onCategorySelectionChange ? (
+              <CategoryPicker
+                selection={categorySelection}
+                onChange={onCategorySelectionChange}
+                error={errors.primaryCategory}
+              />
+            ) : (
+              <div>
+                <label
+                  className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("primary_category")}{" "}
+                  <span className="text-red-500">*</span>
+                </label>
 
-              <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
-                {categories?.map((cat: any) => {
-                  const isSelected = formData.primaryCategory === cat._id;
+                <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
+                  {categories?.map((cat: any) => {
+                    const isSelected = formData.primaryCategory === cat._id;
 
-                  return (
-                    <button
-                      key={cat._id}
-                      ref={isSelected ? selectedCatRef : null}
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() =>
-                        setFormData({ ...formData, primaryCategory: cat._id })
-                      }
-                      className={`
+                    return (
+                      <button
+                        key={cat._id}
+                        ref={isSelected ? selectedCatRef : null}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() =>
+                          setFormData({ ...formData, primaryCategory: cat._id })
+                        }
+                        className={`
                     shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 px-2 rounded-md border transition-all
                     ${
                       isSelected
@@ -234,29 +251,30 @@ const Attributes: FC<AttributesProps> = ({
                           : "border border-gray-300 text-gray-700 hover:border-teal-500"
                     }
                   `}
-                    >
-                      <CategoryIcon
-                        cat={cat}
-                        className={`w-9 h-9 shrink-0 transition-all ${
-                          isSelected ? "" : "opacity-70"
-                        }`}
-                      />
-                      <span className="text-sm font-medium text-center leading-snug line-clamp-3">
-                        {categoryLabel(
-                          cat,
-                          i18n.resolvedLanguage ?? i18n.language,
-                        )}
-                      </span>
-                    </button>
-                  );
-                })}
+                      >
+                        <CategoryIcon
+                          cat={cat}
+                          className={`w-9 h-9 shrink-0 transition-all ${
+                            isSelected ? "" : "opacity-70"
+                          }`}
+                        />
+                        <span className="text-sm font-medium text-center leading-snug line-clamp-3">
+                          {categoryLabel(
+                            cat,
+                            i18n.resolvedLanguage ?? i18n.language,
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors.primaryCategory && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.primaryCategory}
+                  </p>
+                )}
               </div>
-              {errors.primaryCategory && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.primaryCategory}
-                </p>
-              )}
-            </div>
+            )}
 
             <SelectableChips
               label="accessiblities"

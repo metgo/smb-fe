@@ -349,7 +349,14 @@ function BusinessDetailsPageInner() {
       case "accessibility":
         return (
           <AttributesDetails
-            categoriesId={[business?.primaryCategoryId]}
+            categoriesId={[
+              ...new Set(
+                [
+                  business?.primaryCategoryId,
+                  ...((business as any)?.bussCategoriesId ?? []),
+                ].filter(Boolean),
+              ),
+            ]}
             groupTypesId={business?.groupTypesId}
             accessibilitiesId={business?.accessibilitiesId}
             tags={business?.tagsId}

@@ -29,6 +29,8 @@ interface StepProps {
   selection: CategorySelection;
   onChange: (next: CategorySelection) => void;
   error?: string;
+  /** The note about passing the choice to the AI (onboarding only). */
+  showAiNote?: boolean;
 }
 
 const focusRing =
@@ -238,7 +240,12 @@ export function CategoryGroupsStep({ selection, onChange, error }: StepProps) {
 /* --------------------------------------------------------- step 2 --- */
 
 /** "What exactly do you offer?": subcategory chips per area, one starred. */
-export function SubcategoriesStep({ selection, onChange, error }: StepProps) {
+export function SubcategoriesStep({
+  selection,
+  onChange,
+  error,
+  showAiNote = true,
+}: StepProps) {
   const { t, i18n } = useTranslation("onboarding");
   // Static labels follow the UI language (not the API language setting).
   const language = i18n.resolvedLanguage ?? i18n.language;
@@ -504,18 +511,66 @@ export function SubcategoriesStep({ selection, onChange, error }: StepProps) {
         );
       })}
 
-      <div
-        className={clsx(
-          "flex items-start gap-3 rounded-xl px-4 py-3 text-sm leading-6",
-          isDark
-            ? "bg-violet-900/25 text-violet-200"
-            : "bg-violet-50 text-violet-900",
-        )}
-      >
-        <Sparkles className="mt-1 h-4 w-4 shrink-0" aria-hidden />
-        {t("cat_ai_note")}
-      </div>
+      {showAiNote && (
+        <div
+          className={clsx(
+            "flex items-start gap-3 rounded-xl px-4 py-3 text-sm leading-6",
+            isDark
+              ? "bg-violet-900/25 text-violet-200"
+              : "bg-violet-50 text-violet-900",
+          )}
+        >
+          <Sparkles className="mt-1 h-4 w-4 shrink-0" aria-hidden />
+          {t("cat_ai_note")}
+        </div>
+      )}
       <ErrorText error={error} />
+    </div>
+  );
+}
+
+/* ------------------------------------------- business wizard --- */
+
+/**
+ * Both category steps on one screen, for the Add / Edit business wizard:
+ * areas first, then the subcategories of the chosen areas.
+ */
+export function CategoryPicker({ selection, onChange, error }: StepProps) {
+  const { t } = useTranslation("onboarding");
+  const { textPrimary, textTertiary } = useThemeClasses();
+  return (
+    <div className="space-y-8">
+      <section aria-labelledby="cat-picker-areas">
+        <h3
+          id="cat-picker-areas"
+          className={clsx("text-base font-semibold", textPrimary)}
+        >
+          {t("cat_groups_title")}
+        </h3>
+        <p className={clsx("mb-4 mt-1 text-sm", textTertiary)}>
+          {t("cat_groups_sub")}
+        </p>
+        <CategoryGroupsStep selection={selection} onChange={onChange} />
+      </section>
+      {selection.categoryGroups.length > 0 && (
+        <section aria-labelledby="cat-picker-subs">
+          <h3
+            id="cat-picker-subs"
+            className={clsx("text-base font-semibold", textPrimary)}
+          >
+            {t("cat_subs_title")}
+          </h3>
+          <p className={clsx("mb-4 mt-1 text-sm", textTertiary)}>
+            {t("cat_subs_sub")}
+          </p>
+          <SubcategoriesStep
+            selection={selection}
+            onChange={onChange}
+            error={error}
+            showAiNote={false}
+          />
+        </section>
+      )}
     </div>
   );
 }
