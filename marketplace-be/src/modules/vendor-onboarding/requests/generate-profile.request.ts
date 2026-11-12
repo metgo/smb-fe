@@ -4,6 +4,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -11,6 +12,10 @@ import {
   MaxLength,
   ValidateNested,
 } from 'class-validator';
+import { BUSINESS_TAXONOMY } from '../business-taxonomy';
+
+const AREAS = BUSINESS_TAXONOMY.map(g => g.category);
+const SUBCATEGORIES = BUSINESS_TAXONOMY.flatMap(g => g.subcategories);
 
 export class OnboardingAddressRequest {
   @ApiProperty({ required: false })
@@ -94,6 +99,30 @@ export class OnboardingProductRequest {
     bookingRequired?: boolean;
 }
 
+export class OnboardingCategoryRequest {
+  @ApiProperty({ enum: AREAS, description: 'Taxonomy area (canonical English name)' })
+  @IsIn(AREAS)
+    category: string;
+
+  @ApiProperty({ type: [String], description: 'Subcategories of that area' })
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsIn(SUBCATEGORIES, { each: true })
+    subcategories: string[];
+}
+
+export class OnboardingCustomCategoryRequest {
+  @ApiProperty({ enum: AREAS })
+  @IsIn(AREAS)
+    category: string;
+
+  @ApiProperty({ description: "The vendor's own label when nothing in the list fits" })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(40)
+    label: string;
+}
+
 export class GenerateProfileRequest {
   @ApiProperty()
   @IsString()
@@ -117,6 +146,31 @@ export class GenerateProfileRequest {
   @ValidateNested()
   @Type(() => OnboardingAnswersRequest)
     answers: OnboardingAnswersRequest;
+
+  @ApiProperty({
+    required: false,
+    type: [OnboardingCategoryRequest],
+    description: 'The vendor\'s own category choice (up to 3 areas). When given, the generator keeps it.',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(3)
+  @ValidateNested({ each: true })
+  @Type(() => OnboardingCategoryRequest)
+    selectedCategories?: OnboardingCategoryRequest[];
+
+  @ApiProperty({ required: false, enum: SUBCATEGORIES, description: 'The starred main activity' })
+  @IsOptional()
+  @IsIn(SUBCATEGORIES)
+    mainSubcategory?: string;
+
+  @ApiProperty({ required: false, type: [OnboardingCustomCategoryRequest] })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @ValidateNested({ each: true })
+  @Type(() => OnboardingCustomCategoryRequest)
+    customCategories?: OnboardingCustomCategoryRequest[];
 
   @ApiProperty({ required: false, type: [OnboardingProductRequest] })
   @IsOptional()

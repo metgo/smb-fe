@@ -1,12 +1,46 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { X, Sparkles, Loader2, Trash2 } from "lucide-react";
+import { X, Sparkles, Loader2, Trash2, Tag } from "lucide-react";
 import { useEffect, useRef, useState, type FC } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
+import { groupForDbCategory, taxonomyLabel } from "@/lib/businessTaxonomy";
+
+/** A category's name in the UI language, falling back to the taxonomy. */
+const categoryLabel = (cat: any, language: string) => {
+  const group = groupForDbCategory(cat);
+  if (language === "he")
+    return cat.nameHe || cat.hebrewName || (group && group.he) || cat.name;
+  if (language === "ar") return cat.nameAr || (group && group.ar) || cat.name;
+  return cat.name || (group && taxonomyLabel(group, "en"));
+};
+
+/**
+ * The category's taxonomy icon. Uploaded icon images were often missing,
+ * which showed a broken image, so the uploaded image is only a fallback.
+ */
+const CategoryIcon: FC<{ cat: any; className: string }> = ({
+  cat,
+  className,
+}) => {
+  const [broken, setBroken] = useState(false);
+  const Icon = groupForDbCategory(cat)?.icon;
+  if (Icon) return <Icon className={className} strokeWidth={1.6} aria-hidden />;
+  if (cat.icon?.iconPath && !broken) {
+    return (
+      <img
+        src={cat.icon.iconPath}
+        alt=""
+        onError={() => setBroken(true)}
+        className={`${className} object-contain`}
+      />
+    );
+  }
+  return <Tag className={className} strokeWidth={1.6} aria-hidden />;
+};
 
 interface AttributesFormData {
   tags: string[];
@@ -49,7 +83,7 @@ const Attributes: FC<AttributesProps> = ({
   nameForGen,
   descriptionForGen,
 }) => {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
   const { categories, accessibility, groupTypes, allTags } = useCommon();
   const [getGeneratedTags, { isLoading }] = useGenerateTagsMutation();
@@ -186,11 +220,12 @@ const Attributes: FC<AttributesProps> = ({
                       key={cat._id}
                       ref={isSelected ? selectedCatRef : null}
                       type="button"
+                      aria-pressed={isSelected}
                       onClick={() =>
                         setFormData({ ...formData, primaryCategory: cat._id })
                       }
                       className={`
-                    shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                    shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 px-2 rounded-md border transition-all
                     ${
                       isSelected
                         ? "border-4 border-teal-600 text-teal-600"
@@ -200,18 +235,17 @@ const Attributes: FC<AttributesProps> = ({
                     }
                   `}
                     >
-                      {/* Icon */}
-                      <img
-                        src={cat.icon?.iconPath}
-                        alt={cat.icon?.iconAlt || cat.name}
-                        className={`w-14 h-14 object-contain transition-all ${
+                      <CategoryIcon
+                        cat={cat}
+                        className={`w-9 h-9 shrink-0 transition-all ${
                           isSelected ? "" : "opacity-70"
                         }`}
                       />
-
-                      {/* Text */}
-                      <span className="text-sm font-medium text-center">
-                        {cat.name}
+                      <span className="text-sm font-medium text-center leading-snug line-clamp-3">
+                        {categoryLabel(
+                          cat,
+                          i18n.resolvedLanguage ?? i18n.language,
+                        )}
                       </span>
                     </button>
                   );

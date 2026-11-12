@@ -1,3 +1,5 @@
+import type { CategorySelection } from "./categorySelection";
+
 export interface OnboardingProduct {
   name: string;
   description: string;
@@ -16,7 +18,7 @@ export interface OnboardingAnswers {
 
 export type AnswerKey = keyof OnboardingAnswers;
 
-export interface OnboardingDraft {
+export interface OnboardingDraft extends CategorySelection {
   step: number;
   businessName: string;
   contactName: string;
@@ -77,6 +79,10 @@ export const emptyDraft = (
   geo: { lat: "", long: "" },
   website: "",
   images: [],
+  categoryGroups: [],
+  subcategories: [],
+  customCategories: [],
+  mainCategory: "",
   answers: { offer: "", edge: "", fit: "", practical: "", reco: "" },
   probed: {},
   products: [],

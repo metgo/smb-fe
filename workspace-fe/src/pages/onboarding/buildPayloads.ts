@@ -1,3 +1,4 @@
+import { readSelection, selectionTags } from "./categorySelection";
 import type {
   GeneratedProfile,
   OnboardingDraft,
@@ -116,13 +117,30 @@ export function buildBusinessPayload(
     },
     geoLocation: draft.geo,
     primaryCategoryId: profile.primaryCategoryId || "",
-    tagsId: profile.tags,
+    // The vendor's chosen subcategories lead the tags (main first).
+    tagsId: mergeTags(selectionTags(readSelection(draft)), profile.tags),
     accessibilitiesId: profile.accessibilityIds,
     groupTypesId: profile.groupTypeIds,
     images: draft.images.map((img, i) => ({ ...img, isPrimary: i === 0 })),
     ...(openingHrs.length && { openingHrs }),
     socialMedia: socialMediaPayload,
   };
+}
+
+const MAX_TAGS = 12;
+
+/** Chosen subcategories first, then the generated tags, without repeats. */
+export function mergeTags(chosen: string[], generated: string[]) {
+  const seen = new Set<string>();
+  return [...chosen, ...generated]
+    .map((t) => t.trim())
+    .filter((t) => {
+      const k = t.toLowerCase();
+      if (!t || seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    })
+    .slice(0, Math.max(MAX_TAGS, chosen.length));
 }
 
 /** Facts with no wizard field go to internal notes so nothing is lost. */

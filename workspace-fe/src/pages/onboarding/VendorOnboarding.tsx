@@ -26,6 +26,12 @@ import {
   type OnboardingProduct,
 } from "./types";
 import { Button, Field, TextArea, TextInput } from "./ui";
+import { CategoryGroupsStep, SubcategoriesStep } from "./CategorySteps";
+import {
+  readSelection,
+  selectedKeys,
+  type CategorySelection,
+} from "./categorySelection";
 import {
   useCreateFromOnboarding,
   type CreateResult,
@@ -41,15 +47,17 @@ interface VendorOnboardingProps {
 const STEP = {
   WELCOME: 0,
   DETAILS: 1,
-  LOCATION: 2,
-  PHOTOS: 3,
-  Q_OFFER: 4,
-  Q_EDGE: 5,
-  Q_FIT: 6,
-  Q_PRACTICAL: 7,
-  Q_RECO: 8,
-  PRODUCTS: 9,
-  CREATE: 10,
+  CATEGORIES: 2,
+  SUBCATEGORIES: 3,
+  LOCATION: 4,
+  PHOTOS: 5,
+  Q_OFFER: 6,
+  Q_EDGE: 7,
+  Q_FIT: 8,
+  Q_PRACTICAL: 9,
+  Q_RECO: 10,
+  PRODUCTS: 11,
+  CREATE: 12,
 } as const;
 
 const QUESTIONS: {
@@ -114,8 +122,24 @@ export default function VendorOnboarding({
 
   const { run, stage, error: createError } = useCreateFromOnboarding();
 
+  // The vendor's category choice (drafts saved before these steps have none).
+  const selection = readSelection(draft);
+  const setSelection = (next: CategorySelection) => {
+    clearError("categories");
+    update(next);
+  };
+
   // A reload mid-creation restores the draft; send the vendor back to the last input step.
   useEffect(() => {
+    if (!Array.isArray(draft.categoryGroups)) {
+      // Saved before the two category steps were added after the details step.
+      const old = draft.step;
+      update({
+        ...readSelection(draft),
+        step: old >= STEP.CATEGORIES ? Math.min(old + 2, LAST_INPUT_STEP) : old,
+      });
+      return;
+    }
     if (draft.step === STEP.CREATE) update({ step: LAST_INPUT_STEP });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -166,6 +190,12 @@ export default function VendorOnboarding({
         e.contactName = t("err_contact_name");
       if (!PHONE_RE.test(draft.phone.trim())) e.phone = t("err_phone");
       if (!EMAIL_RE.test(draft.email.trim())) e.email = t("err_email");
+    }
+    if (s === STEP.CATEGORIES && !selection.categoryGroups.length) {
+      e.categories = t("err_categories");
+    }
+    if (s === STEP.SUBCATEGORIES && !selectedKeys(selection).length) {
+      e.categories = t("err_subcategories");
     }
     if (s === STEP.LOCATION) {
       if (!draft.address.trim() || !draft.geo.lat) e.address = t("err_address");
@@ -252,9 +282,14 @@ export default function VendorOnboarding({
       });
     }
     return t(
-      ["label_welcome", "label_details", "label_location", "label_photos"][
-        step
-      ] ?? (step === STEP.PRODUCTS ? "label_products" : "label_creating"),
+      [
+        "label_welcome",
+        "label_details",
+        "label_categories",
+        "label_categories",
+        "label_location",
+        "label_photos",
+      ][step] ?? (step === STEP.PRODUCTS ? "label_products" : "label_creating"),
     );
   }, [step, questionIndex, t]);
 
@@ -461,6 +496,30 @@ export default function VendorOnboarding({
                 </Field>
               </div>
             </div>
+          </>
+        );
+
+      case STEP.CATEGORIES:
+        return (
+          <>
+            {heading(t("cat_groups_title"), t("cat_groups_sub"))}
+            <CategoryGroupsStep
+              selection={selection}
+              onChange={setSelection}
+              error={errors.categories}
+            />
+          </>
+        );
+
+      case STEP.SUBCATEGORIES:
+        return (
+          <>
+            {heading(t("cat_subs_title"), t("cat_subs_sub"))}
+            <SubcategoriesStep
+              selection={selection}
+              onChange={setSelection}
+              error={errors.categories}
+            />
           </>
         );
 
