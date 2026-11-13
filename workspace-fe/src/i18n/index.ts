@@ -31,6 +31,7 @@ i18n
       "payments",
       "utm_campaign",
       "dashboard_mock",
+      "onboarding",
     ],
     defaultNS: "common",
 

@@ -4,13 +4,12 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Clock, Shield } from "lucide-react";
 
-import { routes } from "@/lib/routes";
+import { postLoginPath } from "@/pages/onboarding/api";
 import { useLoginMutation } from "@/store/api/authApi";
 import ContinueWithGoogle from "./ContinueWithGoogle";
 import { SubmitButton } from "@/components/btns";
 import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
-import { UserRole } from "@/enums/user.types";
 import { getLogoByLanguage } from "@/lib/utils";
 
 import AuthInputField from "./AuthInputField";
@@ -134,13 +133,8 @@ export function Login({ setCurrentTab }: LoginProps) {
       if (savedRedirect) {
         sessionStorage.removeItem("redirect_after_login");
         navigate(savedRedirect, { replace: true });
-      } else if (
-        data.user.role === UserRole.TRAVELLER &&
-        !data.user.hasBusiness
-      ) {
-        navigate(routes.businessMgmt, { replace: true });
       } else {
-        navigate(routes.dashboard, { replace: true });
+        navigate(await postLoginPath(data.user), { replace: true });
       }
     } catch (err: any) {
       if (err?.data) {

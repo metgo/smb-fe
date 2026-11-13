@@ -337,5 +337,10 @@
   "search_and_filters": "البحث والتصفية",
   "close_options": "إغلاق الخيارات",
   "options": "خيارات",
-  "hide_options": "إخفاء الخيارات"
+  "hide_options": "إخفاء الخيارات",
+  "onboarding_created": "טיוטת עמוד העסק מוכנה. עברו על כל שלב ופרסמו כשהכל נראה טוב.",
+  "onboarding_products_failed": "לא הצלחנו לשמור {{count}} מוצרים. אפשר להוסיף אותם ממסך המוצרים.",
+  "onboarding_empty_title": "בואו ניצור את עמוד העסק שלכם",
+  "onboarding_empty_desc": "עונים על כמה שאלות קצרות, ואנחנו ממלאים את עמוד העסק בשבילכם.",
+  "onboarding_empty_cta": "יצירת עמוד העסק שלי"
 }

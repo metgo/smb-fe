@@ -327,5 +327,10 @@
   "search_and_filters": "Search & Filters",
   "close_options": "Close Options",
   "options": "Options",
-  "hide_options": "Hide Options"
+  "hide_options": "Hide Options",
+  "onboarding_created": "Your business page draft is ready. Review each step and publish when you're happy.",
+  "onboarding_products_failed": "{{count}} product(s) couldn't be saved. You can add them from Products.",
+  "onboarding_empty_title": "Let's create your business page",
+  "onboarding_empty_desc": "Answer a few short questions and we'll fill in your business page for you.",
+  "onboarding_empty_cta": "Create my business page"
 }
