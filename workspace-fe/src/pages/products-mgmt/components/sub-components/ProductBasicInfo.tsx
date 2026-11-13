@@ -1,0 +1,82 @@
+import { ReactSelect } from "@/components/form-fields";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import ProductContentForm from "./ProductContentForm";
+
+interface ProductBasicInfoProps {
+  t: (key: string) => string;
+  selectedFormLanguage: Language;
+  setSelectedFormLanguage: (lang: Language) => void;
+  formData: {
+    businessId: string;
+    name: string;
+    shortDescription: string;
+    fullDescription: string;
+  };
+  setBusinessId: (data: string) => void;
+  setFormData: (data: any) => void;
+  errors: {
+    businessId?: string;
+    nameEn?: string;
+    shortDescEn?: string;
+  };
+  businesses: ISearchBusiness[] | [];
+  searchBusiness: (key: string) => void;
+  isLoading: boolean;
+  presetBusinessId: string;
+}
+
+const ProductBasicInfo = ({
+  t,
+  isLoading,
+  formData,
+  setFormData,
+  errors,
+  businesses,
+  setBusinessId,
+  searchBusiness,
+  presetBusinessId,
+}: ProductBasicInfoProps) => {
+  const { textSecondary } = useThemeClasses();
+  const handleChange = (updates: Partial<IArticleFormData>) => {
+    setFormData((prev: any) => ({ ...prev, ...updates }));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Select Business - unchanged */}
+      <div>
+        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
+          {t("select_business")} <span className="text-red-500">*</span>
+        </label>
+
+        <ReactSelect
+          isDisabled={!!presetBusinessId}
+          value={formData.businessId}
+          onChange={(selectedBusinessId: string) => {
+            setFormData({
+              ...formData,
+              businessId: selectedBusinessId,
+            });
+            setBusinessId(selectedBusinessId);
+          }}
+          placeholder={t("select_business")}
+          items={
+            businesses?.map((biz) => ({
+              _id: biz._id,
+              name: biz.name,
+            })) || []
+          }
+          onSearch={searchBusiness}
+          isLoading={isLoading}
+        />
+
+        {errors.businessId && (
+          <p className="text-red-500 text-sm mt-1">{errors.businessId}</p>
+        )}
+      </div>
+      <ProductContentForm formData={formData} onChange={handleChange} />
+    </div>
+  );
+};
+
+export default ProductBasicInfo;

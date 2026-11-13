@@ -1,0 +1,69 @@
+import clsx from "clsx";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { chartTheme } from "../chartTheme";
+
+interface NotesSectionProps {
+  t: (key: string, options?: Record<string, unknown>) => string;
+  notes: { name: string; count: number }[];
+}
+
+const NotesSection = ({ t, notes }: NotesSectionProps) => {
+  const { isDark, cardClasses, textPrimary, textTertiary } = useThemeClasses();
+  const { colors, axisTick, tooltipStyle, tooltipText } = chartTheme(isDark);
+
+  const card = clsx("rounded-xl p-5 flex flex-col gap-3 min-w-0", cardClasses);
+  const title = clsx("font-semibold", textPrimary);
+  const sub = clsx("text-sm", textTertiary);
+
+  return (
+    <section className={card}>
+      <h2 className={title}>{t("insights_notes")}</h2>
+      <p className={sub}>{t("insights_notes_desc")}</p>
+      <div className="h-56" dir="ltr">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={notes}
+            layout="vertical"
+            margin={{ left: 8, right: 40 }}
+          >
+            <CartesianGrid horizontal={false} stroke={colors.grid} />
+            <XAxis type="number" allowDecimals={false} tick={axisTick} />
+            <YAxis
+              type="category"
+              dataKey="name"
+              tick={axisTick}
+              width={170}
+              tickLine={false}
+            />
+            <Tooltip
+              cursor={{ fill: colors.grid, opacity: 0.4 }}
+              contentStyle={tooltipStyle}
+              itemStyle={tooltipText}
+              labelStyle={tooltipText}
+              formatter={(value) => [value, t("insights_businesses")]}
+            />
+            <Bar
+              dataKey="count"
+              fill={colors.series1}
+              radius={[0, 4, 4, 0]}
+              maxBarSize={22}
+              label={{ position: "right", fill: colors.axis, fontSize: 12 }}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </section>
+  );
+};
+
+export default NotesSection;

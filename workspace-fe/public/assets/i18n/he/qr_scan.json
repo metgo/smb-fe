@@ -1,0 +1,23 @@
+{
+  "qr_scan_logs": "יומן סריקות QR",
+  "records": "רשומות",
+  "search_placeholder": "חפש לפי שם, אימייל, טלפון, מזהה הזמנה...",
+  "ticket": "כרטיס",
+  "session": "מפגש",
+  "no_more_logs": "אין עוד רשומות להצגה",
+  "loading_logs": "טוען רשומות...",
+  "id": "מזהה",
+  "order_id": "מזהה הזמנה",
+  "type": "סוג",
+  "customer": "לקוח",
+  "email": "אימייל",
+  "phone": "טלפון",
+  "device": "מכשיר",
+  "browser": "דפדפן",
+  "os": "מערכת הפעלה",
+  "ip_address": "כתובת IP",
+  "scanned_at": "נסרק בתאריך",
+  "referrer": "מפנה",
+  "no_logs_found": "לא נמצאו רשומות סריקת QR",
+  "no_logs_found_desc": "אין רשומות סריקת QR התואמות לקריטריוני החיפוש שלך"
+}

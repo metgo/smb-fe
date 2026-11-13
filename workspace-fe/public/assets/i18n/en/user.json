@@ -1,0 +1,67 @@
+{
+  "users_management": "Users Management",
+  "create_user": "Create User",
+  "edit_user": "Edit User",
+  "search_users_placeholder": "Search users...",
+  "all_users_loaded": "All users loaded",
+
+  "super_admins_tab": "Super Admins",
+  "admins_tab": "Admins",
+  "dmos_tab": "DMOs",
+  "authorities_tab": "Authorities",
+  "travellers_tab": "Travellers",
+
+  "delete_user": "Delete User",
+  "delete_user_confirm": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
+
+  "name": "Name",
+  "first_name": "First Name",
+  "first_name_placeholder": "John",
+  "last_name": "Last Name",
+  "last_name_placeholder": "Doe",
+  "email": "Email",
+  "email_placeholder": "john.doe@example.com",
+  "email_locked_hint": "Email cannot be changed after creation",
+  "country_code": "Country Code",
+  "country_code_placeholder": "+1",
+  "phone": "Phone",
+  "phone_number": "Phone Number",
+  "phone_number_placeholder": "5551234567",
+  "address": "Address",
+  "address_placeholder": "123 Main St, City, Country",
+  "role": "Role",
+  "role_locked_hint": "Role cannot be changed after creation",
+  "locked": "(locked)",
+  "language_preference": "Language Preference",
+  "dmo": "DMO",
+  "select_dmo_placeholder": "Select DMO...",
+  "authority": "Authority",
+  "select_authority_placeholder": "Select authority...",
+
+  "cancel": "Cancel",
+  "saving": "Saving...",
+  "save_changes": "Save Changes",
+  "required": "Required",
+  "invalid_email": "Invalid email",
+
+  "user_updated_success": "User updated successfully",
+  "user_created_success": "User created successfully",
+  "something_went_wrong": "Something went wrong",
+
+  "role_super_admin": "Super Admin",
+  "role_admin": "Admin",
+  "role_dmo": "DMO",
+  "role_authority": "Authority",
+  "role_traveller": "Traveller",
+
+  "lang_english": "English",
+  "lang_arabic": "Arabic",
+  "lang_hebrew": "Hebrew",
+
+  "edit_user_action": "Edit user",
+  "delete_user_action": "Delete user",
+  "last_login": "Last Login",
+  "actions": "Actions",
+
+  "reset_login_attempts": "Reset login attempts"
+}

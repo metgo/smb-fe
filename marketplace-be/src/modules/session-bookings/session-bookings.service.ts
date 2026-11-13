@@ -1,0 +1,2106 @@
+import {
+  BadRequestException,
+  ConflictException,
+  GoneException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { ClientSession, Connection, Model } from 'mongoose';
+import { ObjectId } from 'mongodb';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+import { exceptionHandling } from 'src/common/utils/exception-handling';
+import {
+  encryptInviteToken,
+  decryptInviteToken,
+  InvitePayload,
+} from 'src/common/utils/invite-token.util';
+import { ConfirmSessionHoldDto } from './dto/confirm-session-hold.dto';
+import { SessionBooking } from './schema/session-booking.schema';
+import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
+import { ConfigService } from 'src/services/config/config.service';
+import { QRCodeService } from 'src/services/qr-code/qr-code.service';
+import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
+import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
+import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
+import { DocUploadService } from '../doc-upload/doc-upload.service';
+import { SmsService } from 'src/services/sms/sms.service';
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const HOLD_TTL_MINUTES = 7;
+const INVITE_TTL_DAYS = 7; // Fallback TTL when no event date is known; also the minimum floor
+const INVITE_EVENT_GRACE_DAYS = 1; // Keep the link usable through the event day + this grace
+const INVITE_MAX_TTL_DAYS = 400; // Defensive ceiling against a garbage far-future event date
+
+@Injectable()
+export class SessionBookingsService {
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
+
+    @InjectModel(SessionBooking.name)
+    private readonly sessionBookingModel: Model<SessionBooking>,
+
+    @InjectModel(OrderProduct.name)
+    private readonly orderProductModel: Model<OrderProduct>,
+
+    @InjectConnection()
+    private readonly connection: Connection,
+
+    private readonly mailchimpService: MailChimpService,
+    private readonly configService: ConfigService,
+    private readonly qrCodeService: QRCodeService,
+    private readonly externalApiService: ExternalApiServices,
+    private readonly docUploadService: DocUploadService,
+    private readonly smsService: SmsService,
+  ) { }
+
+  // ── Helper Methods ───────────────────────────────────────────────────────────
+
+  /**
+   * Resolve identifierId from customer's order or fall back to global config.
+   * Used to ensure bookings are tagged with the correct business/external API context.
+   */
+  private async resolveIdentifierId(customerEmail: string): Promise<string> {
+    try {
+      // Try to find customer's order to get their externalApiId
+      const order = await this.connection
+        .collection('orders')
+        .findOne(
+          { email: customerEmail, isDeleted: { $ne: true } },
+          { projection: { externalApiId: 1 }, sort: { createdAt: -1 } },
+        );
+
+      if (order?.externalApiId) {
+        const externalApi = await this.externalApiService.getById(
+          String(order.externalApiId),
+        );
+        if (externalApi?.identifierId) {
+          return externalApi.identifierId;
+        }
+      }
+    } catch (err) {
+      this.logger.warn(
+        '[SESSION_BOOKINGS]: Failed to resolve identifierId from order',
+        {
+          error: err instanceof Error ? err.message : String(err),
+          email: customerEmail,
+        },
+      );
+    }
+
+    // Fall back to global config
+    return this.configService.externalApiIdentifier.IDENTIFIER_ID;
+  }
+
+  /**
+   * Blocks session booking for a ticket that's been cancelled on the vendor
+   * side. `orderProductId` is optional - tokens/bookings issued before this
+   * field existed have nothing to check against, so they pass through as-is
+   * rather than being blocked on missing data.
+   */
+  private async assertTicketNotCancelled(
+    orderProductId?: string | ObjectId,
+  ): Promise<void> {
+    if (!orderProductId) return;
+
+    const orderProduct = await this.orderProductModel
+      .findById(orderProductId)
+      .select('status cancelled')
+      .lean();
+
+    if (orderProduct?.status === 'canceled') {
+      // "TICKET_CANCELLED:" prefix is a stable machine-readable marker the
+      // frontend checks for. Everything after it is a JSON-encoded object
+      // ({canceled_reason, additional_information, date}) - some call paths
+      // re-throw via exceptionHandling(), which only forwards err.message as
+      // a plain string, so this can't be a structured exception body.
+      const details = {
+        canceled_reason: orderProduct.cancelled?.canceled_reason || 'Cancelled by vendor',
+        additional_information: orderProduct.cancelled?.additional_information || null,
+        date: orderProduct.cancelled?.date || null,
+      };
+      throw new BadRequestException(`TICKET_CANCELLED: ${JSON.stringify(details)}`);
+    }
+  }
+
+  /**
+   * Decrypt an invite token, tolerating a past `exp` **only** while the event
+   * it points at is still upcoming (end of the last event day + grace).
+   *
+   * A token bakes its expiry in at generation time, so any token minted before
+   * the TTL fix (flat 7-day cap) can be dead weeks before its event. Rather
+   * than force every early buyer to "contact support", we re-check an expired
+   * token against the real event date and let it through if the event hasn't
+   * happened yet. Genuinely stale tokens — event over, or event date
+   * undeterminable — still fail with 410 Gone.
+   *
+   * Invalid / tampered tokens always fail with 400.
+   */
+  private async resolveInvitePayload(token: string): Promise<InvitePayload> {
+    try {
+      return decryptInviteToken(token);
+    } catch (err: any) {
+      if (!err?.message?.includes('expired')) {
+        throw new BadRequestException(
+          'קישור ההזמנה אינו תקין. אנא בדקו את הקישור שקיבלתם במייל.',
+        );
+      }
+    }
+
+    // Expired — decrypt again without the expiry gate, then decide from the
+    // real event date.
+    let payload: InvitePayload;
+    try {
+      payload = decryptInviteToken(token, { ignoreExpiry: true });
+    } catch {
+      throw new BadRequestException(
+        'קישור ההזמנה אינו תקין. אנא בדקו את הקישור שקיבלתם במייל.',
+      );
+    }
+
+    const eventLastDate = await this.resolveEventLastDate(payload);
+    if (eventLastDate) {
+      const cutoffMs
+        = new Date(eventLastDate).setHours(23, 59, 59, 999)
+        + INVITE_EVENT_GRACE_DAYS * 24 * 60 * 60 * 1000;
+      if (Date.now() <= cutoffMs) {
+        this.logger.info(
+          '[INVITE]: Expired token accepted — event still upcoming',
+          {
+            wrapperId: payload.wrapperId,
+            email: payload.email,
+            code: payload.code,
+            eventLastDate,
+          },
+        );
+        return payload;
+      }
+    }
+
+    throw new GoneException(
+      'פג תוקף קישור ההזמנה. אנא פנו לתמיכה.',
+    );
+  }
+
+  /**
+   * Best-effort lookup of the last event day for an invite — via
+   * wrapper → event, falling back to orderProduct → ticket. Returns null when
+   * neither path resolves a date (caller then treats the token as expired).
+   */
+  private async resolveEventLastDate(
+    payload: InvitePayload,
+  ): Promise<Date | null> {
+    const lastDay = (doc: any): Date | null => {
+      const days = doc?.dayDescription;
+      if (Array.isArray(days) && days.length && days[days.length - 1]?.date) {
+        return new Date(days[days.length - 1].date);
+      }
+      return null;
+    };
+
+    try {
+      if (payload.wrapperId) {
+        const wrapper = await this.connection
+          .collection('sessionwrappers')
+          .findOne(
+            { _id: new ObjectId(payload.wrapperId) },
+            { projection: { eventId: 1 } },
+          );
+        if (wrapper?.eventId) {
+          const event = await this.connection
+            .collection('events')
+            .findOne(
+              { _id: new ObjectId(String(wrapper.eventId)) },
+              { projection: { dayDescription: 1 } },
+            );
+          const d = lastDay(event);
+          if (d) return d;
+        }
+      }
+    } catch (err) {
+      this.logger.warn('[INVITE]: wrapper→event date lookup failed', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    try {
+      if (payload.orderProductId) {
+        const op = await this.orderProductModel
+          .findById(payload.orderProductId)
+          .select('itemId')
+          .lean();
+        if (op?.itemId) {
+          const ticket = await this.connection
+            .collection('tickets')
+            .findOne(
+              { _id: new ObjectId(String(op.itemId)) },
+              { projection: { dayDescription: 1 } },
+            );
+          const d = lastDay(ticket);
+          if (d) return d;
+        }
+      }
+    } catch (err) {
+      this.logger.warn('[INVITE]: orderProduct→ticket date lookup failed', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    return null;
+  }
+
+  // ── Invite token ─────────────────────────────────────────────────────────────
+
+  /**
+   * Generate an encrypted invite token to embed in the booking email URL.
+   *
+   * Called by: OrdersService after a successful ticket payment.
+   *
+   * The token is AES-256-GCM encrypted — it contains name/email/phone/wrapperId
+   * but looks like random gibberish in the browser bar. No DB entry needed.
+   *
+   * URL shape:  https://book.lumen.app/b/<encryptedToken>
+   *
+   * @example
+   * const { token, bookingLink } = this.sessionBookingsService.generateInviteToken({
+   *   name: 'Dana Cohen',
+   *   email: 'dana@example.com',
+   *   phone: '050-123-4567',
+   *   wrapperId: '6a434e6bab835dff0ef1fe46',
+   *   eventCode: 'SUMMER-2026',
+   * });
+   */
+  generateInviteToken(params: {
+    name: string;
+    email: string;
+    phone?: string;
+    wrapperId: string;
+    code?: string;
+    /**
+     * The last session/event date. When provided, the token stays valid
+     * through the END of that day plus INVITE_EVENT_GRACE_DAYS, so the link
+     * never expires before the event it's for. INVITE_TTL_DAYS (7) is a floor
+     * for short-notice purchases, not a ceiling.
+     * Example: event July 22, purchased July 10 → token expires ~July 23
+     * Example: event July 14, purchased July 13 → token expires ~July 20 (7-day floor)
+     */
+    eventLastDate?: Date;
+    /** The OrderProduct (ticket) this invite is for - lets the booking flow check the ticket hasn't been cancelled. */
+    orderProductId?: string;
+  }): { token: string; bookingLink: string; ttlDays: number } {
+    const nowSec = Math.floor(Date.now() / 1000);
+    const ONE_DAY_SEC = 24 * 60 * 60;
+    // Used verbatim when the event date is unknown, and as a lower bound so a
+    // short-notice buyer always gets at least a week.
+    const fallbackTtlSec = INVITE_TTL_DAYS * ONE_DAY_SEC;
+    const maxTtlSec = INVITE_MAX_TTL_DAYS * ONE_DAY_SEC;
+
+    let ttlSec = fallbackTtlSec;
+
+    if (params.eventLastDate) {
+      // Keep the link alive through the END of the last event day, plus a
+      // grace period — booking must stay possible right up to (and during)
+      // the event, and must never expire days before it.
+      const eventEndMs = new Date(params.eventLastDate).setHours(23, 59, 59, 999);
+      const expirySec
+        = Math.floor(eventEndMs / 1000) + INVITE_EVENT_GRACE_DAYS * ONE_DAY_SEC;
+      const ttlFromEvent = expirySec - nowSec;
+
+      // Whichever is LONGER: the 7-day floor, or through-the-event + grace.
+      // Clamped to a defensive ceiling in case the event date is garbage.
+      ttlSec = Math.min(maxTtlSec, Math.max(fallbackTtlSec, ttlFromEvent));
+    }
+
+    const exp = nowSec + ttlSec;
+    const ttlDays = Math.ceil(ttlSec / ONE_DAY_SEC);
+
+    const payload: InvitePayload = {
+      name: params.name,
+      email: params.email,
+      phone: params.phone,
+      wrapperId: params.wrapperId,
+      code: params.code,
+      exp,
+      orderProductId: params.orderProductId,
+    };
+
+    const token = encryptInviteToken(payload);
+    const bookingLink = `${process.env.FE_BASE_URL}/b/${token}`;
+
+    this.logger.info('[INVITE]: Generated encrypted invite token', {
+      wrapperId: params.wrapperId,
+      email: params.email,
+      code: params.code,
+      ttlDays,
+      eventLastDate: params.eventLastDate ?? 'not provided',
+    });
+
+    return { token, bookingLink, ttlDays };
+  }
+
+  /**
+   * Resolve an encrypted token → return customer PII + wrapper context.
+   *
+   * Called by: GET /session-bookings/resolve/:token (no auth required)
+   *
+   * The FE calls this on page load, receives the decrypted PII in the
+   * JSON response body (over HTTPS), and pre-fills the booking form.
+   * The URL stays encrypted — the form is filled from the API response.
+   *
+   * @returns Decrypted payload + isConsumed flag for single-use lock view
+   */
+  async resolveInviteToken(token: string): Promise<{
+    wrapperId: string;
+    customerName: string;
+    customerEmail: string;
+    customerPhone?: string;
+    eventCode?: string;
+    scope?: string[];
+    inviteCode?: string;
+    isConsumed: boolean;
+    existingBooking?: {
+      bookingId: string;
+      sessionId: string;
+      sessionName: string;
+      slotDate: string;
+      slotTime: string;
+      room?: string;
+      bookingReference?: string;
+    };
+    existingBookings?: Array<{
+      bookingId: string;
+      sessionId: string;
+      sessionName: string;
+      slotDate: string;
+      slotTime: string;
+      room?: string;
+      bookingReference?: string;
+      status: string;
+    }>;
+  }> {
+    // Decrypt and validate the token. An expired token is still honoured while
+    // its event is upcoming — see resolveInvitePayload.
+    const payload = await this.resolveInvitePayload(token);
+
+    await this.assertTicketNotCancelled(payload.orderProductId);
+
+    // Single-use lock check (LUMEN spec §4.2):
+    // Preview links (with code) allow multiple bookings for testing
+    // Real booking links block after first CONFIRMED booking
+    let isConsumed = false;
+    let existingBooking = null;
+    let existingBookings: Array<{
+      bookingId: string;
+      sessionId: string;
+      sessionName: string;
+      slotDate: string;
+      slotTime: string;
+      room?: string;
+      bookingReference?: string;
+      status: string;
+    }> = [];
+
+    if (!payload.code) {
+      // Only enforce single-use lock for real booking links (no code)
+      const existingConfirmed = await this.sessionBookingModel
+        .findOne({
+          'purchaserInfo.email': payload.email,
+          wrapperId: payload.wrapperId,
+          status: 'CONFIRMED',
+          isDeleted: { $ne: true },
+        })
+        .lean();
+
+      if (existingConfirmed) {
+        isConsumed = true;
+        existingBooking = {
+          bookingId: String(existingConfirmed._id),
+          sessionId: existingConfirmed.sessionId,
+          sessionName: existingConfirmed.sessionName,
+          slotDate: existingConfirmed.slotDate,
+          slotTime: existingConfirmed.slotTime,
+          room: existingConfirmed.room,
+          bookingReference: existingConfirmed.bookingReference,
+        };
+      }
+    } else {
+      const confirmedBookings = await this.sessionBookingModel
+        .find({
+          wrapperId: payload.wrapperId,
+          'purchaserInfo.email': payload.email,
+          inviteCode: payload.code,
+          status: { $in: ['ACTIVE', 'CONFIRMED', 'ATTENDED'] },
+          isDeleted: { $ne: true },
+        })
+        .sort({ confirmedAt: 1, createdAt: 1 })
+        .lean();
+
+      existingBookings = confirmedBookings.map((booking: any) => ({
+        bookingId: String(booking._id),
+        sessionId: booking.sessionId,
+        sessionName: booking.sessionName,
+        slotDate: booking.slotDate,
+        slotTime: booking.slotTime,
+        room: booking.room,
+        bookingReference: booking.bookingReference,
+        status: booking.status,
+      }));
+
+      if (existingBookings.length > 0) {
+        [existingBooking] = existingBookings;
+      }
+    }
+
+    const response: any = {
+      wrapperId: payload.wrapperId,
+      customerName: payload.name,
+      customerEmail: payload.email,
+      customerPhone: payload.phone,
+      isConsumed,
+    };
+
+    if (payload.code) {
+      response.inviteCode = payload.code;
+    }
+
+    if (existingBooking) {
+      response.existingBooking = existingBooking;
+    }
+
+    if (existingBookings.length > 0) {
+      response.existingBookings = existingBookings;
+    }
+
+    return response;
+  }
+
+  // ── Session display ──────────────────────────────────────────────────────────
+
+  /**
+   * Get session wrapper with active sessions and availability data.
+   * No auth required — wrapper must be isActive.
+   * If code is provided, returns existingBookings for invite code context.
+   */
+  async getSessionByWrapperId(wrapperId: string, dto?: any): Promise<any> {
+    try {
+      this.logger.info('[SESSION_BOOKINGS]: GET session', {
+        wrapperId,
+        code: dto?.code,
+      });
+
+      const query: any = { isDeleted: { $ne: true } };
+      try {
+        query._id = new ObjectId(wrapperId);
+      } catch {
+        throw new NotFoundException('Invalid session wrapper ID format');
+      }
+
+      const wrapper = await this.connection
+        .collection('sessionwrappers')
+        .findOne(query as any);
+
+      if (!wrapper) {
+        throw new NotFoundException('Session wrapper not found');
+      }
+
+      if (!wrapper.isActive) {
+        throw new NotFoundException('Session wrapper is currently inactive');
+      }
+
+      const activeSessions = (wrapper.sessions || []).filter(
+        (e: any) => e.isActive === true,
+      );
+
+      // Get primary image from wrapper
+      const primaryImage = (wrapper.images || []).find(
+        (img: any) => img.isPrimary === true,
+      );
+      const imageUrl
+        = primaryImage?.image || wrapper.images?.[0]?.image || null;
+
+      if (!activeSessions.length) {
+        return {
+          success: true,
+          message: 'No active sessions available',
+          data: { wrapperId, events: [] },
+        };
+      }
+
+      // ── Calculate available capacity for each slot ──────────────────────────
+      const sessionsWithAvailability = await Promise.all(
+        activeSessions.map(async (session: any) => {
+          const datesWithAvailability = await Promise.all(
+            (session.dates || []).map(async (dateObj: any) => {
+              const slotsWithAvailability = await Promise.all(
+                (dateObj.slots || []).map(async (slot: any) => {
+                  // Build base query for counting bookings
+                  const baseQuery = {
+                    wrapperId,
+                    sessionId:
+                      session._id?.toString()
+                      || session.sessionId?.toString()
+                      || '',
+                    slotDate: dateObj.date,
+                    slotTime: slot.time,
+                    isDeleted: { $ne: true },
+                  };
+
+                  // If invite code is provided, exclude user's own bookings from availability count
+                  // This allows them to see their own booking as "available" for changes
+                  // We exclude both CONFIRMED and ACTIVE bookings with this invite code
+                  const excludeUserQuery = dto?.code
+                    ? { inviteCode: { $ne: dto.code } }
+                    : {};
+
+                  const [confirmed, held, attended] = await Promise.all([
+                    this.connection
+                      .collection('sessionbookings')
+                      .countDocuments({
+                        ...baseQuery,
+                        ...excludeUserQuery,
+                        status: 'CONFIRMED',
+                      }),
+                    this.connection
+                      .collection('sessionbookings')
+                      .countDocuments({
+                        ...baseQuery,
+                        ...excludeUserQuery,
+                        status: 'ACTIVE',
+                      }),
+                    this.connection
+                      .collection('sessionbookings')
+                      .countDocuments({
+                        ...baseQuery,
+                        ...excludeUserQuery,
+                        status: 'ATTENDED',
+                      }),
+                  ]);
+
+                  const registered = confirmed + attended;
+                  const capacity = slot.capacity || 0;
+                  const available = Math.max(0, capacity - registered - held);
+
+                  return {
+                    ...slot,
+                    capacity,
+                    registered,
+                    held,
+                    attended,
+                    available,
+                  };
+                }),
+              );
+
+              return {
+                ...dateObj,
+                slots: slotsWithAvailability,
+              };
+            }),
+          );
+
+          return {
+            ...session,
+            dates: datesWithAvailability,
+          };
+        }),
+      );
+
+      // If invite code is provided, fetch existing bookings for pre-selection
+      let existingBookings: any[] = [];
+      let existingBooking: any = null;
+      let cancelled:
+        | { canceled_reason: string; additional_information: string; date: Date }
+        | undefined;
+      if (dto?.code) {
+        const confirmedBookings = await this.connection
+          .collection('sessionbookings')
+          .find({
+            wrapperId,
+            inviteCode: dto.code,
+            status: { $in: ['ACTIVE', 'CONFIRMED', 'ATTENDED'] },
+            isDeleted: { $ne: true },
+          })
+          .sort({ confirmedAt: 1, createdAt: 1 })
+          .toArray();
+
+        existingBookings = confirmedBookings.map((booking: any) => ({
+          bookingId: String(booking._id),
+          sessionId: booking.sessionId,
+          sessionName: booking.sessionName,
+          slotDate: booking.slotDate,
+          slotTime: booking.slotTime,
+          room: booking.room,
+          bookingReference: booking.bookingReference,
+          status: booking.status,
+        }));
+
+        if (existingBookings.length > 0) {
+          [existingBooking] = existingBookings;
+        }
+
+        // Best-effort: only possible when a prior hold/booking already
+        // exists for this code (that's the only place orderProductId gets
+        // stored - a brand-new code with no booking yet has nothing to
+        // look up).
+        const orderProductId = confirmedBookings.find(
+          (b: any) => b.orderProductId,
+        )?.orderProductId;
+        if (orderProductId) {
+          const orderProduct = await this.orderProductModel
+            .findById(orderProductId)
+            .select('status cancelled')
+            .lean();
+          if (orderProduct?.status === 'canceled') {
+            cancelled = {
+              canceled_reason:
+                orderProduct.cancelled?.canceled_reason || 'Cancelled by vendor',
+              additional_information:
+                orderProduct.cancelled?.additional_information,
+              date: orderProduct.cancelled?.date,
+            };
+          }
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Session details retrieved',
+        data: {
+          wrapperId,
+          brand: wrapper.brand,
+          headline: wrapper.headline,
+          subhead: wrapper.subhead,
+          blocks: wrapper.blocks || [],
+          image: imageUrl,
+          theme: wrapper.themeId,
+          events: sessionsWithAvailability,
+          ...(existingBooking && { existingBooking }),
+          ...(existingBookings.length > 0 && { existingBookings }),
+          ...(cancelled && { cancelled }),
+        },
+      };
+    } catch (err) {
+      this.logger.error('[SESSION_BOOKINGS]: GET session failed', {
+        err: err instanceof Error ? err.message : String(err),
+        wrapperId,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  // ── Hold creation ────────────────────────────────────────────────────────────
+
+  /**
+   * Create multiple session holds atomically (SAFE for concurrent bookings).
+   * Uses MongoDB transaction to prevent race conditions:
+   * - Atomically checks availability for ALL sessions
+   * - Creates ALL holds or NONE (no partial bookings)
+   * - Calculates TTL based on session count: 7 + (3 × extraSessions)
+   */
+  async createBatchSessionHolds(
+    token: string,
+    wrapperId: string,
+    sessions: Array<{
+      sessionId: string;
+      sessionName: string;
+      slotDate: string;
+      slotTime: string;
+      room?: string;
+    }>,
+  ): Promise<any> {
+    // ── PRE-VALIDATION (BEFORE transaction) ──────────────────────────────────
+    // Decrypt token early to check for existing bookings before transaction.
+    // Expired tokens are honoured while their event is still upcoming.
+    const payload = await this.resolveInvitePayload(token);
+
+    if (!payload.name || !payload.email) {
+      throw new BadRequestException('Token must contain name and email');
+    }
+
+    await this.assertTicketNotCancelled(payload.orderProductId);
+
+    // ── Single-use validation: Check for existing CONFIRMED booking ──────────
+    // Only enforce for real links (no code parameter)
+    // Check per SESSION, not per wrapper - allows multiple sessions in checkbox mode
+    if (!payload.code) {
+      const existingConfirmed = await this.sessionBookingModel
+        .findOne({
+          'purchaserInfo.email': payload.email,
+          wrapperId,
+          sessionId: sessions[0].sessionId,
+          status: 'CONFIRMED',
+          isDeleted: { $ne: true },
+        })
+        .lean();
+
+      if (existingConfirmed) {
+        throw new ConflictException(
+          `You already have a confirmed booking for this session (Ref: ${existingConfirmed.bookingReference}). `
+          + 'Please contact support if you need to modify your booking.',
+        );
+      }
+    }
+
+    // ── Atomic hold creation, retried on transient write conflicts ───────────
+    // Concurrent /hold requests from the same purchaser (e.g. rapid time-switch
+    // clicks racing each other) can both try to cancel the same stale hold
+    // document in the same instant — MongoDB throws a WriteConflict
+    // (TransientTransactionError) for one of them, which is expected and safe
+    // to retry, per MongoDB's own transaction-retry guidance.
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const mongoSession = await this.connection.startSession();
+      mongoSession.startTransaction();
+
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const result = await this.attemptCreateBatchSessionHolds(
+          mongoSession,
+          payload,
+          wrapperId,
+          sessions,
+        );
+        return result;
+      } catch (err) {
+        // eslint-disable-next-line no-await-in-loop
+        await mongoSession.abortTransaction().catch(() => { });
+
+        const isTransient
+          = (err as any)?.errorLabels?.includes?.('TransientTransactionError')
+          || (typeof (err as any)?.hasErrorLabel === 'function'
+            && (err as any).hasErrorLabel('TransientTransactionError'));
+
+        if (isTransient && attempt < MAX_ATTEMPTS) {
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+
+        this.logger.error(
+          '[SESSION_BOOKINGS]: Batch hold creation failed (ROLLED BACK)',
+          {
+            err: err instanceof Error ? err.message : String(err),
+            sessionCount: sessions.length,
+            attempt,
+          },
+        );
+        exceptionHandling(err);
+      } finally {
+        // eslint-disable-next-line no-await-in-loop
+        await mongoSession.endSession();
+      }
+    }
+  }
+
+  /**
+   * One attempt at the atomic hold-creation transaction. Throws on any
+   * failure (including transient write conflicts) so the caller can decide
+   * whether to retry. Does not abort/end the session — the caller owns that.
+   */
+  private async attemptCreateBatchSessionHolds(
+    mongoSession: ClientSession,
+    payload: InvitePayload,
+    wrapperId: string,
+    sessions: Array<{
+      sessionId: string;
+      sessionName: string;
+      slotDate: string;
+      slotTime: string;
+      room?: string;
+    }>,
+  ): Promise<any> {
+    // ── 0. Fetch wrapper to get actual slot capacities ─────────────────────
+    let wrapper: any;
+    try {
+      wrapper = await this.connection
+        .collection('sessionwrappers')
+        .findOne({ _id: new ObjectId(wrapperId), isDeleted: { $ne: true } });
+    } catch {
+      throw new NotFoundException('Session wrapper not found');
+    }
+
+    if (!wrapper) {
+      throw new NotFoundException('Session wrapper not found');
+    }
+
+    const purchaserInfo = {
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+    };
+
+    // ── 1. Release this purchaser's own stale ACTIVE holds for this wrapper ──
+    // Without this, a retry/double-click/back-navigation leaves a dangling hold
+    // that gets counted against the purchaser's own next attempt in
+    // calculateSpotsLeft(), causing a false "No spots available" 409.
+    await this.sessionBookingModel.updateMany(
+      {
+        wrapperId,
+        'purchaserInfo.email': purchaserInfo.email,
+        status: 'ACTIVE',
+        isDeleted: { $ne: true },
+      },
+      { $set: { status: 'CANCELLED', updatedAt: new Date() } },
+      { session: mongoSession },
+    );
+
+    // ── 2. Atomically check availability for ALL sessions ────────────────────
+    const holdExpiresAt = new Date();
+    const ttlMinutes = HOLD_TTL_MINUTES + 3 * (sessions.length - 1); // 7 + (3 × extraSessions)
+    holdExpiresAt.setMinutes(holdExpiresAt.getMinutes() + ttlMinutes);
+
+    // ── 2a. Validate block selection limits if blocks exist ─────────────────
+    const blocks = wrapper.blocks || [];
+    if (blocks.length > 0) {
+      const activeBlocks = blocks.filter((block: any) => block.isActive);
+
+      const violation = activeBlocks.find((block: any) => {
+        const blockSessionIds = new Set(
+          (block.sessionIds || []).map((id: any) => id.toString()),
+        );
+        const selectedInBlock = sessions.filter(s => blockSessionIds.has(s.sessionId));
+        return selectedInBlock.length > block.bookingLimit;
+      });
+
+      if (violation) {
+        const blockSessionIds = new Set(
+          (violation.sessionIds || []).map((id: any) => id.toString()),
+        );
+        const selectedInBlock = sessions.filter(s => blockSessionIds.has(s.sessionId));
+        throw new BadRequestException(
+          `You can only select up to ${violation.bookingLimit} session(s) from "${violation.name}". You selected ${selectedInBlock.length}.`,
+        );
+      }
+    }
+
+    // Validate all sessions first
+    sessions.forEach(sessionData => {
+      const sessionInWrapper = (wrapper.sessions || []).find(
+        (s: any) => s._id.toString() === sessionData.sessionId,
+      );
+
+      if (!sessionInWrapper) {
+        throw new BadRequestException(
+          `Session "${sessionData.sessionId}" not found in wrapper`,
+        );
+      }
+
+      const dateObj = (sessionInWrapper.dates || []).find(
+        (d: any) => d.date === sessionData.slotDate,
+      );
+      const slot = (dateObj?.slots || []).find(
+        (s: any) => s.time === sessionData.slotTime,
+      );
+
+      if (!slot) {
+        throw new BadRequestException(
+          `Slot ${sessionData.slotTime} on ${sessionData.slotDate} not found`,
+        );
+      }
+    });
+
+    // Check availability for all sessions in parallel
+    const spotsChecks = await Promise.all(
+      sessions.map(async sessionData => {
+        const sessionInWrapper = (wrapper.sessions || []).find(
+          (s: any) => s._id.toString() === sessionData.sessionId,
+        );
+        const dateObj = (sessionInWrapper.dates || []).find(
+          (d: any) => d.date === sessionData.slotDate,
+        );
+        const slot = (dateObj.slots || []).find(
+          (s: any) => s.time === sessionData.slotTime,
+        );
+
+        const spotsLeft = await this.calculateSpotsLeft(
+          sessionData.slotDate,
+          sessionData.slotTime,
+          slot.capacity,
+          wrapperId,
+          sessionData.sessionId,
+          undefined,
+          purchaserInfo.email,
+        );
+
+        return { sessionData, spotsLeft };
+      }),
+    );
+
+    // Verify all have availability
+    spotsChecks.forEach(({ sessionData, spotsLeft }) => {
+      if (spotsLeft <= 0) {
+        throw new ConflictException(
+          `No spots available for ${sessionData.sessionId} on ${sessionData.slotDate} at ${sessionData.slotTime}`,
+        );
+      }
+    });
+
+    // Create all holds in parallel using native MongoDB insert
+    const docsToInsert = sessions.map(sessionData => ({
+      wrapperId,
+      sessionId: sessionData.sessionId,
+      sessionName: sessionData.sessionName,
+      slotDate: sessionData.slotDate,
+      slotTime: sessionData.slotTime,
+      room: sessionData.room,
+      purchaserInfo,
+      inviteCode: payload.code || null,
+      orderProductId: payload.orderProductId
+        ? new ObjectId(payload.orderProductId)
+        : null,
+      holdExpiresAt,
+      status: 'ACTIVE',
+      createdAt: new Date(),
+      isDeleted: false,
+    }));
+
+    const insertResult = await this.connection
+      .collection('sessionbookings')
+      .insertMany(docsToInsert, { session: mongoSession });
+
+    const allHolds = docsToInsert.map((doc, idx) => ({
+      _id: insertResult.insertedIds[idx],
+      ...doc,
+    }));
+
+    // ── 3. Commit transaction ──────────────────────────────────────────────
+    await mongoSession.commitTransaction();
+
+    this.logger.info('[SESSION_BOOKINGS]: Batch holds created (ATOMIC)', {
+      sessionCount: sessions.length,
+      ttlMinutes,
+      email: payload.email,
+      holdIds: allHolds.map((h: any) => h._id),
+    });
+
+    return {
+      success: true,
+      message: `${sessions.length} session holds created successfully`,
+      data: {
+        holdIds: allHolds.map((h: any) => h._id),
+        expiresAt: holdExpiresAt,
+        expiresIn: `${ttlMinutes} minutes`,
+        sessionCount: sessions.length,
+        ttlMinutes,
+      },
+    };
+  }
+
+  // ── Confirmation ────────────────────────────────────────────────────────────
+
+  /**
+   * Confirm a session hold → convert to CONFIRMED booking.
+   *
+   * Called by: POST /session-bookings/confirm
+   *
+   * Steps:
+   * 1. Decrypt token to verify customer identity
+   * 2. Find the hold by holdId
+   * 3. Verify hold hasn't expired
+   * 4. Check spotsLeft one more time (safety)
+   * 5. Create CONFIRMED booking from hold
+   * 6. Set consumedAt (single-use lock)
+   * 7. Generate check-in QR token
+   * 8. Send confirmation email (Email #3)
+   */
+  async confirmSessionHold(dto: ConfirmSessionHoldDto): Promise<any> {
+    const mongoSession = await this.connection.startSession();
+    mongoSession.startTransaction();
+
+    try {
+      const {
+        holdIds, token, comments, identifierId: dtoIdentifierId,
+      } = dto;
+
+      // ── 1. Decrypt token (expired ok while the event is upcoming) ──────────
+      let payload: InvitePayload;
+      try {
+        payload = await this.resolveInvitePayload(token);
+      } catch (err) {
+        await mongoSession.abortTransaction();
+        throw err;
+      }
+
+      try {
+        await this.assertTicketNotCancelled(payload.orderProductId);
+      } catch (err) {
+        await mongoSession.abortTransaction();
+        throw err;
+      }
+
+      // ── 2. Fetch all holds ─────────────────────────────────────────────────
+      const holdObjectIds = holdIds.map(id => {
+        try {
+          return new ObjectId(id);
+        } catch {
+          throw new BadRequestException(`Invalid hold ID format: ${id}`);
+        }
+      });
+
+      const holds = await this.sessionBookingModel
+        .find({
+          _id: { $in: holdObjectIds },
+          status: 'ACTIVE',
+          isDeleted: { $ne: true },
+        })
+        .session(mongoSession);
+
+      if (holds.length !== holdIds.length) {
+        await mongoSession.abortTransaction();
+        throw new NotFoundException(
+          'One or more holds not found or already expired',
+        );
+      }
+
+      // ── 3. Verify all holds haven't expired + email matches ────────────────
+      const now = new Date();
+      try {
+        holds.forEach(hold => {
+          if (now > hold.holdExpiresAt) {
+            throw new GoneException(
+              'One or more holds have expired. Please create new holds.',
+            );
+          }
+          if (hold.purchaserInfo.email !== payload.email) {
+            throw new BadRequestException(
+              'Token email does not match hold customer',
+            );
+          }
+        });
+      } catch (validationErr) {
+        await mongoSession.abortTransaction();
+        throw validationErr;
+      }
+
+      // ── 4. Verify availability for all holds ───────────────────────────────
+      const wrapperForCapacity = await this.connection
+        .collection('sessionwrappers')
+        .findOne({
+          _id: new ObjectId(holds[0].wrapperId),
+          isDeleted: { $ne: true },
+        } as any);
+
+      if (!wrapperForCapacity) {
+        await mongoSession.abortTransaction();
+        throw new NotFoundException('Session wrapper not found');
+      }
+
+      // ── 4a. Validate block selection limits if blocks exist ─────────────────
+      const blocks = wrapperForCapacity.blocks || [];
+      if (blocks.length > 0) {
+        try {
+          const activeBlocks = blocks.filter((block: any) => block.isActive);
+
+          const violation = activeBlocks.find((block: any) => {
+            const blockSessionIds = new Set(block.sessionIds || []);
+            const selectedInBlock = holds.filter(h => blockSessionIds.has(h.sessionId));
+            return selectedInBlock.length > block.bookingLimit;
+          });
+
+          if (violation) {
+            const blockSessionIds = new Set(violation.sessionIds || []);
+            const selectedInBlock = holds.filter(h => blockSessionIds.has(h.sessionId));
+            await mongoSession.abortTransaction();
+            throw new BadRequestException(
+              `You can only select up to ${violation.bookingLimit} session(s) from "${violation.name}". You selected ${selectedInBlock.length}.`,
+            );
+          }
+        } catch (blockErr) {
+          await mongoSession.abortTransaction();
+          throw blockErr;
+        }
+      }
+
+      try {
+        await Promise.all(
+          holds.map(async hold => {
+            const sessionData = (wrapperForCapacity.sessions || []).find(
+              (s: any) => s._id.toString() === hold.sessionId,
+            );
+
+            if (!sessionData) {
+              throw new NotFoundException(
+                `Session "${hold.sessionId}" not found in wrapper`,
+              );
+            }
+
+            const dateObj = (sessionData.dates || []).find(
+              (d: any) => d.date === hold.slotDate,
+            );
+
+            if (!dateObj) {
+              throw new NotFoundException(
+                `Slot date ${hold.slotDate} not found in session`,
+              );
+            }
+
+            const slot = (dateObj.slots || []).find(
+              (s: any) => s.time === hold.slotTime,
+            );
+
+            if (!slot) {
+              throw new NotFoundException(
+                `Slot ${hold.slotTime} not found on ${hold.slotDate}`,
+              );
+            }
+
+            const spotsLeft = await this.calculateSpotsLeft(
+              hold.slotDate,
+              hold.slotTime,
+              slot.capacity,
+              hold.wrapperId,
+              hold.sessionId,
+              holdObjectIds,
+            );
+            if (spotsLeft <= 0) {
+              throw new ConflictException(
+                `No spots available for ${hold.sessionId}. Please select another time.`,
+              );
+            }
+          }),
+        );
+      } catch (availabilityErr) {
+        await mongoSession.abortTransaction();
+        throw availabilityErr;
+      }
+
+      // ── 5. Resolve identifierId for booking context ────────────────────────
+      // Prefer explicitly provided identifierId from DTO, fall back to auto-resolve
+      const identifierId
+        = dtoIdentifierId || (await this.resolveIdentifierId(payload.email));
+
+      // ── 6. Confirm all holds atomically ────────────────────────────────────
+      const confirmedAt = new Date();
+
+      let confirmedBookings: any;
+      try {
+        confirmedBookings = holds.map(hold => {
+          const checkInPayload: InvitePayload = {
+            name: hold.purchaserInfo.name,
+            email: hold.purchaserInfo.email,
+            phone: hold.purchaserInfo.phone,
+            wrapperId: hold.wrapperId,
+            code: payload.code,
+            exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+            orderProductId: hold.orderProductId?.toString(),
+          };
+          const qrToken = encryptInviteToken(checkInPayload);
+          const bookingReference = `LUMEN-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 8)
+            .toUpperCase()}`;
+
+          return {
+            bookingId: String(hold._id),
+            bookingReference,
+            sessionId: hold.sessionId,
+            slotDate: hold.slotDate,
+            slotTime: hold.slotTime,
+            room: hold.room,
+            qrToken,
+          };
+        });
+
+        // Update all bookings in parallel
+        await Promise.all(
+          holds.map((hold, index) => this.sessionBookingModel.updateOne(
+            { _id: hold._id },
+            {
+              $set: {
+                status: 'CONFIRMED',
+                confirmedAt,
+                consumedAt: confirmedAt,
+                qrToken: confirmedBookings[index].qrToken,
+                bookingReference: confirmedBookings[index].bookingReference,
+                identifierId,
+                inviteCode: payload.code || hold.inviteCode || null,
+                ...(comments && { comments }),
+                updatedAt: confirmedAt,
+              },
+            },
+            { session: mongoSession },
+          )),
+        );
+      } catch (confirmErr) {
+        await mongoSession.abortTransaction();
+        throw confirmErr;
+      }
+
+      await mongoSession.commitTransaction();
+
+      // ── 7. Cancel previous bookings for this invite code (after successful confirmation)
+      // This must happen AFTER transaction commit to prevent orphaned records if confirmation fails
+      if (payload.code) {
+        try {
+          const cancelResult = await this.sessionBookingModel.updateMany(
+            {
+              wrapperId: holds[0].wrapperId,
+              'purchaserInfo.email': payload.email,
+              inviteCode: payload.code,
+              status: { $in: ['ACTIVE', 'CONFIRMED'] },
+              _id: { $nin: holdObjectIds },
+              isDeleted: { $ne: true },
+            },
+            {
+              $set: {
+                status: 'CANCELLED',
+                updatedAt: confirmedAt,
+              },
+            },
+          );
+          this.logger.info(
+            '[SESSION_BOOKINGS]: Previous bookings cancelled for invite code',
+            {
+              cancelledCount: cancelResult.modifiedCount,
+              inviteCode: payload.code,
+              email: payload.email,
+            },
+          );
+        } catch (cancelErr) {
+          // Log but don't fail - new bookings are already confirmed
+          this.logger.error(
+            '[SESSION_BOOKINGS]: Failed to cancel previous bookings for invite code',
+            {
+              error:
+                cancelErr instanceof Error
+                  ? cancelErr.message
+                  : String(cancelErr),
+              inviteCode: payload.code,
+              email: payload.email,
+              newBookingIds: holdObjectIds,
+            },
+          );
+        }
+      }
+
+      this.logger.info('[SESSION_BOOKINGS]: Bookings confirmed', {
+        count: confirmedBookings.length,
+        email: payload.email,
+        confirmedAt,
+      });
+
+      let finalMergeVars: any = null;
+      let finalSessionsData: any[] = [];
+
+      // ── 7. Send Email #3: SessionBookingConfirmationFinal ──────────────────
+      try {
+        // Look up externalApi from the order linked to this customer's email
+        // This ensures the correct logo/branding matches the site they purchased from
+        const order = await this.connection
+          .collection('orders')
+          .findOne(
+            { email: holds[0].purchaserInfo.email },
+            { projection: { externalApiId: 1 }, sort: { createdAt: -1 } },
+          );
+
+        let externalApi: any = null;
+        if (order?.externalApiId) {
+          externalApi = await this.externalApiService.getById(
+            String(order.externalApiId),
+          );
+        }
+
+        // Fall back to global site identifierId if order lookup fails
+        if (!externalApi) {
+          externalApi = await this.externalApiService.findByIdentifierId(
+            identifierId,
+          );
+        }
+
+        if (!externalApi) {
+          this.logger.warn(
+            '[SESSION_BOOKINGS]: ExternalApi not found, skipping email',
+          );
+        } else {
+          const { emailFields } = await getCommonEmailFields(
+            externalApi,
+            this.docUploadService,
+          );
+
+          const { FE } = this.configService.baseUrl;
+          const feBase = externalApi?.websiteUrl || '';
+          const feUrl = feBase.endsWith('/') ? feBase.slice(0, -1) : feBase;
+
+          // Format dates in Hebrew locale
+          const formatDate = (dateStr: string) => {
+            try {
+              return new Date(dateStr).toLocaleDateString('he-IL', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              });
+            } catch {
+              return dateStr;
+            }
+          };
+
+          // Send ONE combined email with all sessions and bulk details
+          const sessionsWithBlocks = confirmedBookings.map(
+            async (booking: any) => {
+              const sessionData = (wrapperForCapacity.sessions || []).find(
+                (s: any) => s._id.toString() === booking.sessionId,
+              );
+              const sessionGreeting = sessionData?.greeting || '';
+
+              // Find which block this session belongs to (if any)
+              let blockInfo = null;
+              if (blocks.length > 0) {
+                const block = blocks.find(
+                  (b: any) => b.isActive
+                    && (b.sessionIds || []).includes(booking.sessionId),
+                );
+                if (block) {
+                  blockInfo = {
+                    name: block.name,
+                    description: block.description,
+                    bookingLimit: block.bookingLimit,
+                  };
+                }
+              }
+
+              // Generate QR code for this session
+              const checkInUrl = `${FE}verify-session/${holds[0].wrapperId}/${booking.bookingId}`;
+              let checkInQrUrl = '';
+              try {
+                checkInQrUrl = await this.qrCodeService.generateQRCode(
+                  checkInUrl,
+                  `checkin-${booking.bookingReference}`,
+                );
+              } catch (qrErr) {
+                this.logger.warn(
+                  '[SESSION_BOOKINGS]: QR code generation failed',
+                  {
+                    error:
+                      qrErr instanceof Error ? qrErr.message : String(qrErr),
+                  },
+                );
+              }
+
+              return {
+                sessionId: booking.sessionId,
+                sessionName: sessionData?.name || '',
+                sessionGreeting,
+                slotDate: formatDate(booking.slotDate),
+                slotTime: booking.slotTime,
+                room: booking.room || 'לא צוין',
+                bookingReference: booking.bookingReference,
+                qrCodeUrl: checkInQrUrl || checkInUrl,
+                checkInUrl,
+                blockInfo,
+              };
+            },
+          );
+
+          // Generate HTML for sessions grouped by blocks
+          let sessionsHtml = '';
+
+          const sessionsData = await Promise.all(sessionsWithBlocks);
+
+          // Group sessions by block for display
+          const sessionsByBlock: any = {};
+          if (blocks.length > 0) {
+            blocks.forEach((block: any) => {
+              if (block.isActive) {
+                sessionsByBlock[block.name] = {
+                  description: block.description,
+                  bookingLimit: block.bookingLimit,
+                  sessions: sessionsData.filter(
+                    (s: any) => s.blockInfo?.name === block.name,
+                  ),
+                };
+              }
+            });
+            // Add sessions not in any block
+            const ungroupedSessions = sessionsData.filter(
+              (s: any) => !s.blockInfo,
+            );
+            if (ungroupedSessions.length > 0) {
+              sessionsByBlock.general = {
+                description: '',
+                bookingLimit: sessionsData.length,
+                sessions: ungroupedSessions,
+              };
+            }
+          } else {
+            // No blocks - put all in general
+            sessionsByBlock.general = {
+              description: '',
+              bookingLimit: sessionsData.length,
+              sessions: sessionsData,
+            };
+          }
+
+          // Generate sessions HTML grouped by blocks
+          Object.keys(sessionsByBlock).forEach(blockName => {
+            const block = sessionsByBlock[blockName];
+
+            sessionsHtml
+              += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f9f9f9; border-radius: 8px; margin: 20px 0;">';
+            sessionsHtml += '<tr><td style="padding: 15px;">';
+
+            // Block header
+            if (blockName !== 'general') {
+              sessionsHtml += `<p style="margin: 0 0 5px 0; font-weight: bold; color: #313131; text-align: right; font-size: 16px;">📦 ${blockName}</p>`;
+              if (block.description) {
+                sessionsHtml += `<p style="margin: 0 0 10px 0; color: #666; text-align: right; font-size: 13px;">${block.description}</p>`;
+              }
+              sessionsHtml += `<p style="margin: 0 0 15px 0; color: #1976d2; text-align: right; font-size: 12px;">נבחרו ${block.sessions.length} מתוך ${block.bookingLimit} מפגשים</p>`;
+            } else {
+              sessionsHtml
+                += '<p style="margin: 0 0 15px 0; font-weight: bold; color: #313131; text-align: right; font-size: 16px;">📋 מפגשים כלליים</p>';
+            }
+
+            // Sessions in block
+            block.sessions.forEach((session: any) => {
+              sessionsHtml
+                += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 6px; margin: 10px 0; border: 1px solid #e0e0e0;">';
+              sessionsHtml += '<tr><td style="padding: 12px;">';
+
+              sessionsHtml
+                += '<table width="100%" cellpadding="0" cellspacing="0" border="0">';
+              sessionsHtml += '<tr>';
+              sessionsHtml
+                += '<td style="padding: 0; width: 70%; vertical-align: top;">';
+
+              sessionsHtml += `<p style="margin: 0 0 8px 0; font-weight: bold; color: #313131; text-align: right; font-size: 14px;">${session.sessionName}</p>`;
+              if (session.sessionGreeting) {
+                sessionsHtml += `<p style="margin: 0 0 8px 0; color: #666; text-align: right; font-size: 12px; font-style: italic;">${session.sessionGreeting}</p>`;
+              }
+              sessionsHtml
+                += '<table width="100%" cellpadding="0" cellspacing="0" border="0">';
+              sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>תאריך:</strong> ${session.slotDate}</td></tr>`;
+              sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>שעה:</strong> ${session.slotTime}</td></tr>`;
+              sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>חדר/מטפל:</strong> ${session.room}</td></tr>`;
+              sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>מספר הזמנה:</strong> ${session.bookingReference}</td></tr>`;
+              sessionsHtml += '</table>';
+
+              sessionsHtml += '</td>';
+              sessionsHtml
+                += '<td style="padding: 0; width: 30%; vertical-align: middle; text-align: center;">';
+              sessionsHtml += `<img src="${session.qrCodeUrl}" alt="QR Code" width="100" height="100" class="qr-code" style="width: 100px; height: 100px; border: 2px solid #4caf50; border-radius: 8px;">`;
+              sessionsHtml
+                += '<p style="margin: 5px 0 0 0; color: #666; text-align: center; font-size: 10px;">סרוק להגעה</p>';
+              sessionsHtml += '</td>';
+              sessionsHtml += '</tr>';
+              sessionsHtml += '</table>';
+
+              sessionsHtml += '</td></tr>';
+              sessionsHtml += '</table>';
+            });
+
+            sessionsHtml += '</td></tr>';
+            sessionsHtml += '</table>';
+          });
+
+          const mergeVars = {
+            ...emailFields,
+            CUSTOMER_NAME: payload.name,
+            CUSTOMER_EMAIL: payload.email,
+            SESSIONS_HTML: sessionsHtml,
+            TOTAL_SESSIONS: confirmedBookings.length,
+            BUTTON_LINK: externalApi?.websiteUrl,
+            ORDER_HISTORY_LINK: `${feUrl}/session-confirmation?bookingId=${holds[0]._id}`,
+            BUSINESSADDRESS: '',
+            SUPPORT_EMAIL: externalApi?.email || 'support@metgo.app',
+            SUPPORT_PHONE: externalApi?.whatsappNumber || '',
+            MANAGEMENT_LINK: externalApi?.websiteUrl || '',
+          };
+
+          finalMergeVars = mergeVars;
+          finalSessionsData = sessionsData;
+
+          await this.mailchimpService.sendTransactionalEmail({
+            to: payload.email,
+            templatedId: DynamicEmailTemplate.SessionBookingConfirmationFinal,
+            from_email: externalApi?.email,
+            from_name: externalApi?.name,
+            subject: 'ההזמנה שלך אושרה! ✅',
+            mergeVars,
+          });
+
+          this.logger.info(
+            '[SESSION_BOOKINGS]: Combined confirmation email sent',
+            {
+              email: payload.email,
+              totalSessions: confirmedBookings.length,
+            },
+          );
+
+          if (payload.phone) {
+            try {
+              const siteName = externalApi?.name || 'MetGo';
+              const confirmationLink = `${feUrl}/session-confirmation?bookingId=${holds[0]._id}`;
+
+              const smsMessage = `שלום ${payload.name || ''}\nההזמנה שלך למפגשים אושרה בהצלחה! ✅\nלצפייה בפרטי ההזמנה והכרטיסים (QR קוד), לחץ כאן:\n${confirmationLink}\n(הפרטים נשלחו גם לכתובת המייל שלך).\nבברכה צוות ${siteName}\nלתמיכה: ${externalApi?.email || 'support@metgo.app'}`;
+
+              // Ensure phone has proper format, remove leading 0 if present, default country code 972
+              let formattedPhone = payload.phone.replace(/^0+/, '');
+              if (!formattedPhone.startsWith('972')) {
+                formattedPhone = `972${formattedPhone}`;
+              }
+
+              await this.smsService.sendSms({
+                firstName: payload.name || '',
+                lastName: '',
+                phone: `+${formattedPhone}`,
+                message: smsMessage,
+                sender: 'TAV8',
+                subject: 'Session Booking Confirmation',
+              });
+
+              this.logger.info('[SESSION_BOOKINGS]: Combined confirmation SMS sent', {
+                phone: payload.phone,
+                totalSessions: confirmedBookings.length,
+              });
+            } catch (smsError) {
+              this.logger.error('[SESSION_BOOKINGS]: Failed to send confirmation SMS', {
+                error: smsError instanceof Error ? smsError.message : String(smsError),
+                phone: payload.phone,
+              });
+            }
+          }
+        }
+      } catch (emailErr) {
+        // Non-blocking: log error but don't fail the confirmation
+        this.logger.error(
+          '[SESSION_BOOKINGS]: Failed to send confirmation email',
+          {
+            error:
+              emailErr instanceof Error ? emailErr.message : String(emailErr),
+            email: payload.email,
+          },
+        );
+      }
+
+      return {
+        success: true,
+        message: `${confirmedBookings.length} booking(s) confirmed successfully`,
+        data: {
+          wrapperId: holds[0].wrapperId,
+          bookings: confirmedBookings,
+          confirmedAt,
+          purchaserEmail: payload.email,
+        },
+        templateId: finalMergeVars ? DynamicEmailTemplate.SessionBookingConfirmationFinal : undefined,
+        mergeVars: finalMergeVars || undefined,
+        sessions: finalSessionsData.length > 0 ? finalSessionsData : undefined,
+      };
+    } catch (err) {
+      await mongoSession.abortTransaction();
+      this.logger.error('[SESSION_BOOKINGS]: Confirmation failed', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+      exceptionHandling(err);
+    } finally {
+      await mongoSession.endSession();
+    }
+  }
+
+  /**
+   * Get confirmation details for a booked session via GET request.
+   */
+  async getConfirmationDetails(bookingId: string) {
+    if (!bookingId) {
+      throw new BadRequestException('Booking ID is required');
+    }
+
+    const initialBooking = await this.sessionBookingModel.findOne({
+      _id: bookingId,
+      status: 'CONFIRMED',
+      isDeleted: { $ne: true },
+    }).lean();
+
+    if (!initialBooking) {
+      throw new NotFoundException('Confirmed booking not found for this ID');
+    }
+
+    await this.assertTicketNotCancelled(initialBooking.orderProductId);
+
+    const { email, name } = initialBooking.purchaserInfo;
+    const { wrapperId } = initialBooking;
+
+    const confirmedBookings = await this.sessionBookingModel.find({
+      'purchaserInfo.email': email,
+      wrapperId,
+      status: 'CONFIRMED',
+      isDeleted: { $ne: true },
+    }).lean();
+
+    let wrapperForCapacity: any;
+    try {
+      wrapperForCapacity = await this.connection
+        .collection('sessionwrappers')
+        .findOne({
+          _id: new ObjectId(wrapperId),
+          isDeleted: { $ne: true },
+        } as any);
+
+      if (!wrapperForCapacity) {
+        throw new NotFoundException('Session wrapper not found');
+      }
+    } catch (err) {
+      this.logger.error('[SESSION_BOOKINGS]: Failed to fetch wrapper for GET details', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+      throw new NotFoundException('Failed to fetch event details');
+    }
+
+    const blocks = wrapperForCapacity?.blocks || [];
+    const { identifierId } = confirmedBookings[0];
+
+    let externalApi: any = null;
+    const externalApiId = wrapperForCapacity?.externalApiId;
+    if (externalApiId) {
+      externalApi = await this.externalApiService.getById(String(externalApiId));
+    }
+    if (!externalApi) {
+      externalApi = await this.externalApiService.findByIdentifierId(identifierId);
+    }
+
+    let emailFields: any = {};
+    if (externalApi) {
+      const result = await getCommonEmailFields(externalApi, this.docUploadService);
+      emailFields = result.emailFields;
+    }
+
+    const { FE } = this.configService.baseUrl;
+    const feBase = externalApi?.websiteUrl || '';
+    const feUrl = feBase.endsWith('/') ? feBase.slice(0, -1) : feBase;
+
+    const formatDate = (dateStr: string) => {
+      try {
+        return new Date(dateStr).toLocaleDateString('he-IL', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      } catch {
+        return dateStr;
+      }
+    };
+
+    const sessionsWithBlocks = confirmedBookings.map(async (booking: any) => {
+      const sessionData = (wrapperForCapacity.sessions || []).find(
+        (s: any) => s._id.toString() === booking.sessionId,
+      );
+      const sessionGreeting = sessionData?.greeting || '';
+
+      let blockInfo = null;
+      if (blocks.length > 0) {
+        const block = blocks.find(
+          (b: any) => b.isActive && (b.sessionIds || []).includes(booking.sessionId),
+        );
+        if (block) {
+          blockInfo = {
+            name: block.name,
+            description: block.description,
+            bookingLimit: block.bookingLimit,
+          };
+        }
+      }
+
+      const checkInUrl = `${FE}verify-session/${wrapperId}/${booking.bookingId || booking._id}`;
+      let checkInQrUrl = '';
+      try {
+        checkInQrUrl = await this.qrCodeService.generateQRCode(
+          checkInUrl,
+          `checkin-${booking.bookingReference}`,
+        );
+      } catch (qrErr) {
+        // ignore
+      }
+
+      return {
+        sessionId: booking.sessionId,
+        sessionName: sessionData?.name || '',
+        sessionGreeting,
+        slotDate: formatDate(booking.slotDate),
+        slotTime: booking.slotTime,
+        room: booking.room || 'לא צוין',
+        bookingReference: booking.bookingReference,
+        qrCodeUrl: checkInQrUrl || checkInUrl,
+        checkInUrl,
+        blockInfo,
+      };
+    });
+
+    const sessionsData = await Promise.all(sessionsWithBlocks);
+
+    const sessionsByBlock: any = {};
+    if (blocks.length > 0) {
+      blocks.forEach((block: any) => {
+        if (block.isActive) {
+          sessionsByBlock[block.name] = {
+            description: block.description,
+            bookingLimit: block.bookingLimit,
+            sessions: sessionsData.filter((s: any) => s.blockInfo?.name === block.name),
+          };
+        }
+      });
+      const ungroupedSessions = sessionsData.filter((s: any) => !s.blockInfo);
+      if (ungroupedSessions.length > 0) {
+        sessionsByBlock.general = {
+          description: '',
+          bookingLimit: sessionsData.length,
+          sessions: ungroupedSessions,
+        };
+      }
+    } else {
+      sessionsByBlock.general = {
+        description: '',
+        bookingLimit: sessionsData.length,
+        sessions: sessionsData,
+      };
+    }
+
+    let sessionsHtml = '';
+    Object.keys(sessionsByBlock).forEach(blockName => {
+      const block = sessionsByBlock[blockName];
+
+      sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f9f9f9; border-radius: 8px; margin: 20px 0;">';
+      sessionsHtml += '<tr><td style="padding: 15px;">';
+
+      if (blockName !== 'general') {
+        sessionsHtml += `<p style="margin: 0 0 5px 0; font-weight: bold; color: #313131; text-align: right; font-size: 16px;">📦 ${blockName}</p>`;
+        if (block.description) {
+          sessionsHtml += `<p style="margin: 0 0 10px 0; color: #666; text-align: right; font-size: 13px;">${block.description}</p>`;
+        }
+        sessionsHtml += `<p style="margin: 0 0 15px 0; color: #1976d2; text-align: right; font-size: 12px;">נבחרו ${block.sessions.length} מתוך ${block.bookingLimit} מפגשים</p>`;
+      } else {
+        sessionsHtml += '<p style="margin: 0 0 15px 0; font-weight: bold; color: #313131; text-align: right; font-size: 16px;">📋 מפגשים כלליים</p>';
+      }
+
+      block.sessions.forEach((session: any) => {
+        sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 6px; margin: 10px 0; border: 1px solid #e0e0e0;">';
+        sessionsHtml += '<tr><td style="padding: 12px;">';
+        sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0">';
+        sessionsHtml += '<tr>';
+        sessionsHtml += '<td style="padding: 0; width: 70%; vertical-align: top;">';
+        sessionsHtml += `<p style="margin: 0 0 8px 0; font-weight: bold; color: #313131; text-align: right; font-size: 14px;">${session.sessionName}</p>`;
+        if (session.sessionGreeting) {
+          sessionsHtml += `<p style="margin: 0 0 8px 0; color: #666; text-align: right; font-size: 12px; font-style: italic;">${session.sessionGreeting}</p>`;
+        }
+        sessionsHtml += '<table width="100%" cellpadding="0" cellspacing="0" border="0">';
+        sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>תאריך:</strong> ${session.slotDate}</td></tr>`;
+        sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>שעה:</strong> ${session.slotTime}</td></tr>`;
+        sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>חדר/מטפל:</strong> ${session.room}</td></tr>`;
+        sessionsHtml += `<tr><td style="padding: 4px 0; text-align: right; color: #666; font-size: 12px;"><strong>מספר הזמנה:</strong> ${session.bookingReference}</td></tr>`;
+        sessionsHtml += '</table>';
+        sessionsHtml += '</td>';
+        sessionsHtml += '<td style="padding: 0; width: 30%; vertical-align: middle; text-align: center;">';
+        sessionsHtml += `<img src="${session.qrCodeUrl}" alt="QR Code" width="100" height="100" class="qr-code" style="width: 100px; height: 100px; border: 2px solid #4caf50; border-radius: 8px;">`;
+        sessionsHtml += '<p style="margin: 5px 0 0 0; color: #666; text-align: center; font-size: 10px;">סרוק להגעה</p>';
+        sessionsHtml += '</td>';
+        sessionsHtml += '</tr>';
+        sessionsHtml += '</table>';
+        sessionsHtml += '</td></tr>';
+        sessionsHtml += '</table>';
+      });
+
+      sessionsHtml += '</td></tr>';
+      sessionsHtml += '</table>';
+    });
+
+    const mergeVars = {
+      ...emailFields,
+      CUSTOMER_NAME: name,
+      CUSTOMER_EMAIL: email,
+      SESSIONS_HTML: sessionsHtml,
+      TOTAL_SESSIONS: confirmedBookings.length,
+      BUTTON_LINK: externalApi?.websiteUrl,
+      ORDER_HISTORY_LINK: `${feUrl}/session-confirmation?bookingId=${bookingId}`,
+      BUSINESSADDRESS: '',
+      SUPPORT_EMAIL: externalApi?.email || 'support@metgo.app',
+      SUPPORT_PHONE: externalApi?.whatsappNumber || '',
+      MANAGEMENT_LINK: externalApi?.websiteUrl || '',
+    };
+
+    return {
+      templateId: DynamicEmailTemplate.SessionBookingConfirmationFinal,
+      mergeVars,
+      sessions: sessionsData,
+    };
+  }
+
+  /**
+   * Check-in endpoint: decrypt QR token → return booking details + mark ATTENDED.
+   *
+   * Called by: GET /session-bookings/checkin/:token (no auth required)
+   *
+   * Single-use: First scan returns booking details, marks customer as ATTENDED.
+   * Subsequent scans return error (already checked in).
+   *
+   * Prevents:
+   * - QR code sharing/reuse
+   * - Duplicate check-ins
+   * - Fraud
+   */
+  async getCheckInDetails(token: string): Promise<any> {
+    try {
+      // Find booking by qrToken
+      const booking = await this.sessionBookingModel.findOne({
+        qrToken: token,
+        status: { $in: ['CONFIRMED', 'ATTENDED'] }, // Allow both states
+        isDeleted: { $ne: true },
+      });
+
+      if (!booking) {
+        throw new NotFoundException(
+          'No confirmed booking found for this check-in token',
+        );
+      }
+
+      // Ticket may have been cancelled by the vendor after this session was
+      // booked/confirmed - block check-in even though the booking itself
+      // is still CONFIRMED.
+      await this.assertTicketNotCancelled(booking.orderProductId);
+
+      // Check if already attended (single-use lock)
+      if (booking.status === 'ATTENDED') {
+        throw new ConflictException(
+          'This QR code has already been scanned. Customer already checked in.',
+        );
+      }
+
+      // Mark as ATTENDED (single-use: first and only valid scan)
+      const now = new Date();
+      const updated = await this.sessionBookingModel.findByIdAndUpdate(
+        booking._id,
+        {
+          status: 'ATTENDED',
+          attendedAt: now,
+          updatedAt: now,
+        },
+        { new: true },
+      );
+
+      this.logger.info('[SESSION_BOOKINGS]: Customer checked in', {
+        bookingId: booking._id,
+        customerEmail: booking.purchaserInfo.email,
+        attendedAt: now,
+      });
+
+      // Return booking details for room rep
+      return {
+        success: true,
+        message: 'Customer checked in successfully',
+        data: {
+          bookingId: String(updated._id),
+          bookingReference: updated.bookingReference,
+          customerName: updated.purchaserInfo.name,
+          customerEmail: updated.purchaserInfo.email,
+          customerPhone: updated.purchaserInfo.phone,
+          sessionId: updated.sessionId,
+          slotDate: updated.slotDate,
+          slotTime: updated.slotTime,
+          room: updated.room,
+          confirmedAt: updated.confirmedAt,
+          attendedAt: updated.attendedAt,
+          status: updated.status,
+          isSingleUse: true, // Indicate this QR is now consumed
+        },
+      };
+    } catch (err) {
+      this.logger.error('[SESSION_BOOKINGS]: Check-in failed', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  // ── Availability ─────────────────────────────────────────────────────────────
+
+  /**
+   * Get real-time availability for a session wrapper.
+   * Called by: Frontend polling (every 5 seconds)
+   * Returns: Spot counts for all sessions in the wrapper
+   */
+  async getAvailability(wrapperId: string): Promise<any> {
+    try {
+      const wrapper = await this.connection
+        .collection('sessionwrappers')
+        .findOne({
+          _id: new ObjectId(wrapperId),
+          isDeleted: { $ne: true },
+        } as any);
+
+      if (!wrapper) {
+        throw new NotFoundException('Session wrapper not found');
+      }
+
+      // Get all sessions with availability
+      const sessions = await Promise.all(
+        (wrapper.sessions || []).map(async (session: any) => {
+          const sessionAvailability: any = {
+            name: session.name,
+            dates: [],
+          };
+
+          sessionAvailability.dates = await Promise.all(
+            (session.dates || []).map(async (dateObj: any) => {
+              const dateAvailability: any = {
+                date: dateObj.date,
+                slots: [],
+              };
+
+              dateAvailability.slots = await Promise.all(
+                (dateObj.slots || []).map(async (slot: any) => {
+                  const spotsLeft = await this.calculateSpotsLeft(
+                    dateObj.date,
+                    slot.time,
+                    slot.capacity,
+                    wrapperId,
+                    session.name,
+                  );
+
+                  return {
+                    time: slot.time,
+                    capacity: slot.capacity,
+                    confirmed: slot.capacity - spotsLeft,
+                    spotsLeft,
+                    isFull: spotsLeft === 0,
+                  };
+                }),
+              );
+
+              return dateAvailability;
+            }),
+          );
+
+          return sessionAvailability;
+        }),
+      );
+
+      return {
+        success: true,
+        wrapperId,
+        lastUpdatedAt: new Date(),
+        sessions,
+        note: 'Polling interval: 5 seconds. Update UI based on spotsLeft for each slot.',
+      };
+    } catch (err) {
+      this.logger.error('[SESSION_BOOKINGS]: Get availability failed', {
+        err: err instanceof Error ? err.message : String(err),
+        wrapperId,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  /**
+   * LUMEN availability formula (single source of truth):
+   *   spotsLeft = capacity
+   *             - COUNT(CONFIRMED | ATTENDED bookings)
+   *             - COUNT(ACTIVE holds with expiresAt > NOW)
+   */
+  async calculateSpotsLeft(
+    slotDate: string,
+    slotTime: string,
+    capacity: number,
+    wrapperId?: string,
+    sessionId?: string,
+    excludeHoldIds?: ObjectId[],
+    excludeEmail?: string,
+  ): Promise<number> {
+    try {
+      const query: any = {
+        slotDate,
+        slotTime,
+        isDeleted: { $ne: true },
+      };
+
+      if (wrapperId) {
+        query.wrapperId = wrapperId;
+      }
+
+      if (sessionId) {
+        query.sessionId = sessionId;
+      }
+
+      const confirmedCount = await this.sessionBookingModel.countDocuments({
+        ...query,
+        status: { $in: ['CONFIRMED', 'ATTENDED'] },
+      });
+
+      const activeHoldsQuery: any = {
+        ...query,
+        status: 'ACTIVE',
+        holdExpiresAt: { $gt: new Date() },
+      };
+
+      // Exclude the holds currently being confirmed — they aren't "other"
+      // demand competing for the spot, they're about to become CONFIRMED.
+      if (excludeHoldIds?.length) {
+        activeHoldsQuery._id = { $nin: excludeHoldIds };
+      }
+
+      // Exclude this purchaser's own active holds — a retry/resubmit within
+      // the same transaction shouldn't self-conflict. (The stale-hold cleanup
+      // in createBatchSessionHolds runs in the same uncommitted transaction,
+      // so this count wouldn't see it anyway without this explicit exclusion.)
+      if (excludeEmail) {
+        activeHoldsQuery['purchaserInfo.email'] = { $ne: excludeEmail };
+      }
+
+      const activeHoldsCount = await this.sessionBookingModel.countDocuments(
+        activeHoldsQuery,
+      );
+
+      return Math.max(0, capacity - confirmedCount - activeHoldsCount);
+    } catch (err) {
+      this.logger.error('[SESSION_BOOKINGS]: Failed to calculate spots', {
+        err: err instanceof Error ? err.message : String(err),
+        slotDate,
+        slotTime,
+        wrapperId,
+        sessionId,
+      });
+      return 0;
+    }
+  }
+
+  // ── Maintenance ──────────────────────────────────────────────────────────────
+
+  /**
+   * Soft-expire holds whose TTL has passed (mark as EXPIRED, don't delete).
+   * Runs every 5 minutes automatically.
+   *
+   * Why soft-delete (mark EXPIRED):
+   * - Keeps audit trail of all holds
+   * - No data loss
+   * - Safe approach
+   * - calculateSpotsLeft() already excludes expired holds from availability
+   *
+   * Note: Customers see updated availability on next socket emit or refresh
+   * since calculateSpotsLeft filters out non-active holds.
+   */
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async cleanupExpiredHolds(): Promise<void> {
+    try {
+      const result = await this.sessionBookingModel.updateMany(
+        {
+          status: 'ACTIVE',
+          holdExpiresAt: { $lte: new Date() },
+          isDeleted: { $ne: true },
+        },
+        { $set: { status: 'EXPIRED', updatedAt: new Date() } },
+      );
+
+      this.logger.info('[SESSION_BOOKINGS]: Expired holds cleaned', {
+        modifiedCount: result.modifiedCount,
+      });
+    } catch (err) {
+      this.logger.error('[SESSION_BOOKINGS]: Cleanup failed', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+}

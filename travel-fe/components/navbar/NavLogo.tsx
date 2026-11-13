@@ -1,0 +1,51 @@
+"use client";
+
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+
+import useGeneralStore from "@/stores/generalStore";
+import { startLoading } from "../wrappers/ProgressBar";
+import { pathNames } from "@/lib/endpoints";
+import { getLogo } from "@/constant/images";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
+
+const NavLogo = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { setIsOnSection2, setHideFirstTwoSection, setIsFilterDrawerOpen } =
+    useGeneralStore();
+
+  function handleNavigation() {
+    sendGAEvent(triggerName.clickToLogo, { label: "logo_click" });
+    if (pathname === pathNames.home) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+      const cleanedUrl = `${pathNames.home}`;
+      window.history.replaceState(null, "", cleanedUrl);
+      router.push(cleanedUrl);
+    } else {
+      router.push(pathNames.home);
+      startLoading();
+    }
+    setIsOnSection2(false);
+    setIsFilterDrawerOpen(false);
+    setHideFirstTwoSection(false);
+  }
+
+  const logo = getLogo();
+  return (
+    <div className="custom-cursor" onClick={handleNavigation}>
+      <Image
+        alt="Logo"
+        src={logo?.image.black || ""}
+        width={logo?.size.width}
+        height={logo?.size.height}
+        className={` z-50 custom-cursor w-[${logo.size.width}px] h-[${logo.size.height}px] `}
+      />
+    </div>
+  );
+};
+
+export default NavLogo;

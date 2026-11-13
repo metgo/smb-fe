@@ -1,0 +1,113 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import React from "react";
+
+interface ProductPricingDetailsProps {
+  product: Product;
+  t: (key: string) => string;
+}
+
+const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
+  product,
+  t,
+}) => {
+  const { isDark } = useThemeClasses();
+
+  const discountAmount =
+    product?.price?.markedPrice - product?.price?.sellingPrice;
+  const discountPercent =
+    product?.price?.markedPrice > 0
+      ? Math.round((discountAmount / product?.price?.markedPrice) * 100)
+      : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Prices */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Marked Price */}
+        <div
+          className={`p-4 rounded-lg border ${
+            isDark
+              ? "border-gray-700 bg-gray-800/50"
+              : "border-gray-200 bg-gray-50"
+          }`}
+        >
+          <h3
+            className={`text-sm mb-2 ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
+            {t("marked_price") || "Marked Price"}
+          </h3>
+          <p
+            className={`text-3xl font-bold ${
+              isDark ? "text-gray-200" : "text-gray-800"
+            }`}
+          >
+            ₪{product?.price?.markedPrice?.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Selling Price */}
+        <div
+          className={`p-4 rounded-lg border ${
+            isDark
+              ? "border-teal-700 bg-teal-950/30"
+              : "border-teal-200 bg-teal-50"
+          }`}
+        >
+          <h3
+            className={`text-sm mb-2 ${
+              isDark ? "text-teal-400" : "text-teal-700"
+            }`}
+          >
+            {t("selling_price") || "Selling Price"}
+          </h3>
+          <p
+            className={`text-3xl font-bold ${
+              isDark ? "text-teal-300" : "text-teal-800"
+            }`}
+          >
+            ₪{product?.price?.sellingPrice?.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {/* Discount */}
+      {discountAmount > 0 && (
+        <div
+          className={`p-4 rounded-lg border ${
+            isDark
+              ? "border-orange-700 bg-orange-950/30"
+              : "border-orange-200 bg-orange-50"
+          }`}
+        >
+          <h3
+            className={`text-sm mb-2 ${
+              isDark ? "text-orange-400" : "text-orange-700"
+            }`}
+          >
+            {t("discount") || "Discount"}
+          </h3>
+          <div className="flex items-baseline gap-3">
+            <p
+              className={`text-2xl font-bold ${
+                isDark ? "text-orange-300" : "text-orange-800"
+              }`}
+            >
+              ₪{discountAmount?.toLocaleString()}
+            </p>
+            <p
+              className={`text-lg ${
+                isDark ? "text-orange-400" : "text-orange-700"
+              }`}
+            >
+              ({discountPercent}% off)
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProductPricingDetails;

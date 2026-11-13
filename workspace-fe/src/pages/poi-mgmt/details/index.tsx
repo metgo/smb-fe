@@ -1,0 +1,204 @@
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { ChevronDown, Edit } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+
+import { routes } from "@/lib/routes";
+import { PoiInfoDetails } from "./components";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { Spinner, TabsSection } from "@/components/shared";
+import { useGetPoiByIdQuery } from "@/store/api/poiQueryApi";
+import { StatusChangeBtn } from "@/components/btns";
+import { ChatWithCreator } from "@/components/chat-popup";
+import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
+import { CreatePoiWizard } from "../components";
+import {
+  AttributesDetails,
+  AuditInfoDetails,
+  DetailTitleSection,
+  MediaDetails,
+} from "@/components/details-sections";
+import { poiTabs } from "@/constants/tabs";
+import { IOpMode } from "@/enums/operation.types";
+
+export default function PoiDetailsPage() {
+  const [searchParams] = useSearchParams();
+
+  const { t } = useTranslation("poi");
+  const { t: tt } = useTranslation("toast");
+
+  const { isDark, language } = useThemeClasses();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const poiId = searchParams.get("poiId") ?? "";
+
+  const {
+    data: poi,
+    refetch: poiDataRefetch,
+    isLoading,
+  } = useGetPoiByIdQuery(poiId ? { poiId, language } : skipToken);
+  const [updatePoi] = useUpdatePoiMutation();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isEditClicked, setIsEditClicked] = useState(false);
+
+  useEffect(() => {
+    if (!isEditClicked) poiDataRefetch();
+  }, [isEditClicked]);
+
+  const handleMutateData = () => {
+    setIsEditClicked(true);
+  };
+
+  const onStatusChangeHandler = async (status: string) => {
+    try {
+      await updatePoi({
+        poiId,
+        language,
+        body: { status: status.toUpperCase() },
+      }).unwrap();
+      toast.success(tt("poi_status_update_success"));
+    } catch (error) {
+      toast.error(tt("poi_status_update_failed"));
+      console.error(error);
+    }
+  };
+
+  const renderContent = () => {
+    const poiImages = poi?.images ?? [];
+    const mediaProps = {
+      images: poiImages.map((img: IImage) => ({
+        image: img.image,
+        isPrimary: img.isPrimary,
+      })),
+      primaryImageIndex: Math.max(
+        0,
+        poiImages.findIndex((img: IImage) => img.isPrimary),
+      ),
+    };
+
+    switch (activeTab) {
+      case "overview":
+        return <PoiInfoDetails t={t} poi={poi} />;
+      case "media":
+        return <MediaDetails {...mediaProps} />;
+      case "accessibility":
+        return (
+          <AttributesDetails
+            categoriesId={[poi?.primaryCategoryId]}
+            groupTypesId={poi?.groupTypesId}
+            accessibilitiesId={poi?.accessibilitiesId}
+            tags={poi?.tagsId}
+          />
+        );
+      case "audit_info":
+        return (
+          <AuditInfoDetails
+            createdAt={poi?.createdAt}
+            updatedAt={poi?.updatedAt}
+            createdBy={poi?.createdBy}
+            updatedBy={poi?.updatedBy}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
+      <Spinner isLoading={isLoading} />
+
+      <div className="details-top shrink-0">
+        <DetailTitleSection
+          {...poi}
+          imageSrc={
+            poi?.images?.find((img: IImage) => img.isPrimary)?.image ||
+            poi?.images?.[0]?.image
+          }
+          backPath={routes.poiMgmt}
+          actions={
+            <>
+              <StatusChangeBtn
+                handleStatusChange={onStatusChangeHandler}
+                status={poi?.status}
+              />
+
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+                  }`}
+                >
+                  <span className="text-sm font-medium">{t("actions")}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div
+                    className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}
+                  >
+                    <button
+                      onClick={() => {
+                        handleMutateData();
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${isDark ? "text-teal-400 hover:bg-gray-800" : "text-teal-700 hover:bg-gray-50"}`}
+                    >
+                      <Edit className="w-4 h-4 shrink-0" />
+                      {t("edit")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          }
+        />
+      </div>
+
+      <div className="mt-6 flex flex-col flex-1 min-h-0">
+        <div className="shrink-0">
+          <TabsSection
+            tabs={poiTabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+        </div>
+        <div className="details-content flex-1 overflow-y-auto min-h-0">
+          {renderContent()}
+        </div>
+      </div>
+
+      {isEditClicked && (
+        <CreatePoiWizard
+          editData={poi}
+          onClose={() => setIsEditClicked(false)}
+          poiDataRefetch={poiDataRefetch}
+          opMode={IOpMode.EDIT}
+        />
+      )}
+
+      <ChatWithCreator creator={poi?.creator} />
+    </div>
+  );
+}
