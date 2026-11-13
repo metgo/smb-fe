@@ -54,22 +54,25 @@ const STEP = {
   Q_OFFER: 6,
   Q_EDGE: 7,
   Q_FIT: 8,
-  Q_PRACTICAL: 9,
-  Q_RECO: 10,
-  PRODUCTS: 11,
-  CREATE: 12,
+  Q_RECO: 9,
+  PRODUCTS: 10,
+  CREATE: 11,
 } as const;
+
+/**
+ * Bumped when steps are added or removed, so saved drafts land on the same
+ * step. 2: the "when to come / what to know" question (old step 9) removed.
+ */
+const FLOW_VERSION = 2;
 
 const QUESTIONS: {
   step: number;
   key: AnswerKey;
-  optional?: boolean;
   probe?: boolean;
 }[] = [
   { step: STEP.Q_OFFER, key: "offer", probe: true },
   { step: STEP.Q_EDGE, key: "edge", probe: true },
   { step: STEP.Q_FIT, key: "fit", probe: true },
-  { step: STEP.Q_PRACTICAL, key: "practical", optional: true },
   { step: STEP.Q_RECO, key: "reco" },
 ];
 
@@ -131,12 +134,16 @@ export default function VendorOnboarding({
 
   // A reload mid-creation restores the draft; send the vendor back to the last input step.
   useEffect(() => {
-    if (!Array.isArray(draft.categoryGroups)) {
+    if (draft.flowVersion !== FLOW_VERSION) {
+      let s = draft.step;
       // Saved before the two category steps were added after the details step.
-      const old = draft.step;
+      if (!Array.isArray(draft.categoryGroups) && s >= STEP.CATEGORIES) s += 2;
+      // Saved while the practical question was still step 9.
+      if ((draft.flowVersion ?? 1) < 2 && s > STEP.Q_RECO) s -= 1;
       update({
         ...readSelection(draft),
-        step: old >= STEP.CATEGORIES ? Math.min(old + 2, LAST_INPUT_STEP) : old,
+        flowVersion: FLOW_VERSION,
+        step: Math.min(s, LAST_INPUT_STEP),
       });
       return;
     }
@@ -204,7 +211,7 @@ export default function VendorOnboarding({
         e.website = t("err_website");
     }
     const q = QUESTIONS.find((x) => x.step === s);
-    if (q && !q.optional && draft.answers[q.key].trim().length < 3) {
+    if (q && draft.answers[q.key].trim().length < 3) {
       e[q.key] = t("err_answer");
     }
     if (s === STEP.PRODUCTS) {
@@ -342,8 +349,7 @@ export default function VendorOnboarding({
         <Field
           id={`q-${q.key}`}
           label={t("your_answer")}
-          optionalLabel={q.optional ? t("optional") : undefined}
-          hint={q.optional ? t("q_practical_hint") : t("answer_hint")}
+          hint={t("answer_hint")}
           error={errors[q.key]}
         >
           <TextArea
@@ -827,7 +833,6 @@ export default function VendorOnboarding({
     }
   };
 
-  const isQuestion = questionIndex >= 0;
   const primaryLabel =
     step === STEP.WELCOME
       ? t("start")
@@ -835,11 +840,7 @@ export default function VendorOnboarding({
         ? t("create_my_page")
         : step === STEP.PHOTOS && !uploads.length
           ? t("skip_for_now")
-          : isQuestion &&
-              QUESTIONS[questionIndex].optional &&
-              !draft.answers.practical.trim()
-            ? t("skip_question")
-            : t("continue");
+          : t("continue");
 
   return (
     <div

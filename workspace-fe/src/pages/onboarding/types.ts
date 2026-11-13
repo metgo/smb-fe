@@ -20,6 +20,8 @@ export type AnswerKey = keyof OnboardingAnswers;
 
 export interface OnboardingDraft extends CategorySelection {
   step: number;
+  /** Step layout the draft was saved with (see FLOW_VERSION). */
+  flowVersion?: number;
   businessName: string;
   contactName: string;
   phone: string;
@@ -86,5 +88,6 @@ export const emptyDraft = (
   answers: { offer: "", edge: "", fit: "", practical: "", reco: "" },
   probed: {},
   products: [],
+  flowVersion: 2,
   ...seed,
 });

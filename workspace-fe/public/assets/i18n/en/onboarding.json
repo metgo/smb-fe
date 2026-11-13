@@ -8,7 +8,6 @@
   "continue": "Continue",
   "back": "Back",
   "skip_for_now": "Skip for now",
-  "skip_question": "Skip this question",
   "create_my_page": "Create my page",
   "uploading": "Uploading…",
 
@@ -61,9 +60,6 @@
   "q_fit_title": "Who enjoys it most?",
   "q_fit_sub": "Families? Couples? Groups? And who is it less suited for?",
   "q_fit_probe": "Tell us about one happy customer: who were they, and what happened?",
-  "q_practical_title": "When is the best time to come, and what should customers know?",
-  "q_practical_sub": "Seasons, opening hours, accessibility, parking, what to bring, whether to book ahead.",
-  "q_practical_hint": "If your website already says this, you can skip it.",
   "q_reco_title": "A recommendation in one sentence",
   "q_reco_sub": "If a happy customer recommended you to a friend in one sentence, what would they say?",
 
