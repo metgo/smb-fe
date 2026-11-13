@@ -1,3 +1,5 @@
+import type { CategorySelection } from "./categorySelection";
+
 export interface OnboardingProduct {
   name: string;
   description: string;
@@ -16,8 +18,10 @@ export interface OnboardingAnswers {
 
 export type AnswerKey = keyof OnboardingAnswers;
 
-export interface OnboardingDraft {
+export interface OnboardingDraft extends CategorySelection {
   step: number;
+  /** Step layout the draft was saved with (see FLOW_VERSION). */
+  flowVersion?: number;
   businessName: string;
   contactName: string;
   phone: string;
@@ -77,8 +81,13 @@ export const emptyDraft = (
   geo: { lat: "", long: "" },
   website: "",
   images: [],
+  categoryGroups: [],
+  subcategories: [],
+  customCategories: [],
+  mainCategory: "",
   answers: { offer: "", edge: "", fit: "", practical: "", reco: "" },
   probed: {},
   products: [],
+  flowVersion: 2,
   ...seed,
 });

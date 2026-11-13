@@ -21,6 +21,14 @@ import type { TourStep } from "@/components/tour";
 import { useAppSelector } from "@/hooks/hooks";
 import { useCommon } from "@/hooks/useCommon";
 import {
+  dbCategoryIdForGroup,
+  emptySelection,
+  groupOfKey,
+  selectionFromSaved,
+  selectionToBusinessFields,
+  type CategorySelection,
+} from "@/pages/onboarding/categorySelection";
+import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
@@ -191,7 +199,7 @@ function CreateBusinessWizardInner({
     (state) => state.auth,
   );
 
-  const { allWebsites } = useCommon();
+  const { allWebsites, categories } = useCommon();
   const hasAssociatedWebsites = useMemo(
     () =>
       (allWebsites ?? []).some(
@@ -232,6 +240,9 @@ function CreateBusinessWizardInner({
 
     // Step 4
     primaryCategory: "",
+    // Areas, subcategories and the main one (two-step taxonomy picker).
+    // `tags` then holds only the tags that are not subcategories.
+    categorySelection: emptySelection(),
     tags: [],
     accessibility: [] as string[],
     groupTypes: [] as string[],
@@ -546,6 +557,48 @@ function CreateBusinessWizardInner({
     }
   }, [editData, opMode, businessId]);
 
+  // Rebuild the saved category choice once the database categories are in
+  // (they may arrive after the business), then keep it until the business,
+  // mode or id changes.
+  const categoryList = useMemo(
+    () => (Array.isArray(categories) ? categories : []),
+    [categories],
+  );
+  const selectionLoadedFor = useRef<unknown[] | null>(null);
+  useEffect(() => {
+    if (!editData || !categoryList.length) return;
+    const key = [editData, opMode, businessId];
+    const prev = selectionLoadedFor.current;
+    if (prev && prev.every((v, i) => v === key[i])) return;
+    selectionLoadedFor.current = key;
+    const { selection, otherTags } = selectionFromSaved(
+      {
+        primaryCategoryId: editData?.primaryCategoryId,
+        categoryIds: editData?.bussCategoriesId,
+        tags: editData?.tagsId,
+      },
+      categoryList,
+    );
+    const patch = { categorySelection: selection, tags: otherTags };
+    setFormData((p: any) => ({ ...p, ...patch }));
+    if (initialFormData.current) {
+      initialFormData.current = { ...initialFormData.current, ...patch };
+    }
+  }, [editData, opMode, businessId, categoryList]);
+
+  const setCategorySelection = (next: CategorySelection) =>
+    setFormData((p: any) => ({
+      ...p,
+      categorySelection: next,
+      primaryCategory:
+        dbCategoryIdForGroup(
+          groupOfKey(next, next.mainCategory),
+          categoryList,
+        ) ??
+        dbCategoryIdForGroup(next.categoryGroups[0], categoryList) ??
+        "",
+    }));
+
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_contact_ownership"), icon: Users },
@@ -601,8 +654,15 @@ function CreateBusinessWizardInner({
     },
     geoLocation: geo,
     //  step 4
-    primaryCategoryId: formData.primaryCategory,
-    tagsId: formData.tags,
+    // Areas -> primaryCategoryId + bussCategoriesId, subcategories -> tags
+    // (main first), as the onboarding saves them.
+    ...(formData.categorySelection?.categoryGroups?.length
+      ? selectionToBusinessFields(
+          formData.categorySelection,
+          formData.tags ?? [],
+          categoryList,
+        )
+      : { primaryCategoryId: formData.primaryCategory, tagsId: formData.tags }),
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
     // subcategories: formData.subcategories,
@@ -897,6 +957,8 @@ function CreateBusinessWizardInner({
             setGroupTypesId={setGroupTypesId}
             nameForGen={nameForGen}
             descriptionForGen={descriptionForGen}
+            categorySelection={formData.categorySelection ?? emptySelection()}
+            onCategorySelectionChange={setCategorySelection}
           />
         );
       case 5:

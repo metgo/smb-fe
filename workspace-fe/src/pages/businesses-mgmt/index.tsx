@@ -43,9 +43,9 @@ import { BUSINESS_COLUMNS } from "@/lib/utils";
 import ListHeaderBar from "@/components/shared/ListHeaderBar";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import {
-  OnboardingReviewWizard,
   VendorOnboarding,
   type CreateResult,
+  type DoneAction,
 } from "@/pages/onboarding";
 import { Sparkles } from "lucide-react";
 
@@ -92,7 +92,6 @@ function BusinessesMgmtPageInner() {
   // ─── Onboarding (AI-assisted Add business) ────────────────────────────
   const { isTraveller } = useUserRoles();
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
-  const [reviewBusinessId, setReviewBusinessId] = useState<string | null>(null);
   const autoOpenedRef = useRef(false);
   const hasNoBusinesses =
     !isLoading && !isFetching && totalData === 0 && !searchTerm;
@@ -123,18 +122,20 @@ function BusinessesMgmtPageInner() {
     }
   };
 
-  const handleOnboardingComplete = (result: CreateResult) => {
+  const handleOnboardingComplete = (
+    result: CreateResult & { businessName: string },
+    action: DoneAction,
+  ) => {
     setIsOnboardingOpen(false);
     refetch();
-    toast.success(t("businesses:onboarding_created"));
-    if (result.productsFailed) {
-      toast.warning(
-        t("businesses:onboarding_products_failed", {
-          count: result.productsFailed,
-        }),
+    const id = encodeURIComponent(result.businessId);
+    if (action === "view") {
+      navigate(`${routes.businessDetails}?businessId=${id}`);
+    } else if (action === "products") {
+      navigate(
+        `${routes.productsMgmt}?businessId=${id}&businessName=${encodeURIComponent(result.businessName)}`,
       );
     }
-    setReviewBusinessId(result.businessId);
   };
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
@@ -588,14 +589,6 @@ function BusinessesMgmtPageInner() {
             setIsCreateModalOpen(true);
           }}
           onComplete={handleOnboardingComplete}
-        />
-      )}
-
-      {reviewBusinessId && (
-        <OnboardingReviewWizard
-          businessId={reviewBusinessId}
-          onClose={() => setReviewBusinessId(null)}
-          refetch={refetch}
         />
       )}
 

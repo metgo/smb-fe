@@ -2,6 +2,7 @@ import {
   FULL_DESC_MAX,
   matchCategoriesByTaxonomy,
   normalizeBusinessTypes,
+  normalizeChosenTypes,
   OnboardingTaxonomy,
   SHORT_DESC_MAX,
   clampText,
@@ -208,5 +209,83 @@ describe('business taxonomy', () => {
     );
     expect(p.primaryCategoryId).toBe('c9');
     expect(p.categoryIds).toEqual(['c9', 'c3']);
+  });
+});
+
+describe('normalizeChosenTypes', () => {
+  it('keeps up to 3 known areas with all their valid subcategories', () => {
+    const types = normalizeChosenTypes([
+      { category: 'Food & Dining', subcategories: ['Restaurant', 'Hotel', 'Brewery & Winery', 'Restaurant'] },
+      { category: 'Nope', subcategories: ['Museum'] },
+      { category: 'Food & Dining', subcategories: ['Cafe & Coffee Shop'] },
+      { category: 'Hospitality & Lodging', subcategories: [] },
+      { category: 'Arts Entertainment & Culture', subcategories: ['Museum'] },
+      { category: 'Retail & Shopping', subcategories: ['Florist'] },
+    ]);
+    expect(types).toEqual([
+      { category: 'Food & Dining', subcategories: ['Restaurant', 'Brewery & Winery'] },
+      { category: 'Hospitality & Lodging', subcategories: [] },
+      { category: 'Arts Entertainment & Culture', subcategories: ['Museum'] },
+    ]);
+  });
+
+  it('puts the main subcategory and its area first', () => {
+    const types = normalizeChosenTypes(
+      [
+        { category: 'Food & Dining', subcategories: ['Restaurant'] },
+        { category: 'Hospitality & Lodging', subcategories: ['Hotel', 'Bed & Breakfast'] },
+      ],
+      'Bed & Breakfast',
+    );
+    expect(types.map(t => t.category)).toEqual(['Hospitality & Lodging', 'Food & Dining']);
+    expect(types[0].subcategories).toEqual(['Bed & Breakfast', 'Hotel']);
+  });
+
+  it('returns nothing when the vendor made no choice', () => {
+    expect(normalizeChosenTypes(undefined)).toEqual([]);
+  });
+});
+
+describe('normalizeProfile with the vendor\'s category choice', () => {
+  const dbCategories: OnboardingTaxonomy = {
+    ...taxonomy,
+    categories: [
+      { id: 'food', name: 'Food & Dining' },
+      { id: 'stay', name: 'Hospitality & Lodging', hebrewName: 'לינה' },
+      { id: 'tours', name: 'Travel & Transportation' },
+    ],
+  };
+
+  it('keeps the vendor\'s types and categories over the model\'s', () => {
+    const chosen = [
+      { category: 'Hospitality & Lodging', subcategories: ['Bed & Breakfast'] },
+      { category: 'Food & Dining', subcategories: ['Restaurant', 'Brewery & Winery'] },
+    ];
+    const p = normalizeProfile(
+      {
+        businessTypes: [{ category: 'Travel & Transportation', subcategories: ['Tour Operator'] }],
+        primaryCategoryId: 'tours',
+        categoryIds: ['tours', 'food'],
+      },
+      dbCategories,
+      [],
+      '',
+      chosen,
+    );
+    expect(p.businessTypes).toEqual(chosen);
+    expect(p.primaryCategoryId).toBe('stay');
+    expect(p.categoryIds).toEqual(['stay', 'food']);
+  });
+
+  it('falls back to the model\'s categories when nothing chosen matches the database', () => {
+    const p = normalizeProfile(
+      { primaryCategoryId: 'tours', categoryIds: ['tours'] },
+      dbCategories,
+      [],
+      '',
+      [{ category: 'Automotive', subcategories: ['Tire Shop'] }],
+    );
+    expect(p.businessTypes[0].category).toBe('Automotive');
+    expect(p.primaryCategoryId).toBe('tours');
   });
 });

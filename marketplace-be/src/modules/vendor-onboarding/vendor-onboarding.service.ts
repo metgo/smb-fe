@@ -32,6 +32,7 @@ import {
   htmlToText,
   isPrivateAddress,
   matchAuthorityByName,
+  normalizeChosenTypes,
   normalizeCity,
   normalizeProfile,
   voteNearestAuthority,
@@ -156,26 +157,47 @@ export class VendorOnboardingService {
       this.fetchWebsiteText(body.website),
     ]);
     const products = body.products ?? [];
+    const chosenTypes = normalizeChosenTypes(body.selectedCategories, body.mainSubcategory);
+    const customLabels = (body.customCategories ?? [])
+      .map(c => c.label.trim())
+      .filter(Boolean);
+
+    // The vendor's own choice is a fixed fact; without one the model classifies.
+    const businessTypesRule = chosenTypes.length
+      ? [
+        '- businessTypes: the vendor already chose their business type. Treat it as a fixed fact,',
+        '  return it unchanged and write the description, tags and highlights to match it. Main activity first:',
+        ...chosenTypes.map(t => `  ${t.category}: ${t.subcategories.join(' | ') || '(no subcategory picked)'}`),
+        ...(customLabels.length ? [`  The vendor also describes the business as: ${customLabels.join(', ')}`] : []),
+      ].join('\n')
+      : [
+        '- businessTypes: FIRST classify the business with this universal taxonomy. Pick 1 parent category',
+        '  (2 only if the business clearly does both), each with 1-3 of its own subcategories, exact spelling:',
+        ...BUSINESS_TAXONOMY.map(g => `  ${g.category}: ${g.subcategories.join(' | ')}`),
+      ].join('\n');
 
     const label = (c: { id: string; name: string; hebrewName?: string }) => `${c.id} = ${[c.hebrewName, c.name].filter(Boolean).join(' / ')}`;
 
     const systemInstruction = `You turn a local business owner's onboarding answers into a business profile
 for a Hebrew-language (RTL) marketplace of local businesses in Israel.
 
+The answers: "offer" = "About us" (why they founded it, ideal customers, services, what is special, history);
+"edge" = "What customers tell their friends" (feedback they get, why customers come back);
+"fit" = who enjoys it most and who it suits less; "reco" = a one-sentence recommendation from a happy customer.
+
 Write in Hebrew. Warm but not salesy. Never invent facts (prices, years, awards, opening hours):
 if something is missing, leave it empty and add the field name to confidenceFlags.
 
 Fields:
-- businessTypes: FIRST classify the business with this universal taxonomy. Pick 1 parent category
-  (2 only if the business clearly does both), each with 1-3 of its own subcategories, exact spelling:
-${BUSINESS_TAXONOMY.map(g => `  ${g.category}: ${g.subcategories.join(' | ')}`).join('\n')}
+${businessTypesRule}
 - primaryCategoryId: the ONE marketplace category id that best matches businessTypes.
   categoryIds: 1-3 relevant marketplace category ids, primary first.
   Allowed marketplace categories (id = name):
 ${taxonomy.categories.map(label).join('\n')}
 - shortDescription: at most ${SHORT_DESC_MAX - 10} characters, distilled from the customer recommendation.
-- description: plain text, at most ${FULL_DESC_MAX - 30} characters, 2 short paragraphs: what they offer
-  and the typical visit, then what sets them apart and who it suits. Practical details go in "practical", not here.
+- description: plain text, at most ${FULL_DESC_MAX - 30} characters, 2 short paragraphs: who they are and what
+  they offer (their story and services), then what customers love about them and who it suits.
+  Practical details go in "practical", not here.
 - tags: 3-8 short Hebrew tags. Prefer these existing tags when they fit: ${taxonomy.tags.slice(0, 300).join(', ')}
 - accessibilityIds: only options the vendor or website states or clearly implies (e.g. "parking", "wheelchair access").
   Allowed (id = name):
@@ -283,7 +305,7 @@ ${taxonomy.groupTypes.map(label).join('\n')}
 
     const raw = await this.callModel<RawAiProfile>(systemInstruction, userContent, responseSchema);
     const sourceText = `${body.website ?? ''}\n${websiteText}`;
-    const profile = normalizeProfile(raw, taxonomy, products, sourceText);
+    const profile = normalizeProfile(raw, taxonomy, products, sourceText, chosenTypes);
     if (body.website && !websiteText) profile.confidenceFlags.push('website:unreadable');
     return profile;
   }

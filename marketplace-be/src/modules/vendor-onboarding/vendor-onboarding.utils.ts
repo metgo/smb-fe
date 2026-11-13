@@ -54,7 +54,10 @@ export interface RawAiProfile {
 }
 
 export interface GeneratedProfile {
-  /** 1-2 groups from the universal business taxonomy (L1 + L2). */
+  /**
+   * Groups from the universal business taxonomy (L1 + L2): the vendor's own
+   * choice (up to 3), or 1-2 picked by the model when the vendor made none.
+   */
   businessTypes: BusinessType[];
   primaryCategoryId: string | null;
   categoryIds: string[];
@@ -105,6 +108,35 @@ export function normalizeBusinessTypes(
   }).slice(0, 2);
 }
 
+/**
+ * The vendor's own choice from the category steps: up to 3 known areas, each
+ * with any of its own subcategories. The area of the main subcategory comes
+ * first, and the main subcategory first within it.
+ */
+export function normalizeChosenTypes(
+  selected: { category?: string; subcategories?: string[] }[] | undefined,
+  mainSubcategory?: string,
+  taxonomy: BusinessTypeGroup[] = BUSINESS_TAXONOMY,
+): BusinessType[] {
+  const seen = new Set<string>();
+  const types = (selected ?? []).flatMap(bt => {
+    const group = taxonomy.find(g => g.category === bt?.category);
+    if (!group || seen.has(group.category)) return [];
+    seen.add(group.category);
+    const subs = uniq((bt.subcategories ?? []).filter(s => group.subcategories.includes(s)));
+    if (mainSubcategory && subs.includes(mainSubcategory)) {
+      subs.splice(subs.indexOf(mainSubcategory), 1);
+      subs.unshift(mainSubcategory);
+    }
+    return [{ category: group.category, subcategories: subs }];
+  }).slice(0, 3);
+  const mainIndex = mainSubcategory
+    ? types.findIndex(t => t.subcategories[0] === mainSubcategory)
+    : -1;
+  if (mainIndex > 0) types.unshift(...types.splice(mainIndex, 1));
+  return types;
+}
+
 const nameKey = (s: string | undefined) => (s ?? '')
   .toLowerCase()
   .replace(/&/g, ' and ')
@@ -140,22 +172,29 @@ export function normalizeProfile(
   taxonomy: OnboardingTaxonomy,
   inputProducts: InputProduct[],
   sourceText: string,
+  /** The vendor's own category choice; when given it replaces the model's. */
+  chosenTypes: BusinessType[] = [],
 ): GeneratedProfile {
   const flags = [...(ai.confidenceFlags ?? [])].filter(Boolean);
   const categoryIds = new Set(taxonomy.categories.map(c => c.id));
   const accessIds = new Set(taxonomy.accessibilities.map(c => c.id));
   const groupIds = new Set(taxonomy.groupTypes.map(c => c.id));
 
-  const businessTypes = normalizeBusinessTypes(ai.businessTypes);
+  const businessTypes = chosenTypes.length
+    ? chosenTypes
+    : normalizeBusinessTypes(ai.businessTypes);
   if (!businessTypes.length) flags.push('businessTypes');
   // A database category named like the taxonomy parent wins over the model's pick.
   const taxonomyMatches = matchCategoriesByTaxonomy(businessTypes, taxonomy.categories);
 
   let primaryCategoryId = taxonomyMatches[0]
     ?? (ai.primaryCategoryId && categoryIds.has(ai.primaryCategoryId) ? ai.primaryCategoryId : null);
+  // When the vendor chose and the database has matching categories, the
+  // model's extra picks are left out.
+  const vendorChoseMatched = chosenTypes.length > 0 && taxonomyMatches.length > 0;
   let cats = uniq([
     ...taxonomyMatches,
-    ...(ai.categoryIds ?? []).filter(id => categoryIds.has(id)),
+    ...(vendorChoseMatched ? [] : (ai.categoryIds ?? []).filter(id => categoryIds.has(id))),
   ]);
   if (!primaryCategoryId && cats.length) [primaryCategoryId] = cats;
   if (primaryCategoryId) cats = uniq([primaryCategoryId, ...cats]);

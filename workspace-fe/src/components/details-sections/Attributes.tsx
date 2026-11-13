@@ -1,12 +1,48 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { X, Sparkles, Loader2, Trash2 } from "lucide-react";
+import { X, Sparkles, Loader2, Trash2, Tag } from "lucide-react";
 import { useEffect, useRef, useState, type FC } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
+import { groupForDbCategory, taxonomyLabel } from "@/lib/businessTaxonomy";
+import { CategoryPicker } from "@/pages/onboarding/CategorySteps";
+import type { CategorySelection } from "@/pages/onboarding/categorySelection";
+
+/** A category's name in the UI language, falling back to the taxonomy. */
+const categoryLabel = (cat: any, language: string) => {
+  const group = groupForDbCategory(cat);
+  if (language === "he")
+    return cat.nameHe || cat.hebrewName || (group && group.he) || cat.name;
+  if (language === "ar") return cat.nameAr || (group && group.ar) || cat.name;
+  return cat.name || (group && taxonomyLabel(group, "en"));
+};
+
+/**
+ * The category's taxonomy icon. Uploaded icon images were often missing,
+ * which showed a broken image, so the uploaded image is only a fallback.
+ */
+const CategoryIcon: FC<{ cat: any; className: string }> = ({
+  cat,
+  className,
+}) => {
+  const [broken, setBroken] = useState(false);
+  const Icon = groupForDbCategory(cat)?.icon;
+  if (Icon) return <Icon className={className} strokeWidth={1.6} aria-hidden />;
+  if (cat.icon?.iconPath && !broken) {
+    return (
+      <img
+        src={cat.icon.iconPath}
+        alt=""
+        onError={() => setBroken(true)}
+        className={`${className} object-contain`}
+      />
+    );
+  }
+  return <Tag className={className} strokeWidth={1.6} aria-hidden />;
+};
 
 interface AttributesFormData {
   tags: string[];
@@ -30,6 +66,12 @@ interface AttributesProps {
   setAccessiblitiesId?: (v: string[]) => void;
   opMode?: string;
   variant?: "full" | "tagsOnly";
+  /**
+   * When given, the business's areas and subcategories are picked with the
+   * two-step taxonomy picker instead of the single primary category cards.
+   */
+  categorySelection?: CategorySelection;
+  onCategorySelectionChange?: (next: CategorySelection) => void;
   /** Parent computes this from its OWN field names (e.g. name/nameHe/nameAr for business, title/titleHe/titleAr for poi) */
   nameForGen: string;
   /** Parent computes this from its OWN field names (e.g. fullDescription* for business, shortDescription* or content* for poi) */
@@ -48,8 +90,10 @@ const Attributes: FC<AttributesProps> = ({
   variant = "full",
   nameForGen,
   descriptionForGen,
+  categorySelection,
+  onCategorySelectionChange,
 }) => {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
   const { categories, accessibility, groupTypes, allTags } = useCommon();
   const [getGeneratedTags, { isLoading }] = useGenerateTagsMutation();
@@ -169,28 +213,36 @@ const Attributes: FC<AttributesProps> = ({
       <div className="space-y-6">
         {variant === "full" && (
           <>
-            {/* Primary Category */}
-            <div>
-              <label
-                className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {t("primary_category")} <span className="text-red-500">*</span>
-              </label>
+            {categorySelection && onCategorySelectionChange ? (
+              <CategoryPicker
+                selection={categorySelection}
+                onChange={onCategorySelectionChange}
+                error={errors.primaryCategory}
+              />
+            ) : (
+              <div>
+                <label
+                  className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("primary_category")}{" "}
+                  <span className="text-red-500">*</span>
+                </label>
 
-              <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
-                {categories?.map((cat: any) => {
-                  const isSelected = formData.primaryCategory === cat._id;
+                <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
+                  {categories?.map((cat: any) => {
+                    const isSelected = formData.primaryCategory === cat._id;
 
-                  return (
-                    <button
-                      key={cat._id}
-                      ref={isSelected ? selectedCatRef : null}
-                      type="button"
-                      onClick={() =>
-                        setFormData({ ...formData, primaryCategory: cat._id })
-                      }
-                      className={`
-                    shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                    return (
+                      <button
+                        key={cat._id}
+                        ref={isSelected ? selectedCatRef : null}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() =>
+                          setFormData({ ...formData, primaryCategory: cat._id })
+                        }
+                        className={`
+                    shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 px-2 rounded-md border transition-all
                     ${
                       isSelected
                         ? "border-4 border-teal-600 text-teal-600"
@@ -199,30 +251,30 @@ const Attributes: FC<AttributesProps> = ({
                           : "border border-gray-300 text-gray-700 hover:border-teal-500"
                     }
                   `}
-                    >
-                      {/* Icon */}
-                      <img
-                        src={cat.icon?.iconPath}
-                        alt={cat.icon?.iconAlt || cat.name}
-                        className={`w-14 h-14 object-contain transition-all ${
-                          isSelected ? "" : "opacity-70"
-                        }`}
-                      />
-
-                      {/* Text */}
-                      <span className="text-sm font-medium text-center">
-                        {cat.name}
-                      </span>
-                    </button>
-                  );
-                })}
+                      >
+                        <CategoryIcon
+                          cat={cat}
+                          className={`w-9 h-9 shrink-0 transition-all ${
+                            isSelected ? "" : "opacity-70"
+                          }`}
+                        />
+                        <span className="text-sm font-medium text-center leading-snug line-clamp-3">
+                          {categoryLabel(
+                            cat,
+                            i18n.resolvedLanguage ?? i18n.language,
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors.primaryCategory && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.primaryCategory}
+                  </p>
+                )}
               </div>
-              {errors.primaryCategory && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.primaryCategory}
-                </p>
-              )}
-            </div>
+            )}
 
             <SelectableChips
               label="accessiblities"

@@ -5,6 +5,7 @@ import { endpoints } from "@/lib/endpoints";
 import { envKeys } from "@/lib/envKeys";
 import { routes } from "@/lib/routes";
 import { UserRole } from "@/enums/user.types";
+import { readSelection, selectionForApi } from "./categorySelection";
 import type {
   GeneratedProfile,
   OnboardingDraft,
@@ -43,6 +44,8 @@ export async function generateProfile(
       address: draft.addressParts,
       website: draft.website.trim() || undefined,
       answers: draft.answers,
+      // The vendor's own category choice: the generator keeps it as is.
+      ...selectionForApi(readSelection(draft)),
       products: draft.products
         .filter((p) => p.name.trim())
         .map((p) => ({
