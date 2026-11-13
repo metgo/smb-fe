@@ -7,8 +7,13 @@ import {
   Check,
   ImagePlus,
   Loader2,
+  MapPin,
+  MessageSquareHeart,
+  Package,
   Plus,
   Sparkles,
+  Store,
+  Tags,
   Trash2,
   X,
 } from "lucide-react";
@@ -27,6 +32,8 @@ import {
 } from "./types";
 import { Button, Field, TextArea, TextInput } from "./ui";
 import { CategoryGroupsStep, SubcategoriesStep } from "./CategorySteps";
+import { DoneView, type DoneAction } from "./DoneView";
+import { ProgressTracker, type Milestone } from "./ProgressTracker";
 import {
   readSelection,
   selectedKeys,
@@ -41,7 +48,11 @@ interface VendorOnboardingProps {
   onClose: () => void;
   /** Leave onboarding and open the regular Add business wizard. */
   onManual: () => void;
-  onComplete: (result: CreateResult) => void;
+  /** The page is built and the vendor chose what to do next. */
+  onComplete: (
+    result: CreateResult & { businessName: string },
+    action: DoneAction,
+  ) => void;
 }
 
 const STEP = {
@@ -77,6 +88,21 @@ const QUESTIONS: {
 ];
 
 const LAST_INPUT_STEP = STEP.PRODUCTS;
+
+/** The wizard's sections, shown as badges on the progress tracker. */
+const MILESTONES: Milestone[] = [
+  { key: "details", from: STEP.DETAILS, to: STEP.DETAILS, icon: Store },
+  { key: "type", from: STEP.CATEGORIES, to: STEP.SUBCATEGORIES, icon: Tags },
+  { key: "location", from: STEP.LOCATION, to: STEP.LOCATION, icon: MapPin },
+  { key: "photos", from: STEP.PHOTOS, to: STEP.PHOTOS, icon: ImagePlus },
+  {
+    key: "story",
+    from: STEP.Q_OFFER,
+    to: STEP.Q_RECO,
+    icon: MessageSquareHeart,
+  },
+  { key: "products", from: STEP.PRODUCTS, to: STEP.PRODUCTS, icon: Package },
+];
 const MAX_PRODUCTS = 4;
 const MAX_IMAGES = 8;
 const PHONE_RE = /^(\+972[-\s]?|0)(5\d|[23489]|7\d)[-\s]?\d{3}[-\s]?\d{4}$/;
@@ -124,6 +150,10 @@ export default function VendorOnboarding({
     });
 
   const { run, stage, error: createError } = useCreateFromOnboarding();
+  const [created, setCreated] = useState<CreateResult | null>(null);
+  const finish = (action: DoneAction) =>
+    created &&
+    onComplete({ ...created, businessName: draft.businessName }, action);
 
   // The vendor's category choice (drafts saved before these steps have none).
   const selection = readSelection(draft);
@@ -156,7 +186,7 @@ export default function VendorOnboarding({
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
     document.getElementById("onboarding-scroll")?.scrollTo({ top: 0 });
-  }, [step]);
+  }, [step, created]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -272,16 +302,14 @@ export default function VendorOnboarding({
       } catch {
         /* storage unavailable */
       }
-      onComplete(result);
+      setCreated(result);
     }
   };
 
   /* ------------------------------------------------------------ chrome --- */
   const questionIndex = QUESTIONS.findIndex((q) => q.step === step);
-  const progress = Math.round(
-    (Math.min(step, LAST_INPUT_STEP) / LAST_INPUT_STEP) * 100,
-  );
   const stepLabel = useMemo(() => {
+    if (created) return t("label_done");
     if (questionIndex >= 0) {
       return t("question_n_of", {
         n: questionIndex + 1,
@@ -298,9 +326,9 @@ export default function VendorOnboarding({
         "label_photos",
       ][step] ?? (step === STEP.PRODUCTS ? "label_products" : "label_creating"),
     );
-  }, [step, questionIndex, t]);
+  }, [step, questionIndex, created, t]);
 
-  const busy = step === STEP.CREATE && stage !== "error";
+  const busy = step === STEP.CREATE && stage !== "error" && !created;
 
   const motionProps = reduceMotion
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
@@ -326,6 +354,50 @@ export default function VendorOnboarding({
     </div>
   );
 
+  /** A question's prompts as a short list, each with a highlighted lead. */
+  const renderPoints = (key: AnswerKey) => {
+    const points = t(`q_${key}_points`, {
+      returnObjects: true,
+      defaultValue: [],
+    }) as unknown;
+    if (!Array.isArray(points) || !points.length) return null;
+    return (
+      <ul
+        className={clsx(
+          "-mt-2 mb-6 space-y-2 rounded-xl border p-4",
+          isDark
+            ? "border-gray-800 bg-gray-950/40"
+            : "border-gray-100 bg-gray-50",
+        )}
+      >
+        {(points as { b: string; t: string }[]).map((p) => (
+          <li key={p.b} className="flex items-start gap-2.5 text-sm leading-6">
+            <span
+              aria-hidden
+              className={clsx(
+                "mt-2 h-1.5 w-1.5 shrink-0 rounded-full",
+                isDark ? "bg-teal-400" : "bg-teal-600",
+              )}
+            />
+            <span className={textTertiary}>
+              <mark
+                className={clsx(
+                  "me-1.5 rounded px-1.5 py-0.5 font-semibold",
+                  isDark
+                    ? "bg-teal-900/50 text-teal-200"
+                    : "bg-teal-100 text-teal-800",
+                )}
+              >
+                {p.b}
+              </mark>
+              <span className={textPrimary}>{p.t}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
   /* ------------------------------------------------------------- steps --- */
   const renderQuestion = (q: (typeof QUESTIONS)[number]) => {
     const showProbe =
@@ -346,6 +418,7 @@ export default function VendorOnboarding({
           </div>
         )}
         {heading(t(`q_${q.key}_title`), t(`q_${q.key}_sub`))}
+        {renderPoints(q.key)}
         <Field
           id={`q-${q.key}`}
           label={t("your_answer")}
@@ -819,6 +892,21 @@ export default function VendorOnboarding({
         );
 
       case STEP.CREATE:
+        if (created) {
+          return (
+            <DoneView
+              ref={headingRef}
+              businessId={created.businessId}
+              businessName={draft.businessName}
+              productsAdded={
+                draft.products.filter((p) => p.name.trim()).length -
+                created.productsFailed
+              }
+              productsFailed={created.productsFailed}
+              onAction={finish}
+            />
+          );
+        }
         return (
           <CreatingView
             stage={stage}
@@ -881,7 +969,7 @@ export default function VendorOnboarding({
             {!busy && (
               <button
                 type="button"
-                onClick={onClose}
+                onClick={() => (created ? finish("close") : onClose())}
                 aria-label={t("close")}
                 className={clsx(
                   "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
@@ -896,19 +984,13 @@ export default function VendorOnboarding({
             )}
           </div>
         </div>
-        <div
-          className={clsx("h-1", isDark ? "bg-gray-800" : "bg-gray-100")}
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-          aria-label={t("progress")}
-        >
-          <div
-            className="h-full bg-teal-600 transition-[width] duration-300 ease-out motion-reduce:transition-none"
-            style={{ width: `${progress}%` }}
+        {step >= STEP.DETAILS && step <= LAST_INPUT_STEP && (
+          <ProgressTracker
+            step={step}
+            lastStep={LAST_INPUT_STEP}
+            milestones={MILESTONES}
           />
-        </div>
+        )}
       </header>
 
       {/* Content */}

@@ -38,13 +38,13 @@ export class OnboardingAddressRequest {
 }
 
 export class OnboardingAnswersRequest {
-  @ApiProperty({ description: 'What you offer and what a typical visit looks like' })
+  @ApiProperty({ description: '"About us": the story, why it was founded, ideal customers, services, what is special, history' })
   @IsOptional()
   @IsString()
   @MaxLength(4000)
     offer?: string;
 
-  @ApiProperty({ description: 'What sets you apart (may include the founding story)' })
+  @ApiProperty({ description: '"What customers tell their friends": feedback they get, why customers come back' })
   @IsOptional()
   @IsString()
   @MaxLength(4000)
