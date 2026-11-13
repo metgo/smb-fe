@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הצטרפות עסקים — Negev Time</title>
+<style>
+  :root{
+    --teal:#0d9488; --teal-dark:#0f766e; --teal-light:#ccfbf1;
+    --ink:#1e293b; --muted:#64748b; --bg:#f8fafc; --card:#ffffff;
+    --border:#e2e8f0; --error:#dc2626; --radius:16px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Heebo","Assistant",Arial,sans-serif;
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; padding:16px;
+  }
+  .wrap{width:100%; max-width:560px;}
+  header{display:flex; align-items:center; justify-content:space-between; padding:8px 4px 20px;}
+  header .brand{font-weight:700; color:var(--teal-dark); font-size:18px;}
+  .progress{height:6px; background:var(--border); border-radius:3px; overflow:hidden; margin-bottom:24px;}
+  .progress>div{height:100%; background:var(--teal); border-radius:3px; width:0%; transition:width .3s;}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:28px 24px; box-shadow:0 1px 3px rgba(15,23,42,.06);
+  }
+  .step{display:none;}
+  .step.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  h1{font-size:24px; margin-bottom:10px; line-height:1.3;}
+  h2{font-size:20px; margin-bottom:8px; line-height:1.35;}
+  p.sub{color:var(--muted); font-size:15px; line-height:1.6; margin-bottom:20px;}
+  .qnum{display:inline-block; background:var(--teal-light); color:var(--teal-dark);
+    font-size:13px; font-weight:600; padding:4px 12px; border-radius:999px; margin-bottom:12px;}
+  .magic{
+    background:var(--teal-light); color:var(--teal-dark); border-radius:12px;
+    padding:14px 16px; font-size:14px; line-height:1.6; margin-bottom:18px; font-weight:500;
+  }
+  label{display:block; font-size:14px; font-weight:600; margin:14px 0 6px;}
+  .opt{color:var(--muted); font-weight:400; font-size:13px;}
+  input[type=text], input[type=tel], input[type=email], input[type=url], input[type=number], textarea{
+    width:100%; border:1.5px solid var(--border); border-radius:10px;
+    padding:12px 14px; font-size:16px; font-family:inherit; background:#fff; color:var(--ink);
+  }
+  input:focus, textarea:focus{outline:none; border-color:var(--teal);}
+  textarea{min-height:130px; resize:vertical; line-height:1.6;}
+  .hint{font-size:13px; color:var(--muted); margin-top:6px; line-height:1.5;}
+  .err{font-size:13px; color:var(--error); margin-top:6px; display:none;}
+  .probe{
+    display:none; background:#fffbeb; border:1px solid #fde68a; color:#92400e;
+    border-radius:10px; padding:12px 14px; font-size:14px; line-height:1.6; margin-top:12px;
+  }
+  .nav{display:flex; gap:12px; margin-top:26px;}
+  button{
+    font-family:inherit; font-size:16px; font-weight:600; border:none;
+    border-radius:999px; padding:13px 26px; cursor:pointer;
+  }
+  .btn-primary{background:var(--teal); color:#fff; flex:1;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-ghost{background:transparent; color:var(--muted); border:1.5px solid var(--border);}
+  .btn-secondary{background:transparent; color:var(--teal-dark); border:1.5px solid var(--teal); flex:1;}
+  .example-link{
+    display:block; text-align:center; background:var(--teal-light); color:var(--teal-dark);
+    border-radius:12px; padding:14px; font-weight:600; text-decoration:none; margin:18px 0;
+  }
+  .imgdrop{
+    border:2px dashed var(--border); border-radius:12px; padding:18px; text-align:center;
+    color:var(--teal-dark); font-size:15px; font-weight:600; cursor:pointer; margin-top:6px;
+  }
+  .thumbs{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .thumb{position:relative; width:76px; height:76px; border-radius:10px; overflow:hidden; border:1px solid var(--border);}
+  .thumb img{width:100%; height:100%; object-fit:cover;}
+  .thumb button{
+    position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
+    background:rgba(15,23,42,.65); color:#fff; font-size:13px; padding:0; line-height:1;
+  }
+  .product{
+    border:1.5px solid var(--border); border-radius:12px; padding:16px; margin-bottom:14px; position:relative;
+  }
+  .product .rm{
+    position:absolute; top:10px; left:10px; background:none; border:none; color:var(--muted);
+    font-size:20px; padding:4px 8px; cursor:pointer;
+  }
+  .row{display:flex; gap:10px;}
+  .row>div{flex:1;}
+  .chk{display:flex; align-items:center; gap:8px; margin-top:12px; font-size:14px;}
+  .chk input{width:18px; height:18px; accent-color:var(--teal);}
+  .add-btn{
+    width:100%; background:none; border:2px dashed var(--border); color:var(--teal-dark);
+    border-radius:12px; padding:12px; font-size:15px; margin-top:4px;
+  }
+  .done-icon{font-size:52px; text-align:center; margin-bottom:12px;}
+  .center{text-align:center;}
+  footer{color:var(--muted); font-size:12px; text-align:center; padding:20px 0;}
+  footer a{color:var(--teal-dark);}
+  @media(max-width:480px){ .card{padding:22px 18px;} h1{font-size:21px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Negev Time</div>
+    <div style="color:var(--muted); font-size:13px;" id="stepLabel"></div>
+  </header>
+  <div class="progress"><div id="bar"></div></div>
+  <div class="card">
+
+    <section class="step" data-step="0">
+      <h1>עמוד עסק מלא — תוך כמה שאלות קצרות</h1>
+      <p class="sub">כמה פרטים בסיסיים וכמה שאלות פשוטות — ואנחנו בונים לכם עמוד עסק מלא במרקטפלייס, עם תיאור מקצועי ותמונות. ככה זה ייראה:</p>
+      <a class="example-link" href="https://market-ai-06820144.figma.site/business/1" target="_blank" rel="noopener">👀 צפו בעמוד לדוגמה</a>
+      <p class="sub">טיפ: אין תשובות נכונות. כתבו בחופשיות, כמו שאתם מספרים לחבר — ככה יוצא העמוד הכי טוב.</p>
+      <div class="nav"><button class="btn-primary" onclick="next()">מתחילים</button></div>
+    </section>
+
+    <section class="step" data-step="1">
+      <h2>נתחיל בקל — פרטי העסק</h2>
+      <label for="bizName">שם העסק <span class="opt">(כפי שתרצו שיופיע באתר)</span></label>
+      <input type="text" id="bizName" autocomplete="organization">
+      <div class="err" id="err-bizName">נא למלא את שם העסק</div>
+      <label for="contactName">שם איש/אשת הקשר</label>
+      <input type="text" id="contactName" autocomplete="name">
+      <div class="err" id="err-contactName">נא למלא שם איש קשר</div>
+      <label for="phone">טלפון</label>
+      <input type="tel" id="phone" inputmode="tel" placeholder="050-1234567" autocomplete="tel">
+      <div class="err" id="err-phone">מספר טלפון ישראלי לא תקין</div>
+      <label for="email">אימייל</label>
+      <input type="email" id="email" inputmode="email" autocomplete="email">
+      <div class="err" id="err-email">כתובת אימייל לא תקינה</div>
+      <div class="nav">
+        <button class="btn-ghost" onclick="back()">חזרה</button>
+        <button class="btn-primary" onclick="validateBasics()">המשך</button>
+      </div>
+    </section>
+
+    <section class="step" data-step="2">
+      <h2>איפה מוצאים אתכם?</h2>
+      <label for="address">כתובת העסק</label>
+      <input type="text" id="address" autocomplete="street-address" placeholder="רחוב, יישוב">
+      <div class="err" id="err-address">נא למלא כתובת</div>
+      <label for="website">אתר אינטרנט או עמוד פייסבוק/אינסטגרם <span class="opt">(רשות)</span></label>
+      <input type="url" id="website" inputmode="url" placeholder="https://..." dir="ltr" style="text-align:left;">
+      <div class="hint">נשלוף משם פרטים נוספים — ככה תצטרכו לכתוב פחות.</div>
+      <label>תמונות של העסק <span class="opt">(רשות, עד 5)</span></label>
+      <div class="imgdrop" onclick="document.getElementById('imgInput').click()">📷 הוסיפו תמונות</div>
+      <input type="file" id="imgInput" accept="image/*" multiple style="display:none" onchange="handleImages(this.files)">
+      <div class="thumbs" id="thumbs"></div>
+      <div class="hint">אין תמונות טובות כרגע? לא נורא — יש לנו מאגר תמונות מקצועי ונתאים לכם.</div>
+      <div class="nav">
+        <button class="btn-ghost" onclick="back()">חזרה</button>
+        <button class="btn-primary" onclick="validateLocation()">המשך</button>
+      </div>
+    </section>
+
+    <section class="step" data-step="3">
+      <span class="qnum">שאלה 1 מתוך 4</span>
+      <div class="magic">✨ כאן קורה הקסם — כמה פרטים מכם, ועמוד העסק שלכם נבנה כמעט בלי מאמץ.</div>
+      <h2>מה אתם מציעים?</h2>
+      <p class="sub">ואיך נראה ביקור טיפוסי אצלכם — מרגע ההגעה ועד העזיבה?</p>
+      <textarea id="q_offer"></textarea>
+      <div class="probe" id="probe-q_offer">💡 ספרו עוד קצת — מה הלקוח רואה, עושה ומרגיש בכל שלב?</div>
+      <div class="nav">
+        <button class="btn-ghost" onclick="back()">חזרה</button>
+        <button class="btn-primary" onclick="checkAnswer('q_offer')">המשך</button>
+      </div>
+    </section>
+
+    <section class="step" data-step="4">
+      <span class="qnum">שאלה 2 מתוך 4</span>
+      <h2>מה מייחד אתכם?</h2>
+      <p class="sub">הדבר שאתם גאים בו ושמבדיל אתכם מעסקים דומים — מתכון סודי, נוף שאין לאף אחד, יחס אישי... אפשר גם לספר איך הכל התחיל.</p>
+      <textarea id="q_edge"></textarea>
+      <div class="probe" id="probe-q_edge">💡 תנו דוגמה אחת — משהו שלקוחות תמיד מציינים או מצלמים?</div>
+      <div class="nav">
+        <button class="btn-ghost" onclick="back()">חזרה</button>
+        <button class="btn-primary" onclick="checkAnswer('q_edge')">המשך</button>
+      </div>
+    </section>
+
+    <section class="step" data-step="5">
+      <span class="qnum">שאלה 3 מתוך 4</span>
+      <h2>מי הלקוחות שהכי נהנים אצלכם?</h2>
+      <p class="sub">משפחות? זוגות? קבוצות? ולמי זה פחות מתאים?</p>
+      <textarea id="q_fit" style="min-height:100px;"></textarea>
+      <div class="probe" id="probe-q_fit">💡 ספרו על לקוח אחד שיצא מרוצה — מי הוא היה ומה קרה שם?</div>
+      <div class="nav">
+        <button class="btn-ghost" onclick="back()">חזרה</button>
+        <button class="btn-primary" onclick="checkAnswer('q_fit')">המשך</button>
+      </div>
+    </section>
+
+    <section class="step" data-step="6">
+      <span class="qnum">שאלה 4 מתוך 4 — אחרונה!</span>
+      <h2>המלצה במשפט אחד</h2>
+      <p class="sub">אם לקוח מרוצה היה ממליץ עליכם לחבר במשפט אחד — מה הוא היה אומר?</p>
+      <textarea id="q_reco" style="min-height:80px;"></textarea>
+      <div class="nav">
+        <button class="btn-ghost" onclick="back()">חזרה</button>
+        <button class="btn-primary" onclick="finishQuestions()">סיום ✓</button>
+      </div>
+    </section>
+
+    <section class="step" data-step="7">
+      <div class="done-icon">🎉</div>
+      <h2 class="center">זהו — עמוד העסק שלכם נוצר!</h2>
+      <p class="sub center">יש לנו את כל מה שצריך. אנחנו בונים את העמוד ממש עכשיו, ונשלח לכם קישור לאישור בוואטסאפ.</p>
+      <p class="sub center"><b>בונוס (רשות):</b> רוצים שהעמוד יעלה כבר עם מוצר ראשון שאפשר להזמין? סיור, לינה, ארוחה, סדנה...</p>
+      <div class="nav">
+        <button class="btn-secondary" onclick="show(8)">+ הוסיפו מוצר ראשון</button>
+        <button class="btn-primary" onclick="submitForm(false)">סיימתי, צרו את העמוד</button>
+      </div>
+      <div class="err" id="err-submit7" style="margin-top:12px;">השליחה נכשלה. נסו שוב או כתבו לנו: support@metgo.app</div>
+    </section>
+
+    <section class="step" data-step="8">
+      <h2>מוצר ראשון <span class="opt">(אפשר להוסיף עוד אחר כך)</span></h2>
+      <div id="products"></div>
+      <button class="add-btn" onclick="addProduct()">+ מוצר נוסף</button>
+      <div class="err" id="err-products">למוצר צריך לפחות שם ומחיר</div>
+      <div class="nav">
+        <button class="btn-ghost" onclick="show(7)">חזרה</button>
+        <button class="btn-primary" id="submitBtn8" onclick="submitWithProducts()">שליחה ✓</button>
+      </div>
+      <div class="err" id="err-submit8" style="margin-top:12px;">השליחה נכשלה. נסו שוב או כתבו לנו: support@metgo.app</div>
+    </section>
+
+    <section class="step" data-step="9">
+      <div class="done-icon">🚀</div>
+      <h2 class="center">קיבלנו! העמוד שלכם בדרך</h2>
+      <p class="sub center">תוך זמן קצר נשלח לכם בוואטסאפ קישור לצפייה בעמוד — תוכלו לאשר או לבקש תיקונים בלחיצה אחת.</p>
+      <p class="sub center">שאלות? <a href="mailto:support@metgo.app" style="color:var(--teal-dark);">support@metgo.app</a></p>
+    </section>
+
+  </div>
+  <footer>Negev Time · <a href="mailto:support@metgo.app">תמיכה</a></footer>
+</div>
+
+<script>
+const CONFIG = {
+  WEBHOOK_URL: "",
+  FALLBACK_EMAIL: "support@metgo.app",
+  MAX_IMAGES: 5,
+  MAX_IMG_PX: 1600
+};
+
+let step = 0;
+const TOTAL = 10;
+const probed = {};
+let images = [];
+
+function show(n){
+  step = n;
+  document.querySelectorAll('.step').forEach(s => s.classList.toggle('active', +s.dataset.step === n));
+  document.getElementById('bar').style.width = Math.min(100, Math.round(n / (TOTAL - 1) * 100)) + '%';
+  const labels = ['ברוכים הבאים','פרטי העסק','מיקום ותמונות','','','','','כמעט סיימנו','מוצר ראשון','סיום'];
+  document.getElementById('stepLabel').textContent =
+    (n >= 3 && n <= 6) ? 'שאלה ' + (n - 2) + ' / 4' : labels[n];
+  window.scrollTo({top: 0, behavior: 'smooth'});
+  save();
+}
+function next(){ show(step + 1); }
+function back(){ show(step - 1); }
+
+function validateBasics(){
+  let ok = true;
+  const checks = [
+    ['bizName',     v => v.trim().length > 1],
+    ['contactName', v => v.trim().length > 1],
+    ['phone',       v => /^0(5\d|[23489])[-\s]?\d{3}[-\s]?\d{4}$/.test(v.trim())],
+    ['email',       v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())]
+  ];
+  checks.forEach(([id, fn]) => {
+    const bad = !fn(document.getElementById(id).value);
+    document.getElementById('err-' + id).style.display = bad ? 'block' : 'none';
+    if (bad) ok = false;
+  });
+  if (ok) next();
+}
+
+function validateLocation(){
+  const bad = document.getElementById('address').value.trim().length < 3;
+  document.getElementById('err-address').style.display = bad ? 'block' : 'none';
+  if (!bad) next();
+}
+
+function checkAnswer(id){
+  const words = document.getElementById(id).value.trim().split(/\s+/).filter(Boolean).length;
+  if (words < 10 && !probed[id]) {
+    probed[id] = true;
+    const p = document.getElementById('probe-' + id);
+    if (p) { p.style.display = 'block'; return; }
+  }
+  next();
+}
+
+function finishQuestions(){ show(7); }
+
+// ---- images ----
+function handleImages(files){
+  [...files].slice(0, CONFIG.MAX_IMAGES - images.length).forEach(file => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, CONFIG.MAX_IMG_PX / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale);
+      c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      images.push({ name: file.name, data: c.toDataURL('image/jpeg', 0.8) });
+      URL.revokeObjectURL(img.src);
+      renderThumbs();
+    };
+    img.src = URL.createObjectURL(file);
+  });
+  document.getElementById('imgInput').value = '';
+}
+function renderThumbs(){
+  const t = document.getElementById('thumbs');
+  t.innerHTML = '';
+  images.forEach((im, i) => {
+    const d = document.createElement('div');
+    d.className = 'thumb';
+    d.innerHTML = `<img src="${im.data}" alt=""><button onclick="images.splice(${i},1);renderThumbs();" title="הסרה">×</button>`;
+    t.appendChild(d);
+  });
+}
+
+// ---- products ----
+let prodCount = 0;
+function esc(v){
+  return String(v ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function addProduct(data){
+  if (document.querySelectorAll('.product').length >= 4) return;
+  const i = ++prodCount;
+  const d = data || {};
+  const div = document.createElement('div');
+  div.className = 'product';
+  div.innerHTML = `
+    <button class="rm" title="הסרה" onclick="this.parentElement.remove(); save();">×</button>
+    <label>שם המוצר</label>
+    <input type="text" class="p-name" value="${esc(d.name)}">
+    <label>תיאור קצר</label>
+    <input type="text" class="p-desc" value="${esc(d.desc)}">
+    <div class="row">
+      <div><label>מחיר (₪)</label><input type="number" class="p-price" min="0" value="${esc(d.price)}"></div>
+      <div><label>משך (אם רלוונטי)</label><input type="text" class="p-dur" placeholder='למשל: 3 שעות' value="${esc(d.duration)}"></div>
+    </div>
+    <div class="chk"><input type="checkbox" class="p-book" ${d.booking ? 'checked' : ''} id="bk${i}"><label for="bk${i}" style="margin:0; font-weight:400;">נדרשת הזמנה מראש</label></div>`;
+  document.getElementById('products').appendChild(div);
+}
+function getProducts(){
+  return [...document.querySelectorAll('.product')].map(p => ({
+    name: p.querySelector('.p-name').value.trim(),
+    desc: p.querySelector('.p-desc').value.trim(),
+    price: p.querySelector('.p-price').value,
+    duration: p.querySelector('.p-dur').value.trim(),
+    booking: p.querySelector('.p-book').checked
+  })).filter(p => p.name);
+}
+
+// ---- collect & submit ----
+function val(id){ return document.getElementById(id).value.trim(); }
+
+function collect(withProducts){
+  return {
+    basic_fields: {
+      business_name: val('bizName'),
+      phone: val('phone'),
+      email: val('email'),
+      contact_person: val('contactName')
+    },
+    business: {
+      address: val('address'),
+      website: val('website')
+    },
+    answers: {
+      q_offer: val('q_offer'),
+      q_edge: val('q_edge'),
+      q_fit: val('q_fit'),
+      q_reco: val('q_reco')
+    },
+    images: images,
+    products_raw: withProducts ? getProducts() : [],
+    channel: 'web_form',
+    submitted_at: new Date().toISOString(),
+    open_issues: []
+  };
+}
+
+async function submitForm(withProducts){
+  const errEl = document.getElementById(withProducts ? 'err-submit8' : 'err-submit7');
+  errEl.style.display = 'none';
+  const data = collect(withProducts);
+  try {
+    if (CONFIG.WEBHOOK_URL) {
+      const r = await fetch(CONFIG.WEBHOOK_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+    } else {
+      const light = JSON.parse(JSON.stringify(data));
+      light.images = images.map(i => i.name);
+      const body = encodeURIComponent(JSON.stringify(light, null, 2));
+      window.location.href = `mailto:${CONFIG.FALLBACK_EMAIL}?subject=${encodeURIComponent('הצטרפות עסק חדש: ' + data.basic_fields.business_name)}&body=${body}`;
+    }
+    try { localStorage.removeItem('nt_onboarding'); } catch(e){}
+    show(9);
+  } catch (e) {
+    errEl.style.display = 'block';
+  }
+}
+
+function submitWithProducts(){
+  const ps = getProducts().filter(p => p.name && p.price !== '');
+  const bad = document.querySelectorAll('.product').length > 0 && ps.length < 1;
+  document.getElementById('err-products').style.display = bad ? 'block' : 'none';
+  if (!bad) submitForm(true);
+}
+
+// ---- autosave (text only; images stay in memory) ----
+function save(){
+  try {
+    const d = collect(true); d._step = step; delete d.images;
+    localStorage.setItem('nt_onboarding', JSON.stringify(d));
+  } catch(e){}
+}
+function restore(){
+  try {
+    const raw = localStorage.getItem('nt_onboarding');
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    if (d.basic_fields) {
+      document.getElementById('bizName').value = d.basic_fields.business_name || '';
+      document.getElementById('contactName').value = d.basic_fields.contact_person || '';
+      document.getElementById('phone').value = d.basic_fields.phone || '';
+      document.getElementById('email').value = d.basic_fields.email || '';
+    }
+    if (d.business) {
+      document.getElementById('address').value = d.business.address || '';
+      document.getElementById('website').value = d.business.website || '';
+    }
+    if (d.answers) for (const k in d.answers) {
+      const el = document.getElementById(k);
+      if (el) el.value = d.answers[k] || '';
+    }
+    if (Array.isArray(d.products_raw)) d.products_raw.forEach(p => addProduct(p));
+    if (typeof d._step === 'number' && d._step > 0 && d._step < 9) { show(d._step); return true; }
+  } catch(e){}
+  return false;
+}
+
+document.addEventListener('input', () => save());
+if (!restore()) show(0);
+if (!document.querySelector('.product')) addProduct();
+</script>
+</body>
+</html>
