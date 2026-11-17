@@ -1,0 +1,130 @@
+{
+  "app_title": "ניתוח תיירות הנגב המערבי",
+  "select_dashboard_view": "בחר תצוגת לוח מחוונים",
+
+  "desktop_dashboard": "לוח מחוונים למחשב",
+  "desktop_dashboard_desc": "לוח מחוונים מלא עם גלילה למחשב עם ניתוחים ובקרות מפורטים",
+  "launch_desktop_view": "הפעל תצוגת מחשב",
+
+  "meeting_room_display": "תצוגת חדר ישיבות",
+  "meeting_room_display_desc": "סקירה במסך יחיד מותאמת לתצוגות גדולות ומצגות",
+  "launch_meeting_view": "הפעל תצוגת ישיבות",
+
+  "events_reporting_display": "תצוגת דיווח אירועים",
+  "events_reporting_display_desc": "סקירה במסך יחיד מותאמת לתצוגות גדולות ומצגות",
+  "launch_events_view": "הפעל תצוגת אירועים",
+
+  "powered_by": "מופעל על ידי",
+  "contact_support": "צור קשר עם התמיכה בכתובת",
+
+  "switch_to_meeting_view": "תצוגת ישיבות",
+  "switch_to_desktop_view": "תצוגת מחשב",
+
+  "edit_widgets": "ערוך ווידג'טים",
+  "done_editing": "סיום עריכה",
+
+  "language": "שפה",
+  "theme": "ערכת נושא",
+  "light": "בהיר",
+  "dark": "כהה",
+
+  "edit_mode_active": "מצב עריכה פעיל",
+  "edit_mode_instructions": "גרור את הכפתורים הכחולים כדי לשנות סדר. השתמש בלוח ההגדרות להצגה/הסתרה.",
+  "edit_mode_instructions_meeting": "השתמש בלוח ההגדרות להצגה/הסתרת ווידג'טים",
+
+  "widget_settings": "הגדרות ווידג'טים",
+  "show_hide_widgets": "הצג/הסתר ווידג'טים",
+  "reset_to_defaults": "אפס לברירת מחדל",
+
+  "google_analytics_overview": "סקירת Google Analytics",
+  "view_full_analytics": "צפה בניתוח המלא",
+  "users": "משתמשים",
+  "sessions": "הפעלות",
+  "page_views": "צפיות בעמוד",
+  "avg_duration": "משך ממוצע",
+  "conversions": "המרות",
+
+  "google_analytics_overview_desc": "ניתוח בזמן אמת מ-Google Analytics המציג מדדי מעורבות משתמשים כולל סשנים, צפיות בעמוד, משך סשן ממוצע ושיעורי המרה עבור אתרי התיירות שלך.",
+  "distribution_overview_desc": "התפלגות עסקים, מוצרים ונקודות עניין בקטגוריות שונות כולל לינה, אוכל, אטרקציות, שירותים מקומיים, נסיעות ואתרי תרבות באזור הנגב המערבי.",
+  "upcoming_events_desc": "לוח שנה של אירועי תיירות מתוכננים, פסטיבלים ופעילויות ברחבי אזור הנגב המערבי עם תאריכים, מיקומים וסטטוס רישום.",
+  "financial_summary_desc": "מדדים פיננסיים מקיפים כולל מכירת שוברים, הזמנות מקוונות ולא מקוונות, עסקאות כרטיס אשראי והכנסות כוללות לתקופה הנבחרת.",
+  "purchases_report_desc": "ניתוח מפורט של מגמות רכישה המציג את הפירוט של שוברים ותשלומי כרטיס אשראי המרכיבים את סך ההזמנות, עם השוואות היסטוריות וממוצעים.",
+  "popular_content_desc": "עסקים, מוצרים ונקודות עניין מובילים מדורגים לפי צפיות, הזמנות ומדדי מעורבות עם מגמות צמיחה ודירוגי פודיום.",
+
+  "distribution_overview": "סקירת התפלגות",
+  "businesses": "עסקים",
+  "products": "מוצרים",
+  "pois": "נקודות עניין",
+
+  "sleep": "לינה",
+  "eat": "אוכל",
+  "attraction": "אטרקציה",
+  "local": "מקומי",
+  "travel": "לטייל",
+  "culture": "תרבות",
+
+  "popular_content": "תוכן פופולרי",
+  "total_purchases": "סה\"כ רכישות",
+  "total_views": "סה\"כ צפיות",
+  "all_time": "כל הזמן",
+  "ga_desc": "מדדי ביצוע מרכזיים ומגמות",
+  "total": "סה\"כ",
+
+  "financial_summary": "סיכום פיננסי",
+  "last_month": "חודש שעבר",
+  "vouchers": "שוברים",
+  "created": "נוצרו",
+  "value": "ערך",
+  "online_orders": "הזמנות מקוונות",
+  "total_amount": "סכום כולל",
+  "credit_card": "כרטיס אשראי",
+  "offline_orders": "הזמנות לא מקוונות",
+  "monthly_report": "דוח חודשי",
+
+  "purchases_report": "דוח רכישות",
+  "avg_order": "הזמנה ממוצעת",
+  "avg_voucher": "שובר ממוצע",
+  "voucher_sold": "שוברים שנמכרו",
+  "total_orders": "סך הזמנות",
+  "total_vouchers": "סך שוברים",
+  "orders": "הזמנות",
+
+  "popular_businesses": "עסקים פופולריים",
+  "popular_products": "מוצרים פופולריים",
+  "popular_pois": "נקודות עניין פופולריות",
+
+  "upcoming_events": "אירועים קרובים",
+  "view_all": "הצג הכל",
+  "view_all_upcoming_activities": "צפה בכל הפעילויות הקרובות",
+
+  "key_performance_indicators": "מדדי ביצועים מרכזיים",
+  "total_revenue": "הכנסות כוללות",
+  "conversion_rate": "שיעור המרה",
+  "vs_last_month": "לעומת חודש שעבר",
+
+  "per_transaction": "לפי עסקה",
+  "per_redemption": "לפי מימוש",
+  "per_sale": "לפי מכירה",
+  "last_30_days": "30 הימים האחרונים",
+
+  "total_number": "מספר כולל",
+  "assigned_vouchers": "שוברים שהוקצו",
+  "remaining_amount": "סכום נותר",
+  "paid_by_vouchers": "שולם באמצעות שוברים",
+  "paid_by_bank_transfer": "שולם בהעברה בנקאית",
+
+  "purchases_report_summary_desc": "מדדים מקיפים להכנסות ולשוברים",
+
+  "jan": "ינו",
+  "feb": "פבר",
+  "mar": "מרץ",
+  "apr": "אפר",
+  "may": "מאי",
+  "jun": "יונ",
+  "jul": "יול",
+  "aug": "אוג",
+  "sep": "ספט",
+  "oct": "אוק",
+  "nov": "נוב",
+  "dec": "דצמ"
+}

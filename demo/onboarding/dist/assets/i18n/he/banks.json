@@ -1,0 +1,5696 @@
+{
+  "banks": [
+    {
+      "bankId": "4",
+      "bankName": "בנק יהב לעובדי המדינה בע\"מ",
+      "branches": [
+        {
+          "branchId": "7",
+          "branchName": "מלחה ירושלים"
+        },
+        {
+          "branchId": "44",
+          "branchName": "הלל יפה חדרה"
+        },
+        {
+          "branchId": "110",
+          "branchName": "מרכז תפעול עורפי*-מרחב צפון"
+        },
+        {
+          "branchId": "111",
+          "branchName": "מרכז תפעול עורפי*-מרחב מרכז"
+        },
+        {
+          "branchId": "112",
+          "branchName": "מרכז תפעול עורפי-מרחב ירושלים"
+        },
+        {
+          "branchId": "113",
+          "branchName": "מרכז תפעול עורפי מרחב דרום"
+        },
+        {
+          "branchId": "114",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "115",
+          "branchName": "קריית הממשלה ת\"א - מגדל היובל"
+        },
+        {
+          "branchId": "116",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "117",
+          "branchName": "מרכז הנגב"
+        },
+        {
+          "branchId": "118",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "119",
+          "branchName": "פתח תקווה"
+        },
+        {
+          "branchId": "120",
+          "branchName": "ראשי ירושלים"
+        },
+        {
+          "branchId": "123",
+          "branchName": "בית יהב"
+        },
+        {
+          "branchId": "124",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "125",
+          "branchName": "אשקלון"
+        },
+        {
+          "branchId": "126",
+          "branchName": "מוקד טלפוני יהב ישיר"
+        },
+        {
+          "branchId": "128",
+          "branchName": "קריית גת"
+        },
+        {
+          "branchId": "129",
+          "branchName": "כנפי נשרים"
+        },
+        {
+          "branchId": "130",
+          "branchName": "רוטשילד"
+        },
+        {
+          "branchId": "131",
+          "branchName": "הקריה תל אביב"
+        },
+        {
+          "branchId": "132",
+          "branchName": "תל השומר"
+        },
+        {
+          "branchId": "133",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "134",
+          "branchName": "נתב\"ג"
+        },
+        {
+          "branchId": "135",
+          "branchName": "סניפון וולפסון- חולון"
+        },
+        {
+          "branchId": "136",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "137",
+          "branchName": "אסף הרופא"
+        },
+        {
+          "branchId": "138",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "140",
+          "branchName": "חיפה"
+        },
+        {
+          "branchId": "141",
+          "branchName": "נהרייה"
+        },
+        {
+          "branchId": "142",
+          "branchName": "נוף הגליל"
+        },
+        {
+          "branchId": "144",
+          "branchName": "אוניברסיטת חיפה"
+        },
+        {
+          "branchId": "145",
+          "branchName": "קרנות השתלמות"
+        },
+        {
+          "branchId": "146",
+          "branchName": "תוכניות חסכון"
+        },
+        {
+          "branchId": "148",
+          "branchName": "אשראי"
+        },
+        {
+          "branchId": "149",
+          "branchName": "הנהלה ראשית"
+        },
+        {
+          "branchId": "150",
+          "branchName": "באר יעקב"
+        },
+        {
+          "branchId": "171",
+          "branchName": "בת ים"
+        },
+        {
+          "branchId": "193",
+          "branchName": "מעלה אדומים"
+        },
+        {
+          "branchId": "195",
+          "branchName": "איכלוב"
+        },
+        {
+          "branchId": "201",
+          "branchName": "שלוחה בהדסה"
+        },
+        {
+          "branchId": "202",
+          "branchName": "דלית אל כרמל"
+        },
+        {
+          "branchId": "203",
+          "branchName": "נתיבות"
+        },
+        {
+          "branchId": "204",
+          "branchName": "תלפיות"
+        },
+        {
+          "branchId": "205",
+          "branchName": "דימונה"
+        },
+        {
+          "branchId": "206",
+          "branchName": "ראש העין"
+        },
+        {
+          "branchId": "207",
+          "branchName": "קרית אתא"
+        },
+        {
+          "branchId": "233",
+          "branchName": "רמב\"ם"
+        },
+        {
+          "branchId": "236",
+          "branchName": "גלילות"
+        },
+        {
+          "branchId": "245",
+          "branchName": "עפולה"
+        },
+        {
+          "branchId": "246",
+          "branchName": "סניף טבריה"
+        },
+        {
+          "branchId": "278",
+          "branchName": "סניף רחובות"
+        },
+        {
+          "branchId": "279",
+          "branchName": "קריית ביאליק"
+        },
+        {
+          "branchId": "280",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "281",
+          "branchName": "אילת"
+        },
+        {
+          "branchId": "284",
+          "branchName": "חולון"
+        },
+        {
+          "branchId": "311",
+          "branchName": "כרמל"
+        },
+        {
+          "branchId": "401",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "430",
+          "branchName": "לב ראשון"
+        },
+        {
+          "branchId": "461",
+          "branchName": "בית שמש"
+        },
+        {
+          "branchId": "488",
+          "branchName": "משכנות האומה"
+        },
+        {
+          "branchId": "497",
+          "branchName": "פסגת זאב"
+        },
+        {
+          "branchId": "725",
+          "branchName": "יקנעם עילית"
+        },
+        {
+          "branchId": "824",
+          "branchName": "שדרות"
+        },
+        {
+          "branchId": "825",
+          "branchName": "מגדל העמק"
+        }
+      ]
+    },
+    {
+      "bankId": "10",
+      "bankName": "בנק לאומי לישראל בע\"מ",
+      "branches": [
+        {
+          "branchId": "68",
+          "branchName": "מודיעין משכנתאות"
+        },
+        {
+          "branchId": "103",
+          "branchName": "שלוחת תושבי חוץ (ביאליק)"
+        },
+        {
+          "branchId": "105",
+          "branchName": "שלוחת ביתר עילית"
+        },
+        {
+          "branchId": "164",
+          "branchName": "שלוחת רמת בית שמש"
+        },
+        {
+          "branchId": "187",
+          "branchName": "שלוחת עסקים הקריות"
+        },
+        {
+          "branchId": "263",
+          "branchName": "משכנתאות קרני שומרון"
+        },
+        {
+          "branchId": "281",
+          "branchName": "מרכז החתמת משכנתא קש\"ב לוד"
+        },
+        {
+          "branchId": "376",
+          "branchName": "שלוחת רשב\"י"
+        },
+        {
+          "branchId": "435",
+          "branchName": "שלוחת חריש"
+        },
+        {
+          "branchId": "512",
+          "branchName": "משכנתאות - רמות אשכול"
+        },
+        {
+          "branchId": "601",
+          "branchName": "פפר"
+        },
+        {
+          "branchId": "606",
+          "branchName": "בנקאות פרטית בינלאומית 606 ת\"א"
+        },
+        {
+          "branchId": "607",
+          "branchName": "מרכז עסקים נגב"
+        },
+        {
+          "branchId": "613",
+          "branchName": "קלנסואה"
+        },
+        {
+          "branchId": "614",
+          "branchName": "בנקאות פרטית הרצליה"
+        },
+        {
+          "branchId": "615",
+          "branchName": "כאבול"
+        },
+        {
+          "branchId": "616",
+          "branchName": "המעפילים"
+        },
+        {
+          "branchId": "618",
+          "branchName": "מרכז עסקים לכיש"
+        },
+        {
+          "branchId": "621",
+          "branchName": "מודיעין עילית"
+        },
+        {
+          "branchId": "626",
+          "branchName": "בנקאות פרטית דן"
+        },
+        {
+          "branchId": "631",
+          "branchName": "למד"
+        },
+        {
+          "branchId": "635",
+          "branchName": "דניה"
+        },
+        {
+          "branchId": "638",
+          "branchName": "מבשרת ציון"
+        },
+        {
+          "branchId": "640",
+          "branchName": "מוקד חשבונות ללא קשר"
+        },
+        {
+          "branchId": "641",
+          "branchName": "מעלות"
+        },
+        {
+          "branchId": "644",
+          "branchName": "כפר כנא"
+        },
+        {
+          "branchId": "646",
+          "branchName": "יחידת בצוע-נהול אשראי מרוכז"
+        },
+        {
+          "branchId": "647",
+          "branchName": "עסקים גבעת שאול"
+        },
+        {
+          "branchId": "648",
+          "branchName": "עסקים שרונים"
+        },
+        {
+          "branchId": "652",
+          "branchName": "כפר קאסם"
+        },
+        {
+          "branchId": "655",
+          "branchName": "קסם"
+        },
+        {
+          "branchId": "661",
+          "branchName": "מרכז שירות ירושלים"
+        },
+        {
+          "branchId": "662",
+          "branchName": "סיטי אשדוד"
+        },
+        {
+          "branchId": "663",
+          "branchName": "מרכז קופות באר שבע"
+        },
+        {
+          "branchId": "666",
+          "branchName": "עסקים מגדלי פז"
+        },
+        {
+          "branchId": "668",
+          "branchName": "עסקים שורק"
+        },
+        {
+          "branchId": "669",
+          "branchName": "היקב ראשון לציון"
+        },
+        {
+          "branchId": "672",
+          "branchName": "עסקים עפולה"
+        },
+        {
+          "branchId": "673",
+          "branchName": "שלוחת עסקים הברזל"
+        },
+        {
+          "branchId": "674",
+          "branchName": "רמת בית שמש"
+        },
+        {
+          "branchId": "676",
+          "branchName": "אור יהודה"
+        },
+        {
+          "branchId": "678",
+          "branchName": "לאומי וי איי פי"
+        },
+        {
+          "branchId": "679",
+          "branchName": "מבואות עצמאיות"
+        },
+        {
+          "branchId": "680",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "681",
+          "branchName": "רמת פולג"
+        },
+        {
+          "branchId": "683",
+          "branchName": "כוכב יאיר"
+        },
+        {
+          "branchId": "685",
+          "branchName": "בנקאות פרטית חיפה"
+        },
+        {
+          "branchId": "686",
+          "branchName": "בנקאות פרטית ת\"א"
+        },
+        {
+          "branchId": "688",
+          "branchName": "בנקאות פרטית השרון"
+        },
+        {
+          "branchId": "698",
+          "branchName": "עסקים ספיר"
+        },
+        {
+          "branchId": "701",
+          "branchName": "לאומי טוטאל דיגיטל"
+        },
+        {
+          "branchId": "702",
+          "branchName": "עסקים מבואות חיפה"
+        },
+        {
+          "branchId": "705",
+          "branchName": "קרית מוצקין"
+        },
+        {
+          "branchId": "706",
+          "branchName": "פרדסיה"
+        },
+        {
+          "branchId": "707",
+          "branchName": "מרכז עסקים אפק"
+        },
+        {
+          "branchId": "709",
+          "branchName": "עסקים פתח תקווה"
+        },
+        {
+          "branchId": "715",
+          "branchName": "בנקאות פרטית חורב"
+        },
+        {
+          "branchId": "716",
+          "branchName": "שלוחת קניון חיפה"
+        },
+        {
+          "branchId": "719",
+          "branchName": "קרית ביאליק"
+        },
+        {
+          "branchId": "722",
+          "branchName": "חרפיש"
+        },
+        {
+          "branchId": "725",
+          "branchName": "עסקים פארק המדע"
+        },
+        {
+          "branchId": "727",
+          "branchName": "ראש פינה"
+        },
+        {
+          "branchId": "729",
+          "branchName": "יקנעם"
+        },
+        {
+          "branchId": "732",
+          "branchName": "קצרין"
+        },
+        {
+          "branchId": "734",
+          "branchName": "נווה זאב"
+        },
+        {
+          "branchId": "736",
+          "branchName": "לאומי וי איי פי"
+        },
+        {
+          "branchId": "739",
+          "branchName": "גן יבנה"
+        },
+        {
+          "branchId": "742",
+          "branchName": "ראש העין"
+        },
+        {
+          "branchId": "744",
+          "branchName": "מרכז עסקים השרון"
+        },
+        {
+          "branchId": "745",
+          "branchName": "מרכז עסקים העמקים"
+        },
+        {
+          "branchId": "746",
+          "branchName": "מרכז קופות פתח תקוה"
+        },
+        {
+          "branchId": "747",
+          "branchName": "שוהם"
+        },
+        {
+          "branchId": "748",
+          "branchName": "מרכז עסקים דן"
+        },
+        {
+          "branchId": "752",
+          "branchName": "מעלה אדומים"
+        },
+        {
+          "branchId": "753",
+          "branchName": "עסקים ראש פינה"
+        },
+        {
+          "branchId": "757",
+          "branchName": "ג'לג'וליה"
+        },
+        {
+          "branchId": "758",
+          "branchName": "ערד"
+        },
+        {
+          "branchId": "761",
+          "branchName": "גוש חלב"
+        },
+        {
+          "branchId": "766",
+          "branchName": "בית וגן"
+        },
+        {
+          "branchId": "767",
+          "branchName": "מרכז עסקים חולון"
+        },
+        {
+          "branchId": "780",
+          "branchName": "בנקאות פרטית בינלאומית ירושלים"
+        },
+        {
+          "branchId": "781",
+          "branchName": "מרכז שירות בת-ים"
+        },
+        {
+          "branchId": "783",
+          "branchName": "עסקים משכית"
+        },
+        {
+          "branchId": "785",
+          "branchName": "תלפיות"
+        },
+        {
+          "branchId": "788",
+          "branchName": "שלוחת קרית ארבע"
+        },
+        {
+          "branchId": "789",
+          "branchName": "אופקים"
+        },
+        {
+          "branchId": "790",
+          "branchName": "נתיבות"
+        },
+        {
+          "branchId": "791",
+          "branchName": "טורעאן"
+        },
+        {
+          "branchId": "792",
+          "branchName": "נחף"
+        },
+        {
+          "branchId": "795",
+          "branchName": "פקיעין"
+        },
+        {
+          "branchId": "797",
+          "branchName": "גבעת אורנים"
+        },
+        {
+          "branchId": "799",
+          "branchName": "בנקאות פרטית רחובות"
+        },
+        {
+          "branchId": "800",
+          "branchName": "מרכזי"
+        },
+        {
+          "branchId": "801",
+          "branchName": "יפו"
+        },
+        {
+          "branchId": "803",
+          "branchName": "ביאליק (תושבי חוץ)"
+        },
+        {
+          "branchId": "805",
+          "branchName": "עסקים פלורנטין"
+        },
+        {
+          "branchId": "806",
+          "branchName": "לב דיזנגוף"
+        },
+        {
+          "branchId": "811",
+          "branchName": "עסקים לב תל אביב"
+        },
+        {
+          "branchId": "812",
+          "branchName": "עסקים מגדלי אביב"
+        },
+        {
+          "branchId": "814",
+          "branchName": "יד אליהו"
+        },
+        {
+          "branchId": "816",
+          "branchName": "ככר יצחק רבין"
+        },
+        {
+          "branchId": "817",
+          "branchName": "מרכז עסקים תל אביב"
+        },
+        {
+          "branchId": "818",
+          "branchName": "לאומי VIP"
+        },
+        {
+          "branchId": "820",
+          "branchName": "אום אל פחם"
+        },
+        {
+          "branchId": "821",
+          "branchName": "מרכז קופות תל אביב"
+        },
+        {
+          "branchId": "825",
+          "branchName": "כפר מנדא"
+        },
+        {
+          "branchId": "827",
+          "branchName": "עסקים חולון"
+        },
+        {
+          "branchId": "828",
+          "branchName": "עסקים פסגת השרון"
+        },
+        {
+          "branchId": "831",
+          "branchName": "טמרה"
+        },
+        {
+          "branchId": "832",
+          "branchName": "פנקס"
+        },
+        {
+          "branchId": "833",
+          "branchName": "אינשטיין"
+        },
+        {
+          "branchId": "835",
+          "branchName": "תל מונד"
+        },
+        {
+          "branchId": "837",
+          "branchName": "יהוד"
+        },
+        {
+          "branchId": "838",
+          "branchName": "נאות אפקה"
+        },
+        {
+          "branchId": "840",
+          "branchName": "נצרת"
+        },
+        {
+          "branchId": "841",
+          "branchName": "כפר ערערה"
+        },
+        {
+          "branchId": "842",
+          "branchName": "עסקים שפרעם"
+        },
+        {
+          "branchId": "843",
+          "branchName": "קרית אונו"
+        },
+        {
+          "branchId": "844",
+          "branchName": "כפר שמריהו"
+        },
+        {
+          "branchId": "847",
+          "branchName": "מרכז פנסיוני צ'מפיון"
+        },
+        {
+          "branchId": "849",
+          "branchName": "המשרד המרכזי-החטיבה הפיננסית"
+        },
+        {
+          "branchId": "851",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "855",
+          "branchName": "עסקים הירקון"
+        },
+        {
+          "branchId": "856",
+          "branchName": "בני ברק"
+        },
+        {
+          "branchId": "857",
+          "branchName": "גבעתיים"
+        },
+        {
+          "branchId": "858",
+          "branchName": "חולון"
+        },
+        {
+          "branchId": "859",
+          "branchName": "עסקים בת-ים"
+        },
+        {
+          "branchId": "861",
+          "branchName": "בת ים"
+        },
+        {
+          "branchId": "862",
+          "branchName": "דיר אל אסד-בענה"
+        },
+        {
+          "branchId": "864",
+          "branchName": "מרכז עסקים לאומי טק"
+        },
+        {
+          "branchId": "865",
+          "branchName": "עסקים תל אביב צפון"
+        },
+        {
+          "branchId": "866",
+          "branchName": "מרגנית"
+        },
+        {
+          "branchId": "867",
+          "branchName": "כפר יאסיף"
+        },
+        {
+          "branchId": "871",
+          "branchName": "ירכא"
+        },
+        {
+          "branchId": "872",
+          "branchName": "מרכז שירות ת\"א צפון"
+        },
+        {
+          "branchId": "873",
+          "branchName": "סכנין"
+        },
+        {
+          "branchId": "876",
+          "branchName": "מרכז עסקים חיפה"
+        },
+        {
+          "branchId": "877",
+          "branchName": "קרית אליעזר"
+        },
+        {
+          "branchId": "879",
+          "branchName": "חיפה"
+        },
+        {
+          "branchId": "880",
+          "branchName": "חורב"
+        },
+        {
+          "branchId": "881",
+          "branchName": "מרכז קופות חיפה"
+        },
+        {
+          "branchId": "882",
+          "branchName": "נווה שאנן"
+        },
+        {
+          "branchId": "884",
+          "branchName": "עסקים ג'וליס"
+        },
+        {
+          "branchId": "885",
+          "branchName": "טירת הכרמל"
+        },
+        {
+          "branchId": "887",
+          "branchName": "עסקים הקריות"
+        },
+        {
+          "branchId": "891",
+          "branchName": "הכרמל"
+        },
+        {
+          "branchId": "893",
+          "branchName": "לאומי VIP"
+        },
+        {
+          "branchId": "895",
+          "branchName": "קרית טבעון"
+        },
+        {
+          "branchId": "896",
+          "branchName": "עסקים רמת ישי"
+        },
+        {
+          "branchId": "897",
+          "branchName": "קרית אתא"
+        },
+        {
+          "branchId": "898",
+          "branchName": "מרכז עסקים המפרץ"
+        },
+        {
+          "branchId": "899",
+          "branchName": "לאומי וי איי פי"
+        },
+        {
+          "branchId": "900",
+          "branchName": "קרית ים"
+        },
+        {
+          "branchId": "901",
+          "branchName": "מרכז עסקים ירושלים"
+        },
+        {
+          "branchId": "902",
+          "branchName": "המלך ג'ורג'"
+        },
+        {
+          "branchId": "903",
+          "branchName": "בית הכרם"
+        },
+        {
+          "branchId": "904",
+          "branchName": "שער העיר"
+        },
+        {
+          "branchId": "905",
+          "branchName": "רמות אשכול"
+        },
+        {
+          "branchId": "906",
+          "branchName": "עסקים עירון"
+        },
+        {
+          "branchId": "907",
+          "branchName": "עסקים חדרה"
+        },
+        {
+          "branchId": "908",
+          "branchName": "אעבלין"
+        },
+        {
+          "branchId": "909",
+          "branchName": "עראבה"
+        },
+        {
+          "branchId": "911",
+          "branchName": "גאולה"
+        },
+        {
+          "branchId": "912",
+          "branchName": "רחביה"
+        },
+        {
+          "branchId": "914",
+          "branchName": "לאומי וי איי פי"
+        },
+        {
+          "branchId": "916",
+          "branchName": "בית שמש"
+        },
+        {
+          "branchId": "918",
+          "branchName": "מזרח ירושלים"
+        },
+        {
+          "branchId": "921",
+          "branchName": "עסקים באר שבע"
+        },
+        {
+          "branchId": "922",
+          "branchName": "מרכז הנגב"
+        },
+        {
+          "branchId": "923",
+          "branchName": "דימונה"
+        },
+        {
+          "branchId": "924",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "925",
+          "branchName": "עסקים אשקלון"
+        },
+        {
+          "branchId": "926",
+          "branchName": "אפרידר אשקלון"
+        },
+        {
+          "branchId": "927",
+          "branchName": "קרית גת"
+        },
+        {
+          "branchId": "928",
+          "branchName": "גדרה"
+        },
+        {
+          "branchId": "930",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "932",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "933",
+          "branchName": "נס ציונה"
+        },
+        {
+          "branchId": "934",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "936",
+          "branchName": "רמלה"
+        },
+        {
+          "branchId": "937",
+          "branchName": "לוד"
+        },
+        {
+          "branchId": "939",
+          "branchName": "יבנה"
+        },
+        {
+          "branchId": "940",
+          "branchName": "פתח תקוה"
+        },
+        {
+          "branchId": "941",
+          "branchName": "שדרות"
+        },
+        {
+          "branchId": "942",
+          "branchName": "רעננה"
+        },
+        {
+          "branchId": "943",
+          "branchName": "הוד השרון"
+        },
+        {
+          "branchId": "944",
+          "branchName": "מערב ראשון"
+        },
+        {
+          "branchId": "945",
+          "branchName": "ראמה"
+        },
+        {
+          "branchId": "946",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "948",
+          "branchName": "הרצליה"
+        },
+        {
+          "branchId": "949",
+          "branchName": "רמת השרון"
+        },
+        {
+          "branchId": "950",
+          "branchName": "לאומי וי איי פי"
+        },
+        {
+          "branchId": "951",
+          "branchName": "טייבה"
+        },
+        {
+          "branchId": "952",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "953",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "954",
+          "branchName": "פרדס חנה"
+        },
+        {
+          "branchId": "956",
+          "branchName": "זכרון יעקב"
+        },
+        {
+          "branchId": "959",
+          "branchName": "גבעת אולגה"
+        },
+        {
+          "branchId": "960",
+          "branchName": "עכו"
+        },
+        {
+          "branchId": "961",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "962",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "963",
+          "branchName": "מרכז שירות אשדוד"
+        },
+        {
+          "branchId": "964",
+          "branchName": "עסקים נצרת"
+        },
+        {
+          "branchId": "965",
+          "branchName": "עפולה"
+        },
+        {
+          "branchId": "966",
+          "branchName": "בית שאן"
+        },
+        {
+          "branchId": "969",
+          "branchName": "מרכז מסחרי שפרעם"
+        },
+        {
+          "branchId": "970",
+          "branchName": "טבריה"
+        },
+        {
+          "branchId": "972",
+          "branchName": "נוף הגליל"
+        },
+        {
+          "branchId": "973",
+          "branchName": "מעלות תרשיחא"
+        },
+        {
+          "branchId": "974",
+          "branchName": "מרכז שירות השרון"
+        },
+        {
+          "branchId": "975",
+          "branchName": "צפת"
+        },
+        {
+          "branchId": "976",
+          "branchName": "קרית שמונה"
+        },
+        {
+          "branchId": "977",
+          "branchName": "בית ג'אן"
+        },
+        {
+          "branchId": "978",
+          "branchName": "מרכז עסקים ראשון"
+        },
+        {
+          "branchId": "979",
+          "branchName": "דבוריה"
+        },
+        {
+          "branchId": "980",
+          "branchName": "טירה"
+        },
+        {
+          "branchId": "981",
+          "branchName": "דאלית אל כרמל-עוספייה"
+        },
+        {
+          "branchId": "983",
+          "branchName": "באקה אל גרביה"
+        },
+        {
+          "branchId": "984",
+          "branchName": "מג'אר"
+        },
+        {
+          "branchId": "985",
+          "branchName": "קרית מלאכי"
+        },
+        {
+          "branchId": "987",
+          "branchName": "מגדל העמק"
+        },
+        {
+          "branchId": "988",
+          "branchName": "תל גנים"
+        },
+        {
+          "branchId": "989",
+          "branchName": "יחידת בצוע-מחלקת מט\"י"
+        },
+        {
+          "branchId": "991",
+          "branchName": "ענף סליקה ומשלוח"
+        },
+        {
+          "branchId": "994",
+          "branchName": "האפוטרופוס הכללי"
+        },
+        {
+          "branchId": "995",
+          "branchName": "פרדיס"
+        },
+        {
+          "branchId": "998",
+          "branchName": "פפר"
+        },
+        {
+          "branchId": "999",
+          "branchName": "אילת"
+        }
+      ]
+    },
+    {
+      "bankId": "11",
+      "bankName": "בנק דיסקונט לישראל בע\"מ",
+      "branches": [
+        {
+          "branchId": "2",
+          "branchName": "עפולה"
+        },
+        {
+          "branchId": "3",
+          "branchName": "אילת"
+        },
+        {
+          "branchId": "4",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "5",
+          "branchName": "נוף הגליל"
+        },
+        {
+          "branchId": "6",
+          "branchName": "מדור פיתוח במחלקת חברות"
+        },
+        {
+          "branchId": "10",
+          "branchName": "ראשי ת\"א"
+        },
+        {
+          "branchId": "14",
+          "branchName": "תל אביב סיטי"
+        },
+        {
+          "branchId": "26",
+          "branchName": "חצרות יפו"
+        },
+        {
+          "branchId": "34",
+          "branchName": "אלון"
+        },
+        {
+          "branchId": "41",
+          "branchName": "פתח תקוה"
+        },
+        {
+          "branchId": "42",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "43",
+          "branchName": "רמלה"
+        },
+        {
+          "branchId": "44",
+          "branchName": "הרצליה"
+        },
+        {
+          "branchId": "45",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "46",
+          "branchName": "טבריה"
+        },
+        {
+          "branchId": "49",
+          "branchName": "חולון"
+        },
+        {
+          "branchId": "51",
+          "branchName": "בת ים"
+        },
+        {
+          "branchId": "54",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "55",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "56",
+          "branchName": "כפר גנים"
+        },
+        {
+          "branchId": "58",
+          "branchName": "דרך בן גוריון"
+        },
+        {
+          "branchId": "59",
+          "branchName": "לוד"
+        },
+        {
+          "branchId": "64",
+          "branchName": "גאולה"
+        },
+        {
+          "branchId": "65",
+          "branchName": "קרית היובל"
+        },
+        {
+          "branchId": "66",
+          "branchName": "רחביה"
+        },
+        {
+          "branchId": "68",
+          "branchName": "מזרח ירושלים"
+        },
+        {
+          "branchId": "69",
+          "branchName": "בית הכרם"
+        },
+        {
+          "branchId": "75",
+          "branchName": "קרית מוצקין"
+        },
+        {
+          "branchId": "76",
+          "branchName": "מרכז הכרמל"
+        },
+        {
+          "branchId": "77",
+          "branchName": "קרית אתא"
+        },
+        {
+          "branchId": "80",
+          "branchName": "בורסת היהלומים"
+        },
+        {
+          "branchId": "85",
+          "branchName": "ככר יצחק רבין"
+        },
+        {
+          "branchId": "90",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "92",
+          "branchName": "רעננה"
+        },
+        {
+          "branchId": "93",
+          "branchName": "נצרת"
+        },
+        {
+          "branchId": "94",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "95",
+          "branchName": "זכרון יעקב"
+        },
+        {
+          "branchId": "96",
+          "branchName": "מרום נווה"
+        },
+        {
+          "branchId": "97",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "98",
+          "branchName": "צפת"
+        },
+        {
+          "branchId": "99",
+          "branchName": "עכו"
+        },
+        {
+          "branchId": "100",
+          "branchName": "שדרות רוטשילד"
+        },
+        {
+          "branchId": "102",
+          "branchName": "רמת חן"
+        },
+        {
+          "branchId": "103",
+          "branchName": "קריית אילון"
+        },
+        {
+          "branchId": "106",
+          "branchName": "בית הקרנות"
+        },
+        {
+          "branchId": "107",
+          "branchName": "רמת אלמוגי"
+        },
+        {
+          "branchId": "109",
+          "branchName": "רמת אשכול"
+        },
+        {
+          "branchId": "110",
+          "branchName": "קרית שמונה"
+        },
+        {
+          "branchId": "111",
+          "branchName": "דימונה"
+        },
+        {
+          "branchId": "112",
+          "branchName": "גדרה"
+        },
+        {
+          "branchId": "114",
+          "branchName": "רובע ד'"
+        },
+        {
+          "branchId": "117",
+          "branchName": "נס ציונה"
+        },
+        {
+          "branchId": "118",
+          "branchName": "נוה אביבים"
+        },
+        {
+          "branchId": "123",
+          "branchName": "ככר היהלום"
+        },
+        {
+          "branchId": "125",
+          "branchName": "רמת השרון"
+        },
+        {
+          "branchId": "128",
+          "branchName": "אשקלון"
+        },
+        {
+          "branchId": "129",
+          "branchName": "אגף התפעול-סליקה מרכזית"
+        },
+        {
+          "branchId": "130",
+          "branchName": "מאפו"
+        },
+        {
+          "branchId": "131",
+          "branchName": "קרית גת"
+        },
+        {
+          "branchId": "136",
+          "branchName": "קיראון"
+        },
+        {
+          "branchId": "137",
+          "branchName": "מגדל העמק"
+        },
+        {
+          "branchId": "139",
+          "branchName": "בני ברק"
+        },
+        {
+          "branchId": "145",
+          "branchName": "גבעתיים"
+        },
+        {
+          "branchId": "146",
+          "branchName": "הרצליה פיתוח"
+        },
+        {
+          "branchId": "147",
+          "branchName": "לב דיזנגוף"
+        },
+        {
+          "branchId": "148",
+          "branchName": "הנביאים"
+        },
+        {
+          "branchId": "151",
+          "branchName": "יד אליהו"
+        },
+        {
+          "branchId": "152",
+          "branchName": "ככר המדינה"
+        },
+        {
+          "branchId": "153",
+          "branchName": "קרית מלאכי"
+        },
+        {
+          "branchId": "156",
+          "branchName": "מלא\"ב-נתניה"
+        },
+        {
+          "branchId": "157",
+          "branchName": "התעשיה חולון"
+        },
+        {
+          "branchId": "159",
+          "branchName": "מרכז ירושלים"
+        },
+        {
+          "branchId": "162",
+          "branchName": "תלפיות ירושלים"
+        },
+        {
+          "branchId": "167",
+          "branchName": "בית שמש"
+        },
+        {
+          "branchId": "174",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "175",
+          "branchName": "יבנה"
+        },
+        {
+          "branchId": "176",
+          "branchName": "המפרץ"
+        },
+        {
+          "branchId": "187",
+          "branchName": "הוד השרון"
+        },
+        {
+          "branchId": "188",
+          "branchName": "הקניונים"
+        },
+        {
+          "branchId": "194",
+          "branchName": "שלוחת מרכז כלל"
+        },
+        {
+          "branchId": "198",
+          "branchName": "אפקה"
+        },
+        {
+          "branchId": "200",
+          "branchName": "מחלקת ביצוע"
+        },
+        {
+          "branchId": "201",
+          "branchName": "מערך החשבות"
+        },
+        {
+          "branchId": "202",
+          "branchName": "אגף היעוץ המשפטי"
+        },
+        {
+          "branchId": "210",
+          "branchName": "דיסקונט ניהול קופות גמל בע\"מ"
+        },
+        {
+          "branchId": "211",
+          "branchName": "אגף היעוץ המשפטי"
+        },
+        {
+          "branchId": "212",
+          "branchName": "אגף נכסים ובינוי"
+        },
+        {
+          "branchId": "213",
+          "branchName": "אגף ניירות ערך"
+        },
+        {
+          "branchId": "219",
+          "branchName": "טלבנק"
+        },
+        {
+          "branchId": "220",
+          "branchName": "טלבנק"
+        },
+        {
+          "branchId": "221",
+          "branchName": "טלבנק"
+        },
+        {
+          "branchId": "222",
+          "branchName": "טלבנק"
+        },
+        {
+          "branchId": "232",
+          "branchName": "בנקאות פרטית תל אביב"
+        },
+        {
+          "branchId": "233",
+          "branchName": "המרכז לבנקאות פרטית ירושלים"
+        },
+        {
+          "branchId": "302",
+          "branchName": "גבעת טל"
+        },
+        {
+          "branchId": "303",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "305",
+          "branchName": "ילמ"
+        },
+        {
+          "branchId": "308",
+          "branchName": "ייעוץ פנסיוני"
+        },
+        {
+          "branchId": "316",
+          "branchName": "משרד אחורי- תפעול הייעוץ הפנסיוני"
+        },
+        {
+          "branchId": "320",
+          "branchName": "קריית השרון"
+        },
+        {
+          "branchId": "321",
+          "branchName": "הלאום"
+        },
+        {
+          "branchId": "330",
+          "branchName": "בי\"ח וולפסון"
+        },
+        {
+          "branchId": "340",
+          "branchName": "המרכז לבנקאות פרטית השרון"
+        },
+        {
+          "branchId": "348",
+          "branchName": "מרכז מזומנים ירושלים"
+        },
+        {
+          "branchId": "361",
+          "branchName": "פרדס חנה"
+        },
+        {
+          "branchId": "362",
+          "branchName": "אם המושבות"
+        },
+        {
+          "branchId": "381",
+          "branchName": "מרכז עסקים ירושלים והדרום"
+        },
+        {
+          "branchId": "382",
+          "branchName": "מרכז עסקים השרון"
+        },
+        {
+          "branchId": "383",
+          "branchName": "מרכז עסקים צפון"
+        },
+        {
+          "branchId": "384",
+          "branchName": "מרכז עסקים השפלה"
+        },
+        {
+          "branchId": "396",
+          "branchName": "אסף הרופא"
+        },
+        {
+          "branchId": "398",
+          "branchName": "תל-השומר"
+        },
+        {
+          "branchId": "443",
+          "branchName": "קרית ביאליק"
+        },
+        {
+          "branchId": "444",
+          "branchName": "המרכז לבנקאות פרטית-חיפה והצפון"
+        },
+        {
+          "branchId": "452",
+          "branchName": "מרכז עסקים תל אביב"
+        },
+        {
+          "branchId": "468",
+          "branchName": "יחידת עיקולים"
+        },
+        {
+          "branchId": "488",
+          "branchName": "מרכז השקעות השפלה"
+        },
+        {
+          "branchId": "506",
+          "branchName": "מערב ראשון לציון"
+        },
+        {
+          "branchId": "510",
+          "branchName": "מבשרת ציון"
+        },
+        {
+          "branchId": "514",
+          "branchName": "מרכז קופות תל אביב"
+        },
+        {
+          "branchId": "515",
+          "branchName": "קדמת עתידים"
+        },
+        {
+          "branchId": "517",
+          "branchName": "לב העיר באר שבע"
+        },
+        {
+          "branchId": "518",
+          "branchName": "מחלקת בנקים ומוסדות פיננסים"
+        },
+        {
+          "branchId": "520",
+          "branchName": "מחלקת שירותי מט\"ח ותקשורת בין בנקאית"
+        },
+        {
+          "branchId": "525",
+          "branchName": "מרכז קופות מחנה יהודה"
+        },
+        {
+          "branchId": "526",
+          "branchName": "פולג נתניה"
+        },
+        {
+          "branchId": "535",
+          "branchName": "הסניף הישיר"
+        },
+        {
+          "branchId": "568",
+          "branchName": "המרכז לבנקאות פרטית תל אביב"
+        },
+        {
+          "branchId": "990",
+          "branchName": "שלוחת בת ים"
+        },
+        {
+          "branchId": "991",
+          "branchName": "שלוחת באר שבע"
+        },
+        {
+          "branchId": "992",
+          "branchName": "שלוחת אדומים-סניף רמת אשכול"
+        },
+        {
+          "branchId": "993",
+          "branchName": "שלוחת מרכז כלל"
+        },
+        {
+          "branchId": "994",
+          "branchName": "כפר יונה -שלוחת נתניה"
+        },
+        {
+          "branchId": "995",
+          "branchName": "שלוחת מרום נווה"
+        },
+        {
+          "branchId": "996",
+          "branchName": "ברנע שלוחת אשקלון"
+        },
+        {
+          "branchId": "997",
+          "branchName": "מגדל העמק- שלוחת סניף עפולה"
+        },
+        {
+          "branchId": "998",
+          "branchName": "פל ים שלוחת מרכז הכרמל"
+        }
+      ]
+    },
+    {
+      "bankId": "12",
+      "bankName": "בנק הפועלים בע\"מ",
+      "branches": [
+        {
+          "branchId": "41",
+          "branchName": "פועלים INVEST עפולה"
+        },
+        {
+          "branchId": "60",
+          "branchName": "אגף משכן"
+        },
+        {
+          "branchId": "61",
+          "branchName": "מרכז שירות חולון 61"
+        },
+        {
+          "branchId": "62",
+          "branchName": "פועלים INVEST אשדוד"
+        },
+        {
+          "branchId": "63",
+          "branchName": "מרכז שירות חולון 63"
+        },
+        {
+          "branchId": "69",
+          "branchName": "רמת ישי"
+        },
+        {
+          "branchId": "72",
+          "branchName": "מרכז שירות נתניה 72"
+        },
+        {
+          "branchId": "90",
+          "branchName": "ירכא"
+        },
+        {
+          "branchId": "110",
+          "branchName": "מרכז שירות עסקי חולון 110"
+        },
+        {
+          "branchId": "115",
+          "branchName": "פועלים INVEST חדרה"
+        },
+        {
+          "branchId": "139",
+          "branchName": "פועלים INVEST רמת גן"
+        },
+        {
+          "branchId": "143",
+          "branchName": "פועלים INVEST פתח תקוה"
+        },
+        {
+          "branchId": "144",
+          "branchName": "פועלים INVEST חיפה"
+        },
+        {
+          "branchId": "150",
+          "branchName": "פועלים INVEST הרצליה"
+        },
+        {
+          "branchId": "153",
+          "branchName": "כפר גנים"
+        },
+        {
+          "branchId": "159",
+          "branchName": "מרכז שירות עסקי חולון 159"
+        },
+        {
+          "branchId": "160",
+          "branchName": "נווה זאב"
+        },
+        {
+          "branchId": "167",
+          "branchName": "מרכז שירות נתניה 167"
+        },
+        {
+          "branchId": "168",
+          "branchName": "מרכז שירות נתניה 168"
+        },
+        {
+          "branchId": "169",
+          "branchName": "מרכז שירות נתניה 169"
+        },
+        {
+          "branchId": "170",
+          "branchName": "הסניף הראשי"
+        },
+        {
+          "branchId": "174",
+          "branchName": "מרכז שירות נתניה 174"
+        },
+        {
+          "branchId": "175",
+          "branchName": "מרכז שירות עסקי חולון 175"
+        },
+        {
+          "branchId": "176",
+          "branchName": "מרכז שירות עסקי חולון 176"
+        },
+        {
+          "branchId": "177",
+          "branchName": "מרכז שירות עסקי חולון 177"
+        },
+        {
+          "branchId": "184",
+          "branchName": "מרכז מזומנים"
+        },
+        {
+          "branchId": "194",
+          "branchName": "מרכז עסקים איילון"
+        },
+        {
+          "branchId": "202",
+          "branchName": "כפר יאסיף"
+        },
+        {
+          "branchId": "211",
+          "branchName": "נצרת עסקים פריפרד"
+        },
+        {
+          "branchId": "219",
+          "branchName": "פועלים INVEST הרימון"
+        },
+        {
+          "branchId": "239",
+          "branchName": "כפר מנדא"
+        },
+        {
+          "branchId": "242",
+          "branchName": "פועלים INVEST תל אביב"
+        },
+        {
+          "branchId": "267",
+          "branchName": "פועלים INVEST קריות"
+        },
+        {
+          "branchId": "282",
+          "branchName": "קרנות נאמנות"
+        },
+        {
+          "branchId": "286",
+          "branchName": "אריאל"
+        },
+        {
+          "branchId": "290",
+          "branchName": "ביתר עילית"
+        },
+        {
+          "branchId": "358",
+          "branchName": "מרכז עסקים הרצליה"
+        },
+        {
+          "branchId": "359",
+          "branchName": "מרכז עסקים המפרץ"
+        },
+        {
+          "branchId": "391",
+          "branchName": "מרכז שירות עסקי חולון 391"
+        },
+        {
+          "branchId": "394",
+          "branchName": "מרכז שירות נתניה 394"
+        },
+        {
+          "branchId": "399",
+          "branchName": "מרכז שירות עסקי חולון 399"
+        },
+        {
+          "branchId": "406",
+          "branchName": "פועלים INVEST ירושלים"
+        },
+        {
+          "branchId": "407",
+          "branchName": "business רעננה"
+        },
+        {
+          "branchId": "408",
+          "branchName": "פועלים INVEST ראשון לציון"
+        },
+        {
+          "branchId": "410",
+          "branchName": "שוהם"
+        },
+        {
+          "branchId": "412",
+          "branchName": "מרכז שירות עסקי חולון 412"
+        },
+        {
+          "branchId": "416",
+          "branchName": "פועלים INVEST רחובות"
+        },
+        {
+          "branchId": "418",
+          "branchName": "טמרה"
+        },
+        {
+          "branchId": "432",
+          "branchName": "פועלים INVEST נתניה"
+        },
+        {
+          "branchId": "434",
+          "branchName": "פועלים INVEST באר שבע"
+        },
+        {
+          "branchId": "436",
+          "branchName": "מרכז שירות עסקי חולון 436"
+        },
+        {
+          "branchId": "445",
+          "branchName": "מת\"ב בית דגן"
+        },
+        {
+          "branchId": "446",
+          "branchName": "רמת בית שמש"
+        },
+        {
+          "branchId": "447",
+          "branchName": "גבעת טל"
+        },
+        {
+          "branchId": "448",
+          "branchName": "מבשרת ציון"
+        },
+        {
+          "branchId": "449",
+          "branchName": "יפיע"
+        },
+        {
+          "branchId": "450",
+          "branchName": "מרכז עסקים תל אביב"
+        },
+        {
+          "branchId": "452",
+          "branchName": "מרכז עסקים דרום"
+        },
+        {
+          "branchId": "453",
+          "branchName": "מרכז עסקים המרכז"
+        },
+        {
+          "branchId": "454",
+          "branchName": "מרכז עסקים אשדוד"
+        },
+        {
+          "branchId": "455",
+          "branchName": "מרכז עסקים השרון"
+        },
+        {
+          "branchId": "456",
+          "branchName": "מרכז עסקים חיפה"
+        },
+        {
+          "branchId": "457",
+          "branchName": "מרכז עסקים ירושלים"
+        },
+        {
+          "branchId": "458",
+          "branchName": "מרכז עסקים צפון"
+        },
+        {
+          "branchId": "459",
+          "branchName": "נתניה business"
+        },
+        {
+          "branchId": "465",
+          "branchName": "אם המושבות"
+        },
+        {
+          "branchId": "472",
+          "branchName": "מרכז שירות נתניה 472"
+        },
+        {
+          "branchId": "473",
+          "branchName": "חריש"
+        },
+        {
+          "branchId": "475",
+          "branchName": "אלעד"
+        },
+        {
+          "branchId": "476",
+          "branchName": "קרית השרון"
+        },
+        {
+          "branchId": "478",
+          "branchName": "כפר כנא"
+        },
+        {
+          "branchId": "479",
+          "branchName": "סכנין"
+        },
+        {
+          "branchId": "486",
+          "branchName": "רהט"
+        },
+        {
+          "branchId": "500",
+          "branchName": "הרימון"
+        },
+        {
+          "branchId": "506",
+          "branchName": "טירה המשולש"
+        },
+        {
+          "branchId": "509",
+          "branchName": "קופות גמל"
+        },
+        {
+          "branchId": "515",
+          "branchName": "בנקאות פלטינום"
+        },
+        {
+          "branchId": "516",
+          "branchName": "רמת הנשיא"
+        },
+        {
+          "branchId": "520",
+          "branchName": "גבעת שאול"
+        },
+        {
+          "branchId": "522",
+          "branchName": "שנקר"
+        },
+        {
+          "branchId": "529",
+          "branchName": "ישורון"
+        },
+        {
+          "branchId": "531",
+          "branchName": "האגף לניירות ערך ונכסים פיננסיים"
+        },
+        {
+          "branchId": "532",
+          "branchName": "שאול המלך"
+        },
+        {
+          "branchId": "533",
+          "branchName": "מאה שערים"
+        },
+        {
+          "branchId": "536",
+          "branchName": "מזכרת בתיה"
+        },
+        {
+          "branchId": "537",
+          "branchName": "יהלום"
+        },
+        {
+          "branchId": "538",
+          "branchName": "רמות"
+        },
+        {
+          "branchId": "539",
+          "branchName": "לב חולון"
+        },
+        {
+          "branchId": "540",
+          "branchName": "ככר הסיטי"
+        },
+        {
+          "branchId": "542",
+          "branchName": "ראש פינה"
+        },
+        {
+          "branchId": "544",
+          "branchName": "הדרים"
+        },
+        {
+          "branchId": "548",
+          "branchName": "אום אל פחם"
+        },
+        {
+          "branchId": "549",
+          "branchName": "כפר תבור"
+        },
+        {
+          "branchId": "550",
+          "branchName": "הגולן"
+        },
+        {
+          "branchId": "551",
+          "branchName": "קלנסווה"
+        },
+        {
+          "branchId": "552",
+          "branchName": "פועלים Business פתח תקוה"
+        },
+        {
+          "branchId": "555",
+          "branchName": "השקד"
+        },
+        {
+          "branchId": "556",
+          "branchName": "נתיבות"
+        },
+        {
+          "branchId": "559",
+          "branchName": "הדר טל"
+        },
+        {
+          "branchId": "562",
+          "branchName": "מרכז שירות נתניה 562"
+        },
+        {
+          "branchId": "567",
+          "branchName": "בית אסיה"
+        },
+        {
+          "branchId": "568",
+          "branchName": "רמת אביב ג'"
+        },
+        {
+          "branchId": "570",
+          "branchName": "עומר"
+        },
+        {
+          "branchId": "576",
+          "branchName": "חרוד"
+        },
+        {
+          "branchId": "578",
+          "branchName": "כפר קרע"
+        },
+        {
+          "branchId": "579",
+          "branchName": "חברות בנות"
+        },
+        {
+          "branchId": "580",
+          "branchName": "פקדונות מיוחדים"
+        },
+        {
+          "branchId": "581",
+          "branchName": "מג'אר"
+        },
+        {
+          "branchId": "582",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "584",
+          "branchName": "הגלים"
+        },
+        {
+          "branchId": "586",
+          "branchName": "מרכז שירות עסקי חולון 586"
+        },
+        {
+          "branchId": "595",
+          "branchName": "הלוואות עובדים"
+        },
+        {
+          "branchId": "599",
+          "branchName": "הגן הטכנולוגי"
+        },
+        {
+          "branchId": "600",
+          "branchName": "מרכז שירות עסקי חולון 600"
+        },
+        {
+          "branchId": "602",
+          "branchName": "הצפון"
+        },
+        {
+          "branchId": "603",
+          "branchName": "יד אליהו"
+        },
+        {
+          "branchId": "604",
+          "branchName": "קרית שלום"
+        },
+        {
+          "branchId": "607",
+          "branchName": "שכונת התקוה"
+        },
+        {
+          "branchId": "609",
+          "branchName": "ככר יצחק רבין"
+        },
+        {
+          "branchId": "610",
+          "branchName": "הדר יוסף"
+        },
+        {
+          "branchId": "611",
+          "branchName": "יפו"
+        },
+        {
+          "branchId": "612",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "613",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "615",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "616",
+          "branchName": "פתח תקוה"
+        },
+        {
+          "branchId": "617",
+          "branchName": "יהוד"
+        },
+        {
+          "branchId": "618",
+          "branchName": "רמלה"
+        },
+        {
+          "branchId": "620",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "621",
+          "branchName": "בנימינה"
+        },
+        {
+          "branchId": "622",
+          "branchName": "פרדס חנה"
+        },
+        {
+          "branchId": "625",
+          "branchName": "זכרון יעקב"
+        },
+        {
+          "branchId": "626",
+          "branchName": "הוד השרון"
+        },
+        {
+          "branchId": "627",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "628",
+          "branchName": "הרצליה"
+        },
+        {
+          "branchId": "630",
+          "branchName": "רמת השרון"
+        },
+        {
+          "branchId": "631",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "632",
+          "branchName": "דימונה"
+        },
+        {
+          "branchId": "633",
+          "branchName": "אופקים"
+        },
+        {
+          "branchId": "634",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "635",
+          "branchName": "ראשונים"
+        },
+        {
+          "branchId": "636",
+          "branchName": "נס ציונה"
+        },
+        {
+          "branchId": "637",
+          "branchName": "באר יעקב"
+        },
+        {
+          "branchId": "638",
+          "branchName": "חולון-ויצמן"
+        },
+        {
+          "branchId": "640",
+          "branchName": "גבעתיים"
+        },
+        {
+          "branchId": "642",
+          "branchName": "בת ים"
+        },
+        {
+          "branchId": "643",
+          "branchName": "אזור"
+        },
+        {
+          "branchId": "644",
+          "branchName": "אילת"
+        },
+        {
+          "branchId": "645",
+          "branchName": "קרית גת"
+        },
+        {
+          "branchId": "646",
+          "branchName": "גדרה"
+        },
+        {
+          "branchId": "647",
+          "branchName": "גן יבנה"
+        },
+        {
+          "branchId": "648",
+          "branchName": "קרית מלאכי"
+        },
+        {
+          "branchId": "649",
+          "branchName": "שדרות"
+        },
+        {
+          "branchId": "650",
+          "branchName": "אשקלון"
+        },
+        {
+          "branchId": "651",
+          "branchName": "אפרידר"
+        },
+        {
+          "branchId": "653",
+          "branchName": "קדימה"
+        },
+        {
+          "branchId": "655",
+          "branchName": "בני ברק"
+        },
+        {
+          "branchId": "656",
+          "branchName": "קרית אונו"
+        },
+        {
+          "branchId": "657",
+          "branchName": "אור יהודה"
+        },
+        {
+          "branchId": "658",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "661",
+          "branchName": "רעננה"
+        },
+        {
+          "branchId": "665",
+          "branchName": "טייבה"
+        },
+        {
+          "branchId": "666",
+          "branchName": "באקה אל גרביה"
+        },
+        {
+          "branchId": "668",
+          "branchName": "הנשיאים"
+        },
+        {
+          "branchId": "671",
+          "branchName": "ירוחם"
+        },
+        {
+          "branchId": "672",
+          "branchName": "מצפה רמון"
+        },
+        {
+          "branchId": "673",
+          "branchName": "מבוא ים"
+        },
+        {
+          "branchId": "675",
+          "branchName": "כפר יונה"
+        },
+        {
+          "branchId": "677",
+          "branchName": "ראש העין"
+        },
+        {
+          "branchId": "680",
+          "branchName": "כפר שמריהו"
+        },
+        {
+          "branchId": "681",
+          "branchName": "לב דיזנגוף"
+        },
+        {
+          "branchId": "685",
+          "branchName": "לוד"
+        },
+        {
+          "branchId": "686",
+          "branchName": "שמשון"
+        },
+        {
+          "branchId": "688",
+          "branchName": "קרית אריה"
+        },
+        {
+          "branchId": "690",
+          "branchName": "ירושלים, ראשי"
+        },
+        {
+          "branchId": "691",
+          "branchName": "קרית היובל"
+        },
+        {
+          "branchId": "692",
+          "branchName": "בית שמש"
+        },
+        {
+          "branchId": "694",
+          "branchName": "בית הכרם"
+        },
+        {
+          "branchId": "695",
+          "branchName": "רמות אשכול"
+        },
+        {
+          "branchId": "696",
+          "branchName": "מזרח ירושלים"
+        },
+        {
+          "branchId": "698",
+          "branchName": "שערי העיר"
+        },
+        {
+          "branchId": "699",
+          "branchName": "פסגת זאב"
+        },
+        {
+          "branchId": "700",
+          "branchName": "חיפה ראשי"
+        },
+        {
+          "branchId": "701",
+          "branchName": "הר הכרמל"
+        },
+        {
+          "branchId": "702",
+          "branchName": "נוה שאנן"
+        },
+        {
+          "branchId": "703",
+          "branchName": "טירת הכרמל"
+        },
+        {
+          "branchId": "704",
+          "branchName": "אחוזה"
+        },
+        {
+          "branchId": "708",
+          "branchName": "כרמלים"
+        },
+        {
+          "branchId": "712",
+          "branchName": "נשר תל חנן"
+        },
+        {
+          "branchId": "713",
+          "branchName": "עכו"
+        },
+        {
+          "branchId": "714",
+          "branchName": "צפת"
+        },
+        {
+          "branchId": "715",
+          "branchName": "חצור"
+        },
+        {
+          "branchId": "716",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "717",
+          "branchName": "בית שאן"
+        },
+        {
+          "branchId": "718",
+          "branchName": "קרית שמונה"
+        },
+        {
+          "branchId": "719",
+          "branchName": "קרית טבעון-הנשיא"
+        },
+        {
+          "branchId": "721",
+          "branchName": "קרית אתא"
+        },
+        {
+          "branchId": "722",
+          "branchName": "יקנעם"
+        },
+        {
+          "branchId": "723",
+          "branchName": "טבריה"
+        },
+        {
+          "branchId": "726",
+          "branchName": "נצרת"
+        },
+        {
+          "branchId": "727",
+          "branchName": "עפולה"
+        },
+        {
+          "branchId": "728",
+          "branchName": "מגדל העמק"
+        },
+        {
+          "branchId": "729",
+          "branchName": "קרית מוצקין"
+        },
+        {
+          "branchId": "731",
+          "branchName": "שפרעם"
+        },
+        {
+          "branchId": "732",
+          "branchName": "מעלות תרשיחא"
+        },
+        {
+          "branchId": "736",
+          "branchName": "פועלים BUSINESS חיפה"
+        },
+        {
+          "branchId": "738",
+          "branchName": "עפולה עלית"
+        },
+        {
+          "branchId": "742",
+          "branchName": "דלית אל כרמל-עוספיה"
+        },
+        {
+          "branchId": "743",
+          "branchName": "שרת"
+        },
+        {
+          "branchId": "744",
+          "branchName": "מג'דל שמס"
+        },
+        {
+          "branchId": "746",
+          "branchName": "הקריון"
+        },
+        {
+          "branchId": "747",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "748",
+          "branchName": "תלפיות"
+        },
+        {
+          "branchId": "749",
+          "branchName": "הים"
+        },
+        {
+          "branchId": "752",
+          "branchName": "התעשיה האוירית"
+        },
+        {
+          "branchId": "754",
+          "branchName": "פנקס"
+        },
+        {
+          "branchId": "755",
+          "branchName": "יזרעאליה"
+        },
+        {
+          "branchId": "758",
+          "branchName": "ששת הימים"
+        },
+        {
+          "branchId": "761",
+          "branchName": "חיים עוזר"
+        },
+        {
+          "branchId": "762",
+          "branchName": "יבנה"
+        },
+        {
+          "branchId": "763",
+          "branchName": "ערד"
+        },
+        {
+          "branchId": "765",
+          "branchName": "מרכז שירות עסקי חולון 765"
+        },
+        {
+          "branchId": "766",
+          "branchName": "גור"
+        },
+        {
+          "branchId": "767",
+          "branchName": "בי אונליין"
+        },
+        {
+          "branchId": "768",
+          "branchName": "נוה-ים"
+        },
+        {
+          "branchId": "770",
+          "branchName": "האשל"
+        },
+        {
+          "branchId": "771",
+          "branchName": "עיר ימים"
+        },
+        {
+          "branchId": "772",
+          "branchName": "Business בגין תלא אביב"
+        },
+        {
+          "branchId": "773",
+          "branchName": "נוה רם"
+        },
+        {
+          "branchId": "774",
+          "branchName": "נמל תעופה בן גוריון"
+        },
+        {
+          "branchId": "778",
+          "branchName": "אביבים"
+        },
+        {
+          "branchId": "780",
+          "branchName": "פועלים Business יצחק שדה"
+        },
+        {
+          "branchId": "782",
+          "branchName": "רחביה"
+        },
+        {
+          "branchId": "784",
+          "branchName": "הגבעה הצרפתית"
+        },
+        {
+          "branchId": "791",
+          "branchName": "המפרץ"
+        },
+        {
+          "branchId": "794",
+          "branchName": "מרכז תפעולי ארצי לסחר חוץ"
+        },
+        {
+          "branchId": "795",
+          "branchName": "האגף לניירות ערך ונכסים פיננסיים"
+        },
+        {
+          "branchId": "797",
+          "branchName": "ניירות ערך-תפעול"
+        },
+        {
+          "branchId": "799",
+          "branchName": "הנהלה ראשית"
+        },
+        {
+          "branchId": "877",
+          "branchName": "פועלים בטלפון"
+        },
+        {
+          "branchId": "980",
+          "branchName": "שלוחת קרית עקרון"
+        },
+        {
+          "branchId": "981",
+          "branchName": "שלוחת רמת אפעל"
+        },
+        {
+          "branchId": "982",
+          "branchName": "שלוחת אכסאל"
+        },
+        {
+          "branchId": "983",
+          "branchName": "שלוחת אבן יהודה"
+        },
+        {
+          "branchId": "984",
+          "branchName": "שלוחת קיסריה"
+        },
+        {
+          "branchId": "985",
+          "branchName": "שלוחת גן יבנה"
+        },
+        {
+          "branchId": "986",
+          "branchName": "שלוחת מזכרת בתיה"
+        },
+        {
+          "branchId": "987",
+          "branchName": "שלוחת כרמלים"
+        },
+        {
+          "branchId": "988",
+          "branchName": "שלוחת יזרעאליה"
+        }
+      ]
+    },
+    {
+      "bankId": "13",
+      "bankName": "בנק אגוד לישראל בע\"מ",
+      "branches": [
+        {
+          "branchId": "51",
+          "branchName": "ירושלים ראשי"
+        },
+        {
+          "branchId": "62",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "63",
+          "branchName": "תל אביב ראשי"
+        },
+        {
+          "branchId": "64",
+          "branchName": "מיקדו"
+        },
+        {
+          "branchId": "66",
+          "branchName": "גורדון"
+        },
+        {
+          "branchId": "70",
+          "branchName": "פתח תקוה"
+        },
+        {
+          "branchId": "71",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "72",
+          "branchName": "הרצליה"
+        },
+        {
+          "branchId": "74",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "75",
+          "branchName": "רעננה"
+        },
+        {
+          "branchId": "76",
+          "branchName": "קרית אריה"
+        },
+        {
+          "branchId": "78",
+          "branchName": "ראש העין"
+        },
+        {
+          "branchId": "79",
+          "branchName": "הרצליה פיתוח"
+        },
+        {
+          "branchId": "81",
+          "branchName": "חיפה ראשי"
+        },
+        {
+          "branchId": "91",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "93",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "94",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "95",
+          "branchName": "פולג"
+        },
+        {
+          "branchId": "123",
+          "branchName": "אגוד ישיר"
+        },
+        {
+          "branchId": "125",
+          "branchName": "מרכז הלוואות"
+        },
+        {
+          "branchId": "140",
+          "branchName": "פרימיום מרכז"
+        },
+        {
+          "branchId": "143",
+          "branchName": "אלעד"
+        },
+        {
+          "branchId": "148",
+          "branchName": "רימונים בני ברק"
+        },
+        {
+          "branchId": "152",
+          "branchName": "הוד השרון"
+        },
+        {
+          "branchId": "153",
+          "branchName": "הקריות"
+        },
+        {
+          "branchId": "154",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "158",
+          "branchName": "חולון"
+        },
+        {
+          "branchId": "159",
+          "branchName": "מרכז ראשלצ"
+        },
+        {
+          "branchId": "165",
+          "branchName": "רוממה"
+        },
+        {
+          "branchId": "190",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "192",
+          "branchName": "אשקלון"
+        },
+        {
+          "branchId": "196",
+          "branchName": "הנהלה"
+        },
+        {
+          "branchId": "197",
+          "branchName": "הנהלה"
+        },
+        {
+          "branchId": "198",
+          "branchName": "הנהלה"
+        },
+        {
+          "branchId": "992",
+          "branchName": "משכנתאות"
+        }
+      ]
+    },
+    {
+      "bankId": "14",
+      "bankName": "בנק אוצר החייל בע\"מ",
+      "branches": [
+        {
+          "branchId": "303",
+          "branchName": "אוצר החייל רמות"
+        },
+        {
+          "branchId": "305",
+          "branchName": "סניף וירטואלי מי"
+        },
+        {
+          "branchId": "309",
+          "branchName": "עפולה"
+        },
+        {
+          "branchId": "310",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "311",
+          "branchName": "פרדס חנה"
+        },
+        {
+          "branchId": "312",
+          "branchName": "יבנה"
+        },
+        {
+          "branchId": "313",
+          "branchName": "ראש פינה"
+        },
+        {
+          "branchId": "314",
+          "branchName": "גלילות"
+        },
+        {
+          "branchId": "315",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "316",
+          "branchName": "רמת פולג"
+        },
+        {
+          "branchId": "317",
+          "branchName": "פתח תקוה - כפר-גנים"
+        },
+        {
+          "branchId": "318",
+          "branchName": "נווה זאב"
+        },
+        {
+          "branchId": "319",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "321",
+          "branchName": "המרכז למימון מתמחה"
+        },
+        {
+          "branchId": "322",
+          "branchName": "גבעתיים"
+        },
+        {
+          "branchId": "324",
+          "branchName": "טבריה"
+        },
+        {
+          "branchId": "329",
+          "branchName": "יוקנעם"
+        },
+        {
+          "branchId": "330",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "332",
+          "branchName": "קרית ההדרכה"
+        },
+        {
+          "branchId": "334",
+          "branchName": "\"חבר\""
+        },
+        {
+          "branchId": "335",
+          "branchName": "כפר סבא הירוקה אוצה\"ח"
+        },
+        {
+          "branchId": "336",
+          "branchName": "חיל הים - חיפה"
+        },
+        {
+          "branchId": "338",
+          "branchName": "לקוחות נבחרים"
+        },
+        {
+          "branchId": "342",
+          "branchName": "נבטים"
+        },
+        {
+          "branchId": "343",
+          "branchName": "אריאל"
+        },
+        {
+          "branchId": "344",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "345",
+          "branchName": "רעות"
+        },
+        {
+          "branchId": "346",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "348",
+          "branchName": "אפק"
+        },
+        {
+          "branchId": "349",
+          "branchName": "אשקלון"
+        },
+        {
+          "branchId": "350",
+          "branchName": "מת\"מ אומגה"
+        },
+        {
+          "branchId": "355",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "357",
+          "branchName": "הסניף המרכזי"
+        },
+        {
+          "branchId": "358",
+          "branchName": "אוצר החייל יהוד"
+        },
+        {
+          "branchId": "359",
+          "branchName": "אוצר החייל קרית גת"
+        },
+        {
+          "branchId": "360",
+          "branchName": "קרית שמונה אוצר החייל"
+        },
+        {
+          "branchId": "361",
+          "branchName": "החשמונאים"
+        },
+        {
+          "branchId": "362",
+          "branchName": "מפרץ חיפה"
+        },
+        {
+          "branchId": "363",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "365",
+          "branchName": "צהלה"
+        },
+        {
+          "branchId": "366",
+          "branchName": "תל נוף"
+        },
+        {
+          "branchId": "367",
+          "branchName": "חצור"
+        },
+        {
+          "branchId": "369",
+          "branchName": "ירושלים"
+        },
+        {
+          "branchId": "371",
+          "branchName": "רמת דוד"
+        },
+        {
+          "branchId": "372",
+          "branchName": "תל השומר"
+        },
+        {
+          "branchId": "373",
+          "branchName": "אשקלון אוצר החייל"
+        },
+        {
+          "branchId": "375",
+          "branchName": "רמת השרון"
+        },
+        {
+          "branchId": "376",
+          "branchName": "חצרים"
+        },
+        {
+          "branchId": "377",
+          "branchName": "אילת"
+        },
+        {
+          "branchId": "378",
+          "branchName": "הקריה"
+        },
+        {
+          "branchId": "379",
+          "branchName": "פלמחים"
+        },
+        {
+          "branchId": "380",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "381",
+          "branchName": "רמון"
+        },
+        {
+          "branchId": "382",
+          "branchName": "בת ים חולון"
+        },
+        {
+          "branchId": "388",
+          "branchName": "מרכז שרות ישיר"
+        },
+        {
+          "branchId": "392",
+          "branchName": "מערב ראשון לציון"
+        },
+        {
+          "branchId": "395",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "397",
+          "branchName": "גדרה"
+        },
+        {
+          "branchId": "398",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "399",
+          "branchName": "מטה אוצר החייל"
+        },
+        {
+          "branchId": "477",
+          "branchName": "עובדה"
+        },
+        {
+          "branchId": "993",
+          "branchName": "שלוחת ערבה"
+        }
+      ]
+    },
+    {
+      "bankId": "17",
+      "bankName": "בנק מרכנתיל דיסקונט בע\"מ",
+      "branches": [
+        {
+          "branchId": "602",
+          "branchName": "ירכא"
+        },
+        {
+          "branchId": "603",
+          "branchName": "מיתר"
+        },
+        {
+          "branchId": "607",
+          "branchName": "מרכז מומחים-חולון"
+        },
+        {
+          "branchId": "613",
+          "branchName": "משכנתאות"
+        },
+        {
+          "branchId": "614",
+          "branchName": "טמרה"
+        },
+        {
+          "branchId": "619",
+          "branchName": "אגף החשבות"
+        },
+        {
+          "branchId": "620",
+          "branchName": "שפרעם"
+        },
+        {
+          "branchId": "621",
+          "branchName": "שבטי ישראל"
+        },
+        {
+          "branchId": "623",
+          "branchName": "דבוריה"
+        },
+        {
+          "branchId": "624",
+          "branchName": "מג'ד אל כרום"
+        },
+        {
+          "branchId": "625",
+          "branchName": "מעיליא"
+        },
+        {
+          "branchId": "626",
+          "branchName": "עראבה"
+        },
+        {
+          "branchId": "627",
+          "branchName": "פאולוס השישי"
+        },
+        {
+          "branchId": "628",
+          "branchName": "יפיע"
+        },
+        {
+          "branchId": "630",
+          "branchName": "ריינה"
+        },
+        {
+          "branchId": "631",
+          "branchName": "כפר כנא"
+        },
+        {
+          "branchId": "632",
+          "branchName": "טורעאן"
+        },
+        {
+          "branchId": "634",
+          "branchName": "עילבון"
+        },
+        {
+          "branchId": "635",
+          "branchName": "גאולה"
+        },
+        {
+          "branchId": "638",
+          "branchName": "סאלח א-דין"
+        },
+        {
+          "branchId": "639",
+          "branchName": "נצרת ראשי"
+        },
+        {
+          "branchId": "640",
+          "branchName": "אל ראם"
+        },
+        {
+          "branchId": "642",
+          "branchName": "ירושלים ראשי"
+        },
+        {
+          "branchId": "643",
+          "branchName": "ראמה"
+        },
+        {
+          "branchId": "644",
+          "branchName": "עכו"
+        },
+        {
+          "branchId": "645",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "647",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "649",
+          "branchName": "דימונה"
+        },
+        {
+          "branchId": "650",
+          "branchName": "מרכז עסקים אזור חיפה"
+        },
+        {
+          "branchId": "651",
+          "branchName": "פתח תקוה"
+        },
+        {
+          "branchId": "653",
+          "branchName": "יפו"
+        },
+        {
+          "branchId": "654",
+          "branchName": "ראשי תל אביב"
+        },
+        {
+          "branchId": "659",
+          "branchName": "חשבות הבנק"
+        },
+        {
+          "branchId": "660",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "661",
+          "branchName": "כנפי נשרים"
+        },
+        {
+          "branchId": "662",
+          "branchName": "טירת הכרמל"
+        },
+        {
+          "branchId": "663",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "668",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "669",
+          "branchName": "רמלה"
+        },
+        {
+          "branchId": "671",
+          "branchName": "אכסאל"
+        },
+        {
+          "branchId": "672",
+          "branchName": "השלום"
+        },
+        {
+          "branchId": "674",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "676",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "677",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "678",
+          "branchName": "בת ים"
+        },
+        {
+          "branchId": "679",
+          "branchName": "מרכז הכרמל"
+        },
+        {
+          "branchId": "680",
+          "branchName": "קרית מוצקין"
+        },
+        {
+          "branchId": "681",
+          "branchName": "ג'דידה מכר"
+        },
+        {
+          "branchId": "683",
+          "branchName": "אור יהודה"
+        },
+        {
+          "branchId": "686",
+          "branchName": "חולון"
+        },
+        {
+          "branchId": "687",
+          "branchName": "סכנין"
+        },
+        {
+          "branchId": "690",
+          "branchName": "מרכז ני\"ע"
+        },
+        {
+          "branchId": "691",
+          "branchName": "כפר יאסיף"
+        },
+        {
+          "branchId": "692",
+          "branchName": "תרשיחא"
+        },
+        {
+          "branchId": "694",
+          "branchName": "ואדי ניסנאס"
+        },
+        {
+          "branchId": "695",
+          "branchName": "התבור"
+        },
+        {
+          "branchId": "696",
+          "branchName": "רהט"
+        },
+        {
+          "branchId": "697",
+          "branchName": "אום אל פחם"
+        },
+        {
+          "branchId": "699",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "701",
+          "branchName": "מנהלת אזור תל אביב והמרכז"
+        },
+        {
+          "branchId": "702",
+          "branchName": "מנהלת אזור ירושלים והדרום"
+        },
+        {
+          "branchId": "703",
+          "branchName": "מנהלת אזור חיפה והשרון"
+        },
+        {
+          "branchId": "705",
+          "branchName": "מנהלת אזור נצרת"
+        },
+        {
+          "branchId": "706",
+          "branchName": "מנהלת אזור עכו"
+        },
+        {
+          "branchId": "707",
+          "branchName": "מרכז השקעות חיפה"
+        },
+        {
+          "branchId": "711",
+          "branchName": "מרכז השקעות ירושלים"
+        },
+        {
+          "branchId": "712",
+          "branchName": "מרכז השקעות עכו"
+        },
+        {
+          "branchId": "714",
+          "branchName": "מרכז השקעות תל אביב"
+        },
+        {
+          "branchId": "720",
+          "branchName": "עסקים ראשי"
+        },
+        {
+          "branchId": "721",
+          "branchName": "נתיבות"
+        },
+        {
+          "branchId": "724",
+          "branchName": "בועיינה נג'ידאת"
+        },
+        {
+          "branchId": "725",
+          "branchName": "בית שמש"
+        },
+        {
+          "branchId": "727",
+          "branchName": "מרכז מומחים - סחר חוץ צפון"
+        },
+        {
+          "branchId": "728",
+          "branchName": "מרכז מומחים - סחר חוץ"
+        },
+        {
+          "branchId": "732",
+          "branchName": "בני ברק"
+        },
+        {
+          "branchId": "734",
+          "branchName": "ביתר עילית"
+        },
+        {
+          "branchId": "736",
+          "branchName": "סנהדריה"
+        },
+        {
+          "branchId": "738",
+          "branchName": "כאבול"
+        },
+        {
+          "branchId": "740",
+          "branchName": "יהודה הנשיא"
+        },
+        {
+          "branchId": "742",
+          "branchName": "רמות"
+        },
+        {
+          "branchId": "743",
+          "branchName": "דיר אל אסד-בענה"
+        },
+        {
+          "branchId": "744",
+          "branchName": "דיר-חנא"
+        },
+        {
+          "branchId": "745",
+          "branchName": "רבי עקיבא"
+        },
+        {
+          "branchId": "746",
+          "branchName": "רוממה"
+        },
+        {
+          "branchId": "747",
+          "branchName": "מרכז השקעות נצרת"
+        },
+        {
+          "branchId": "750",
+          "branchName": "כפר קאסם"
+        },
+        {
+          "branchId": "752",
+          "branchName": "העמקים"
+        },
+        {
+          "branchId": "753",
+          "branchName": "חורפיש"
+        },
+        {
+          "branchId": "754",
+          "branchName": "רשויות מקומיות"
+        },
+        {
+          "branchId": "756",
+          "branchName": "אעבלין"
+        },
+        {
+          "branchId": "875",
+          "branchName": "מרכז מומחים נשר"
+        },
+        {
+          "branchId": "876",
+          "branchName": "מרכז מומחים ירושלים"
+        }
+      ]
+    },
+    {
+      "bankId": "18",
+      "bankName": "One Zero - הבנק הדיגיטלי בע\"מ",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "לקוחות"
+        },
+        {
+          "branchId": "50",
+          "branchName": "תאגידים"
+        },
+        {
+          "branchId": "300",
+          "branchName": "ניהול נכסים והתחייבויות"
+        },
+        {
+          "branchId": "400",
+          "branchName": "הנהלה"
+        },
+        {
+          "branchId": "410",
+          "branchName": "תשלומים לספקים"
+        }
+      ]
+    },
+    {
+      "bankId": "20",
+      "bankName": "בנק מזרחי טפחות בע\"מ",
+      "branches": [
+        {
+          "branchId": "54",
+          "branchName": "שלוחת אפרת"
+        },
+        {
+          "branchId": "401",
+          "branchName": "קרית העסקים ירושלים"
+        },
+        {
+          "branchId": "402",
+          "branchName": "מרכז עסקים י-ם"
+        },
+        {
+          "branchId": "403",
+          "branchName": "מרכז עסקים י-ם"
+        },
+        {
+          "branchId": "405",
+          "branchName": "ככר המדינה"
+        },
+        {
+          "branchId": "406",
+          "branchName": "חצרות יפו"
+        },
+        {
+          "branchId": "407",
+          "branchName": "מ.עסקים חשמונאים"
+        },
+        {
+          "branchId": "408",
+          "branchName": "סקיי טאוור"
+        },
+        {
+          "branchId": "409",
+          "branchName": "מרכז עסקים ת\"א"
+        },
+        {
+          "branchId": "410",
+          "branchName": "כיכר המדינה"
+        },
+        {
+          "branchId": "411",
+          "branchName": "קרית אילון"
+        },
+        {
+          "branchId": "412",
+          "branchName": "חולון"
+        },
+        {
+          "branchId": "413",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "414",
+          "branchName": "בר אילן"
+        },
+        {
+          "branchId": "415",
+          "branchName": "הרצליה"
+        },
+        {
+          "branchId": "416",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "417",
+          "branchName": "גאולה י-ם"
+        },
+        {
+          "branchId": "418",
+          "branchName": "קרית שדה התעופה"
+        },
+        {
+          "branchId": "419",
+          "branchName": "פארק עסקים חולון"
+        },
+        {
+          "branchId": "420",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "421",
+          "branchName": "גן העיר"
+        },
+        {
+          "branchId": "422",
+          "branchName": "מרכז עסקים נתניה"
+        },
+        {
+          "branchId": "423",
+          "branchName": "מרכז אלרם,רעננה"
+        },
+        {
+          "branchId": "424",
+          "branchName": "אזור תעשיה כפר סבא"
+        },
+        {
+          "branchId": "425",
+          "branchName": "בת ים"
+        },
+        {
+          "branchId": "426",
+          "branchName": "מרכז עסקים באר שבע"
+        },
+        {
+          "branchId": "427",
+          "branchName": "אשקלון"
+        },
+        {
+          "branchId": "428",
+          "branchName": "נתיבות"
+        },
+        {
+          "branchId": "429",
+          "branchName": "מרכז עסקים פ\"ת"
+        },
+        {
+          "branchId": "430",
+          "branchName": "מרכז עסקים בני ברק"
+        },
+        {
+          "branchId": "431",
+          "branchName": "גלובל טאוורס"
+        },
+        {
+          "branchId": "432",
+          "branchName": "רמלה"
+        },
+        {
+          "branchId": "433",
+          "branchName": "קרית גת"
+        },
+        {
+          "branchId": "434",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "435",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "436",
+          "branchName": "חצרות יפו"
+        },
+        {
+          "branchId": "437",
+          "branchName": "אופקים"
+        },
+        {
+          "branchId": "438",
+          "branchName": "קניון אורות"
+        },
+        {
+          "branchId": "439",
+          "branchName": "בית שאן"
+        },
+        {
+          "branchId": "440",
+          "branchName": "סקטור תפעול מט\"ח"
+        },
+        {
+          "branchId": "441",
+          "branchName": "חיפה הדר"
+        },
+        {
+          "branchId": "442",
+          "branchName": "שלומי"
+        },
+        {
+          "branchId": "443",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "444",
+          "branchName": "מרכז עסקים חיפה"
+        },
+        {
+          "branchId": "445",
+          "branchName": "עכו"
+        },
+        {
+          "branchId": "446",
+          "branchName": "קרית ים"
+        },
+        {
+          "branchId": "447",
+          "branchName": "נשר"
+        },
+        {
+          "branchId": "448",
+          "branchName": "קרית אתא"
+        },
+        {
+          "branchId": "449",
+          "branchName": "כרמל"
+        },
+        {
+          "branchId": "450",
+          "branchName": "קרית מלאכי"
+        },
+        {
+          "branchId": "451",
+          "branchName": "הלואות ארציות"
+        },
+        {
+          "branchId": "452",
+          "branchName": "קניון השרון"
+        },
+        {
+          "branchId": "453",
+          "branchName": "לב דיזנגוף"
+        },
+        {
+          "branchId": "454",
+          "branchName": "אפרת"
+        },
+        {
+          "branchId": "455",
+          "branchName": "גבעתיים"
+        },
+        {
+          "branchId": "456",
+          "branchName": "דימונה"
+        },
+        {
+          "branchId": "457",
+          "branchName": "האפוטרופוס הכללי"
+        },
+        {
+          "branchId": "458",
+          "branchName": "גבעת שאול"
+        },
+        {
+          "branchId": "459",
+          "branchName": "עיר העתיקה"
+        },
+        {
+          "branchId": "460",
+          "branchName": "עיר העתיקה"
+        },
+        {
+          "branchId": "461",
+          "branchName": "מרכז עסקים ראשי ת\"א"
+        },
+        {
+          "branchId": "462",
+          "branchName": "טבריה"
+        },
+        {
+          "branchId": "463",
+          "branchName": "כפר קאסם"
+        },
+        {
+          "branchId": "464",
+          "branchName": "קק\"ל"
+        },
+        {
+          "branchId": "465",
+          "branchName": "לב העיר פתח תקווה"
+        },
+        {
+          "branchId": "466",
+          "branchName": "מרכז עסקים יהלומים"
+        },
+        {
+          "branchId": "467",
+          "branchName": "קרית אונו"
+        },
+        {
+          "branchId": "468",
+          "branchName": "חזון איש"
+        },
+        {
+          "branchId": "469",
+          "branchName": "אלנבי"
+        },
+        {
+          "branchId": "470",
+          "branchName": "אילת"
+        },
+        {
+          "branchId": "471",
+          "branchName": "סקיי טאוור"
+        },
+        {
+          "branchId": "472",
+          "branchName": "רמת השרון"
+        },
+        {
+          "branchId": "473",
+          "branchName": "פרדס חנה"
+        },
+        {
+          "branchId": "474",
+          "branchName": "עפולה"
+        },
+        {
+          "branchId": "475",
+          "branchName": "מרכז עסקים ת\"א"
+        },
+        {
+          "branchId": "476",
+          "branchName": "מרכז עסקים בני ברק"
+        },
+        {
+          "branchId": "477",
+          "branchName": "המגדל"
+        },
+        {
+          "branchId": "478",
+          "branchName": "מרכז בנקאות פרטית בינלאומית ת\"א"
+        },
+        {
+          "branchId": "479",
+          "branchName": "שערי צדק"
+        },
+        {
+          "branchId": "480",
+          "branchName": "ניירות ערך"
+        },
+        {
+          "branchId": "481",
+          "branchName": "כיכר כפר גנים"
+        },
+        {
+          "branchId": "483",
+          "branchName": "קרני שומרון"
+        },
+        {
+          "branchId": "484",
+          "branchName": "שדרות"
+        },
+        {
+          "branchId": "487",
+          "branchName": "קרית שמונה"
+        },
+        {
+          "branchId": "488",
+          "branchName": "סקטור קופ\"ג"
+        },
+        {
+          "branchId": "489",
+          "branchName": "ערד"
+        },
+        {
+          "branchId": "490",
+          "branchName": "ברנע אשקלון"
+        },
+        {
+          "branchId": "491",
+          "branchName": "אשקלון"
+        },
+        {
+          "branchId": "492",
+          "branchName": "נווה שאנן"
+        },
+        {
+          "branchId": "493",
+          "branchName": "רמת אביב"
+        },
+        {
+          "branchId": "494",
+          "branchName": "מ. עסקים חשמונאים"
+        },
+        {
+          "branchId": "495",
+          "branchName": "א\"ת ראשל\"צ"
+        },
+        {
+          "branchId": "496",
+          "branchName": "מרכז אלרם,רעננה"
+        },
+        {
+          "branchId": "497",
+          "branchName": "קרני שומרון"
+        },
+        {
+          "branchId": "499",
+          "branchName": "משרד ראשי"
+        },
+        {
+          "branchId": "501",
+          "branchName": "סקטור מימון וסחר בינלאומי"
+        },
+        {
+          "branchId": "502",
+          "branchName": "מרכז בנקאות פרטית בינלאומית אשדוד"
+        },
+        {
+          "branchId": "503",
+          "branchName": "פקטורינג"
+        },
+        {
+          "branchId": "505",
+          "branchName": "מת\"מ חיפה"
+        },
+        {
+          "branchId": "509",
+          "branchName": "מרכז הבנקאות"
+        },
+        {
+          "branchId": "510",
+          "branchName": "מרכז מזומנים"
+        },
+        {
+          "branchId": "511",
+          "branchName": "נס ציונה"
+        },
+        {
+          "branchId": "512",
+          "branchName": "רמתיים, הוד השרון"
+        },
+        {
+          "branchId": "513",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "514",
+          "branchName": "יהוד"
+        },
+        {
+          "branchId": "515",
+          "branchName": "מגדלי קונקורד"
+        },
+        {
+          "branchId": "517",
+          "branchName": "תלפיות"
+        },
+        {
+          "branchId": "518",
+          "branchName": "קריון"
+        },
+        {
+          "branchId": "519",
+          "branchName": "קרית אריה"
+        },
+        {
+          "branchId": "520",
+          "branchName": "מרכז בנקאות פרטית בינלאומית י-ם"
+        },
+        {
+          "branchId": "521",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "522",
+          "branchName": "הרצליה פיתוח"
+        },
+        {
+          "branchId": "523",
+          "branchName": "נשר"
+        },
+        {
+          "branchId": "524",
+          "branchName": "ככר המדינה"
+        },
+        {
+          "branchId": "525",
+          "branchName": "סביונים"
+        },
+        {
+          "branchId": "526",
+          "branchName": "ערים"
+        },
+        {
+          "branchId": "527",
+          "branchName": "קריית איילון"
+        },
+        {
+          "branchId": "528",
+          "branchName": "קרית עתידים"
+        },
+        {
+          "branchId": "529",
+          "branchName": "קניון הבאר"
+        },
+        {
+          "branchId": "530",
+          "branchName": "גבעת שמואל"
+        },
+        {
+          "branchId": "531",
+          "branchName": "תפעול קופ\"ג עורפי"
+        },
+        {
+          "branchId": "532",
+          "branchName": "פארק המדע רחובות"
+        },
+        {
+          "branchId": "533",
+          "branchName": "אזור תעשיה כפר סבא"
+        },
+        {
+          "branchId": "534",
+          "branchName": "מרום נווה"
+        },
+        {
+          "branchId": "536",
+          "branchName": "תפעול עורפי"
+        },
+        {
+          "branchId": "537",
+          "branchName": "אום אל פחם"
+        },
+        {
+          "branchId": "538",
+          "branchName": "כפר יאסיף"
+        },
+        {
+          "branchId": "539",
+          "branchName": "כנפי נשרים"
+        },
+        {
+          "branchId": "540",
+          "branchName": "יבנה"
+        },
+        {
+          "branchId": "541",
+          "branchName": "מרכז בנקאות פרטת נתניה"
+        },
+        {
+          "branchId": "542",
+          "branchName": "מרכז עסקים נתניה"
+        },
+        {
+          "branchId": "543",
+          "branchName": "ראש העין"
+        },
+        {
+          "branchId": "544",
+          "branchName": "קק\"ל"
+        },
+        {
+          "branchId": "546",
+          "branchName": "מט\"ל לוד"
+        },
+        {
+          "branchId": "547",
+          "branchName": "רמת אביב"
+        },
+        {
+          "branchId": "548",
+          "branchName": "כיכר כפר גנים"
+        },
+        {
+          "branchId": "549",
+          "branchName": "באקה אל גרביה"
+        },
+        {
+          "branchId": "550",
+          "branchName": "לב העיר פתח תקווה"
+        },
+        {
+          "branchId": "551",
+          "branchName": "מידטאון ת\"א"
+        },
+        {
+          "branchId": "552",
+          "branchName": "מגדל העמק"
+        },
+        {
+          "branchId": "553",
+          "branchName": "קניון השרון"
+        },
+        {
+          "branchId": "554",
+          "branchName": "פארק הים"
+        },
+        {
+          "branchId": "555",
+          "branchName": "קוגל,חולון"
+        },
+        {
+          "branchId": "556",
+          "branchName": "מרכז עסקים חשמונאים"
+        },
+        {
+          "branchId": "557",
+          "branchName": "יגאל אלון"
+        },
+        {
+          "branchId": "558",
+          "branchName": "מעלות"
+        },
+        {
+          "branchId": "559",
+          "branchName": "נצרת"
+        },
+        {
+          "branchId": "560",
+          "branchName": "נוף הגליל(נ.עלית)"
+        },
+        {
+          "branchId": "561",
+          "branchName": "אחוזה מערב"
+        },
+        {
+          "branchId": "562",
+          "branchName": "צפת"
+        },
+        {
+          "branchId": "563",
+          "branchName": "רמות ירושלים"
+        },
+        {
+          "branchId": "564",
+          "branchName": "מרכז עסקים חיפה"
+        },
+        {
+          "branchId": "565",
+          "branchName": "אשדוד סיטי"
+        },
+        {
+          "branchId": "566",
+          "branchName": "מצדה"
+        },
+        {
+          "branchId": "567",
+          "branchName": "בית שמש"
+        },
+        {
+          "branchId": "568",
+          "branchName": "מרכז עסקים ירושלים"
+        },
+        {
+          "branchId": "569",
+          "branchName": "רמת אשכול, י-ם"
+        },
+        {
+          "branchId": "570",
+          "branchName": "רימונים"
+        },
+        {
+          "branchId": "571",
+          "branchName": "עתיד"
+        },
+        {
+          "branchId": "572",
+          "branchName": "אופק"
+        },
+        {
+          "branchId": "573",
+          "branchName": "שחק"
+        },
+        {
+          "branchId": "574",
+          "branchName": "שגב"
+        },
+        {
+          "branchId": "576",
+          "branchName": "ברק"
+        },
+        {
+          "branchId": "577",
+          "branchName": "שביט"
+        },
+        {
+          "branchId": "580",
+          "branchName": "בטוח לאומי ושרות תעסוקה"
+        },
+        {
+          "branchId": "581",
+          "branchName": "שפרעם"
+        },
+        {
+          "branchId": "582",
+          "branchName": "יוקנעם"
+        },
+        {
+          "branchId": "583",
+          "branchName": "ב\"ב רח' ירושלים"
+        },
+        {
+          "branchId": "585",
+          "branchName": "סחנין"
+        },
+        {
+          "branchId": "589",
+          "branchName": "כפר קאסם"
+        },
+        {
+          "branchId": "590",
+          "branchName": "זיכרון יעקב"
+        },
+        {
+          "branchId": "591",
+          "branchName": "אגריפס ירושלים"
+        },
+        {
+          "branchId": "592",
+          "branchName": "אור יהודה"
+        },
+        {
+          "branchId": "593",
+          "branchName": "חריש"
+        },
+        {
+          "branchId": "594",
+          "branchName": "שמאי"
+        },
+        {
+          "branchId": "596",
+          "branchName": "פיקדונות מוסדיים"
+        },
+        {
+          "branchId": "597",
+          "branchName": "חסכון פנסיוני"
+        },
+        {
+          "branchId": "600",
+          "branchName": "קרן חסויים"
+        },
+        {
+          "branchId": "604",
+          "branchName": "הפניקס 8 קופ\"ג"
+        },
+        {
+          "branchId": "612",
+          "branchName": "תפעול קופ\"ג עורפי 2"
+        },
+        {
+          "branchId": "614",
+          "branchName": "עו\"ז ב"
+        },
+        {
+          "branchId": "615",
+          "branchName": "א.ת.אשדוד"
+        },
+        {
+          "branchId": "616",
+          "branchName": "אינפינטי קופ\"ג"
+        },
+        {
+          "branchId": "617",
+          "branchName": "פרימיום"
+        },
+        {
+          "branchId": "618",
+          "branchName": "עו\"ז"
+        },
+        {
+          "branchId": "619",
+          "branchName": "הפניקס 10 קופ\"ג"
+        },
+        {
+          "branchId": "620",
+          "branchName": "הפניקס קופ\"ג"
+        },
+        {
+          "branchId": "621",
+          "branchName": "אנלייסט קופ\"ג"
+        },
+        {
+          "branchId": "622",
+          "branchName": "ד\"ש קופ\"ג"
+        },
+        {
+          "branchId": "623",
+          "branchName": "אקסלנס הלמן ישן 1"
+        },
+        {
+          "branchId": "624",
+          "branchName": "הפניקס קופ\"ג"
+        },
+        {
+          "branchId": "626",
+          "branchName": "ד\"ש 2 קופ\"ג"
+        },
+        {
+          "branchId": "627",
+          "branchName": "אלטשולר קופ\"ג"
+        },
+        {
+          "branchId": "628",
+          "branchName": "אקסלנס הלמן ישן 2"
+        },
+        {
+          "branchId": "629",
+          "branchName": "הפניקס 2 קופ\"ג"
+        },
+        {
+          "branchId": "630",
+          "branchName": "הפניקס 3 קופ\"ג"
+        },
+        {
+          "branchId": "631",
+          "branchName": "ד\"ש 3 קופ\"ג"
+        },
+        {
+          "branchId": "632",
+          "branchName": "אקסלנס הלמן ישן 3"
+        },
+        {
+          "branchId": "633",
+          "branchName": "איילון (קופ\"ג)"
+        },
+        {
+          "branchId": "634",
+          "branchName": "אקסלנס הלמן ישן 4"
+        },
+        {
+          "branchId": "635",
+          "branchName": "הפניקס 4 קופ\"ג"
+        },
+        {
+          "branchId": "636",
+          "branchName": "הפניקס 5 קופ\"ג"
+        },
+        {
+          "branchId": "637",
+          "branchName": "הפניקס 6 קופ\"ג"
+        },
+        {
+          "branchId": "638",
+          "branchName": "ד\"ש 4 קופ\"ג"
+        },
+        {
+          "branchId": "639",
+          "branchName": "יהב כספונים"
+        },
+        {
+          "branchId": "640",
+          "branchName": "ד\"ש6 קופ\"ג"
+        },
+        {
+          "branchId": "641",
+          "branchName": "ד\"ש 7 קופ\"ג"
+        },
+        {
+          "branchId": "642",
+          "branchName": "ד\"ש 8 קופ\"ג"
+        },
+        {
+          "branchId": "643",
+          "branchName": "ד\"ש 9 קופ\"ג"
+        },
+        {
+          "branchId": "644",
+          "branchName": "ד\"ש 10 קופ\"ג"
+        },
+        {
+          "branchId": "645",
+          "branchName": "ד\"ש11 קופ\"ג"
+        },
+        {
+          "branchId": "646",
+          "branchName": "ד\"ש12 קופ\"ג"
+        },
+        {
+          "branchId": "647",
+          "branchName": "כפר סבא, רח' ויצמן"
+        },
+        {
+          "branchId": "648",
+          "branchName": "אקסלנס הלמן ישן 5"
+        },
+        {
+          "branchId": "649",
+          "branchName": "הפניקס7 קופ\"ג"
+        },
+        {
+          "branchId": "652",
+          "branchName": "איילון 2 (קופ\"ג)"
+        },
+        {
+          "branchId": "653",
+          "branchName": "מיטב ד\"ש 13 קופ\"ג"
+        },
+        {
+          "branchId": "654",
+          "branchName": "מיטב ד\"ש 14 קופ\"ג"
+        },
+        {
+          "branchId": "655",
+          "branchName": "הפניקס 9 קופ\"ג"
+        },
+        {
+          "branchId": "657",
+          "branchName": "מרכז ערים רחובות"
+        },
+        {
+          "branchId": "658",
+          "branchName": "ד\"ש 5 קופ\"ג"
+        },
+        {
+          "branchId": "660",
+          "branchName": "אקסלנס הלמן ישן 6"
+        },
+        {
+          "branchId": "664",
+          "branchName": "מיטב ד\"ש 16 קופ\"ג"
+        },
+        {
+          "branchId": "665",
+          "branchName": "מיטב ד\"ש 15 קופ\"ג"
+        },
+        {
+          "branchId": "667",
+          "branchName": "פרימיום"
+        },
+        {
+          "branchId": "669",
+          "branchName": "קניון השרון"
+        },
+        {
+          "branchId": "670",
+          "branchName": "קופ\"ג חב' חשמל"
+        },
+        {
+          "branchId": "673",
+          "branchName": "חסכון לכל ילד"
+        },
+        {
+          "branchId": "674",
+          "branchName": "אקסלנס הלמן ישן 7"
+        },
+        {
+          "branchId": "688",
+          "branchName": "מסלקה"
+        },
+        {
+          "branchId": "689",
+          "branchName": "ביצוע"
+        },
+        {
+          "branchId": "708",
+          "branchName": "אשראי צרכני"
+        },
+        {
+          "branchId": "709",
+          "branchName": "אשראי צרכני ב'"
+        },
+        {
+          "branchId": "722",
+          "branchName": "מודיעין עלית"
+        },
+        {
+          "branchId": "723",
+          "branchName": "אלנבי"
+        },
+        {
+          "branchId": "724",
+          "branchName": "אשראי צרכני ג'"
+        },
+        {
+          "branchId": "726",
+          "branchName": "אלעד"
+        },
+        {
+          "branchId": "727",
+          "branchName": "מיקדו"
+        },
+        {
+          "branchId": "728",
+          "branchName": "פארק אפק ראש העין"
+        },
+        {
+          "branchId": "729",
+          "branchName": "רוממה"
+        },
+        {
+          "branchId": "730",
+          "branchName": "כיכר המושבה"
+        },
+        {
+          "branchId": "731",
+          "branchName": "אחוזה מערב"
+        },
+        {
+          "branchId": "732",
+          "branchName": "שטמפפר נתניה"
+        },
+        {
+          "branchId": "733",
+          "branchName": "קרית מוצקין"
+        },
+        {
+          "branchId": "734",
+          "branchName": "רמת בית שמש"
+        },
+        {
+          "branchId": "751",
+          "branchName": "הלואות ארציות"
+        },
+        {
+          "branchId": "781",
+          "branchName": "שוברי אשראי"
+        },
+        {
+          "branchId": "904",
+          "branchName": "חב' אינפינטי"
+        },
+        {
+          "branchId": "905",
+          "branchName": "מיטב דש חל\"י"
+        },
+        {
+          "branchId": "906",
+          "branchName": "הפניקס חל\"י"
+        },
+        {
+          "branchId": "907",
+          "branchName": "אקסלנס הלמן ישן 8"
+        },
+        {
+          "branchId": "908",
+          "branchName": "מחוג חברת חשמל"
+        },
+        {
+          "branchId": "909",
+          "branchName": "שיבולת"
+        },
+        {
+          "branchId": "910",
+          "branchName": "מיטב דש קופ\"ג"
+        },
+        {
+          "branchId": "911",
+          "branchName": "הפניקס קופ\"ג"
+        },
+        {
+          "branchId": "912",
+          "branchName": "מיטב דש גמל ופנסיה"
+        },
+        {
+          "branchId": "913",
+          "branchName": "הפניקס קופ\"ג"
+        },
+        {
+          "branchId": "914",
+          "branchName": "מיטב דש גמל ופנסיה"
+        },
+        {
+          "branchId": "917",
+          "branchName": "מיטב דש גמל ופנסיה"
+        },
+        {
+          "branchId": "918",
+          "branchName": "מיטב דש גמל ופנסיה"
+        },
+        {
+          "branchId": "919",
+          "branchName": "הפניקס קופ\"ג"
+        },
+        {
+          "branchId": "920",
+          "branchName": "הפניקס קופ\"ג"
+        },
+        {
+          "branchId": "921",
+          "branchName": "אינפינטי קופ\"ג"
+        },
+        {
+          "branchId": "922",
+          "branchName": "מיטב דש גמל ופנסיה"
+        },
+        {
+          "branchId": "923",
+          "branchName": "מיטב דש גמל ופנסיה"
+        },
+        {
+          "branchId": "924",
+          "branchName": "מיטב דש גמל ופנסיה"
+        },
+        {
+          "branchId": "925",
+          "branchName": "הפניקס קופ\"ג"
+        },
+        {
+          "branchId": "926",
+          "branchName": "הפניקס קופ\"ג"
+        },
+        {
+          "branchId": "927",
+          "branchName": "הפניקס קופ\"ג"
+        }
+      ]
+    },
+    {
+      "bankId": "22",
+      "bankName": "Citibank",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "ראשי"
+        },
+        {
+          "branchId": "2",
+          "branchName": "פנימי"
+        }
+      ]
+    },
+    {
+      "bankId": "23",
+      "bankName": "HSBC",
+      "branches": [
+        {
+          "branchId": "101",
+          "branchName": "אייצ' אס בי סי בנק"
+        },
+        {
+          "branchId": "102",
+          "branchName": "אייצ' אס בי סי בנק"
+        }
+      ]
+    },
+    {
+      "bankId": "26",
+      "bankName": "יובנק בע\"מ",
+      "branches": [
+        {
+          "branchId": "262",
+          "branchName": "רחביה"
+        },
+        {
+          "branchId": "272",
+          "branchName": "ככר המדינה"
+        },
+        {
+          "branchId": "273",
+          "branchName": "יובנק - שד' רוטשילד תל אביב"
+        },
+        {
+          "branchId": "274",
+          "branchName": "יובנק - הרצליה"
+        },
+        {
+          "branchId": "279",
+          "branchName": "יובנק - רחובות"
+        },
+        {
+          "branchId": "280",
+          "branchName": "יובנק - רעננה"
+        },
+        {
+          "branchId": "286",
+          "branchName": "יובנק - ניירות ערך"
+        },
+        {
+          "branchId": "287",
+          "branchName": "יובנק - תל אביב (ראשי)"
+        },
+        {
+          "branchId": "288",
+          "branchName": "יובנק - ירושלים"
+        }
+      ]
+    },
+    {
+      "bankId": "31",
+      "bankName": "בנק הבינלאומי הראשון לישראל בע\"מ",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "ראש פינה"
+        },
+        {
+          "branchId": "2",
+          "branchName": "טבריה"
+        },
+        {
+          "branchId": "3",
+          "branchName": "אילת"
+        },
+        {
+          "branchId": "5",
+          "branchName": "רוממה"
+        },
+        {
+          "branchId": "6",
+          "branchName": "עסקים ראשי צפון"
+        },
+        {
+          "branchId": "7",
+          "branchName": "נווה שאנן"
+        },
+        {
+          "branchId": "8",
+          "branchName": "קרית ביאליק"
+        },
+        {
+          "branchId": "9",
+          "branchName": "הכרמל חיפה"
+        },
+        {
+          "branchId": "12",
+          "branchName": "ירושלים ראשי"
+        },
+        {
+          "branchId": "13",
+          "branchName": "רחביה"
+        },
+        {
+          "branchId": "17",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "19",
+          "branchName": "רמות באר שבע"
+        },
+        {
+          "branchId": "21",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "22",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "24",
+          "branchName": "קריית השרון"
+        },
+        {
+          "branchId": "26",
+          "branchName": "הבורסה"
+        },
+        {
+          "branchId": "27",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "28",
+          "branchName": "גבעתיים"
+        },
+        {
+          "branchId": "29",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "30",
+          "branchName": "רמלה"
+        },
+        {
+          "branchId": "32",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "33",
+          "branchName": "אשדוד סיטי"
+        },
+        {
+          "branchId": "34",
+          "branchName": "שלוחת פתח תקוה"
+        },
+        {
+          "branchId": "35",
+          "branchName": "קיראון"
+        },
+        {
+          "branchId": "36",
+          "branchName": "אפק"
+        },
+        {
+          "branchId": "37",
+          "branchName": "הוד השרון"
+        },
+        {
+          "branchId": "38",
+          "branchName": "סביון"
+        },
+        {
+          "branchId": "39",
+          "branchName": "בת ים"
+        },
+        {
+          "branchId": "41",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "44",
+          "branchName": "האופרה"
+        },
+        {
+          "branchId": "45",
+          "branchName": "חולון"
+        },
+        {
+          "branchId": "46",
+          "branchName": "תל אביב ראשי"
+        },
+        {
+          "branchId": "48",
+          "branchName": "עסקים מרכז"
+        },
+        {
+          "branchId": "50",
+          "branchName": "קרית שמונה"
+        },
+        {
+          "branchId": "51",
+          "branchName": "הרצליה פתוח"
+        },
+        {
+          "branchId": "52",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "59",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "60",
+          "branchName": "יחידת ביצוע ני\"ע"
+        },
+        {
+          "branchId": "62",
+          "branchName": "קרית גת"
+        },
+        {
+          "branchId": "64",
+          "branchName": "צמרות"
+        },
+        {
+          "branchId": "65",
+          "branchName": "דיזנגוף"
+        },
+        {
+          "branchId": "70",
+          "branchName": "קרית מוצקין"
+        },
+        {
+          "branchId": "74",
+          "branchName": "תלפיות"
+        },
+        {
+          "branchId": "78",
+          "branchName": "חולון עסקים"
+        },
+        {
+          "branchId": "82",
+          "branchName": "רמת אביב"
+        },
+        {
+          "branchId": "85",
+          "branchName": "רמת השרון הבינלאומי"
+        },
+        {
+          "branchId": "88",
+          "branchName": "מתחם קופות ומזומנים"
+        },
+        {
+          "branchId": "91",
+          "branchName": "מעלות"
+        },
+        {
+          "branchId": "92",
+          "branchName": "רעננה"
+        },
+        {
+          "branchId": "93",
+          "branchName": "ככר המדינה"
+        },
+        {
+          "branchId": "94",
+          "branchName": "טופ-דן"
+        },
+        {
+          "branchId": "95",
+          "branchName": "כפר גנים"
+        },
+        {
+          "branchId": "105",
+          "branchName": "סניף וירטואלי ME"
+        },
+        {
+          "branchId": "109",
+          "branchName": "אשקלון"
+        },
+        {
+          "branchId": "110",
+          "branchName": "יהוד"
+        },
+        {
+          "branchId": "111",
+          "branchName": "עפולה"
+        },
+        {
+          "branchId": "112",
+          "branchName": "דניה"
+        },
+        {
+          "branchId": "114",
+          "branchName": "קרית משה"
+        },
+        {
+          "branchId": "116",
+          "branchName": "רוטשילד"
+        },
+        {
+          "branchId": "118",
+          "branchName": "רמלוד"
+        },
+        {
+          "branchId": "119",
+          "branchName": "ראשל\"צ מערב"
+        },
+        {
+          "branchId": "120",
+          "branchName": "כפר ורדים"
+        },
+        {
+          "branchId": "121",
+          "branchName": "רמת החייל"
+        },
+        {
+          "branchId": "124",
+          "branchName": "אם המושבות"
+        },
+        {
+          "branchId": "126",
+          "branchName": "אבני חן"
+        },
+        {
+          "branchId": "127",
+          "branchName": "אביבים"
+        },
+        {
+          "branchId": "128",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "131",
+          "branchName": "יוקנעם"
+        },
+        {
+          "branchId": "132",
+          "branchName": "אשקלון ברנע רב מותגי"
+        },
+        {
+          "branchId": "134",
+          "branchName": "קריית אילון"
+        },
+        {
+          "branchId": "135",
+          "branchName": "כפר סבא הירוקה"
+        },
+        {
+          "branchId": "138",
+          "branchName": "הטכניון"
+        },
+        {
+          "branchId": "150",
+          "branchName": "מרכז תפעול לחברי בורסה שאינם בנקים"
+        },
+        {
+          "branchId": "160",
+          "branchName": "מתחם שירותי קופות"
+        },
+        {
+          "branchId": "168",
+          "branchName": "פאגי רימונים"
+        },
+        {
+          "branchId": "172",
+          "branchName": "פאגי שלוחת רמות"
+        },
+        {
+          "branchId": "173",
+          "branchName": "פאגי נתיבות"
+        },
+        {
+          "branchId": "174",
+          "branchName": "פאגי רחובות"
+        },
+        {
+          "branchId": "175",
+          "branchName": "פאגי רב שפע"
+        },
+        {
+          "branchId": "176",
+          "branchName": "פאגי אלעד"
+        },
+        {
+          "branchId": "177",
+          "branchName": "פאגי ביתר עילית"
+        },
+        {
+          "branchId": "179",
+          "branchName": "פאגי רמת בית שמש"
+        },
+        {
+          "branchId": "180",
+          "branchName": "פאגי מודיעין עילית"
+        },
+        {
+          "branchId": "181",
+          "branchName": "פאגי פתח תקוה"
+        },
+        {
+          "branchId": "182",
+          "branchName": "פאגי כנפי נשרים"
+        },
+        {
+          "branchId": "183",
+          "branchName": "פאגי רבי עקיבא"
+        },
+        {
+          "branchId": "185",
+          "branchName": "פאגי ירושלים"
+        },
+        {
+          "branchId": "186",
+          "branchName": "פאגי אשדוד"
+        },
+        {
+          "branchId": "187",
+          "branchName": "פאגי חיפה"
+        },
+        {
+          "branchId": "188",
+          "branchName": "פאגי בני ברק"
+        },
+        {
+          "branchId": "189",
+          "branchName": "פאגי תל אביב"
+        },
+        {
+          "branchId": "222",
+          "branchName": "מרכז תפעול סניפי"
+        },
+        {
+          "branchId": "262",
+          "branchName": "רחביה"
+        },
+        {
+          "branchId": "272",
+          "branchName": "ככר המדינה"
+        },
+        {
+          "branchId": "273",
+          "branchName": "יובנק - שד' רוטשילד תל אביב"
+        },
+        {
+          "branchId": "274",
+          "branchName": "יובנק - הרצליה"
+        },
+        {
+          "branchId": "279",
+          "branchName": "יובנק - רחובות"
+        },
+        {
+          "branchId": "280",
+          "branchName": "יובנק - רעננה"
+        },
+        {
+          "branchId": "286",
+          "branchName": "יובנק - ניירות ערך"
+        },
+        {
+          "branchId": "287",
+          "branchName": "יובנק - תל אביב (ראשי)"
+        },
+        {
+          "branchId": "288",
+          "branchName": "יובנק - ירושלים"
+        },
+        {
+          "branchId": "295",
+          "branchName": "בינלאומי קול"
+        },
+        {
+          "branchId": "296",
+          "branchName": "קופות גמל"
+        },
+        {
+          "branchId": "297",
+          "branchName": "יחידה מרכזת"
+        },
+        {
+          "branchId": "298",
+          "branchName": "הנהלת חשבונות ראשית"
+        },
+        {
+          "branchId": "303",
+          "branchName": "אוצר החייל רמות באר שבע"
+        },
+        {
+          "branchId": "305",
+          "branchName": "סניף וירטואלי ME"
+        },
+        {
+          "branchId": "309",
+          "branchName": "עפולה"
+        },
+        {
+          "branchId": "310",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "311",
+          "branchName": "פרדס חנה"
+        },
+        {
+          "branchId": "312",
+          "branchName": "יבנה"
+        },
+        {
+          "branchId": "313",
+          "branchName": "ראש פינה"
+        },
+        {
+          "branchId": "314",
+          "branchName": "גלילות"
+        },
+        {
+          "branchId": "315",
+          "branchName": "מודיעין"
+        },
+        {
+          "branchId": "316",
+          "branchName": "רמת פולג"
+        },
+        {
+          "branchId": "317",
+          "branchName": "פתח תקוה - כפר-גנים"
+        },
+        {
+          "branchId": "318",
+          "branchName": "נווה זאב"
+        },
+        {
+          "branchId": "319",
+          "branchName": "נהריה"
+        },
+        {
+          "branchId": "321",
+          "branchName": "המרכז למימון מתמחה"
+        },
+        {
+          "branchId": "322",
+          "branchName": "גבעתיים"
+        },
+        {
+          "branchId": "324",
+          "branchName": "טבריה"
+        },
+        {
+          "branchId": "329",
+          "branchName": "יוקנעם"
+        },
+        {
+          "branchId": "330",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "332",
+          "branchName": "קרית ההדרכה"
+        },
+        {
+          "branchId": "334",
+          "branchName": "\"חבר\""
+        },
+        {
+          "branchId": "335",
+          "branchName": "כפר סבא הירוקה אוצה\"ח"
+        },
+        {
+          "branchId": "336",
+          "branchName": "חיל הים - חיפה"
+        },
+        {
+          "branchId": "338",
+          "branchName": "לקוחות נבחרים"
+        },
+        {
+          "branchId": "342",
+          "branchName": "נבטים"
+        },
+        {
+          "branchId": "343",
+          "branchName": "אריאל"
+        },
+        {
+          "branchId": "344",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "345",
+          "branchName": "רעות"
+        },
+        {
+          "branchId": "346",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "348",
+          "branchName": "אפק"
+        },
+        {
+          "branchId": "349",
+          "branchName": "אוצה\"ח אשקלון ברנע"
+        },
+        {
+          "branchId": "350",
+          "branchName": "מת\"מ אומגה"
+        },
+        {
+          "branchId": "355",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "357",
+          "branchName": "הסניף המרכזי"
+        },
+        {
+          "branchId": "358",
+          "branchName": "אוצר החייל יהוד"
+        },
+        {
+          "branchId": "359",
+          "branchName": "אוצר החייל קרית גת"
+        },
+        {
+          "branchId": "360",
+          "branchName": "קרית שמונה אוצר החייל"
+        },
+        {
+          "branchId": "361",
+          "branchName": "החשמונאים"
+        },
+        {
+          "branchId": "362",
+          "branchName": "מפרץ חיפה"
+        },
+        {
+          "branchId": "363",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "365",
+          "branchName": "צהלה"
+        },
+        {
+          "branchId": "366",
+          "branchName": "תל נוף"
+        },
+        {
+          "branchId": "367",
+          "branchName": "חצור"
+        },
+        {
+          "branchId": "369",
+          "branchName": "ירושלים"
+        },
+        {
+          "branchId": "371",
+          "branchName": "רמת דוד"
+        },
+        {
+          "branchId": "372",
+          "branchName": "תל השומר"
+        },
+        {
+          "branchId": "373",
+          "branchName": "אשקלון אוצר החייל"
+        },
+        {
+          "branchId": "375",
+          "branchName": "רמת השרון"
+        },
+        {
+          "branchId": "376",
+          "branchName": "חצרים"
+        },
+        {
+          "branchId": "377",
+          "branchName": "אילת"
+        },
+        {
+          "branchId": "378",
+          "branchName": "הקריה"
+        },
+        {
+          "branchId": "379",
+          "branchName": "פלמחים"
+        },
+        {
+          "branchId": "380",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "381",
+          "branchName": "רמון"
+        },
+        {
+          "branchId": "382",
+          "branchName": "בת ים חולון"
+        },
+        {
+          "branchId": "388",
+          "branchName": "מרכז שרות ישיר"
+        },
+        {
+          "branchId": "392",
+          "branchName": "מערב ראשון לציון"
+        },
+        {
+          "branchId": "395",
+          "branchName": "רחובות"
+        },
+        {
+          "branchId": "397",
+          "branchName": "גדרה"
+        },
+        {
+          "branchId": "398",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "399",
+          "branchName": "מטה אוצר החייל"
+        },
+        {
+          "branchId": "477",
+          "branchName": "עובדה"
+        },
+        {
+          "branchId": "916",
+          "branchName": "המרכז לבנקאות פרטית - צפון"
+        },
+        {
+          "branchId": "986",
+          "branchName": "פאגי לב הרובע"
+        },
+        {
+          "branchId": "993",
+          "branchName": "שלוחת ערבה"
+        }
+      ]
+    },
+    {
+      "bankId": "39",
+      "bankName": "SBI State Bank of India",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "SBI State Bank of India"
+        }
+      ]
+    },
+    {
+      "bankId": "46",
+      "bankName": "בנק מסד בע\"מ",
+      "branches": [
+        {
+          "branchId": "2",
+          "branchName": "שלוחת אורנים - סניף חיפה"
+        },
+        {
+          "branchId": "501",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "502",
+          "branchName": "כפר סבא"
+        },
+        {
+          "branchId": "503",
+          "branchName": "תל אביב"
+        },
+        {
+          "branchId": "504",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "506",
+          "branchName": "שפרעם"
+        },
+        {
+          "branchId": "507",
+          "branchName": "רמת גן"
+        },
+        {
+          "branchId": "508",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "509",
+          "branchName": "פתח תקוה"
+        },
+        {
+          "branchId": "510",
+          "branchName": "שלוחת עכו"
+        },
+        {
+          "branchId": "511",
+          "branchName": "חולון"
+        },
+        {
+          "branchId": "514",
+          "branchName": "נצרת"
+        },
+        {
+          "branchId": "515",
+          "branchName": "ירושלים"
+        },
+        {
+          "branchId": "516",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "517",
+          "branchName": "חדרה"
+        },
+        {
+          "branchId": "519",
+          "branchName": "שלוחת מודיעין"
+        },
+        {
+          "branchId": "520",
+          "branchName": "אום אל פחם"
+        },
+        {
+          "branchId": "527",
+          "branchName": "חיפה"
+        },
+        {
+          "branchId": "539",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "548",
+          "branchName": "הנהלה ראשית"
+        },
+        {
+          "branchId": "902",
+          "branchName": "שלוחת השרון"
+        },
+        {
+          "branchId": "904",
+          "branchName": "שלוחת סכנין - סניף כרמיאל"
+        },
+        {
+          "branchId": "915",
+          "branchName": "שלוחת הגבעה הצרפתית"
+        }
+      ]
+    },
+    {
+      "bankId": "50",
+      "bankName": "מרכז סליקה בנקאי בע\"מ",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "משרד ראשי"
+        }
+      ]
+    },
+    {
+      "bankId": "52",
+      "bankName": "בנק פועלי אגודת ישראל בע\"מ",
+      "branches": [
+        {
+          "branchId": "160",
+          "branchName": "מתחם שירותי קופות"
+        },
+        {
+          "branchId": "168",
+          "branchName": "פאגי רימונים"
+        },
+        {
+          "branchId": "172",
+          "branchName": "פאגי שלוחת רמות"
+        },
+        {
+          "branchId": "173",
+          "branchName": "פאגי נתיבות"
+        },
+        {
+          "branchId": "174",
+          "branchName": "פאגי רחובות"
+        },
+        {
+          "branchId": "175",
+          "branchName": "פאגי רב שפע"
+        },
+        {
+          "branchId": "176",
+          "branchName": "פאגי אלעד"
+        },
+        {
+          "branchId": "177",
+          "branchName": "פאגי ביתר עילית"
+        },
+        {
+          "branchId": "179",
+          "branchName": "פאגי רמת בית שמש"
+        },
+        {
+          "branchId": "180",
+          "branchName": "פאגי מודיעין עילית"
+        },
+        {
+          "branchId": "181",
+          "branchName": "פאגי פתח תקוה"
+        },
+        {
+          "branchId": "182",
+          "branchName": "פאגי כנפי נשרים"
+        },
+        {
+          "branchId": "183",
+          "branchName": "פאגי רבי עקיבא"
+        },
+        {
+          "branchId": "185",
+          "branchName": "פאגי ירושלים"
+        },
+        {
+          "branchId": "186",
+          "branchName": "פאגי אשדוד"
+        },
+        {
+          "branchId": "187",
+          "branchName": "פאגי חיפה"
+        },
+        {
+          "branchId": "188",
+          "branchName": "פאגי בני ברק"
+        },
+        {
+          "branchId": "189",
+          "branchName": "פאגי תל אביב"
+        },
+        {
+          "branchId": "986",
+          "branchName": "פאגי לב הרובע"
+        }
+      ]
+    },
+    {
+      "bankId": "54",
+      "bankName": "בנק ירושלים בע\"מ",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "משרד ראשי"
+        },
+        {
+          "branchId": "22",
+          "branchName": "פריפייד מנפיק"
+        },
+        {
+          "branchId": "25",
+          "branchName": "נתיבות"
+        },
+        {
+          "branchId": "26",
+          "branchName": "גאולה-רוממה"
+        },
+        {
+          "branchId": "30",
+          "branchName": "בנקאות פרטית"
+        },
+        {
+          "branchId": "31",
+          "branchName": "האגף העסקי"
+        },
+        {
+          "branchId": "36",
+          "branchName": "מודיעין עילית"
+        },
+        {
+          "branchId": "40",
+          "branchName": "בית שמש"
+        },
+        {
+          "branchId": "41",
+          "branchName": "ביתר עילית"
+        },
+        {
+          "branchId": "50",
+          "branchName": "ירושלים ראשי"
+        },
+        {
+          "branchId": "51",
+          "branchName": "תל אביב"
+        },
+        {
+          "branchId": "52",
+          "branchName": "חיפה"
+        },
+        {
+          "branchId": "53",
+          "branchName": "ראשון לציון"
+        },
+        {
+          "branchId": "55",
+          "branchName": "המרכז"
+        },
+        {
+          "branchId": "61",
+          "branchName": "אשדוד"
+        },
+        {
+          "branchId": "63",
+          "branchName": "קריון"
+        },
+        {
+          "branchId": "69",
+          "branchName": "באר שבע"
+        },
+        {
+          "branchId": "76",
+          "branchName": "אלעד"
+        },
+        {
+          "branchId": "77",
+          "branchName": "סניף מרכזי"
+        },
+        {
+          "branchId": "91",
+          "branchName": "נצרת"
+        },
+        {
+          "branchId": "92",
+          "branchName": "נתניה"
+        },
+        {
+          "branchId": "96",
+          "branchName": "כרמיאל"
+        },
+        {
+          "branchId": "97",
+          "branchName": "אום אל פאחם"
+        },
+        {
+          "branchId": "98",
+          "branchName": "סחנין"
+        }
+      ]
+    },
+    {
+      "bankId": "59",
+      "bankName": "שירותי בנק אוטומטיים",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "משרד ראשי"
+        }
+      ]
+    },
+    {
+      "bankId": "99",
+      "bankName": "בנק ישראל",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "ירושלים"
+        }
+      ]
+    }
+  ]
+}

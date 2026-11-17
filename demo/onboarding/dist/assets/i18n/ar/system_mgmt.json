@@ -1,0 +1,40 @@
+{
+  "name": "الاسم",
+  "title_placeholder": "أدخل الاسم...",
+  "description": "الوصف",
+  "description_placeholder": "أدخل الوصف...",
+  "media_url_placeholder": "https://example.com/logo.png",
+  "or": "أو",
+  "uploading": "جارٍ الرفع...",
+  "remove": "إزالة",
+  "drop_to_upload": "أفلت للرفع",
+  "drag_or_click_upload": "اسحب وأفلت أو انقر للرفع",
+  "select_dmo": "اختر مركز الوجهة",
+
+  "general_tab": "عام",
+  "boundary_tab": "الحدود",
+
+  "edit_dmo": "تعديل مركز الوجهة",
+  "create_dmo": "إنشاء مركز وجهة",
+  "dmo_created_success": "تم إنشاء مركز الوجهة بنجاح",
+  "dmo_updated_success": "تم تحديث مركز الوجهة بنجاح",
+  "dmo_create_failed": "فشل إنشاء مركز الوجهة",
+  "dmo_update_failed": "فشل تحديث مركز الوجهة",
+  "dmo_boundary_desc": "ارسم مضلع حدود مركز الوجهة على الخريطة. اسحب الدبوس لتحديد نقطة المركز.",
+
+  "edit_authority": "تعديل الجهة",
+  "create_authority": "إنشاء جهة",
+  "authority_created_success": "تم إنشاء الجهة بنجاح",
+  "authority_updated_success": "تم تحديث الجهة بنجاح",
+  "authority_create_failed": "فشل إنشاء الجهة",
+  "authority_update_failed": "فشل تحديث الجهة",
+  "authority_boundary_desc": "ارسم مضلع حدود الجهة على الخريطة. اسحب الدبوس لتحديد نقطة المركز.",
+
+  "cancel": "إلغاء",
+  "save_changes": "حفظ التغييرات",
+  "saving": "جارٍ الحفظ...",
+
+  "center": "المركز",
+  "boundary": "الحدود",
+  "vertices": "رأس"
+}
