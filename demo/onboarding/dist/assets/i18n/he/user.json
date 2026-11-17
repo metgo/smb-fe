@@ -1,0 +1,67 @@
+{
+  "users_management": "ניהול משתמשים",
+  "create_user": "צור משתמש",
+  "edit_user": "ערוך משתמש",
+  "search_users_placeholder": "חיפוש משתמשים...",
+  "all_users_loaded": "כל המשתמשים נטענו",
+
+  "super_admins_tab": "מנהלי-על",
+  "admins_tab": "מנהלים",
+  "dmos_tab": "ארגוני שיווק יעדים",
+  "authorities_tab": "רשויות",
+  "travellers_tab": "מטיילים",
+
+  "delete_user": "מחק משתמש",
+  "delete_user_confirm": "האם אתה בטוח שברצונך למחוק את {{firstName}} {{lastName}}? לא ניתן לבטל פעולה זו.",
+
+  "name": "שם",
+  "first_name": "שם פרטי",
+  "first_name_placeholder": "יוחנן",
+  "last_name": "שם משפחה",
+  "last_name_placeholder": "כהן",
+  "email": "אימייל",
+  "email_placeholder": "john.doe@example.com",
+  "email_locked_hint": "לא ניתן לשנות את האימייל לאחר היצירה",
+  "country_code": "קידומת מדינה",
+  "country_code_placeholder": "+1",
+  "phone": "טלפון",
+  "phone_number": "מספר טלפון",
+  "phone_number_placeholder": "5551234567",
+  "address": "כתובת",
+  "address_placeholder": "רחוב ראשי 123, עיר, מדינה",
+  "role": "תפקיד",
+  "role_locked_hint": "לא ניתן לשנות את התפקיד לאחר היצירה",
+  "locked": "(נעול)",
+  "language_preference": "שפה מועדפת",
+  "dmo": "ארגון שיווק יעד",
+  "select_dmo_placeholder": "בחר ארגון שיווק יעד...",
+  "authority": "רשות",
+  "select_authority_placeholder": "בחר רשות...",
+
+  "cancel": "בטל",
+  "saving": "שומר...",
+  "save_changes": "שמור שינויים",
+  "required": "חובה",
+  "invalid_email": "אימייל לא תקין",
+
+  "user_updated_success": "המשתמש עודכן בהצלחה",
+  "user_created_success": "המשתמש נוצר בהצלחה",
+  "something_went_wrong": "משהו השתבש",
+
+  "role_super_admin": "מנהל-על",
+  "role_admin": "מנהל",
+  "role_dmo": "ארגון שיווק יעד",
+  "role_authority": "רשות",
+  "role_traveller": "מטייל",
+
+  "lang_english": "אנגלית",
+  "lang_arabic": "ערבית",
+  "lang_hebrew": "עברית",
+
+  "edit_user_action": "ערוך משתמש",
+  "delete_user_action": "מחק משתמש",
+  "last_login": "כניסה אחרונה",
+  "actions": "פעולות",
+
+  "reset_login_attempts": "איפוס ניסיונות התחברות"
+}

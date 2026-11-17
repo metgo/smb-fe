@@ -1,0 +1,40 @@
+{
+  "name": "Name",
+  "title_placeholder": "Enter name...",
+  "description": "Description",
+  "description_placeholder": "Enter description...",
+  "media_url_placeholder": "https://example.com/logo.png",
+  "or": "or",
+  "uploading": "Uploading...",
+  "remove": "Remove",
+  "drop_to_upload": "Drop to upload",
+  "drag_or_click_upload": "Drag & drop or click to upload",
+  "select_dmo": "Select DMO",
+
+  "general_tab": "General",
+  "boundary_tab": "Boundary",
+
+  "edit_dmo": "Edit DMO",
+  "create_dmo": "Create DMO",
+  "dmo_created_success": "DMO created successfully",
+  "dmo_updated_success": "DMO updated successfully",
+  "dmo_create_failed": "Failed to create DMO",
+  "dmo_update_failed": "Failed to update DMO",
+  "dmo_boundary_desc": "Draw the DMO boundary polygon on the map. Drag the pin to set the center point.",
+
+  "edit_authority": "Edit Authority",
+  "create_authority": "Create Authority",
+  "authority_created_success": "Authority created successfully",
+  "authority_updated_success": "Authority updated successfully",
+  "authority_create_failed": "Failed to create Authority",
+  "authority_update_failed": "Failed to update Authority",
+  "authority_boundary_desc": "Draw the authority boundary polygon on the map. Drag the pin to set the center point.",
+
+  "cancel": "Cancel",
+  "save_changes": "Save Changes",
+  "saving": "Saving...",
+
+  "center": "Center",
+  "boundary": "Boundary",
+  "vertices": "vertices"
+}

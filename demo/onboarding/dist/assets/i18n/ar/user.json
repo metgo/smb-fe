@@ -1,0 +1,67 @@
+{
+  "users_management": "إدارة المستخدمين",
+  "create_user": "إنشاء مستخدم",
+  "edit_user": "تعديل المستخدم",
+  "search_users_placeholder": "بحث عن مستخدمين...",
+  "all_users_loaded": "تم تحميل جميع المستخدمين",
+
+  "super_admins_tab": "المشرفون العامون",
+  "admins_tab": "المشرفون",
+  "dmos_tab": "منظمات التسويق السياحي",
+  "authorities_tab": "السلطات",
+  "travellers_tab": "المسافرون",
+
+  "delete_user": "حذف المستخدم",
+  "delete_user_confirm": "هل أنت متأكد أنك تريد حذف {{firstName}} {{lastName}}؟ لا يمكن التراجع عن هذا الإجراء.",
+
+  "name": "الاسم",
+  "first_name": "الاسم الأول",
+  "first_name_placeholder": "جون",
+  "last_name": "الاسم الأخير",
+  "last_name_placeholder": "دو",
+  "email": "البريد الإلكتروني",
+  "email_placeholder": "john.doe@example.com",
+  "email_locked_hint": "لا يمكن تغيير البريد الإلكتروني بعد الإنشاء",
+  "country_code": "رمز الدولة",
+  "country_code_placeholder": "+1",
+  "phone": "الهاتف",
+  "phone_number": "رقم الهاتف",
+  "phone_number_placeholder": "5551234567",
+  "address": "العنوان",
+  "address_placeholder": "١٢٣ شارع مين، المدينة، الدولة",
+  "role": "الدور",
+  "role_locked_hint": "لا يمكن تغيير الدور بعد الإنشاء",
+  "locked": "(مقفل)",
+  "language_preference": "اللغة المفضلة",
+  "dmo": "منظمة تسويق سياحي",
+  "select_dmo_placeholder": "اختر منظمة التسويق السياحي...",
+  "authority": "السلطة",
+  "select_authority_placeholder": "اختر السلطة...",
+
+  "cancel": "إلغاء",
+  "saving": "جاري الحفظ...",
+  "save_changes": "حفظ التغييرات",
+  "required": "مطلوب",
+  "invalid_email": "بريد إلكتروني غير صحيح",
+
+  "user_updated_success": "تم تحديث المستخدم بنجاح",
+  "user_created_success": "تم إنشاء المستخدم بنجاح",
+  "something_went_wrong": "حدث خطأ ما",
+
+  "role_super_admin": "مشرف عام",
+  "role_admin": "مشرف",
+  "role_dmo": "منظمة تسويق سياحي",
+  "role_authority": "سلطة",
+  "role_traveller": "مسافر",
+
+  "lang_english": "الإنجليزية",
+  "lang_arabic": "العربية",
+  "lang_hebrew": "العبرية",
+
+  "edit_user_action": "تعديل المستخدم",
+  "delete_user_action": "حذف المستخدم",
+  "last_login": "آخر تسجيل دخول",
+  "actions": "الإجراءات",
+
+  "reset_login_attempts": "إعادة تعيين محاولات تسجيل الدخول"
+}
