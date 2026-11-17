@@ -1,0 +1,621 @@
+<title>מקומי רמת הנגב</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Secular+One&display=swap">
+<style>
+/* Layout: a sticky search bar over a masonry wall of business pins; each business opens its own mini-site (hash route). */
+:root {
+  --bg: #f4f4f1;
+  --surface: #ffffff;
+  --ink: #1d1f24;
+  --muted: #62656d;
+  --line: #e2e1dc;
+  --accent: #0e6a66;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefed;
+  --heart: #e0245e;
+  --chip: #ebeae5;
+  --shadow: 0 1px 2px rgba(20,22,26,.06), 0 6px 18px rgba(20,22,26,.06);
+  --font-display: "Secular One", "Assistant", "Arial Hebrew", sans-serif;
+  --font-body: "Assistant", "Arial Hebrew", "Segoe UI", system-ui, sans-serif;
+  --radius: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111316; --surface: #1a1d21; --ink: #ecebe7; --muted: #a1a3a8; --line: #2b2e33;
+    --accent: #4fb8b1; --accent-ink: #0b1a19; --accent-soft: #1b3533; --heart: #ff4d7d; --chip: #24272c;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111316; --surface: #1a1d21; --ink: #ecebe7; --muted: #a1a3a8; --line: #2b2e33;
+  --accent: #4fb8b1; --accent-ink: #0b1a19; --accent-soft: #1b3533; --heart: #ff4d7d; --chip: #24272c;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.3);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 14px; padding-block: 12px; }
+.brand { display: flex; align-items: baseline; gap: 8px; text-decoration: none; white-space: nowrap; }
+.brand b { font-family: var(--font-display); font-weight: 400; font-size: 26px; letter-spacing: -.01em; color: var(--accent); }
+.brand span { font-size: 14px; color: var(--muted); }
+.search { flex: 1; min-width: 0; position: relative; }
+.search input { width: 100%; height: 44px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 0 44px 0 16px; font: inherit; }
+.search svg { position: absolute; right: 14px; top: 12px; color: var(--muted); }
+.favbtn { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); text-decoration: none; white-space: nowrap; font-weight: 600; }
+.favbtn svg { color: var(--heart); }
+.favbtn .n { font-variant-numeric: tabular-nums; }
+.demo-note { background: var(--accent-soft); color: var(--ink); font-size: 14px; }
+.demo-note .wrap { padding-block: 8px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.demo-note a { color: var(--accent); font-weight: 700; }
+
+/* Home */
+.intro { padding-block: 28px 8px; display: grid; gap: 6px; }
+.intro h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 4.4vw, 48px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.intro p { margin: 0; color: var(--muted); max-width: 60ch; font-size: 18px; }
+.filters { display: grid; gap: 10px; padding-block: 16px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid transparent; background: var(--chip); cursor: pointer; font-weight: 600; font-size: 15px; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.chip.place[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.chip-label { font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+.count { color: var(--muted); font-size: 14px; padding-bottom: 8px; }
+
+.grid { columns: 4 250px; column-gap: 16px; padding-bottom: 40px; }
+.card { break-inside: avoid; margin: 0 0 18px; display: block; text-decoration: none; position: relative; }
+.card .pic { position: relative; border-radius: var(--radius); overflow: hidden; background: var(--chip); }
+.card .pic img { display: block; width: 100%; height: auto; transition: transform .35s ease; }
+.card:hover .pic img { transform: scale(1.03); }
+.card .cat { position: absolute; bottom: 10px; right: 10px; background: rgba(15,16,18,.62); color: #fff; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; backdrop-filter: blur(4px); }
+.heart { position: absolute; top: 10px; left: 10px; width: 42px; height: 42px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); color: #2a2c31; display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.18); transition: transform .15s ease; }
+.heart:active { transform: scale(.9); }
+.heart[aria-pressed="true"] { color: var(--heart); }
+.heart[aria-pressed="true"] svg path { fill: currentColor; }
+.heart.pop { animation: pop .3s ease; }
+@keyframes pop { 50% { transform: scale(1.25); } }
+.card .meta { padding: 10px 4px 0; display: grid; gap: 2px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.25; font-weight: 700; }
+.card p { margin: 0; color: var(--muted); font-size: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.loc { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 14px; font-weight: 600; }
+.loc svg { flex: none; }
+.empty { text-align: center; padding: 60px 16px; display: grid; gap: 10px; justify-items: center; color: var(--muted); }
+.empty h2 { color: var(--ink); margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 26px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+.join { margin-block: 8px 48px; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); padding: 28px; display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; }
+.join h2 { margin: 0 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 28px; }
+.join p { margin: 0; color: var(--muted); max-width: 58ch; }
+
+/* Mini-site */
+.back { display: inline-flex; align-items: center; gap: 6px; padding-block: 18px 10px; color: var(--muted); font-weight: 600; text-decoration: none; }
+.site-head { display: grid; gap: 6px; padding-bottom: 16px; }
+.site-head .row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.site-head h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 5vw, 54px); line-height: 1.05; margin: 0; text-wrap: balance; }
+.tag { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 999px; background: var(--chip); font-size: 14px; font-weight: 600; }
+.status { font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.status.open { color: #1f8a4c; }
+.status.closed { color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px; }
+.actions .heart { position: static; width: 44px; height: 44px; box-shadow: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+
+.gallery { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 8px; border-radius: 22px; overflow: hidden; aspect-ratio: 2.4 / 1; max-width: 100%; }
+.gallery button { border: 0; padding: 0; cursor: zoom-in; background: var(--chip); overflow: hidden; min-height: 0; }
+.gallery button img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .35s ease; }
+.gallery button:hover img { transform: scale(1.04); }
+.gallery button:first-child { grid-row: span 2; }
+
+.site { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 36px; padding-block: 28px 56px; align-items: start; }
+.site section { display: grid; gap: 12px; }
+.site main { display: grid; gap: 36px; min-width: 0; }
+.site h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 26px; }
+.about { font-size: 18px; max-width: 65ch; display: grid; gap: 10px; }
+.about p { margin: 0; }
+.reco { border-radius: var(--radius); background: var(--accent-soft); padding: 18px 20px; display: grid; gap: 4px; max-width: 65ch; }
+.reco b { font-size: 13px; letter-spacing: .04em; color: var(--accent); }
+.reco span { font-size: 19px; font-weight: 600; line-height: 1.4; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.products { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.product { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.product img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; max-width: 100%; }
+.product div { padding: 12px 14px 14px; display: grid; gap: 4px; align-content: start; }
+.product h3 { margin: 0; font-size: 17px; }
+.product p { margin: 0; color: var(--muted); font-size: 15px; }
+.product .pm { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 14px; color: var(--muted); padding-top: 4px; }
+.product .price { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+aside.side { display: grid; gap: 16px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 12px; }
+.panel h2 { font-size: 21px; }
+.contact-row { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center; }
+.contact-row .ico { width: 36px; height: 36px; border-radius: 10px; background: var(--chip); display: grid; place-items: center; }
+.contact-row .v { min-width: 0; overflow-wrap: anywhere; user-select: all; font-weight: 600; direction: ltr; text-align: right; }
+.contact-row .l { font-size: 13px; color: var(--muted); display: block; direction: rtl; user-select: none; font-weight: 400; }
+.copy { border: 1px solid var(--line); background: transparent; border-radius: 8px; height: 32px; padding: 0 10px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.hours { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+.hours td { padding: 5px 0; border-bottom: 1px solid var(--line); }
+.hours td:last-child { text-align: left; direction: ltr; }
+.hours tr:last-child td { border-bottom: 0; }
+.hours tr.today td { font-weight: 700; color: var(--accent); }
+.mapcard { border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%; }
+.mapcard img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.linkrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.linkrow .btn { height: 38px; padding: 0 14px; font-size: 14px; }
+.more h2 { margin-bottom: 4px; }
+.more .grid { columns: 3 220px; padding-bottom: 0; }
+
+/* Lightbox */
+.lightbox { position: fixed; inset: 0; z-index: 50; background: rgba(8,9,11,.9); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.lightbox img { max-height: 84vh; max-width: 100%; border-radius: 14px; }
+.lightbox .lb-close, .lightbox .lb-nav { position: absolute; border: 0; background: rgba(255,255,255,.14); color: #fff; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; font-size: 22px; }
+.lightbox .lb-close { top: calc(env(safe-area-inset-top, 0px) + 16px); left: calc(env(safe-area-inset-left, 0px) + 16px); }
+.lightbox .lb-prev { right: calc(env(safe-area-inset-right, 0px) + 16px); top: 50%; }
+.lightbox .lb-next { left: calc(env(safe-area-inset-left, 0px) + 16px); top: 50%; }
+.toast { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-weight: 600; z-index: 60; }
+
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+footer .wrap { padding-block: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+
+@media (max-width: 900px) {
+  .site { grid-template-columns: minmax(0, 1fr); }
+  aside.side { position: static; }
+  .gallery { grid-template-columns: 1fr 1fr; grid-template-rows: auto; aspect-ratio: auto; }
+  .gallery button { aspect-ratio: 4 / 3; }
+  .gallery button:first-child { grid-row: auto; grid-column: span 2; aspect-ratio: 16 / 10; }
+}
+@media (max-width: 560px) {
+  .brand span { display: none; }
+  .favbtn .t { display: none; }
+  .grid { columns: 2 150px; column-gap: 10px; }
+  .card { margin-bottom: 14px; }
+  .card h3 { font-size: 16px; }
+  .card p { font-size: 14px; -webkit-line-clamp: 2; }
+  .heart { width: 38px; height: 38px; top: 8px; left: 8px; }
+  .card .cat { display: none; }
+  .join { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div dir="rtl" lang="he">
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#">
+        <b>מקומי</b><span>רמת הנגב</span>
+      </a>
+      <label class="search" for="q">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="חיפוש: יקב, ספא, סיור ג׳יפים..." aria-label="חיפוש עסקים" autocomplete="off">
+      </label>
+      <a class="favbtn" href="#favorites" aria-label="המועדפים שלי">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.6 1.2 4.3 2.4h2c.7-1.2 2.1-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg>
+        <span class="t">המועדפים</span><span class="n" id="favCount">0</span>
+      </a>
+    </div>
+  </header>
+  <div class="demo-note"><div class="wrap">
+    <span>גרסת הדגמה: העסקים, התמונות ופרטי הקשר הם דוגמאות.</span>
+    <a href="https://claude.ai/artifact/Esyeh3uuGSgcJEKULPDt3G" target="_blank" rel="noopener">לצד של בעלי העסקים: דמו ההרשמה ←</a>
+  </div></div>
+
+  <div id="app"></div>
+
+  <footer><div class="wrap">
+    <span>מקומי · עסקים קטנים של רמת הנגב, מצפה רמון, שדה בוקר וירוחם</span>
+    <span>אבטיפוס להדגמה</span>
+  </div></footer>
+</div>
+
+<script>
+(function () {
+"use strict";
+
+/* ---------- Data (sample businesses, classified with the taxonomy CSV subcategories) ---------- */
+var JOIN_URL = "https://claude.ai/artifact/Esyeh3uuGSgcJEKULPDt3G";
+var DAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+function week(open, close, closed, fri) {
+  closed = closed || [];
+  return DAYS.map(function (_, i) {
+    if (closed.indexOf(i) >= 0) return null;
+    if (i === 5 && fri) return fri;
+    return [open, close];
+  });
+}
+
+// scene: kind of landscape + palette for the generated photos
+var B = [
+  { id: "zin-winery", name: "יקב נחל צין", cat: "מבשלה ויקב", area: "אוכל ומסעדות", city: "מדרשת בן גוריון", street: "דרך הנחל 4",
+    short: "יקב בוטיק משפחתי בלב המדבר, טעימות יין עם נוף לנחל צין וגבינות מקומיות.",
+    about: ["יקב משפחתי קטן שמגדל ענבים בתנאי מדבר ומייצר כ-15 אלף בקבוקים בשנה.", "הטעימות נערכות במרפסת מול הנוף, עם מגש גבינות של מחלבה שכנה. אפשר להצטרף לסיור בכרם בשעות הבוקר."],
+    reco: "טעימת חמשת היינות בשקיעה, עם מגש הגבינות של המחלבה השכנה.",
+    phone: "052-4417820", email: "hello@zin-winery.co.il", geo: [30.853, 34.783], hours: week("10:00", "18:00", [6], ["10:00", "14:00"]),
+    facts: ["חניה", "שירותים", "מתאים לזוגות", "מתאים לקבוצות"],
+    products: [["טעימת 5 יינות", "יינות הבית עם מגש גבינות ולחם", "95", "60 דקות"], ["סיור בכרם", "סיור בוקר בכרם ובחדר החביות", "60", "45 דקות"], ["מארז שלושה בקבוקים", "אדום, לבן ורוזה מהבציר האחרון", "240", ""]],
+    scene: { kind: "vines", sky: ["#f6c27a", "#fbe7c6"], land: ["#d9a066", "#8a4b2a"], sun: true, tod: "evening" } },
+  { id: "desert-stones", name: "צימר אבני המדבר", cat: "לינה וארוחת בוקר (צימר)", area: "אירוח ולינה", city: "מצפה רמון", street: "רחוב הגפן 12",
+    short: "שלוש בקתות אבן עם ג׳קוזי פרטי ושמיים מלאי כוכבים, עשר דקות מהמכתש.",
+    about: ["שלוש בקתות אבן מבודדות עם ג׳קוזי פרטי, מטבחון ומרפסת לתצפית כוכבים.", "בבוקר מגיע לדלת סל ארוחת בוקר עם לחם טרי מהמאפייה של המצפה."],
+    reco: "לילה בבקתה הצפונית, הכי רחוקה מהאורות, עם תצפית כוכבים מהג׳קוזי.",
+    phone: "054-6612093", email: "stay@desert-stones.co.il", geo: [30.61, 34.801], hours: null,
+    facts: ["חניה", "מתאים לזוגות", "צ׳ק אין 15:00"],
+    products: [["בקתה זוגית, לילה", "כולל סל ארוחת בוקר", "890", "לילה"], ["סוף שבוע", "שני לילות, שישי ושבת", "1,950", "2 לילות"]],
+    scene: { kind: "crater", sky: ["#0b1640", "#4b3a8c"], land: ["#5b4d8a", "#1c1838"], stars: true, moon: true, tod: "night" } },
+  { id: "ramon-jeeps", name: "ג׳יפים במכתש", cat: "מפעיל סיורים", area: "תיירות ותחבורה", city: "מצפה רמון", street: "שדרות בן גוריון 3",
+    short: "סיורי ג׳יפים מודרכים במכתש רמון, כולל זריחה וסיורי לילה עם טלסקופ.",
+    about: ["סיורי ג׳יפים של שעתיים עד חצי יום, עם מדריכים שגדלו באזור.", "המסלול הפופולרי ביותר יוצא לפני הזריחה ומסתיים בקפה שחור על שפת המכתש."],
+    reco: "סיור הזריחה: יוצאים בחושך ושותים קפה שחור על השפה כשהשמש עולה.",
+    phone: "050-7729134", email: "ride@ramon-jeeps.co.il", geo: [30.612, 34.803], hours: week("05:30", "21:00"),
+    facts: ["מתאים למשפחות", "מתאים לקבוצות", "בהזמנה מראש"],
+    products: [["סיור זריחה", "יציאה שעה לפני הזריחה, כולל קפה", "220", "3 שעות"], ["חצי יום במכתש", "הקניון האדום, המנסרה ובארות", "390", "5 שעות"], ["סיור לילה וטלסקופ", "תצפית כוכבים עם מדריך אסטרונומיה", "250", "2.5 שעות"]],
+    scene: { kind: "crater", sky: ["#f29a5b", "#ffd9a3"], land: ["#c8743d", "#5e2c17"], sun: true, tod: "dawn" } },
+  { id: "negev-trail-cafe", name: "קפה שביל הנגב", cat: "בית קפה", area: "אוכל ומסעדות", city: "שדה בוקר", street: "צומת שדה בוקר",
+    short: "בית קפה למטיילים על שביל ישראל: ארוחות בוקר, מילוי מים ומטען לטלפון.",
+    about: ["תחנת עצירה למטיילים ולרוכבים על שביל ישראל, עם ארוחות בוקר, כריכים ועוגות ביתיות.", "מילוי מים חופשי לכל מי שמגיע ברגל."],
+    reco: "שקשוקה של בוקר אחרי לילה בשטח, ועוגת תמרים לדרך.",
+    phone: "053-2280471", email: "coffee@negev-trail.co.il", geo: [30.874, 34.794], hours: week("07:00", "16:00", [6], ["07:00", "13:00"]),
+    facts: ["חניה", "נגיש לכיסאות גלגלים", "שירותים", "מתאים למשפחות"],
+    products: [["ארוחת בוקר מטיילים", "שקשוקה, סלט, לחם וקפה", "68", ""], ["כריך לדרך", "באגט עם חביתה או גבינות", "36", ""], ["עוגת תמרים", "פרוסה ביתית", "22", ""]],
+    scene: { kind: "hills", sky: ["#8fc3e6", "#e6f1f5"], land: ["#d8c08b", "#8f7a46"], sun: true, tree: true, tod: "day" } },
+  { id: "sand-glass", name: "גלריית חול וזכוכית", cat: "גלריה לאמנות", area: "אמנות, בידור ותרבות", city: "מצפה רמון", street: "רובע האמנים, הר ארדון 7",
+    short: "סטודיו לזכוכית מנופחת מחול המדבר, עם סדנאות קצרות למשפחות.",
+    about: ["סטודיו של אמנית זכוכית שעובדת עם חול מקומי. אפשר לצפות בעבודה ולקנות כלים ותכשיטים.", "סדנאות של שעה לילדים מגיל 8 בתיאום מראש."],
+    reco: "לצפות בניפוח ואז לנפח כדור זכוכית משלכם בסדנה הקצרה.",
+    phone: "058-9031156", email: "studio@sand-glass.co.il", geo: [30.615, 34.799], hours: week("10:00", "17:00", [6], ["10:00", "14:00"]),
+    facts: ["שירותים", "מתאים למשפחות", "סדנאות מגיל 8"],
+    products: [["סדנת ניפוח קצרה", "כל משתתף מנפח כדור זכוכית", "180", "60 דקות"], ["קערת חול מדבר", "כלי זכוכית בעבודת יד", "320", ""], ["עגילי זכוכית", "זוג עגילים בגווני המכתש", "140", ""]],
+    scene: { kind: "dunes", sky: ["#7fd0d8", "#f4d6e4"], land: ["#e8b9c4", "#6d7fa8"], sun: true, tod: "day" } },
+  { id: "avdat-spa", name: "ספא מעיינות עבדת", cat: "ספא", area: "יופי וטיפוח", city: "מדרשת בן גוריון", street: "מרכז המדרשה",
+    short: "טיפולי ספא ועיסויים בשמנים מצמחי מדבר, בחדר עם חלון אל הקניון.",
+    about: ["שני חדרי טיפולים עם חלון אל קניון עין עבדת. מציעים עיסוי שוודי, רקמות עמוקות וטיפולי פנים.", "מומלץ להגיע אחרי טיול ולסיים בתה צמחים במרפסת."],
+    reco: "עיסוי זוגי בשמן רותם אחרי הטיול לעין עבדת.",
+    phone: "052-3378815", email: "relax@avdat-spa.co.il", geo: [30.85, 34.78], hours: week("09:00", "20:00", [6], ["09:00", "14:00"]),
+    facts: ["חניה", "שירותים", "מתאים לזוגות"],
+    products: [["עיסוי שוודי", "שמנים מצמחי מדבר", "330", "60 דקות"], ["עיסוי זוגי", "בחדר עם חלון לקניון", "620", "60 דקות"], ["טיפול פנים", "ניקוי ומסכת בוץ", "290", "50 דקות"]],
+    scene: { kind: "canyon", sky: ["#bfe3d6", "#f2efe0"], land: ["#b9a27a", "#3e5a4f"], sun: false, water: true, tod: "day" } },
+  { id: "sde-boker-olive", name: "בית הבד של שדה בוקר", cat: "מעדנייה ומכולת ייחודית", area: "אוכל ומסעדות", city: "שדה בוקר", street: "דרך המטעים 2",
+    short: "בית בד משפחתי ומטע זיתים, סיורים במטע וטעימות שמן עם לחם טאבון.",
+    about: ["בית בד משפחתי עם מטע זיתים של 40 דונם. מפיקים שמן זית כתית מעולה, עושים סיורים במטע וטעימות שמן עם לחם טאבון.", "המטע מושקה במים מליחים מהאקוויפר, מה שנותן לשמן טעם פלפלי ייחודי."],
+    reco: "סיור מסיק עם טעימת שמן ולחם חם מהטאבון, הכי שווה בבוקר של נובמבר.",
+    phone: "052-6650231", email: "olive@sdeboker-oil.co.il", geo: [30.8746, 34.7943], hours: week("09:00", "16:00", [6]),
+    facts: ["חניה לאוטובוסים", "שירותים", "מתאים למשפחות", "מתאים לקבוצות"],
+    products: [["סיור מטע וטעימת שמנים", "שעה במטע ובבית הבד, טעימת 4 שמנים", "65", "60 דקות"], ["סדנת מסיק למשפחות", "קטיף, כבישה וטעימה, בעונה בלבד", "120", "2 שעות"], ["שמן כתית, 750 מ״ל", "בציר 2026", "85", ""]],
+    scene: { kind: "vines", sky: ["#a9d3e8", "#f3f0dc"], land: ["#a7a46a", "#4f5a2e"], sun: true, tod: "day" } },
+  { id: "mitzpe-camels", name: "חוות הגמלים של מצפה", cat: "מפעיל סיורים", area: "תיירות ותחבורה", city: "מצפה רמון", street: "אזור התעשייה 9",
+    short: "רכיבות גמלים, לינה באוהל בדואי וארוחת ערב סביב המדורה.",
+    about: ["רכיבות גמלים של שעה עד יום שלם, לינה באוהל בדואי וארוחת ערב סביב המדורה.", "הגמלים גדלו בחווה מלידה ומכירים כל מדריך."],
+    reco: "רכיבת השקיעה אל שפת המכתש וארוחה סביב המדורה אחריה.",
+    phone: "054-3318842", email: "camels@mitzpe-farm.co.il", geo: [30.61, 34.8], hours: week("08:00", "19:00"),
+    facts: ["חניה", "מתאים למשפחות", "מגיל 5"],
+    products: [["רכיבת שקיעה", "שעה וחצי אל שפת המכתש", "180", "90 דקות"], ["לינה באוהל בדואי", "לזוג, כולל ארוחת ערב ובוקר", "450", "לילה"]],
+    scene: { kind: "dunes", sky: ["#e86f4d", "#fbc98a"], land: ["#d98a4e", "#6b2f1c"], sun: true, tod: "evening" } },
+  { id: "rivkas-bakery", name: "המאפייה של רבקה", cat: "מאפייה וקונדיטוריה", area: "אוכל ומסעדות", city: "ירוחם", street: "רחוב הנחל 5",
+    short: "לחמי מחמצת, מאפים מרוקאים מסורתיים וסדנת חלות בימי שישי.",
+    about: ["מאפייה קטנה עם לחמי מחמצת, מאפים מרוקאים מסורתיים וקפה.", "כל המתכונים של סבתא ממרקש, והקמח נטחן במקום מחיטה שגדלה בנגב."],
+    reco: "מופלטה חמה עם דבש ביום שישי בבוקר.",
+    phone: "050-9127745", email: "rivka@yeruham-bakery.co.il", geo: [30.987, 34.929], hours: week("07:00", "15:00", [6], ["07:00", "13:00"]),
+    facts: ["נגיש לכיסאות גלגלים", "מתאים למשפחות"],
+    products: [["לחם מחמצת", "כיכר מחיטה נגבית", "32", ""], ["סדנת חלות", "לישה, קליעה ואפייה, שתי חלות הביתה", "140", "2 שעות"], ["מגש מאפים מרוקאים", "12 יחידות", "75", ""]],
+    scene: { kind: "hills", sky: ["#f2b880", "#fbeedd"], land: ["#d6a75f", "#7b5a2a"], sun: true, tod: "morning" } },
+  { id: "basalt-kitchen", name: "מטבח בזלת", cat: "מסעדה", area: "אוכל ומסעדות", city: "מצפה רמון", street: "מתחם החאן, נחל ציה 2",
+    short: "מסעדת שף קטנה על שפת המכתש, מנות מחומרי גלם של חוות הנגב.",
+    about: ["מסעדת שף של 30 מקומות עם חלון ענק אל המכתש. התפריט משתנה לפי מה שמגיע מהחוות באזור.", "בערבים יש תפריט טעימות של שש מנות."],
+    reco: "תפריט הטעימות ליד החלון, להזמין שולחן לשעת השקיעה.",
+    phone: "08-6580214", email: "table@basalt-kitchen.co.il", geo: [30.6095, 34.8015], hours: week("12:00", "23:00", [0], ["12:00", "15:00"]),
+    facts: ["חניה", "נגיש לכיסאות גלגלים", "מתאים לזוגות"],
+    products: [["תפריט טעימות", "שש מנות מהחוות של הנגב", "320", "2 שעות"], ["צהריים עסקיות", "מנה ראשונה ועיקרית", "118", ""]],
+    scene: { kind: "crater", sky: ["#3c2a5e", "#e0775a"], land: ["#5b3a4a", "#1c1418"], sun: true, tod: "dusk" } },
+  { id: "crater-climb", name: "קיר הטיפוס של המכתש", cat: "קיר טיפוס", area: "כושר ופנאי", city: "מצפה רמון", street: "אזור התעשייה, הר ארדון 14",
+    short: "קיר טיפוס מקורה, הדרכות סנפלינג ויציאות לטיפוס סלע במכתש.",
+    about: ["אולם בולדרינג וקיר הובלה לכל הרמות, עם השכרת ציוד במקום.", "בסופי שבוע יוצאים לטיפוס סלע ולסנפלינג במצוקי המכתש."],
+    reco: "סנפלינג של חצי יום במצוק הגמל, גם למי שלא טיפס אף פעם.",
+    phone: "052-7714460", email: "climb@crater-climb.co.il", geo: [30.6165, 34.7975], hours: week("16:00", "22:00", [], ["09:00", "15:00"]),
+    facts: ["חניה", "השכרת ציוד", "מגיל 6"],
+    products: [["כניסה חופשית", "כולל נעליים וגיר", "70", "יום"], ["סנפלינג במכתש", "חצי יום עם מדריך מוסמך", "290", "4 שעות"], ["חוג ילדים", "פעם בשבוע, חודש", "260", "חודש"]],
+    scene: { kind: "canyon", sky: ["#6fb5e8", "#e9f3f8"], land: ["#d08a52", "#6a3220"], sun: true, tod: "day" } },
+  { id: "desert-books", name: "ספרי המדבר", cat: "חנות ספרים", area: "קניות וחנויות", city: "ירוחם", street: "מרכז מסחרי, צבי בורנשטיין 8",
+    short: "חנות ספרים יד שנייה עם פינת קפה, מפגשי סופרים ומדף ספרות נגב.",
+    about: ["חנות ספרים משומשים וחדשים עם יותר מ-8,000 כותרים ופינת קפה קטנה.", "פעם בחודש מתקיים ערב סופר או סופרת מהנגב."],
+    reco: "לחפש במדף ״נגב״ ספר על האזור ולקרוא אותו מול האגם.",
+    phone: "053-9918307", email: "books@desert-books.co.il", geo: [30.9895, 34.9275], hours: week("09:30", "19:00", [6], ["09:00", "13:30"]),
+    facts: ["נגיש לכיסאות גלגלים", "פינת ילדים"],
+    products: [["כרטיס ערב סופר", "כולל קפה ועוגה", "40", "ערב"], ["שקית הפתעה", "שלושה ספרים לפי טעם", "60", ""]],
+    scene: { kind: "lake", sky: ["#9cc7e2", "#f0f2ea"], land: ["#b8a477", "#5c6a4a"], sun: true, water: true, tree: true, tod: "day" } },
+  { id: "nomad-hostel", name: "אכסניית הנוודים", cat: "אכסניה", area: "אירוח ולינה", city: "מצפה רמון", street: "רובע האמנים, הר עודד 3",
+    short: "אכסניה למטיילים עם חדרים פרטיים ומיטות בחדר משותף, מטבח וגג לכוכבים.",
+    about: ["אכסניה ותיקה במבנה תעשייה משופץ: חדרים פרטיים, מיטות בחדר משותף, מטבח משותף וגג פתוח.", "כל ערב בשמונה יש שיחת מסלולים עם המארחים."],
+    reco: "לישון על הגג באוהל בלילות הקיץ ולהצטרף לשיחת המסלולים.",
+    phone: "08-6588190", email: "hi@nomad-hostel.co.il", geo: [30.6155, 34.7985], hours: null,
+    facts: ["חניה", "מטבח משותף", "מתאים לקבוצות"],
+    products: [["מיטה בחדר משותף", "כולל ארוחת בוקר", "140", "לילה"], ["חדר פרטי זוגי", "מקלחת צמודה", "420", "לילה"], ["אוהל על הגג", "בקיץ בלבד", "110", "לילה"]],
+    scene: { kind: "crater", sky: ["#141b3d", "#2c4a7a"], land: ["#3a4d73", "#121a2d"], stars: true, tod: "night" } },
+  { id: "goat-dairy", name: "מחלבת העזים של הר הנגב", cat: "מעדנייה ומכולת ייחודית", area: "אוכל ומסעדות", city: "שדה בוקר", street: "חוות בודדים, דרך 40",
+    short: "חוות עזים במדבר, גבינות בעבודת יד, ביקור בדיר וארוחת בוקר כפרית.",
+    about: ["עדר של 120 עזים שרועות בוואדיות סביב החווה. הגבינות נעשות בכל בוקר מחלב טרי.", "אפשר לבקר בדיר, לחלוב ולסיים בארוחת בוקר כפרית על המרפסת."],
+    reco: "ארוחת הבוקר הכפרית בשבת, עם לבנה טרייה וזעתר מהגינה.",
+    phone: "054-2209917", email: "farm@negev-goats.co.il", geo: [30.882, 34.802], hours: week("08:00", "17:00"),
+    facts: ["חניה", "מתאים למשפחות", "ביקור בדיר"],
+    products: [["ארוחת בוקר כפרית", "גבינות, לבנה, לחם טאבון וסלט", "85", ""], ["ביקור וחליבה", "סיור בדיר עם המגדלים", "45", "45 דקות"], ["מגש גבינות", "חמש גבינות הבית", "110", ""]],
+    scene: { kind: "hills", sky: ["#c9e4ef", "#f6f1e3"], land: ["#c7b07a", "#6e6a3a"], sun: true, tree: true, tod: "morning" } }
+];
+
+/* ---------- Seeded generated photos (canvas), so the demo needs no image hosting ---------- */
+function rng(seed) { var a = 0; for (var i = 0; i < seed.length; i++) a = (a * 31 + seed.charCodeAt(i)) | 0; return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function hex(h) { h = h.replace("#", ""); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; }
+function mix(a, b, t) { var x = hex(a), y = hex(b); return "#" + x.map(function (v, i) { return ("0" + Math.round(v + (y[i] - v) * t).toString(16)).slice(-2); }).join(""); }
+var cache = {};
+function photo(b, variant, w, h) {
+  var key = b.id + "|" + variant + "|" + w + "x" + h;
+  if (cache[key]) return cache[key];
+  var s = b.scene, r = rng(key), c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  var g = c.getContext("2d");
+  var sky = g.createLinearGradient(0, 0, 0, h);
+  sky.addColorStop(0, s.sky[0]); sky.addColorStop(.75, s.sky[1]); sky.addColorStop(1, s.sky[1]);
+  g.fillStyle = sky; g.fillRect(0, 0, w, h);
+  if (s.stars) { for (var i = 0; i < w * h / 900; i++) { g.fillStyle = "rgba(255,255,255," + (0.3 + r() * 0.7) + ")"; var sz = r() < .08 ? 2 : 1; g.fillRect(r() * w, r() * h * .7, sz, sz); } }
+  if (s.sun || s.moon) {
+    var sx = w * (0.2 + r() * 0.6), sy = h * (s.tod === "evening" || s.tod === "dawn" || s.tod === "dusk" ? 0.42 + r() * .1 : 0.16 + r() * .12), sr = Math.min(w, h) * (s.moon ? 0.06 : 0.09);
+    var glow = g.createRadialGradient(sx, sy, sr * .5, sx, sy, sr * 5);
+    glow.addColorStop(0, s.moon ? "rgba(230,230,255,.35)" : "rgba(255,240,200,.65)"); glow.addColorStop(1, "rgba(255,240,200,0)");
+    g.fillStyle = glow; g.fillRect(0, 0, w, h);
+    g.fillStyle = s.moon ? "#f2f0e6" : "rgba(255,248,225,.95)"; g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
+  }
+  var layers = 4 + Math.floor(r() * 2);
+  for (var L = 0; L < layers; L++) {
+    var t = L / (layers - 1);
+    var base = h * (0.48 + t * 0.34 + (r() - .5) * .04);
+    var col = mix(mix(s.sky[1], s.land[0], 0.35 + t * .3), s.land[1], t * .9);
+    g.fillStyle = col; g.beginPath(); g.moveTo(0, h);
+    var amp = h * (0.05 + r() * 0.06) * (s.kind === "dunes" ? 1.2 : 1), f1 = 1 + r() * 2.5, f2 = 3 + r() * 5, ph = r() * 7;
+    var plateau = base - amp * 1.2, cliffs = [r(), r(), r()].sort();
+    for (var x = 0; x <= w; x += 4) {
+      var u = x / w, y;
+      if (s.kind === "crater" || s.kind === "canyon") {
+        // flat-topped mesas with steep scarps
+        var noise = Math.sin(u * f2 * 6 + ph) * amp * 0.06 + Math.sin(u * 40 + ph) * amp * .03;
+        var inMesa = (u < cliffs[0]) || (u > cliffs[1] && u < cliffs[2]);
+        var edge = Math.min(Math.abs(u - cliffs[0]), Math.abs(u - cliffs[1]), Math.abs(u - cliffs[2]));
+        var soft = Math.min(1, edge / 0.035);
+        y = inMesa ? plateau + (1 - soft) * amp * 1.6 + noise : base + amp * .4 + noise;
+        if (s.kind === "canyon" && L === layers - 1) y = base + amp * .3 + Math.sin(u * 9 + ph) * amp * .5;
+      } else if (s.kind === "dunes") {
+        y = base - Math.abs(Math.sin(u * f1 * Math.PI + ph)) * amp - Math.sin(u * f2 + ph) * amp * .25;
+      } else {
+        y = base - (Math.sin(u * f1 * Math.PI + ph) * .6 + Math.sin(u * f2 + ph * 2) * .25 + 0.4) * amp;
+      }
+      g.lineTo(x, y);
+    }
+    g.lineTo(w, h); g.closePath(); g.fill();
+    if ((s.water) && L === layers - 2) {
+      var wy = h * (0.74 + r() * .04);
+      var wg = g.createLinearGradient(0, wy, 0, wy + h * .1);
+      wg.addColorStop(0, mix(s.sky[0], "#ffffff", .25)); wg.addColorStop(1, mix(s.sky[0], s.land[1], .4));
+      g.fillStyle = wg; g.beginPath(); g.ellipse(w * (0.3 + r() * .4), wy, w * (0.35 + r() * .2), h * .05, 0, 0, Math.PI * 2); g.fill();
+    }
+  }
+  if (s.kind === "vines") {
+    // vineyard / orchard rows converging toward a vanishing point
+    var vx = w * (0.3 + r() * .4), vy = h * .66, near = mix(s.land[1], "#000000", .25);
+    g.strokeStyle = near; g.lineCap = "round";
+    for (var k = -9; k <= 9; k++) {
+      g.lineWidth = 2 + Math.abs(k) * .5;
+      g.setLineDash([6 + Math.abs(k), 5 + Math.abs(k)]);
+      g.beginPath(); g.moveTo(vx + k * 4, vy); g.lineTo(vx + k * w * .16, h + 10); g.stroke();
+    }
+    g.setLineDash([]);
+  }
+  if (s.tree) {
+    // acacia silhouettes: thin trunk, flat wide crown
+    var n = 1 + Math.floor(r() * 2);
+    for (var q = 0; q < n; q++) {
+      var tx = w * (0.15 + r() * .7), ty = h * (0.8 + r() * .1), ts = Math.min(w, h) * (0.1 + r() * .06);
+      g.fillStyle = mix(s.land[1], "#000000", .45); g.strokeStyle = g.fillStyle; g.lineWidth = Math.max(2, ts * .07);
+      g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx, ty - ts * .9); g.moveTo(tx, ty - ts * .5); g.lineTo(tx - ts * .4, ty - ts); g.moveTo(tx, ty - ts * .55); g.lineTo(tx + ts * .45, ty - ts * 1.02); g.stroke();
+      g.beginPath(); g.ellipse(tx, ty - ts * 1.08, ts * .95, ts * .22, 0, 0, Math.PI * 2); g.fill();
+    }
+  }
+  // light film grain + vignette for a photographic feel
+  var vg = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * .3, w / 2, h / 2, Math.max(w, h) * .75);
+  vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.22)");
+  g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  var img = g.getImageData(0, 0, w, h), d = img.data;
+  for (var p = 0; p < d.length; p += 4) { var nz = (r() - .5) * 14; d[p] += nz; d[p + 1] += nz; d[p + 2] += nz; }
+  g.putImageData(img, 0, 0);
+  return (cache[key] = c.toDataURL("image/jpeg", 0.86));
+}
+var RATIOS = [1.32, 1.0, 1.5, 1.2, 0.82, 1.42, 1.1, 1.25];
+function cardRatio(i) { return RATIOS[i % RATIOS.length]; }
+
+/* ---------- State ---------- */
+var favs = [];
+try { favs = JSON.parse(localStorage.getItem("mekomi-favs") || "[]"); } catch (e) { favs = []; }
+function saveFavs() { try { localStorage.setItem("mekomi-favs", JSON.stringify(favs)); } catch (e) {} }
+var filter = { place: "", area: "", q: "" };
+
+var $ = function (sel, el) { return (el || document).querySelector(sel); };
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+var HEART = '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.2-4.4-9.2-8.9C1.4 8.4 3.4 4.8 6.9 4.8c2.1 0 3.4 1.1 4.1 2.3h2c.7-1.2 2-2.3 4.1-2.3 3.5 0 5.5 3.6 4.1 6.8-2 4.5-9.2 8.9-9.2 8.9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+var PIN = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+
+function heartBtn(b, extra) {
+  var on = favs.indexOf(b.id) >= 0;
+  return '<button type="button" class="heart ' + (extra || "") + '" data-fav="' + b.id + '" aria-pressed="' + on + '" aria-label="' + (on ? "הסרה מהמועדפים: " : "הוספה למועדפים: ") + esc(b.name) + '">' + HEART + "</button>";
+}
+function card(b, i) {
+  return '<a class="card" href="#b-' + b.id + '">' +
+    '<div class="pic"><img alt="' + esc(b.name) + '" width="600" height="' + Math.round(600 * cardRatio(i)) + '" src="' + photo(b, "cover", 600, Math.round(600 * cardRatio(i))) + '">' +
+    '<span class="cat">' + esc(b.cat) + "</span>" + heartBtn(b) + "</div>" +
+    '<div class="meta"><h3>' + esc(b.name) + "</h3><p>" + esc(b.short) + '</p><span class="loc">' + PIN + esc(b.city) + "</span></div></a>";
+}
+function updateFavCount() { $("#favCount").textContent = favs.length; }
+
+/* ---------- Views ---------- */
+var app = $("#app");
+function places() { var s = []; B.forEach(function (b) { if (s.indexOf(b.city) < 0) s.push(b.city); }); return s; }
+function areas() { var s = []; B.forEach(function (b) { if (s.indexOf(b.area) < 0) s.push(b.area); }); return s; }
+function matches(b) {
+  if (filter.place && b.city !== filter.place) return false;
+  if (filter.area && b.area !== filter.area) return false;
+  if (filter.q) { var q = filter.q.trim(); if (q && (b.name + " " + b.cat + " " + b.short + " " + b.city + " " + b.area).indexOf(q) < 0) return false; }
+  return true;
+}
+function chipRow(label, list, key, cls) {
+  return '<div class="chips" role="group" aria-label="' + label + '"><button type="button" class="chip ' + cls + '" data-' + key + '="" aria-pressed="' + (!filter[key]) + '">הכול</button>' +
+    list.map(function (x) { return '<button type="button" class="chip ' + cls + '" data-' + key + '="' + esc(x) + '" aria-pressed="' + (filter[key] === x) + '">' + esc(x) + "</button>"; }).join("") + "</div>";
+}
+function renderHome() {
+  var list = B.filter(matches);
+  app.innerHTML = '<div class="wrap">' +
+    '<div class="intro"><h1>העסקים הקטנים של רמת הנגב</h1><p>יקבים, צימרים, סיורים, מאפיות וסטודיואים של אנשים שגרים כאן. סמנו לב על מה שאהבתם ותמצאו אותו אחר כך במועדפים.</p></div>' +
+    '<div class="filters">' + chipRow("יישוב", places(), "place", "place") + chipRow("תחום", areas(), "area", "") + "</div>" +
+    '<div class="count" aria-live="polite">' + list.length + " עסקים</div>" +
+    (list.length ? '<div class="grid">' + list.map(function (b) { return card(b, B.indexOf(b)); }).join("") + "</div>"
+      : '<div class="empty"><h2>לא מצאנו עסק כזה</h2><p>נסו מילה אחרת או הסירו את הסינון.</p><button type="button" class="btn" data-reset>הצגת כל העסקים</button></div>') +
+    '<div class="join"><div><h2>יש לכם עסק באזור?</h2><p>ההרשמה לוקחת כמה דקות: עונים על ארבע שאלות קצרות, והעמוד של העסק נכתב בשבילכם.</p></div><a class="btn primary" href="' + JOIN_URL + '" target="_blank" rel="noopener">לדמו ההרשמה לעסקים</a></div>' +
+    "</div>";
+}
+function renderFavs() {
+  var list = B.filter(function (b) { return favs.indexOf(b.id) >= 0; });
+  app.innerHTML = '<div class="wrap"><a class="back" href="#">→ לכל העסקים</a>' +
+    '<div class="intro"><h1>המועדפים שלי</h1><p>' + (list.length ? list.length + " עסקים שסימנתם בלב. הרשימה נשמרת בדפדפן הזה." : "") + "</p></div>" +
+    (list.length ? '<div class="grid">' + list.map(function (b) { return card(b, B.indexOf(b)); }).join("") + "</div>"
+      : '<div class="empty"><h2>עוד אין מועדפים</h2><p>לחצו על הלב שעל תמונה של עסק כדי לשמור אותו כאן.</p><a class="btn primary" href="#">לגלות עסקים</a></div>') +
+    "</div>";
+}
+function openNow(b) {
+  if (!b.hours) return null;
+  var now = new Date(), d = b.hours[now.getDay()];
+  if (!d) return { open: false, text: "סגור היום" };
+  var m = now.getHours() * 60 + now.getMinutes();
+  var toM = function (s) { var p = s.split(":"); return +p[0] * 60 + +p[1]; };
+  if (m >= toM(d[0]) && m < toM(d[1])) return { open: true, text: "פתוח עכשיו, עד " + d[1] };
+  return { open: false, text: m < toM(d[0]) ? "ייפתח היום ב-" + d[0] : "סגור עכשיו" };
+}
+function intlPhone(p) { return "972" + p.replace(/\D/g, "").replace(/^0/, ""); }
+function contactRow(icon, label, value, copyLabel) {
+  return '<div class="contact-row"><span class="ico" aria-hidden="true">' + icon + '</span><span class="v"><span class="l">' + label + "</span>" + esc(value) + '</span><button type="button" class="copy" data-copy="' + esc(value) + '" aria-label="העתקת ' + copyLabel + '">העתקה</button></div>';
+}
+var ICON_PHONE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>';
+var ICON_MAIL = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
+var ICON_PIN = PIN.replace('width="15" height="15"', 'width="18" height="18"');
+
+var gallerySet = [];
+function renderSite(b) {
+  var st = openNow(b);
+  gallerySet = [photo(b, "g1", 1200, 900), photo(b, "g2", 800, 600), photo(b, "g3", 800, 600), photo(b, "g4", 800, 600), photo(b, "g5", 800, 600)];
+  var today = new Date().getDay();
+  var others = B.filter(function (x) { return x.id !== b.id && (x.city === b.city || x.area === b.area); }).slice(0, 3);
+  var waze = "https://waze.com/ul?ll=" + b.geo[0] + "," + b.geo[1] + "&navigate=yes";
+  var gmaps = "https://www.google.com/maps/search/?api=1&query=" + b.geo[0] + "," + b.geo[1];
+  app.innerHTML = '<div class="wrap">' +
+    '<a class="back" href="#">→ לכל העסקים</a>' +
+    '<div class="site-head"><div class="row"><span class="tag">' + esc(b.cat) + '</span><span class="loc">' + PIN + esc(b.city) + "</span>" + (st ? '<span class="status ' + (st.open ? "open" : "closed") + '">' + st.text + "</span>" : "") + "</div>" +
+    "<h1>" + esc(b.name) + "</h1>" +
+    '<div class="actions">' + heartBtn(b) +
+    '<a class="btn primary" href="https://wa.me/' + intlPhone(b.phone) + '" target="_blank" rel="noopener">וואטסאפ</a>' +
+    '<a class="btn" href="' + waze + '" target="_blank" rel="noopener">ניווט ב-Waze</a>' +
+    '<button type="button" class="btn" data-share>שיתוף העמוד</button></div></div>' +
+    '<div class="gallery" aria-label="גלריית תמונות">' + gallerySet.map(function (src, i) { return '<button type="button" data-lb="' + i + '" aria-label="הגדלת תמונה ' + (i + 1) + '"><img alt="" src="' + src + '"></button>'; }).join("") + "</div>" +
+    '<div class="site"><main>' +
+      '<section><h2>עלינו</h2><div class="about">' + b.about.map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("") + "</div>" +
+      '<div class="reco"><b>ההמלצה של בעלי המקום</b><span>' + esc(b.reco) + "</span></div>" +
+      '<div class="facts">' + b.facts.map(function (f) { return '<span class="tag">' + esc(f) + "</span>"; }).join("") + "</div></section>" +
+      '<section><h2>מוצרים ושירותים</h2><div class="products">' + b.products.map(function (p, i) {
+        return '<article class="product"><img alt="" src="' + photo(b, "p" + i, 480, 360) + '"><div><h3>' + esc(p[0]) + "</h3><p>" + esc(p[1]) + '</p><div class="pm"><span class="price">₪' + esc(p[2]) + "</span>" + (p[3] ? "<span>" + esc(p[3]) + "</span>" : "") + "</div></div></article>";
+      }).join("") + "</div></section>" +
+      (others.length ? '<section class="more"><h2>עוד בסביבה</h2><div class="grid">' + others.map(function (x) { return card(x, B.indexOf(x)); }).join("") + "</div></section>" : "") +
+    "</main>" +
+    '<aside class="side">' +
+      '<div class="panel"><h2>יצירת קשר</h2>' + contactRow(ICON_PHONE, "טלפון", b.phone, "מספר הטלפון") + contactRow(ICON_MAIL, "אימייל", b.email, "כתובת האימייל") + contactRow(ICON_PIN, "כתובת", b.street + ", " + b.city, "הכתובת") + "</div>" +
+      '<div class="panel"><h2>שעות פתיחה</h2>' + (b.hours ? '<table class="hours"><tbody>' + b.hours.map(function (d, i) { return '<tr class="' + (i === today ? "today" : "") + '"><td>' + DAYS[i] + "</td><td>" + (d ? d[0] + "–" + d[1] : "סגור") + "</td></tr>"; }).join("") + "</tbody></table>"
+        : "<p style=\"margin:0;color:var(--muted)\">פתוח כל השנה. צ׳ק אין מ-15:00, צ׳ק אאוט עד 11:00.</p>") + "</div>" +
+      '<div class="panel"><h2>איך מגיעים</h2><div class="mapcard"><img alt="" src="' + photo(b, "map", 640, 360) + '"></div><div class="linkrow"><a class="btn" href="' + waze + '" target="_blank" rel="noopener">Waze</a><a class="btn" href="' + gmaps + '" target="_blank" rel="noopener">Google Maps</a></div></div>' +
+    "</aside></div></div>";
+  document.title = b.name + " · מקומי";
+}
+
+function route() {
+  var h = location.hash.replace("#", "");
+  document.title = "מקומי רמת הנגב";
+  if (h.indexOf("b-") === 0) {
+    var b = B.filter(function (x) { return x.id === h.slice(2); })[0];
+    if (b) { renderSite(b); window.scrollTo(0, 0); return; }
+  }
+  if (h === "favorites") { renderFavs(); window.scrollTo(0, 0); return; }
+  renderHome();
+}
+
+/* ---------- Events ---------- */
+function toast(msg) { var t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 1800); }
+function copyText(text, done) {
+  var fallback = function () { toast("סמנו את הטקסט והעתיקו ידנית"); };
+  try { navigator.clipboard.writeText(text).then(function () { toast(done); }, fallback); } catch (e) { fallback(); }
+}
+document.addEventListener("click", function (e) {
+  var fav = e.target.closest("[data-fav]");
+  if (fav) {
+    e.preventDefault(); e.stopPropagation();
+    var id = fav.getAttribute("data-fav"), i = favs.indexOf(id);
+    if (i >= 0) favs.splice(i, 1); else favs.push(id);
+    saveFavs(); updateFavCount();
+    var on = i < 0;
+    document.querySelectorAll('[data-fav="' + id + '"]').forEach(function (el) { el.setAttribute("aria-pressed", on); el.classList.remove("pop"); void el.offsetWidth; if (on) el.classList.add("pop"); });
+    toast(on ? "נשמר במועדפים" : "הוסר מהמועדפים");
+    if (location.hash === "#favorites" && !on) renderFavs();
+    return;
+  }
+  var pl = e.target.closest("[data-place]"); if (pl) { filter.place = pl.getAttribute("data-place"); renderHome(); return; }
+  var ar = e.target.closest("[data-area]"); if (ar) { filter.area = ar.getAttribute("data-area"); renderHome(); return; }
+  if (e.target.closest("[data-reset]")) { filter = { place: "", area: "", q: "" }; $("#q").value = ""; renderHome(); return; }
+  var cp = e.target.closest("[data-copy]"); if (cp) { copyText(cp.getAttribute("data-copy"), "הועתק"); return; }
+  if (e.target.closest("[data-share]")) { copyText(location.href, "הקישור לעמוד הועתק"); return; }
+  var lb = e.target.closest("[data-lb]"); if (lb) { openLightbox(+lb.getAttribute("data-lb")); return; }
+});
+$("#q").addEventListener("input", function (e) {
+  filter.q = e.target.value;
+  if (location.hash && location.hash !== "#") { location.hash = ""; } else renderHome();
+});
+window.addEventListener("hashchange", route);
+
+var lbIndex = 0, lbEl = null;
+function openLightbox(i) {
+  lbIndex = i;
+  lbEl = document.createElement("div");
+  lbEl.className = "lightbox"; lbEl.setAttribute("role", "dialog"); lbEl.setAttribute("aria-modal", "true"); lbEl.setAttribute("aria-label", "תמונה מוגדלת");
+  lbEl.innerHTML = '<img alt=""><button type="button" class="lb-close" aria-label="סגירה">✕</button><button type="button" class="lb-nav lb-prev" aria-label="התמונה הקודמת">›</button><button type="button" class="lb-nav lb-next" aria-label="התמונה הבאה">‹</button>';
+  document.body.appendChild(lbEl);
+  var show = function () { lbEl.querySelector("img").src = gallerySet[lbIndex]; };
+  show();
+  lbEl.addEventListener("click", function (e) {
+    if (e.target.closest(".lb-prev")) { lbIndex = (lbIndex + gallerySet.length - 1) % gallerySet.length; show(); }
+    else if (e.target.closest(".lb-next")) { lbIndex = (lbIndex + 1) % gallerySet.length; show(); }
+    else if (e.target.tagName !== "IMG") closeLightbox();
+  });
+  lbEl.querySelector(".lb-close").focus();
+}
+function closeLightbox() { if (lbEl) { lbEl.remove(); lbEl = null; } }
+document.addEventListener("keydown", function (e) {
+  if (!lbEl) return;
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowLeft") lbEl.querySelector(".lb-next").click();
+  if (e.key === "ArrowRight") lbEl.querySelector(".lb-prev").click();
+});
+
+updateFavCount();
+route();
+})();
+</script>
